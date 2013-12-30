@@ -16,7 +16,6 @@ from component import Components, CompWithSym, CompFullySym, CompFullyAntiSym, \
     KroneckerDelta
 from metric import Metric, RiemannMetric, LorentzMetric
 from connection import AffConnection, LeviCivitaConnection
-from tangent_space import TangentSpace
 from functions import xder, ctr, Lie
 from utilities import simple_determinant, simplify_sqrt_real
 
