@@ -124,7 +124,7 @@ class Chart(SageObject):
         sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
         sage: c_cart.<x,y,z> = Chart(M, 'x y z')
     
-    Moreover, the method :meth:`OpenDomain.add_chart` can be invoked instead
+    Moreover, the method :meth:`OpenDomain.chart` can be invoked instead
     of the direct call to the Chart constructor::
     
         sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
