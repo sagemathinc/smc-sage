@@ -48,11 +48,11 @@ __ http://creativecommons.org/licenses/by-sa/3.0/
 
    vectorframe
    
-   component
-
    metric
 
    connection
+   
+   comp
 
 Indices and Tables
 ------------------
