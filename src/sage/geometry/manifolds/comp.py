@@ -933,7 +933,7 @@ class Components(SageObject):
         
         INPUT:
         
-        - ``other`` -- components, on the same vector frame as ``self``
+        - ``other`` -- components, on the same frame as ``self``
         
         OUTPUT: 
         
@@ -945,7 +945,7 @@ class Components(SageObject):
                             "must be an instance of Components.")
         if other.frame != self.frame:
             raise TypeError("The two sets of components are not defined on " +
-                            "the same vector frame.")
+                            "the same frame.")
         if other.sindex != self.sindex:
             raise TypeError("The two sets of components do not have the " + 
                             "same starting index.")
@@ -1036,8 +1036,8 @@ class Components(SageObject):
         if pos1 == pos2:
             raise IndexError("The two positions must differ for the " +
                                  "contraction to be meaningful.")
-        si = self.manifold.sindex
-        nsi = si + self.manifold.dim
+        si = self.sindex
+        nsi = si + self.dim
         if self.nid == 2:
             res = 0 
             for i in range(si, nsi):
@@ -1045,7 +1045,8 @@ class Components(SageObject):
             return res
         else:
             # More than 2 indices
-            result = Components(self.frame, self.nid - 2)
+            result = Components(self.ring, self.frame, self.nid - 2, 
+                                self.sindex, self.output_formatter)
             if pos1 > pos2:
                 pos1, pos2 = (pos2, pos1)
             for ind, val in self._comp.items():
@@ -1173,7 +1174,7 @@ class Components(SageObject):
           
         EXAMPLES:
         
-        Symmetrization of 2-indices components on a 3-dimensional manifold::
+        Symmetrization of 2-indices components::
         
             
         Symmetrization of 3-indices components::
@@ -1232,7 +1233,7 @@ class Components(SageObject):
           
         EXAMPLES:
         
-        Antisymmetrization of 2-indices components on a 3-dimensional manifold::
+        Antisymmetrization of 2-indices components::
         
             
         Antisymmetrization of 3-indices components::
@@ -1434,7 +1435,7 @@ class CompWithSym(Components):
     
     def _new_instance(self):
         r"""
-        Creates a :class:`CompWithSym` instance w.r.t. the same vector frame,
+        Creates a :class:`CompWithSym` instance w.r.t. the same frame,
         and with the same number of indices and the same symmetries
         
         """
@@ -1671,7 +1672,7 @@ class CompWithSym(Components):
                             "an instance of Components.")
         if other.frame != self.frame:
             raise TypeError("The two sets of components are not defined on " +
-                            "the same vector frame.")
+                            "the same frame.")
         if other.nid != self.nid:
             raise TypeError("The two sets of components do not have the " + 
                             "same number of indices.")
@@ -1728,7 +1729,7 @@ class CompWithSym(Components):
         
         INPUT:
         
-        - ``other`` -- components, on the same vector frame as ``self``
+        - ``other`` -- components, on the same frame as ``self``
         
         OUTPUT: 
         
@@ -1740,7 +1741,7 @@ class CompWithSym(Components):
                             "be an instance of Components.")
         if other.frame != self.frame:
             raise TypeError("The two sets of components are not defined on " +
-                            "the same vector frame.")
+                            "the same frame.")
         if other.sindex != self.sindex:
             raise TypeError("The two sets of components do not have the " + 
                             "same starting index.")
@@ -1801,8 +1802,8 @@ class CompWithSym(Components):
         if pos1 == pos2:
             raise IndexError("The two positions must differ for the " +
                                 "contraction to take place.")
-        si = self.manifold.sindex
-        nsi = si + self.manifold.dim
+        si = self.sindex
+        nsi = si + self.dim
         if self.nid == 2:
             res = 0 
             for i in range(si, nsi):
@@ -1902,7 +1903,7 @@ class CompWithSym(Components):
 
         EXAMPLES:
         
-        Indices on a 3-dimensional manifold::
+        Indices on a 3-dimensional space::
         
 
         """
@@ -1954,7 +1955,7 @@ class CompWithSym(Components):
           
         EXAMPLES:
         
-        Symmetrization of 3-indices components on a 3-dimensional manifold::
+        Symmetrization of 3-indices components on a 3-dimensional space::
         
         
         Let us now start with a symmetry on the last two indices::
@@ -2067,7 +2068,7 @@ class CompWithSym(Components):
           
         EXAMPLES:
         
-        Antisymmetrization of 3-indices components on a 3-dimensional manifold::
+        Antisymmetrization of 3-indices components on a 3-dimensional space::
         
             
         Partial antisymmetrization::
@@ -2332,7 +2333,7 @@ class CompFullySym(CompWithSym):
         if isinstance(other, CompFullySym):
             if other.frame != self.frame:
                 raise TypeError("The two sets of components are not defined " +
-                                "on the same vector frame.")
+                                "on the same frame.")
             if other.nid != self.nid:
                 raise TypeError("The two sets of components do not have the " + 
                                 "same number of indices.")
@@ -2420,7 +2421,7 @@ class CompFullyAntiSym(CompWithSym):
         if isinstance(other, CompFullyAntiSym):
             if other.frame != self.frame:
                 raise TypeError("The two sets of components are not defined " +
-                                "on the same vector frame.")
+                                "on the same frame.")
             if other.nid != self.nid:
                 raise TypeError("The two sets of components do not have the " + 
                                 "same number of indices.")
@@ -2451,28 +2452,45 @@ class KroneckerDelta(CompFullySym):
     - ``start_index`` -- (default: 0) first value of a single index; 
       accordingly a component index i must obey
       ``start_index <= i <= start_index + dim - 1``, where ``dim = len(frame)``. 
+    - ``output_formatter`` -- (default: None) 2-argument function or unbound 
+      method called to format the output of the component access 
+      operator ``[...]`` (method __getitem__); the 1st argument of 
+      ``output_formatter`` must be an instance of ``ring``, and the second some 
+      format.
 
     EXAMPLES:
 
-    The Kronecker delta on a 3-dimensional manifold::
+    The Kronecker delta on a 3-dimensional space::
         
-        
+        sage: V = VectorSpace(QQ,3)
+        sage: d = KroneckerDelta(QQ, V.basis()) ; d
+        Kronecker delta of size 3x3
+        sage: d[:]
+        [1 0 0]
+        [0 1 0]
+        [0 0 1]
+
     One can read, but not set, the components of a Kronecker delta::
     
+        sage: d[1,1]
+        1
+        sage: d[1,1] = 2
+        Traceback (most recent call last):
+        ...
+        NotImplementedError: The components of a Kronecker delta cannot be changed.        
 
     """
-    def __init__(self, frame):
-        CompFullySym.__init__(self, frame, 2)
-        from scalarfield import ScalarField
-        chart = self.domain.def_chart
-        for i in self.manifold.irange():
-            self._comp[(i,i)] = ScalarField(self.domain, 1, chart)
+    def __init__(self, ring, frame, start_index=0, output_formatter=None):
+        CompFullySym.__init__(self, ring, frame, 2, start_index, 
+                              output_formatter=None)
+        for i in range(self.sindex, self.dim + self.sindex):
+            self._comp[(i,i)] = self.ring(1)
 
     def _repr_(self):
         r"""
         String representation of the object.
         """
-        n = str(self.manifold.dim)
+        n = str(self.dim)
         return "Kronecker delta of size " + n + "x" + n  
     
     def __setitem__(self, args, value):
