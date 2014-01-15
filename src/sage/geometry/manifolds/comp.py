@@ -525,8 +525,8 @@ class Components(SageObject):
             no_format = True
             if isinstance(args[0], slice):
                 indices = args[0]
-            elif isinstance(args[0], tuple): # to ensure equivalence between
-                indices = args[0]           # [[(i,j,...)]] and [[i,j,...]]
+            elif isinstance(args[0], tuple) or isinstance(args[0], list): # to ensure equivalence between
+                indices = args[0]           # [[(i,j,...)]] or [[[i,j,...]]] and [[i,j,...]]
             else:
                 indices = tuple(args)
         else:
@@ -637,7 +637,7 @@ class Components(SageObject):
             if isinstance(indices, list):    
             # to ensure equivalence between [i,j,...] and [[i,j,...]] or 
             # [[(i,j,...)]]
-                if isinstance(indices[0], tuple):
+                if isinstance(indices[0], tuple) or isinstance(indices[0], list):
                     indices = indices[0]
                 else:
                     indices = tuple(indices)
@@ -1151,6 +1151,9 @@ class Components(SageObject):
             sage: c = Components(QQ, V.basis(), 2)
             sage: for ind in c.non_redundant_index_generator(): print ind,
             (0, 0) (0, 1) (0, 2) (1, 0) (1, 1) (1, 2) (2, 0) (2, 1) (2, 2)
+            sage: c = Components(QQ, V.basis(), 2, start_index=1)
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (1, 1) (1, 2) (1, 3) (2, 1) (2, 2) (2, 3) (3, 1) (3, 2) (3, 3)
 
         """
         for ind in self.index_generator():
@@ -1163,7 +1166,7 @@ class Components(SageObject):
         
         INPUT:
         
-        - ``pos`` -- (default: None) list of index positions involved in the 
+        - ``pos`` -- (default: None) tuple of index positions involved in the 
           symmetrization (with the convention position=0 for the first index); 
           if none, the symmetrization is performed over all the indices
           
@@ -1176,13 +1179,113 @@ class Components(SageObject):
         
         Symmetrization of 2-indices components::
         
-            
-        Symmetrization of 3-indices components::
+            sage: V = VectorSpace(QQ, 3)
+            sage: c = Components(QQ, V.basis(), 2)
+            sage: c[:] = [[1,2,3], [4,5,6], [7,8,9]]
+            sage: s = c.symmetrize() ; s
+            fully symmetric 2-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: c[:], s[:]
+            (
+            [1 2 3]  [1 3 5]
+            [4 5 6]  [3 5 7]
+            [7 8 9], [5 7 9]
+            )
+            sage: c.symmetrize() == c.symmetrize((0,1))
+            True
+
+        Full symmetrization of 3-indices components::
         
+            sage: c = Components(QQ, V.basis(), 3)
+            sage: c[:] = [[[1,2,3], [4,5,6], [7,8,9]], [[10,11,12], [13,14,15], [16,17,18]], [[19,20,21], [22,23,24], [25,26,27]]]
+            sage: s = c.symmetrize() ; s
+            fully symmetric 3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: c[:], s[:]
+            ([[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+              [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+              [[19, 20, 21], [22, 23, 24], [25, 26, 27]]],
+             [[[1, 16/3, 29/3], [16/3, 29/3, 14], [29/3, 14, 55/3]],
+              [[16/3, 29/3, 14], [29/3, 14, 55/3], [14, 55/3, 68/3]],
+              [[29/3, 14, 55/3], [14, 55/3, 68/3], [55/3, 68/3, 27]]])
+            sage: # Check of the result:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == (c[i,j,k]+c[i,k,j]+c[j,k,i]+c[j,i,k]+c[k,i,j]+c[k,j,i])/6,
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: c.symmetrize() == c.symmetrize((0,1,2))
+            True
 
         Partial symmetrization of 3-indices components::
         
-             
+            sage: s = c.symmetrize((0,1)) ; s   # symmetrization on the first two indices
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (0, 1)
+            sage: c[:], s[:]
+            ([[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+              [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+              [[19, 20, 21], [22, 23, 24], [25, 26, 27]]],
+             [[[1, 2, 3], [7, 8, 9], [13, 14, 15]],
+              [[7, 8, 9], [13, 14, 15], [19, 20, 21]],
+              [[13, 14, 15], [19, 20, 21], [25, 26, 27]]])
+            sage: # Check of the result:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == (c[i,j,k]+c[j,i,k])/2,
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: s = c.symmetrize([1,2]) ; s   # symmetrization on the last two indices
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (1, 2)
+            sage: c[:], s[:]
+            ([[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+              [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+              [[19, 20, 21], [22, 23, 24], [25, 26, 27]]],
+             [[[1, 3, 5], [3, 5, 7], [5, 7, 9]],
+              [[10, 12, 14], [12, 14, 16], [14, 16, 18]],
+              [[19, 21, 23], [21, 23, 25], [23, 25, 27]]])
+            sage: # Check of the result:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == (c[i,j,k]+c[i,k,j])/2,
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: s = c.symmetrize((0,2)) ; s   # symmetrization on the first and last indices
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (0, 2)
+            sage: c[:], s[:]
+            ([[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+              [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+              [[19, 20, 21], [22, 23, 24], [25, 26, 27]]],
+             [[[1, 6, 11], [4, 9, 14], [7, 12, 17]],
+              [[6, 11, 16], [9, 14, 19], [12, 17, 22]],
+              [[11, 16, 21], [14, 19, 24], [17, 22, 27]]])
+            sage: # Check of the result:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == (c[i,j,k]+c[k,j,i])/2,
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
 
         """
         from sage.groups.perm_gps.permgroup_named import SymmetricGroup
@@ -1221,7 +1324,7 @@ class Components(SageObject):
         
         INPUT:
         
-        - ``pos`` -- (default: None) list of index positions involved in the 
+        - ``pos`` -- (default: None) tuple of index positions involved in the 
           antisymmetrization (with the convention position=0 for the first 
           index); if none, the antisymmetrization is performed over all the 
           indices
@@ -1235,13 +1338,122 @@ class Components(SageObject):
         
         Antisymmetrization of 2-indices components::
         
-            
-        Antisymmetrization of 3-indices components::
+            sage: V = VectorSpace(QQ, 3)
+            sage: c = Components(QQ, V.basis(), 2)
+            sage: c[:] = [[1,2,3], [4,5,6], [7,8,9]]
+            sage: s = c.antisymmetrize() ; s
+            fully antisymmetric 2-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: c[:], s[:]
+            (
+            [1 2 3]  [ 0 -1 -2]
+            [4 5 6]  [ 1  0 -1]
+            [7 8 9], [ 2  1  0]
+            )
+            sage: c.antisymmetrize() == c.antisymmetrize((0,1))
+            True
+           
+        Full antisymmetrization of 3-indices components::
         
+            sage: c = Components(QQ, V.basis(), 3)
+            sage: c[:] = [[[-1,-2,3], [4,-5,4], [-7,8,9]], [[10,10,12], [13,-14,15], [-16,17,19]], [[-19,20,21], [1,2,3], [-25,26,27]]]
+            sage: s = c.antisymmetrize() ; s
+            fully antisymmetric 3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: c[:], s[:]
+            ([[[-1, -2, 3], [4, -5, 4], [-7, 8, 9]],
+              [[10, 10, 12], [13, -14, 15], [-16, 17, 19]],
+              [[-19, 20, 21], [1, 2, 3], [-25, 26, 27]]],
+             [[[0, 0, 0], [0, 0, -13/6], [0, 13/6, 0]],
+              [[0, 0, 13/6], [0, 0, 0], [-13/6, 0, 0]],
+              [[0, -13/6, 0], [13/6, 0, 0], [0, 0, 0]]])
+            sage: # Check of the result:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == (c[i,j,k]-c[i,k,j]+c[j,k,i]-c[j,i,k]+c[k,i,j]-c[k,j,i])/6,
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: c.symmetrize() == c.symmetrize((0,1,2))
+            True
 
         Partial antisymmetrization of 3-indices components::
             
-
+            sage: s = c.antisymmetrize((0,1)) ; s  # antisymmetrization on the first two indices
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (0, 1)
+            sage: c[:], s[:]
+            ([[[-1, -2, 3], [4, -5, 4], [-7, 8, 9]],
+              [[10, 10, 12], [13, -14, 15], [-16, 17, 19]],
+              [[-19, 20, 21], [1, 2, 3], [-25, 26, 27]]],
+             [[[0, 0, 0], [-3, -15/2, -4], [6, -6, -6]],
+              [[3, 15/2, 4], [0, 0, 0], [-17/2, 15/2, 8]],
+              [[-6, 6, 6], [17/2, -15/2, -8], [0, 0, 0]]])
+            sage: # Check of the result:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:              print s[i,j,k] == (c[i,j,k]-c[j,i,k])/2,
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: s = c.antisymmetrize((1,2)) ; s  # antisymmetrization on the last two indices
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (1, 2)
+            sage: c[:], s[:]
+            ([[[-1, -2, 3], [4, -5, 4], [-7, 8, 9]],
+              [[10, 10, 12], [13, -14, 15], [-16, 17, 19]],
+              [[-19, 20, 21], [1, 2, 3], [-25, 26, 27]]],
+             [[[0, -3, 5], [3, 0, -2], [-5, 2, 0]],
+              [[0, -3/2, 14], [3/2, 0, -1], [-14, 1, 0]],
+              [[0, 19/2, 23], [-19/2, 0, -23/2], [-23, 23/2, 0]]])
+            sage: # Check of the result:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:              print s[i,j,k] == (c[i,j,k]-c[i,k,j])/2,
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: s = c.antisymmetrize((0,2)) ; s  # antisymmetrization on the first and last indices
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (0, 2)
+            sage: c[:], s[:]
+            ([[[-1, -2, 3], [4, -5, 4], [-7, 8, 9]],
+              [[10, 10, 12], [13, -14, 15], [-16, 17, 19]],
+              [[-19, 20, 21], [1, 2, 3], [-25, 26, 27]]],
+             [[[0, -6, 11], [0, -9, 3/2], [0, 12, 17]],
+              [[6, 0, -4], [9, 0, 13/2], [-12, 0, -7/2]],
+              [[-11, 4, 0], [-3/2, -13/2, 0], [-17, 7/2, 0]]])
+            sage: # Check of the result:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:              print s[i,j,k] == (c[i,j,k]-c[k,j,i])/2,
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            
+        The order of index positions in the argument does not matter::
+            
+            sage: c.antisymmetrize((1,0)) == c.antisymmetrize((0,1))
+            True
+            sage: c.antisymmetrize((2,1)) == c.antisymmetrize((1,2))
+            True
+            sage: c.antisymmetrize((2,0)) == c.antisymmetrize((0,2))
+            True
+        
         """
         from sage.groups.perm_gps.permgroup_named import SymmetricGroup
         if pos is None:
@@ -1523,8 +1735,8 @@ class CompWithSym(Components):
             no_format = True
             if isinstance(args[0], slice):
                 indices = args[0]
-            elif isinstance(args[0], tuple): # to ensure equivalence between
-                indices = args[0]           # [[(i,j,...)]] and [[i,j,...]]
+            elif isinstance(args[0], tuple) or isinstance(args[0], list): # to ensure equivalence between
+                indices = args[0]           # [[(i,j,...)]] or [[[i,j,...]]] and [[i,j,...]]
             else:
                 indices = tuple(args)
         else:
@@ -1582,7 +1794,7 @@ class CompWithSym(Components):
             if isinstance(indices, list):    
             # to ensure equivalence between [i,j,...] and [[i,j,...]] or 
             # [[(i,j,...)]]
-                if isinstance(indices[0], tuple):
+                if isinstance(indices[0], tuple) or isinstance(indices[0], list):
                     indices = indices[0]
                 else:
                     indices = tuple(indices)
@@ -1631,6 +1843,27 @@ class CompWithSym(Components):
         (1,2) in a set of components antisymmetric with respect to the indices
         in position (1,2)::
         
+            sage: V = VectorSpace(QQ, 3)
+            sage: c = CompWithSym(QQ, V.basis(), 3, antisym=(1,2))
+            sage: c[0,0,1], c[0,0,2], c[0,1,2] = (1,2,3)
+            sage: c[1,0,1], c[1,0,2], c[1,1,2] = (4,5,6)
+            sage: c[2,0,1], c[2,0,2], c[2,1,2] = (7,8,9)
+            sage: c[:]
+            [[[0, 1, 2], [-1, 0, 3], [-2, -3, 0]],
+             [[0, 4, 5], [-4, 0, 6], [-5, -6, 0]],
+             [[0, 7, 8], [-7, 0, 9], [-8, -9, 0]]]
+            sage: c1 = c.swap_adjacent_indices(0,1,3)
+            sage: c.antisym   # c is antisymmetric with respect to the last pair of indices...
+            [(1, 2)]
+            sage: c1.antisym  #...while c1 is antisymmetric with respect to the first pair of indices
+            [(0, 1)]
+            sage: c[0,1,2]
+            3
+            sage: c1[1,2,0]
+            3
+            sage: c1[2,1,0]
+            -3
+
 
         """
         result = self._new_instance()
@@ -1903,8 +2136,61 @@ class CompWithSym(Components):
 
         EXAMPLES:
         
+        Indices on a 2-dimensional space::
+        
+            sage: V = VectorSpace(QQ, 2)
+            sage: c = CompFullySym(QQ, V.basis(), 2)
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (0, 0) (0, 1) (1, 1)
+            sage: c = CompFullySym(QQ, V.basis(), 2, start_index=1)
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (1, 1) (1, 2) (2, 2)
+            sage: c = CompFullyAntiSym(QQ, V.basis(), 2)
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (0, 1)
+
         Indices on a 3-dimensional space::
         
+            sage: V = VectorSpace(QQ, 3)
+            sage: c = CompFullySym(QQ, V.basis(), 2)
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (0, 0) (0, 1) (0, 2) (1, 1) (1, 2) (2, 2)
+            sage: c = CompFullySym(QQ, V.basis(), 2, start_index=1)
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (1, 1) (1, 2) (1, 3) (2, 2) (2, 3) (3, 3)
+            sage: c = CompFullyAntiSym(QQ, V.basis(), 2)
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (0, 1) (0, 2) (1, 2)
+            sage: c = CompWithSym(QQ, V.basis(), 3, sym=(1,2))  # symmetry on the last two indices
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (0, 0, 0) (0, 0, 1) (0, 0, 2) (0, 1, 1) (0, 1, 2) (0, 2, 2) (1, 0, 0) (1, 0, 1) (1, 0, 2) (1, 1, 1) (1, 1, 2) (1, 2, 2) (2, 0, 0) (2, 0, 1) (2, 0, 2) (2, 1, 1) (2, 1, 2) (2, 2, 2)
+            sage: c = CompWithSym(QQ, V.basis(), 3, antisym=(1,2))  # antisymmetry on the last two indices
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (0, 0, 1) (0, 0, 2) (0, 1, 2) (1, 0, 1) (1, 0, 2) (1, 1, 2) (2, 0, 1) (2, 0, 2) (2, 1, 2)
+            sage: c = CompFullySym(QQ, V.basis(), 3)
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (0, 0, 0) (0, 0, 1) (0, 0, 2) (0, 1, 1) (0, 1, 2) (0, 2, 2) (1, 1, 1) (1, 1, 2) (1, 2, 2) (2, 2, 2)
+            sage: c = CompFullyAntiSym(QQ, V.basis(), 3)
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (0, 1, 2)
+
+        Indices on a 4-dimensional space::
+        
+            sage: V = VectorSpace(QQ, 4)
+            sage: c = Components(QQ, V.basis(), 1)
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (0,) (1,) (2,) (3,)
+            sage: c = CompFullyAntiSym(QQ, V.basis(), 2)
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (0, 1) (0, 2) (0, 3) (1, 2) (1, 3) (2, 3)
+            sage: c = CompFullyAntiSym(QQ, V.basis(), 3)
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (0, 1, 2) (0, 1, 3) (0, 2, 3) (1, 2, 3)
+            sage: c = CompFullyAntiSym(QQ, V.basis(), 4)
+            sage: for ind in c.non_redundant_index_generator(): print ind,
+            (0, 1, 2, 3)
+            sage: c = CompFullyAntiSym(QQ, V.basis(), 5)
+            sage: for ind in c.non_redundant_index_generator(): print ind,  # nothing since c is identically zero in this case (for 5 > 4)
 
         """
         si = self.sindex
@@ -2247,8 +2533,8 @@ class CompFullySym(CompWithSym):
             no_format = True
             if isinstance(args[0], slice):
                 indices = args[0]
-            elif isinstance(args[0], tuple): # to ensure equivalence between
-                indices = args[0]           # [[(i,j,...)]] and [[i,j,...]]
+            elif isinstance(args[0], tuple) or isinstance(args[0], list): # to ensure equivalence between
+                indices = args[0]           # [[(i,j,...)]] or [[[i,j,...]]] and [[i,j,...]]
             else:
                 indices = tuple(args)
         else:
@@ -2299,7 +2585,7 @@ class CompFullySym(CompWithSym):
             if isinstance(indices, list):    
             # to ensure equivalence between [i,j,...] and [[i,j,...]] or 
             # [[(i,j,...)]]
-                if isinstance(indices[0], tuple):
+                if isinstance(indices[0], tuple) or isinstance(indices[0], list):
                     indices = indices[0]
                 else:
                     indices = tuple(indices)
