@@ -163,6 +163,17 @@ EXAMPLES:
         sage: v[:] = (-1, 0, 3)
         sage: v._comp  # random output order of the dictionary elements
         {(0,): -1, (2,): 3}
+        
+    In case of symmetries, only non-redundant components are stored::
+    
+        sage: c = CompFullyAntiSym(QQ, basis, 2)
+        sage: c[0,1] = 3
+        sage: c[:]
+        [ 0  3  0]
+        [-3  0  0]
+        [ 0  0  0]
+        sage: c._comp
+        {(0, 1): 3}
 
 """
 
@@ -708,7 +719,8 @@ class Components(SageObject):
         
         INPUT:
         
-        - ``pos1`` -- position of the first index of set 1
+        - ``pos1`` -- position of the first index of set 1 (with the convention 
+          position=0 for the first slot)
         - ``pos2`` -- position of the first index of set 2 = 1 + position of 
           the last index of set 1 (since the two sets are adjacent)
         - ``pos3`` -- 1 + position of the last index of set 2
@@ -721,9 +733,34 @@ class Components(SageObject):
         
         Swap of the two indices of a 2-indices set of components::
         
-            
+            sage: V = VectorSpace(QQ, 3)
+            sage: c = Components(QQ, V.basis(), 2)
+            sage: c[:] = [[1,2,3], [4,5,6], [7,8,9]]
+            sage: c1 = c.swap_adjacent_indices(0,1,2)
+            sage: c[:], c1[:]
+            (
+            [1 2 3]  [1 4 7]
+            [4 5 6]  [2 5 8]
+            [7 8 9], [3 6 9]
+            )
+
         Swap of two pairs of indices on a 4-indices set of components::
             
+            sage: d = c*c1 ; d
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: d1 = d.swap_adjacent_indices(0,2,4)
+            sage: d[0,1,1,2]
+            16
+            sage: d1[1,2,0,1]
+            16
+            sage: d1[0,1,1,2]
+            24
+            sage: d[1,2,0,1]
+            24
 
         """
         result = self._new_instance()
@@ -1015,7 +1052,8 @@ class Components(SageObject):
         
         INPUT:
             
-        - ``pos1`` -- position of the first index for the contraction
+        - ``pos1`` -- position of the first index for the contraction (with the 
+          convention position=0 for the first slot)
         - ``pos2`` -- position of the second index for the contraction
           
         OUTPUT:
@@ -1024,6 +1062,44 @@ class Components(SageObject):
        
         EXAMPLES:
         
+        Self-contraction of a set of components with 2 indices::
+        
+            sage: V = VectorSpace(QQ, 3)
+            sage: c = Components(QQ, V.basis(), 2)
+            sage: c[:] = [[1,2,3], [4,5,6], [7,8,9]]
+            sage: c.self_contract(0,1)
+            15
+            sage: c[0,0] + c[1,1] + c[2,2]  # check
+            15
+
+        Three self-contractions of a set of components with 3 indices::
+        
+            sage: v = Components(QQ, V.basis(), 1)
+            sage: v[:] = (-1,2,3)
+            sage: a = c*v ; a
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s = a.self_contract(0,1) ; s  # contraction on the first two indices
+            1-index components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s[:]
+            [-15, 30, 45]
+            sage: [sum(a[j,j,i] for j in range(3)) for i in range(3)]  # check
+            [-15, 30, 45]
+            sage: s = a.self_contract(0,2) ; s[:]  # contraction on the first and last indices
+            [28, 32, 36]
+            sage: [sum(a[j,i,j] for j in range(3)) for i in range(3)]  # check
+            [28, 32, 36]
+            sage: s = a.self_contract(1,2) ; s[:] # contraction on the last two indices
+            [12, 24, 36]
+            sage: [sum(a[i,j,j] for j in range(3)) for i in range(3)]  # check
+            [12, 24, 36]
 
         """
         if self.nid < 2:
@@ -1064,10 +1140,10 @@ class Components(SageObject):
         INPUT:
             
         - ``pos1`` -- position of the first index (in ``self``) for the 
-          contraction
+          contraction (with the convention position=0 for the first slot)
         - ``other`` -- the set of components to contract with
         - ``pos2`` -- position of the second index (in ``other``) for the 
-          contraction
+          contraction (with the convention position=0 for the first slot)
           
         OUTPUT:
         
@@ -1075,6 +1151,45 @@ class Components(SageObject):
        
         EXAMPLES:
 
+        Contraction of a 1-index set of components with a 2-index one::
+
+            sage: V = VectorSpace(QQ, 3)
+            sage: a = Components(QQ, V.basis(), 1)
+            sage: a[:] = (-1, 2, 3)
+            sage: b = Components(QQ, V.basis(), 2)
+            sage: b[:] = [[1,2,3], [4,5,6], [7,8,9]]
+            sage: s = a.contract(0, b, 0) ; s
+            1-index components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s[:]
+            [28, 32, 36]
+            sage: [sum(a[j]*b[j,i] for j in range(3)) for i in range(3)]  # check
+            [28, 32, 36]
+            sage: s = a.contract(0, b, 1) ; s[:]
+            [12, 24, 36]
+            sage: [sum(a[j]*b[i,j] for j in range(3)) for i in range(3)]  # check
+            [12, 24, 36]
+
+        Consistency check with :meth:`self_contract`::
+
+            sage: a[:] = (1,2,-3)
+            sage: b = a*a ; b   # the tensor product of a with itself
+            fully symmetric 2-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: b[:]
+            [ 1  2 -3]
+            [ 2  4 -6]
+            [-3 -6  9]
+            sage: b.self_contract(0,1)
+            14
+            sage: a.contract(0, a, 0) == b.self_contract(0,1)
+            True
 
         """
         if not isinstance(other, Components):
@@ -1167,7 +1282,7 @@ class Components(SageObject):
         INPUT:
         
         - ``pos`` -- (default: None) tuple of index positions involved in the 
-          symmetrization (with the convention position=0 for the first index); 
+          symmetrization (with the convention position=0 for the first slot); 
           if none, the symmetrization is performed over all the indices
           
         OUTPUT:
@@ -1326,7 +1441,7 @@ class Components(SageObject):
         
         - ``pos`` -- (default: None) tuple of index positions involved in the 
           antisymmetrization (with the convention position=0 for the first 
-          index); if none, the antisymmetrization is performed over all the 
+          slot); if none, the antisymmetrization is performed over all the 
           indices
           
         OUTPUT:
@@ -1524,7 +1639,7 @@ class CompWithSym(Components):
     - ``sym`` -- (default: None) a symmetry or a list of symmetries among the 
       indices: each symmetry is described by a tuple containing the positions 
       of the involved indices, with the convention position=0 for the first
-      index. For instance:
+      slot. For instance:
         * sym=(0,1) for a symmetry between the 1st and 2nd indices 
         * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
           indices and a symmetry between the 2nd, 4th and 5th indices.
@@ -1582,6 +1697,106 @@ class CompWithSym(Components):
         -3
         sage: c[1,0,1,0]  # consequence of the above
         3
+      
+    ARITHMETIC EXAMPLES:
+
+    Addition of a symmetric set of components with a non-symmetric one: the 
+    symmetry is lost::
+    
+        sage: V = VectorSpace(QQ, 3)
+        sage: a = Components(QQ, V.basis(), 2)
+        sage: a[:] = [[1,-2,3], [4,5,-6], [-7,8,9]]
+        sage: b = CompWithSym(QQ, V.basis(), 2, sym=(0,1))  # for demonstration only: it is preferable to declare b = CompFullySym(QQ, V.basis(), 2)
+        sage: b[0,0], b[0,1], b[0,2] = 1, 2, 3
+        sage: b[1,1], b[1,2] = 5, 7
+        sage: b[2,2] = 11
+        sage: s = a + b ; s
+        2-indices components w.r.t. [
+        (1, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1)
+        ]
+        sage: a[:], b[:], s[:]
+        (
+        [ 1 -2  3]  [ 1  2  3]  [ 2  0  6]
+        [ 4  5 -6]  [ 2  5  7]  [ 6 10  1]
+        [-7  8  9], [ 3  7 11], [-4 15 20]
+        )
+        sage: a + b == b + a
+        True
+
+    Addition of two symmetric set of components: the symmetry is preserved::
+    
+        sage: c = CompWithSym(QQ, V.basis(), 2, sym=(0,1)) # for demonstration only: it is preferable to declare c = CompFullySym(QQ, V.basis(), 2)
+        sage: c[0,0], c[0,1], c[0,2] = -4, 7, -8
+        sage: c[1,1], c[1,2] = 2, -4
+        sage: c[2,2] = 2
+        sage: s = b + c ; s
+        2-indices components w.r.t. [
+        (1, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1)
+        ], with symmetry on the index positions (0, 1)
+        sage: b[:], c[:], s[:]
+        (
+        [ 1  2  3]  [-4  7 -8]  [-3  9 -5]
+        [ 2  5  7]  [ 7  2 -4]  [ 9  7  3]
+        [ 3  7 11], [-8 -4  2], [-5  3 13]
+        )
+        sage: b + c == c + b
+        True
+
+    Check of the addition with counterparts not declared symmetric::
+
+        sage: bn = Components(QQ, V.basis(), 2)
+        sage: bn[:] = b[:]
+        sage: bn == b
+        True
+        sage: cn = Components(QQ, V.basis(), 2)
+        sage: cn[:] = c[:]
+        sage: cn == c
+        True
+        sage: bn + cn == b + c
+        True
+        
+    Addition of an antisymmetric set of components with a non-symmetric one: 
+    the antisymmetry is lost::
+    
+        sage: d = CompWithSym(QQ, V.basis(), 2, antisym=(0,1))  # for demonstration only: it is preferable to declare d = CompFullyAntiSym(QQ, V.basis(), 2)
+        sage: d[0,1], d[0,2], d[1,2] = 4, -1, 3
+        sage: s = a + d ; s
+        2-indices components w.r.t. [
+        (1, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1)
+        ]
+        sage: a[:], d[:], s[:]
+        (
+        [ 1 -2  3]  [ 0  4 -1]  [ 1  2  2]
+        [ 4  5 -6]  [-4  0  3]  [ 0  5 -3]
+        [-7  8  9], [ 1 -3  0], [-6  5  9]
+        )
+        sage: d + a == a + d
+        True
+
+    Addition of two antisymmetric set of components: the antisymmetry is preserved::
+    
+        sage: e = CompWithSym(QQ, V.basis(), 2, antisym=(0,1))  # for demonstration only: it is preferable to declare e = CompFullyAntiSym(QQ, V.basis(), 2)
+        sage: e[0,1], e[0,2], e[1,2] = 2, 3, -1
+        sage: s = d + e ; s
+        2-indices components w.r.t. [
+        (1, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1)
+        ], with antisymmetry on the index positions (0, 1)
+        sage: d[:], e[:], s[:]
+        (
+        [ 0  4 -1]  [ 0  2  3]  [ 0  6  2]
+        [-4  0  3]  [-2  0 -1]  [-6  0  2]
+        [ 1 -3  0], [-3  1  0], [-2 -2  0]
+        )
+        sage: e + d == d + e
+        True
         
     """
     def __init__(self, ring, frame, nb_indices, start_index=0, 
@@ -1828,7 +2043,8 @@ class CompWithSym(Components):
         
         INPUT:
         
-        - ``pos1`` -- position of the first index of set 1
+        - ``pos1`` -- position of the first index of set 1 (with the convention 
+          position=0 for the first slot)
         - ``pos2`` -- position of the first index of set 2 = 1 + position of 
           the last index of set 1 (since the two sets are adjacent)
         - ``pos3`` -- 1 + position of the last index of set 2
@@ -1950,7 +2166,6 @@ class CompWithSym(Components):
             # other has no symmetry at all:
             result = Components(self.ring, self.frame, self.nid, 
                                 self.sindex, self.output_formatter)
-#!#       for ind in self.manifold.index_generator(self.nid):
         for ind in result.non_redundant_index_generator():
             result[[ind]] = self[[ind]] + other[[ind]]
         return result
@@ -2003,7 +2218,8 @@ class CompWithSym(Components):
         
         INPUT:
             
-        - ``pos1`` -- position of the first index for the contraction
+        - ``pos1`` -- position of the first index for the contraction (with 
+          the convention position=0 for the first slot)
         - ``pos2`` -- position of the second index for the contraction
           
         OUTPUT:
@@ -2014,16 +2230,97 @@ class CompWithSym(Components):
 
         Self-contraction of symmetric 2-indices components::
         
+            sage: V = VectorSpace(QQ, 3)
+            sage: a = CompFullySym(QQ, V.basis(), 2)
+            sage: a[:] = [[1,2,3],[2,4,5],[3,5,6]]
+            sage: a.self_contract(0,1)
+            11
+            sage: a[0,0] + a[1,1] + a[2,2]
+            11
 
         Self-contraction of antisymmetric 2-indices components::
         
+            sage: b = CompFullyAntiSym(QQ, V.basis(), 2)
+            sage: b[0,1], b[0,2], b[1,2] = (3, -2, 1)
+            sage: b.self_contract(0,1)  # must be zero by antisymmetry
+            0
+
 
         Self-contraction of 3-indices components with one symmetry::
 
+            sage: v = Components(QQ, V.basis(), 1)
+            sage: v[:] = (-2, 4, -8)
+            sage: c = v*b ; c
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (1, 2)
+            sage: s = c.self_contract(0,1) ; s
+            1-index components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s[:]
+            [-28, 2, 8]
+            sage: [sum(v[k]*b[k,i] for k in range(3)) for i in range(3)] # check
+            [-28, 2, 8]
+            sage: s = c.self_contract(1,2) ; s
+            1-index components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s[:] # is zero by antisymmetry 
+            [0, 0, 0]
+            sage: c = b*v ; c
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (0, 1)
+            sage: s = c.self_contract(0,1)
+            sage: s[:]  # is zero by antisymmetry
+            [0, 0, 0]
+            sage: s = c.self_contract(1,2) ; s[:]
+            [28, -2, -8]
+            sage: [sum(b[i,k]*v[k] for k in range(3)) for i in range(3)]  # check 
+            [28, -2, -8]
 
         Self-contraction of 4-indices components with two symmetries::
         
-        
+            sage: c = a*b ; c
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (0, 1), with antisymmetry on the index positions (2, 3)
+            sage: s = c.self_contract(0,1) ; s  # the symmetry on (0,1) is lost:
+            fully antisymmetric 2-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s[:]
+            [  0  33 -22]
+            [-33   0  11]
+            [ 22 -11   0]
+            sage: [[sum(c[k,k,i,j] for k in range(3)) for j in range(3)] for i in range(3)]  # check
+            [[0, 33, -22], [-33, 0, 11], [22, -11, 0]]
+            sage: s = c.self_contract(1,2) ; s  # both symmetries are lost by this contraction
+            2-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s[:]
+            [ 0  0  0]
+            [-2  1  0]
+            [-3  3 -1]
+            sage: [[sum(c[i,k,k,j] for k in range(3)) for j in range(3)] for i in range(3)]  # check
+            [[0, 0, 0], [-2, 1, 0], [-3, 3, -1]]
+
         """ 
         if self.nid < 2:
             raise TypeError("Contraction can be perfomed only on " + 
@@ -2231,7 +2528,7 @@ class CompWithSym(Components):
         INPUT:
         
         - ``pos`` -- (default: None) list of index positions involved in the 
-          symmetrization (with the convention position=0 for the first index); 
+          symmetrization (with the convention position=0 for the first slot); 
           if none, the symmetrization is performed over all the indices
           
         OUTPUT:
@@ -2243,18 +2540,131 @@ class CompWithSym(Components):
         
         Symmetrization of 3-indices components on a 3-dimensional space::
         
-        
+            sage: V = VectorSpace(QQ, 3)
+            sage: c = Components(QQ, V.basis(), 3)
+            sage: c[:] = [[[1,2,3], [4,5,6], [7,8,9]], [[10,11,12], [13,14,15], [16,17,18]], [[19,20,21], [22,23,24], [25,26,27]]]
+            sage: cs = c.symmetrize((0,1)) ; cs
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (0, 1)
+            sage: s = cs.symmetrize() ; s
+            fully symmetric 3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: cs[:], s[:]
+            ([[[1, 2, 3], [7, 8, 9], [13, 14, 15]],
+              [[7, 8, 9], [13, 14, 15], [19, 20, 21]],
+              [[13, 14, 15], [19, 20, 21], [25, 26, 27]]],
+             [[[1, 16/3, 29/3], [16/3, 29/3, 14], [29/3, 14, 55/3]],
+              [[16/3, 29/3, 14], [29/3, 14, 55/3], [14, 55/3, 68/3]],
+              [[29/3, 14, 55/3], [14, 55/3, 68/3], [55/3, 68/3, 27]]])
+            sage: s == c.symmetrize() # should be true
+            True
+            sage: s1 = cs.symmetrize((0,1)) ; s1   # should return a copy of cs
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (0, 1)
+            sage: s1 == cs    # check that s1 is a copy of cs
+            True
+
         Let us now start with a symmetry on the last two indices::
 
+            sage: cs1 = c.symmetrize((1,2)) ; cs1
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (1, 2)
+            sage: s2 = cs1.symmetrize() ; s2
+            fully symmetric 3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s2 == c.symmetrize()
+            True
             
         Partial symmetrization of 4-indices components with an antisymmetry on
         the last two indices::
         
+            sage: a = Components(QQ, V.basis(), 2)
+            sage: a[:] = [[-1,2,3], [4,5,-6], [7,8,9]]
+            sage: b = CompFullyAntiSym(QQ, V.basis(), 2)
+            sage: b[0,1], b[0,2], b[1,2] = (2, 4, 8)
+            sage: c = a*b ; c
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (2, 3)
+            sage: s = c.symmetrize((0,1)) ; s  # symmetrization on the first two indices
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (0, 1), with antisymmetry on the index positions (2, 3)
+            sage: s[0,1,2,1] == (c[0,1,2,1] + c[1,0,2,1]) / 2 # check of the symmetrization
+            True
+            sage: s = c.symmetrize() ; s  # symmetrization over all the indices
+            fully symmetric 4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s == 0    # the full symmetrization results in zero due to the antisymmetry on the last two indices
+            True
+            sage: s = c.symmetrize((2,3)) ; s
+            fully symmetric 4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s == 0    # must be zero since the symmetrization has been performed on the antisymmetric indices
+            True
+            sage: s = c.symmetrize((0,2)) ; s
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (0, 2)
+            sage: s != 0  # s is not zero, but the antisymmetry on (2,3) is lost because the position 2 is involved in the new symmetry
+            True
 
         Partial symmetrization of 4-indices components with an antisymmetry on
         the last three indices::
 
-
+            sage: a = Components(QQ, V.basis(), 1)
+            sage: a[:] = (1, -2, 3)
+            sage: b = CompFullyAntiSym(QQ, V.basis(), 3)
+            sage: b[0,1,2] = 4
+            sage: c = a*b ; c
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (1, 2, 3)
+            sage: s = c.symmetrize((0,1)) ; s
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (0, 1), with antisymmetry on the index positions (2, 3)
+            sage: # Note that the antisymmetry on (1, 2, 3) has been reduced to (2, 3) only
+            sage: s = c.symmetrize((1,2)) ; s
+            fully symmetric 4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s == 0 # because (1,2) are involved in the antisymmetry
+            True
+            
         """
         from sage.groups.perm_gps.permgroup_named import SymmetricGroup
         if pos is None:
@@ -2344,7 +2754,7 @@ class CompWithSym(Components):
         INPUT:
         
         - ``pos`` -- (default: None) list of index positions involved in the 
-          antisymmetrization (with the convention position=0 for the first index); 
+          antisymmetrization (with the convention position=0 for the first slot); 
           if none, the antisymmetrization is performed over all the indices
           
         OUTPUT:
@@ -2356,7 +2766,38 @@ class CompWithSym(Components):
         
         Antisymmetrization of 3-indices components on a 3-dimensional space::
         
-            
+            sage: V = VectorSpace(QQ, 3)
+            sage: a = Components(QQ, V.basis(), 1)
+            sage: a[:] = (-2,1,3)
+            sage: b = CompFullyAntiSym(QQ, V.basis(), 2)
+            sage: b[0,1], b[0,2], b[1,2] = (4,1,2)
+            sage: c = a*b ; c   # tensor product of a by b
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (1, 2)
+            sage: s = c.antisymmetrize() ; s
+            fully antisymmetric 3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: c[:], s[:]
+            ([[[0, -8, -2], [8, 0, -4], [2, 4, 0]],
+              [[0, 4, 1], [-4, 0, 2], [-1, -2, 0]],
+              [[0, 12, 3], [-12, 0, 6], [-3, -6, 0]]],
+             [[[0, 0, 0], [0, 0, 7/3], [0, -7/3, 0]],
+              [[0, 0, -7/3], [0, 0, 0], [7/3, 0, 0]],
+              [[0, 7/3, 0], [-7/3, 0, 0], [0, 0, 0]]])
+            sage: # Check of the antisymmetrization:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == (c[i,j,k]-c[i,k,j]+c[j,k,i]-c[j,i,k]+c[k,i,j]-c[k,j,i])/6,
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+                        
         Partial antisymmetrization::
         
 
