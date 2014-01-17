@@ -154,14 +154,41 @@ EXAMPLES:
         [  0   0   0]
         [  0   0 1/3]
         [  0   0   0]
+    
+    Another example of formatter: the Python built-in function :func:`str`
+    to generate string outputs::
+    
+        sage: b = Components(QQ, V.basis(), 1, output_formatter=str)
+        sage: b[:] = (1, 0, -4)
+        sage: b[:]
+        ['1', '0', '-4']
+        
+    For such a formatter, 2-indices components are no longer displayed as a
+    matrix::
+    
+        sage: b = Components(QQ, basis, 2, output_formatter=str)
+        sage: b[0,1] = 1/3
+        sage: b[:]
+        [['0', '1/3', '0'], ['0', '0', '0'], ['0', '0', '0']]
+
+    But unformatted outputs still are::
+
+        sage: b[[slice(None)]]
+        [  0 1/3   0]
+        [  0   0   0]
+        [  0   0   0]
         
     Internally, the components are stored as a dictionary (:attr:`_comp`) whose
     keys are the indices; only the non-zero components are stored::
 
+        sage: a[:]
+        [0.000000000000000 0.000000000000000 0.000000000000000]
+        [0.000000000000000 0.000000000000000 0.333333333333333]
+        [0.000000000000000 0.000000000000000 0.000000000000000]
         sage: a._comp
         {(1, 2): 1/3}
         sage: v[:] = (-1, 0, 3)
-        sage: v._comp  # random output order of the dictionary elements
+        sage: v._comp  # random output order of the component dictionary
         {(0,): -1, (2,): 3}
         
     In case of symmetries, only non-redundant components are stored::
@@ -211,11 +238,11 @@ class Components(SageObject):
     - ``start_index`` -- (default: 0) first value of a single index; 
       accordingly a component index i must obey
       ``start_index <= i <= start_index + dim - 1``, where ``dim = len(frame)``. 
-    - ``output_formatter`` -- (default: None) 2-argument function or unbound 
+    - ``output_formatter`` -- (default: None) function or unbound 
       method called to format the output of the component access 
-      operator ``[...]`` (method __getitem__); the 1st argument of 
-      ``output_formatter`` must be an instance of ``ring``, and the second some 
-      format.
+      operator ``[...]`` (method __getitem__); ``output_formatter`` must take
+      1 or 2 arguments: the 1st argument must be an instance of ``ring`` and 
+      the second one, if any, some format specification.
       
     EXAMPLES:
 
@@ -311,16 +338,44 @@ class Components(SageObject):
         [  0   0   0]
         [  0   0 1/3]
         [  0   0   0]
+
+    Another example of formatter: the Python built-in function :func:`str`
+    to generate string outputs::
+    
+        sage: b = Components(QQ, V.basis(), 1, output_formatter=str)
+        sage: b[:] = (1, 0, -4)
+        sage: b[:]
+        ['1', '0', '-4']
+        
+    For such a formatter, 2-indices components are no longer displayed as a
+    matrix::
+    
+        sage: b = Components(QQ, basis, 2, output_formatter=str)
+        sage: b[0,1] = 1/3
+        sage: b[:]
+        [['0', '1/3', '0'], ['0', '0', '0'], ['0', '0', '0']]
+
+    But unformatted outputs still are::
+
+        sage: b[[slice(None)]]
+        [  0 1/3   0]
+        [  0   0   0]
+        [  0   0   0]
         
     Internally, the components are stored as a dictionary (:attr:`_comp`) whose
     keys are the indices; only the non-zero components are stored::
 
+        sage: a[:]
+        [0.000000000000000 0.000000000000000 0.000000000000000]
+        [0.000000000000000 0.000000000000000 0.333333333333333]
+        [0.000000000000000 0.000000000000000 0.000000000000000]
         sage: a._comp
         {(1, 2): 1/3}
         sage: v = Components(QQ, basis, 1)
         sage: v[:] = (-1, 0, 3)
-        sage: v._comp  # random output order of the dictionary elements
+        sage: v._comp  # random output order of the component dictionary
         {(0,): -1, (2,): 3}
+        
       
     ARITHMETIC EXAMPLES:
 
@@ -559,11 +614,15 @@ class Components(SageObject):
             if ind in self._comp:
                 if no_format:
                     return self._comp[ind]
+                elif format_type is None:
+                    return self.output_formatter(self._comp[ind])
                 else:
                     return self.output_formatter(self._comp[ind], format_type) 
             else:  # if the value is not stored in self._comp, it is zero:
                 if no_format:
                     return self.ring.zero_element()
+                elif format_type is None:
+                    return self.output_formatter(self.ring.zero_element()) 
                 else:
                     return self.output_formatter(self.ring.zero_element(), 
                                                  format_type) 
@@ -610,7 +669,10 @@ class Components(SageObject):
         resu = [self._gen_list([i], no_format, format_type)
                                                        for i in range(si, nsi)]
         if self.nid == 2:
-            resu = matrix(resu)  # for a nicer output
+            try:
+                resu = matrix(resu)  # for a nicer output
+            except TypeError:
+                pass
         return resu
 
     def _gen_list(self, ind, no_format=True, format_type=None):
@@ -1631,11 +1693,11 @@ class CompWithSym(Components):
     - ``start_index`` -- (default: 0) first value of a single index; 
       accordingly a component index i must obey
       ``start_index <= i <= start_index + dim - 1``, where ``dim = len(frame)``. 
-    - ``output_formatter`` -- (default: None) 2-argument function or unbound 
+    - ``output_formatter`` -- (default: None) function or unbound 
       method called to format the output of the component access 
-      operator ``[...]`` (method __getitem__); the 1st argument of 
-      ``output_formatter`` must be an instance of ``ring``, and the second some 
-      format.
+      operator ``[...]`` (method __getitem__); ``output_formatter`` must take
+      1 or 2 arguments: the 1st argument must be an instance of ``ring`` and 
+      the second one, if any, some format specification.
     - ``sym`` -- (default: None) a symmetry or a list of symmetries among the 
       indices: each symmetry is described by a tuple containing the positions 
       of the involved indices, with the convention position=0 for the first
@@ -1973,6 +2035,8 @@ class CompWithSym(Components):
             if (sign == 0) or (ind not in self._comp): # the value is zero:
                 if no_format:
                     return self.ring.zero_element()
+                elif format_type is None:
+                    return self.output_formatter(self.ring.zero_element())
                 else:
                     return self.output_formatter(self.ring.zero_element(), 
                                                  format_type) 
@@ -1982,13 +2046,18 @@ class CompWithSym(Components):
                         return self._comp[ind]
                     else: # sign = -1
                         return -self._comp[ind]
+                elif format_type is None:
+                    if sign == 1:
+                        return self.output_formatter(self._comp[ind])
+                    else: # sign = -1
+                        return self.output_formatter(-self._comp[ind])
                 else:
                     if sign == 1:
-                        return self._comp[ind].output_formatter(
-                                              self._comp[ind], format_type)
+                        return self.output_formatter(
+                                                 self._comp[ind], format_type)
                     else: # sign = -1
-                        return -self._comp[ind].output_formatter(
-                                              self._comp[ind], format_type)
+                        return self.output_formatter(
+                                                -self._comp[ind], format_type)
 
     def __setitem__(self, indices, value):
         r"""
@@ -2589,7 +2658,65 @@ class CompWithSym(Components):
             ]
             sage: s2 == c.symmetrize()
             True
-            
+    
+        Symmetrization alters pre-existing symmetries: let us symmetrize w.r.t.
+        the index positions (1,2) a set of components that is symmetric w.r.t.
+        the index positions (0,1)::
+
+            sage: cs = c.symmetrize((0,1)) ; cs 
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (0, 1)
+            sage: css = cs.symmetrize((1,2)) 
+            sage: css # the symmetry (0,1) has been lost: 
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (1, 2)
+            sage: css[:]
+            [[[1, 9/2, 8], [9/2, 8, 23/2], [8, 23/2, 15]],
+             [[7, 21/2, 14], [21/2, 14, 35/2], [14, 35/2, 21]],
+             [[13, 33/2, 20], [33/2, 20, 47/2], [20, 47/2, 27]]]
+            sage: cs[:]
+            [[[1, 2, 3], [7, 8, 9], [13, 14, 15]],
+             [[7, 8, 9], [13, 14, 15], [19, 20, 21]],
+             [[13, 14, 15], [19, 20, 21], [25, 26, 27]]]
+            sage: css == c.symmetrize() # css differs from the full symmetrized version
+            False
+            sage: css.symmetrize() == c.symmetrize() # one has to symmetrize css over all indices to recover it
+            True
+
+        Another example of symmetry alteration: symmetrization over (0,1) of 
+        a 4-indices set of components that is symmetric w.r.t. (1,2,3)::
+        
+            sage: v = Components(QQ, V.basis(), 1)
+            sage: v[:] = (-2,1,4)
+            sage: a = v*s ; a
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (1, 2, 3)
+            sage: a1 = a.symmetrize((0,1)) ; a1 # the symmetry (1,2,3) has been reduced to (2,3):
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (0, 1), with symmetry on the index positions (2, 3)
+            sage: a1.sym  # a1 has two distinct symmetries:
+            [(0, 1), (2, 3)]
+            sage: a[0,1,2,0] == a[0,0,2,1]  # a is symmetric w.r.t. positions 1 and 3
+            True
+            sage: a1[0,1,2,0] == a1[0,0,2,1] # a1 is not
+            False
+            sage: a1[0,1,2,0] == a1[1,0,2,0] # but it is symmetric w.r.t. position 0 and 1
+            True
+            sage: a[0,1,2,0] == a[1,0,2,0] # while a is not
+            False
+
         Partial symmetrization of 4-indices components with an antisymmetry on
         the last two indices::
         
@@ -2620,11 +2747,11 @@ class CompWithSym(Components):
             sage: s == 0    # the full symmetrization results in zero due to the antisymmetry on the last two indices
             True
             sage: s = c.symmetrize((2,3)) ; s
-            fully symmetric 4-indices components w.r.t. [
+            4-indices components w.r.t. [
             (1, 0, 0),
             (0, 1, 0),
             (0, 0, 1)
-            ]
+            ], with symmetry on the index positions (2, 3)
             sage: s == 0    # must be zero since the symmetrization has been performed on the antisymmetric indices
             True
             sage: s = c.symmetrize((0,2)) ; s
@@ -2657,12 +2784,12 @@ class CompWithSym(Components):
             ], with symmetry on the index positions (0, 1), with antisymmetry on the index positions (2, 3)
             sage: # Note that the antisymmetry on (1, 2, 3) has been reduced to (2, 3) only
             sage: s = c.symmetrize((1,2)) ; s
-            fully symmetric 4-indices components w.r.t. [
+            4-indices components w.r.t. [
             (1, 0, 0),
             (0, 1, 0),
             (0, 0, 1)
-            ]
-            sage: s == 0 # because (1,2) are involved in the antisymmetry
+            ], with symmetry on the index positions (1, 2)
+            sage: s == 0 # because (1,2) are involved in the original antisymmetry
             True
             
         """
@@ -2682,45 +2809,56 @@ class CompWithSym(Components):
             if pos_set.issubset(set(isym)):
                 return self.copy()
         #
+        # Interference of the new symmetry with existing ones:
+        # 
+        sym_res = [pos]  # starting the list of symmetries of the result
+        for isym in self.sym:
+            inter = pos_set.intersection(set(isym))
+            # if len(inter) == len(isym), isym is included in the new symmetry
+            # and therefore has not to be included in sym_res
+            if len(inter) != len(isym):
+                if len(inter) >= 1: 
+                    # some part of isym is lost
+                    isym_set = set(isym)
+                    for k in inter:
+                        isym_set.remove(k)
+                    if len(isym_set) > 1:
+                        # some part of isym remains and must be included in sym_res:
+                        isym_res = tuple(isym_set)
+                        sym_res.append(isym_res)
+                else:
+                    # case len(inter)=0: no interference: the existing symmetry is
+                    # added to the list of symmetries for the result:
+                    sym_res.append(isym)
+        #
         # Interference of the new symmetry with existing antisymmetries:
         # 
-        antisym_res = []  # list of antisymmetries of the result
+        antisym_res = []  # starting the list of antisymmetries of the result
+        zero_result = False
         for iasym in self.antisym:
             inter = pos_set.intersection(set(iasym))
             if len(inter) > 1: 
                 # If at least two of the symmetry indices are already involved 
-                # in the antisymmetry, the outcome is zero: 
-                return CompFullySym(self.ring, self.frame, self.nid, 
-                                    self.sindex, self.output_formatter)
-                # (Note that a new instance of CompFullySym is initialized to zero)
+                # in the antisymmetry, the outcome is zero:
+                zero_result = True
             elif len(inter) == 1:
                 # some piece of antisymmetry is lost
-                k = inter.pop()  # the symmetry index position involved in the antisymmetry
+                k = inter.pop()  # the symmetry index position involved in the 
+                                 # antisymmetry
                 iasym_set = set(iasym)
                 iasym_set.remove(k)
                 if len(iasym_set) > 1:
                     iasym_res = tuple(iasym_set)
                     antisym_res.append(iasym_res)
-                # len(iasym_set) = 1, the antisymmetry is fully lost, it is 
+                # if len(iasym_set) == 1, the antisymmetry is fully lost, it is 
                 # therefore not appended to antisym_res
             else:
                 # case len(inter)=0: no interference: the antisymmetry is
                 # added to the list of antisymmetries for the result:
                 antisym_res.append(iasym)
         #
-        # Does the new symmetry extend previous ones ? 
+        # Creation of the result object
         #
-        esym_set = pos_set
-        index_esym = []
-        for i, isym in enumerate(self.sym):
-            if not esym_set.isdisjoint(set(isym)): # extension of a previous symmetry
-                esym_set = esym_set.union(set(isym))
-                index_esym.append(i)
-        sym_res = [tuple(esym_set)]
-        for i, isym in enumerate(self.sym):
-            if i not in index_esym:
-                sym_res.append(isym)
-        # Creation of the result object:
         max_sym = 0
         for isym in sym_res:
             max_sym = max(max_sym, len(isym))
@@ -2731,7 +2869,11 @@ class CompWithSym(Components):
             result = CompWithSym(self.ring, self.frame, self.nid, self.sindex,
                                  self.output_formatter, sym=sym_res, 
                                  antisym=antisym_res)
-        # Symmetrization:
+        if zero_result:
+            return result   # since a just created instance is zero
+        #
+        # Symmetrization
+        #
         n_sym = len(pos) # number of indices involved in the symmetry
         sym_group = SymmetricGroup(n_sym)
         for ind in result.non_redundant_index_generator():
@@ -2798,22 +2940,115 @@ class CompWithSym(Components):
             ....:             
             True True True True True True True True True True True True True True True True True True True True True True True True True True True
                         
-        Partial antisymmetrization::
+        Antisymmetrization over already antisymmetric indices does not change anything::
         
+            sage: s1 = s.antisymmetrize((1,2)) ; s1
+            fully antisymmetric 3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s1 == s
+            True
+            sage: c1 = c.antisymmetrize((1,2)) ; c1
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (1, 2)
+            sage: c1 == c
+            True
+
+        But in general, antisymmetrization may alter previous antisymmetries::
+        
+            sage: c2 = c.antisymmetrize((0,1)) ; c2  # the antisymmetry (2,3) is lost: 
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (0, 1)
+            sage: c2 == c  
+            False
+            sage: c = s*a ; c 
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (0, 1, 2)
+            sage: s = c.antisymmetrize((1,3)) ; s
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (1, 3), with antisymmetry on the index positions (0, 2)
+            sage: s.antisym  # the antisymmetry (0,1,2) has been reduced to (0,2), since 1 is involved in the new antisymmetry (1,3):
+            [(1, 3), (0, 2)]
 
         Partial antisymmetrization of 4-indices components with a symmetry on 
         the first two indices::
             
+            sage: a = CompFullySym(QQ, V.basis(), 2)
+            sage: a[:] = [[-2,1,3], [1,0,-5], [3,-5,4]]
+            sage: b = Components(QQ, V.basis(), 2)
+            sage: b[:] = [[1,2,3], [5,7,11], [13,17,19]] 
+            sage: c = a*b ; c
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (0, 1)
+            sage: s = c.antisymmetrize((2,3)) ; s
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with symmetry on the index positions (0, 1), with antisymmetry on the index positions (2, 3)
+            sage: # Some check of the antisymmetrization:
+            sage: for i in range(3):
+            ....:     for j in range(i,3):
+            ....:         print (s[2,2,i,j], s[2,2,i,j] == (c[2,2,i,j] - c[2,2,j,i])/2),
+            ....:         
+            (0, True) (-6, True) (-20, True) (0, True) (-12, True) (0, True)
 
         The full antisymmetrization results in zero because of the symmetry on the 
         first two indices::
         
-            
+            sage: s = c.antisymmetrize() ; s
+            fully antisymmetric 4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s == 0
+            True
+
         Similarly, the partial antisymmetrization on the first two indices results in zero::
         
-            
+            sage: s = c.antisymmetrize((0,1)) ; s
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (0, 1)
+            sage: s == 0
+            True
+
         The partial antisymmetrization on the positions (0,2) destroys the symmetry on (0,1)::
         
+            sage: s = c.antisymmetrize((0,2)) ; s
+            4-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ], with antisymmetry on the index positions (0, 2)
+            sage: s != 0
+            True
+            sage: s[0,1,2,1]
+            27/2
+            sage: s[1,0,2,1]  # the symmetry (0,1) is lost
+            -2
+            sage: s[2,1,0,1]  # the antisymmetry (0,2) holds
+            -27/2
 
         """
         from sage.groups.perm_gps.permgroup_named import SymmetricGroup
@@ -2832,46 +3067,58 @@ class CompWithSym(Components):
             if pos_set.issubset(set(iasym)):
                 return self.copy()
         #
-        # Interference of the new antisymmetry with existing symmetries:
+        # Interference of the new antisymmetry with existing ones
         # 
-        sym_res = []  # list of symmetries of the result
+        antisym_res = [pos]  # starting the list of symmetries of the result
+        for iasym in self.antisym:
+            inter = pos_set.intersection(set(iasym))
+            # if len(inter) == len(iasym), iasym is included in the new 
+            # antisymmetry and therefore has not to be included in antisym_res
+            if len(inter) != len(iasym):
+                if len(inter) >= 1: 
+                    # some part of iasym is lost
+                    iasym_set = set(iasym)
+                    for k in inter:
+                        iasym_set.remove(k)
+                    if len(iasym_set) > 1:
+                        # some part of iasym remains and must be included in 
+                        # antisym_res:
+                        iasym_res = tuple(iasym_set)
+                        antisym_res.append(iasym_res)
+                else:
+                    # case len(inter)=0: no interference: the existing 
+                    # antisymmetry is added to the list of antisymmetries for 
+                    # the result:
+                    antisym_res.append(iasym)
+        #
+        # Interference of the new antisymmetry with existing symmetries
+        # 
+        sym_res = []  # starting the list of symmetries of the result
+        zero_result = False
         for isym in self.sym:
             inter = pos_set.intersection(set(isym))
             if len(inter) > 1: 
-                # If at least two of the antisymmetry indices are already involved 
-                # in the symmetry, the outcome is zero: 
-                return CompFullyAntiSym(self.ring, self.frame, self.nid, 
-                                        self.sindex, self.output_formatter)
-                # (Note that a new instance of CompFullyAntiSym is initialized to zero)
+                # If at least two of the antisymmetry indices are already 
+                # involved in the symmetry, the outcome is zero: 
+                zero_result = True
             elif len(inter) == 1:
                 # some piece of the symmetry is lost
-                k = inter.pop()  # the antisymmetry index position involved in the symmetry
+                k = inter.pop()  # the antisymmetry index position involved in 
+                                 # the symmetry
                 isym_set = set(isym)
                 isym_set.remove(k)
                 if len(isym_set) > 1:
                     isym_res = tuple(isym_set)
                     sym_res.append(isym_res)
-                # len(isym_set) = 1, the symmetry is fully lost, it is 
+                # if len(isym_set) == 1, the symmetry is fully lost, it is 
                 # therefore not appended to sym_res
             else:
                 # case len(inter)=0: no interference: the symmetry is
                 # added to the list of symmetries for the result:
                 sym_res.append(isym)
         #
-        # Does the new antisymmetry extend previous ones ?
+        # Creation of the result object
         #
-        esym_set = pos_set
-        index_esym = []
-        for i, isym in enumerate(self.antisym):
-            if not esym_set.isdisjoint(set(isym)): # extension of a previous symmetry
-                esym_set = esym_set.union(set(isym))
-                index_esym.append(i)
-        antisym_res = [tuple(esym_set)]
-        for i, isym in enumerate(self.antisym):
-            if i not in index_esym:
-                antisym_res.append(isym)
-        #
-        # Creation of the result object:
         max_sym = 0
         for isym in antisym_res:
             max_sym = max(max_sym, len(isym))
@@ -2882,7 +3129,11 @@ class CompWithSym(Components):
             result = CompWithSym(self.ring, self.frame, self.nid, self.sindex,
                                  self.output_formatter, sym=sym_res, 
                                  antisym=antisym_res)
-        # Antisymmetrization:
+        if zero_result:
+            return result   # since a just created instance is zero
+        #
+        # Antisymmetrization
+        #
         n_sym = len(pos) # number of indices involved in the antisymmetry
         sym_group = SymmetricGroup(n_sym)
         for ind in result.non_redundant_index_generator():
@@ -2923,12 +3174,112 @@ class CompFullySym(CompWithSym):
     - ``start_index`` -- (default: 0) first value of a single index; 
       accordingly a component index i must obey
       ``start_index <= i <= start_index + dim - 1``, where ``dim = len(frame)``. 
-    - ``output_formatter`` -- (default: None) 2-argument function or unbound 
+    - ``output_formatter`` -- (default: None) function or unbound 
       method called to format the output of the component access 
-      operator ``[...]`` (method __getitem__); the 1st argument of 
-      ``output_formatter`` must be an instance of ``ring``, and the second some 
-      format.
+      operator ``[...]`` (method __getitem__); ``output_formatter`` must take
+      1 or 2 arguments: the 1st argument must be an instance of ``ring`` and 
+      the second one, if any, some format specification.
       
+    EXAMPLES:
+    
+    Symmetric components with 2 indices on a 3-dimensional space::
+    
+        sage: V = VectorSpace(QQ, 3)
+        sage: c = CompFullySym(QQ, V.basis(), 2)
+        sage: c[0,0], c[0,1], c[1,2] = 1, -2, 3
+        sage: c[:] # note that c[1,0] and c[2,1] have been updated automatically (by symmetry)
+        [ 1 -2  0]
+        [-2  0  3]
+        [ 0  3  0]
+    
+    Internally, only non-redundant and non-zero components are stored::
+
+        sage: c._comp  # random output order of the component dictionary
+        {(0, 0): 1, (0, 1): -2, (1, 2): 3}
+
+    Same thing, but with the starting index set to 1::
+    
+        sage: c1 = CompFullySym(QQ, V.basis(), 2, start_index=1)
+        sage: c1[1,1], c1[1,2], c1[2,3] = 1, -2, 3
+        sage: c1[:]
+        [ 1 -2  0]
+        [-2  0  3]
+        [ 0  3  0]
+    
+    The values stored in ``c`` and ``c1`` are equal::
+    
+        sage: c1[:] == c[:]
+        True
+       
+    but not ``c`` and ``c1``, since their starting indices differ::
+    
+        sage: c1 == c
+        False
+
+    Fully symmetric components with 3 indices on a 3-dimensional space::
+    
+        sage: a = CompFullySym(QQ, V.basis(), 3)
+        sage: a[0,1,2] = 3
+        sage: a[:]
+        [[[0, 0, 0], [0, 0, 3], [0, 3, 0]],
+         [[0, 0, 3], [0, 0, 0], [3, 0, 0]],
+         [[0, 3, 0], [3, 0, 0], [0, 0, 0]]]
+        sage: a[0,1,0] = 4
+        sage: a[:]
+        [[[0, 4, 0], [4, 0, 3], [0, 3, 0]],
+         [[4, 0, 3], [0, 0, 0], [3, 0, 0]],
+         [[0, 3, 0], [3, 0, 0], [0, 0, 0]]]
+    
+    The full symmetry is preserved by the arithmetics::
+    
+        sage: b = CompFullySym(QQ, V.basis(), 3)
+        sage: b[0,0,0], b[0,1,0], b[1,0,2], b[1,2,2] = -2, 3, 1, -5
+        sage: s = a + 2*b ; s
+        fully symmetric 3-indices components w.r.t. [
+        (1, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1)
+        ]
+        sage: a[:], b[:], s[:]
+        ([[[0, 4, 0], [4, 0, 3], [0, 3, 0]],
+          [[4, 0, 3], [0, 0, 0], [3, 0, 0]],
+          [[0, 3, 0], [3, 0, 0], [0, 0, 0]]],
+         [[[-2, 3, 0], [3, 0, 1], [0, 1, 0]],
+          [[3, 0, 1], [0, 0, 0], [1, 0, -5]],
+          [[0, 1, 0], [1, 0, -5], [0, -5, 0]]],
+         [[[-4, 10, 0], [10, 0, 5], [0, 5, 0]],
+          [[10, 0, 5], [0, 0, 0], [5, 0, -10]],
+          [[0, 5, 0], [5, 0, -10], [0, -10, 0]]])
+
+    It is lost if the added object is not fully symmetric::
+    
+        sage: b1 = CompWithSym(QQ, V.basis(), 3, sym=(0,1))  # b1 has only symmetry on index positions (0,1)
+        sage: b1[0,0,0], b1[0,1,0], b1[1,0,2], b1[1,2,2] = -2, 3, 1, -5
+        sage: s = a + 2*b1 ; s  # the result has the same symmetry as b1:
+        3-indices components w.r.t. [
+        (1, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1)
+        ], with symmetry on the index positions (0, 1)
+        sage: a[:], b1[:], s[:]
+        ([[[0, 4, 0], [4, 0, 3], [0, 3, 0]],
+          [[4, 0, 3], [0, 0, 0], [3, 0, 0]],
+          [[0, 3, 0], [3, 0, 0], [0, 0, 0]]],
+         [[[-2, 0, 0], [3, 0, 1], [0, 0, 0]],
+          [[3, 0, 1], [0, 0, 0], [0, 0, -5]],
+          [[0, 0, 0], [0, 0, -5], [0, 0, 0]]],
+         [[[-4, 4, 0], [10, 0, 5], [0, 3, 0]],
+          [[10, 0, 5], [0, 0, 0], [3, 0, -10]],
+          [[0, 3, 0], [3, 0, -10], [0, 0, 0]]])
+        sage: s = 2*b1 + a ; s
+        3-indices components w.r.t. [
+        (1, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1)
+        ], with symmetry on the index positions (0, 1)
+        sage: 2*b1 + a == a + 2*b1  
+        True
+  
     """
     def __init__(self, ring, frame, nb_indices, start_index=0, 
                  output_formatter=None):
@@ -2997,12 +3348,15 @@ class CompFullySym(CompWithSym):
             if ind in self._comp: # non zero value
                 if no_format:
                     return self._comp[ind]
+                elif format_type is None:
+                    return self.output_formatter(self._comp[ind])
                 else:
-                    return self._comp[ind].output_formatter(self._comp[ind], 
-                                                            format_type)
+                    return self.output_formatter(self._comp[ind], format_type)
             else: # the value is zero
                 if no_format:
                     return self.ring.zero_element()
+                elif format_type is None:
+                    return self.output_formatter(self.ring.zero_element()) 
                 else:
                     return self.output_formatter(self.ring.zero_element(), 
                                                  format_type) 
@@ -3097,12 +3451,117 @@ class CompFullyAntiSym(CompWithSym):
     - ``start_index`` -- (default: 0) first value of a single index; 
       accordingly a component index i must obey
       ``start_index <= i <= start_index + dim - 1``, where ``dim = len(frame)``. 
-    - ``output_formatter`` -- (default: None) 2-argument function or unbound 
+    - ``output_formatter`` -- (default: None) function or unbound 
       method called to format the output of the component access 
-      operator ``[...]`` (method __getitem__); the 1st argument of 
-      ``output_formatter`` must be an instance of ``ring``, and the second some 
-      format.
+      operator ``[...]`` (method __getitem__); ``output_formatter`` must take
+      1 or 2 arguments: the 1st argument must be an instance of ``ring`` and 
+      the second one, if any, some format specification.
       
+    EXAMPLES:
+    
+    Antisymmetric components with 2 indices on a 3-dimensional space::
+    
+        sage: V = VectorSpace(QQ, 3)
+        sage: c = CompFullyAntiSym(QQ, V.basis(), 2)
+        sage: c[0,1], c[0,2], c[1,2] = 3, 1/2, -1
+        sage: c[:]  # note that all components have been set according to the antisymmetry
+        [   0    3  1/2]
+        [  -3    0   -1]
+        [-1/2    1    0]
+    
+    Internally, only non-redundant and non-zero components are stored::
+    
+        sage: c._comp # random output order of the component dictionary
+        {(0, 1): 3, (0, 2): 1/2, (1, 2): -1}
+        
+    Same thing, but with the starting index set to 1::
+    
+        sage: c1 = CompFullyAntiSym(QQ, V.basis(), 2, start_index=1)
+        sage: c1[1,2], c1[1,3], c1[2,3] = 3, 1/2, -1
+        sage: c1[:]
+        [   0    3  1/2]
+        [  -3    0   -1]
+        [-1/2    1    0]
+
+    The values stored in ``c`` and ``c1`` are equal::
+    
+        sage: c1[:] == c[:]
+        True
+       
+    but not ``c`` and ``c1``, since their starting indices differ::
+
+        sage: c1 == c
+        False
+        
+    Fully antisymmetric components with 3 indices on a 3-dimensional space::
+    
+        sage: a = CompFullyAntiSym(QQ, V.basis(), 3)
+        sage: a[0,1,2] = 3  # the only independent component in dimension 3
+        sage: a[:]
+        [[[0, 0, 0], [0, 0, 3], [0, -3, 0]],
+         [[0, 0, -3], [0, 0, 0], [3, 0, 0]],
+         [[0, 3, 0], [-3, 0, 0], [0, 0, 0]]]
+         
+    Setting a nonzero value incompatible with the antisymmetry results in an
+    error::
+    
+        sage: a[0,1,0] = 4
+        Traceback (most recent call last):
+        ...
+        ValueError: By antisymmetry, the component cannot have a nonzero value for the indices (0, 1, 0)
+        sage: a[0,1,0] = 0   # OK
+        sage: a[2,0,1] = 3   # OK
+
+    The full antisymmetry is preserved by the arithmetics::
+    
+        sage: b = CompFullyAntiSym(QQ, V.basis(), 3)
+        sage: b[0,1,2] = -4
+        sage: s = a + 2*b ; s
+        fully antisymmetric 3-indices components w.r.t. [
+        (1, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1)
+        ]
+        sage: a[:], b[:], s[:]
+        ([[[0, 0, 0], [0, 0, 3], [0, -3, 0]],
+          [[0, 0, -3], [0, 0, 0], [3, 0, 0]],
+          [[0, 3, 0], [-3, 0, 0], [0, 0, 0]]],
+         [[[0, 0, 0], [0, 0, -4], [0, 4, 0]],
+          [[0, 0, 4], [0, 0, 0], [-4, 0, 0]],
+          [[0, -4, 0], [4, 0, 0], [0, 0, 0]]],
+         [[[0, 0, 0], [0, 0, -5], [0, 5, 0]],
+          [[0, 0, 5], [0, 0, 0], [-5, 0, 0]],
+          [[0, -5, 0], [5, 0, 0], [0, 0, 0]]])
+
+    It is lost if the added object is not fully antisymmetric::
+    
+        sage: b1 = CompWithSym(QQ, V.basis(), 3, antisym=(0,1))  # b1 has only antisymmetry on index positions (0,1)
+        sage: b1[0,1,2] = -4
+        sage: s = a + 2*b1 ; s  # the result has the same symmetry as b1:
+        3-indices components w.r.t. [
+        (1, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1)
+        ], with antisymmetry on the index positions (0, 1)
+        sage: a[:], b1[:], s[:]
+        ([[[0, 0, 0], [0, 0, 3], [0, -3, 0]],
+          [[0, 0, -3], [0, 0, 0], [3, 0, 0]],
+          [[0, 3, 0], [-3, 0, 0], [0, 0, 0]]],
+         [[[0, 0, 0], [0, 0, -4], [0, 0, 0]],
+          [[0, 0, 4], [0, 0, 0], [0, 0, 0]],
+          [[0, 0, 0], [0, 0, 0], [0, 0, 0]]],
+         [[[0, 0, 0], [0, 0, -5], [0, -3, 0]],
+          [[0, 0, 5], [0, 0, 0], [3, 0, 0]],
+          [[0, 3, 0], [-3, 0, 0], [0, 0, 0]]])
+        sage: s = 2*b1 + a ; s
+        3-indices components w.r.t. [
+        (1, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1)
+        ], with antisymmetry on the index positions (0, 1)
+        sage: 2*b1 + a == a + 2*b1
+        True
+
     """
     def __init__(self, ring, frame, nb_indices, start_index=0, 
                  output_formatter=None):
@@ -3179,11 +3638,11 @@ class KroneckerDelta(CompFullySym):
     - ``start_index`` -- (default: 0) first value of a single index; 
       accordingly a component index i must obey
       ``start_index <= i <= start_index + dim - 1``, where ``dim = len(frame)``. 
-    - ``output_formatter`` -- (default: None) 2-argument function or unbound 
+    - ``output_formatter`` -- (default: None) function or unbound 
       method called to format the output of the component access 
-      operator ``[...]`` (method __getitem__); the 1st argument of 
-      ``output_formatter`` must be an instance of ``ring``, and the second some 
-      format.
+      operator ``[...]`` (method __getitem__); ``output_formatter`` must take
+      1 or 2 arguments: the 1st argument must be an instance of ``ring`` and 
+      the second one, if any, some format specification.
 
     EXAMPLES:
 
@@ -3206,10 +3665,26 @@ class KroneckerDelta(CompFullySym):
         ...
         NotImplementedError: The components of a Kronecker delta cannot be changed.        
 
+    Examples of use with output formatters::
+    
+        sage: d = KroneckerDelta(QQ, V.basis(), output_formatter=Rational.numerical_approx)
+        sage: d[:]  # default format (53 bits of precision)
+        [ 1.00000000000000 0.000000000000000 0.000000000000000]
+        [0.000000000000000  1.00000000000000 0.000000000000000]
+        [0.000000000000000 0.000000000000000  1.00000000000000]
+        sage: d[:,10] # format = 10 bits of precision
+        [ 1.0 0.00 0.00]
+        [0.00  1.0 0.00]
+        [0.00 0.00  1.0]
+        sage: d = KroneckerDelta(QQ, V.basis(), output_formatter=str)
+        sage: d[:]
+        [['1', '0', '0'], ['0', '1', '0'], ['0', '0', '1']]
+           
+           
     """
     def __init__(self, ring, frame, start_index=0, output_formatter=None):
         CompFullySym.__init__(self, ring, frame, 2, start_index, 
-                              output_formatter=None)
+                              output_formatter)
         for i in range(self.sindex, self.dim + self.sindex):
             self._comp[(i,i)] = self.ring(1)
 
