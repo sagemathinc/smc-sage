@@ -12,8 +12,8 @@ from rank2field import SymBilinFormField, EndomorphismField, \
     AutomorphismField, IdentityMap
 from diffform import DiffForm, OneForm
 from vectorframe import VectorFrame, CoordFrame, CoFrame, CoordCoFrame
-from comp import Components, CompWithSym, CompFullySym, CompFullyAntiSym, \
-    KroneckerDelta
+#from comp import Components, CompWithSym, CompFullySym, CompFullyAntiSym, \
+#    KroneckerDelta
 #from component import Components, CompWithSym, CompFullySym, CompFullyAntiSym, \
 #    KroneckerDelta
 from metric import Metric, RiemannMetric, LorentzMetric

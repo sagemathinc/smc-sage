@@ -25,6 +25,7 @@ EXAMPLES:
     Set of components with 2 indices on a 3-dimensional vector space, the frame
     being some basis of the vector space::
     
+        sage: from sage.geometry.manifolds.comp import Components
         sage: V = VectorSpace(QQ,3)
         sage: basis = V.basis() ; basis
         [
@@ -193,6 +194,7 @@ EXAMPLES:
         
     In case of symmetries, only non-redundant components are stored::
     
+        sage: from sage.geometry.manifolds.comp import CompFullyAntiSym
         sage: c = CompFullyAntiSym(QQ, basis, 2)
         sage: c[0,1] = 3
         sage: c[:]
@@ -249,6 +251,7 @@ class Components(SageObject):
     Set of components with 2 indices on a 3-dimensional vector space, the frame
     being some basis of the vector space::
 
+        sage: from sage.geometry.manifolds.comp import Components
         sage: V = VectorSpace(QQ,3)
         sage: basis = V.basis() ; basis
         [
@@ -497,6 +500,7 @@ class Components(SageObject):
         
         Copy of a set of components with a single index::
 
+            sage: from sage.geometry.manifolds.comp import Components
             sage: V = VectorSpace(QQ,3)
             sage: a = Components(QQ, V.basis(), 1)
             sage: a[:] = -2, 1, 5
@@ -795,6 +799,7 @@ class Components(SageObject):
         
         Swap of the two indices of a 2-indices set of components::
         
+            sage: from sage.geometry.manifolds.comp import Components
             sage: V = VectorSpace(QQ, 3)
             sage: c = Components(QQ, V.basis(), 2)
             sage: c[:] = [[1,2,3], [4,5,6], [7,8,9]]
@@ -843,6 +848,7 @@ class Components(SageObject):
         
         A just-created set of components is initialized to zero::
         
+            sage: from sage.geometry.manifolds.comp import Components
             sage: V = VectorSpace(QQ,3)
             sage: c = Components(QQ, V.basis(), 1)
             sage: c.is_zero()
@@ -1126,6 +1132,7 @@ class Components(SageObject):
         
         Self-contraction of a set of components with 2 indices::
         
+            sage: from sage.geometry.manifolds.comp import Components
             sage: V = VectorSpace(QQ, 3)
             sage: c = Components(QQ, V.basis(), 2)
             sage: c[:] = [[1,2,3], [4,5,6], [7,8,9]]
@@ -1215,6 +1222,7 @@ class Components(SageObject):
 
         Contraction of a 1-index set of components with a 2-index one::
 
+            sage: from sage.geometry.manifolds.comp import Components
             sage: V = VectorSpace(QQ, 3)
             sage: a = Components(QQ, V.basis(), 1)
             sage: a[:] = (-1, 2, 3)
@@ -1276,6 +1284,7 @@ class Components(SageObject):
         
         Indices on a 3-dimensional vector space::
         
+            sage: from sage.geometry.manifolds.comp import Components
             sage: V = VectorSpace(QQ,3)
             sage: c = Components(QQ, V.basis(), 1)
             sage: for ind in c.index_generator(): print ind,
@@ -1324,6 +1333,7 @@ class Components(SageObject):
         
         Indices on a 3-dimensional vector space::
         
+            sage: from sage.geometry.manifolds.comp import Components
             sage: V = VectorSpace(QQ,3)
             sage: c = Components(QQ, V.basis(), 2)
             sage: for ind in c.non_redundant_index_generator(): print ind,
@@ -1356,6 +1366,7 @@ class Components(SageObject):
         
         Symmetrization of 2-indices components::
         
+            sage: from sage.geometry.manifolds.comp import Components
             sage: V = VectorSpace(QQ, 3)
             sage: c = Components(QQ, V.basis(), 2)
             sage: c[:] = [[1,2,3], [4,5,6], [7,8,9]]
@@ -1515,6 +1526,7 @@ class Components(SageObject):
         
         Antisymmetrization of 2-indices components::
         
+            sage: from sage.geometry.manifolds.comp import Components
             sage: V = VectorSpace(QQ, 3)
             sage: c = Components(QQ, V.basis(), 2)
             sage: c[:] = [[1,2,3], [4,5,6], [7,8,9]]
@@ -1712,6 +1724,7 @@ class CompWithSym(Components):
 
     Symmetric components with 2 indices::
     
+        sage: from sage.geometry.manifolds.comp import Components, CompWithSym
         sage: V = VectorSpace(QQ,3)
         sage: c = CompWithSym(QQ, V.basis(), 2, sym=(0,1))  # for demonstration only: it is preferable to use CompFullySym in this case 
         sage: c[0,1] = 3  
@@ -2128,6 +2141,7 @@ class CompWithSym(Components):
         (1,2) in a set of components antisymmetric with respect to the indices
         in position (1,2)::
         
+            sage: from sage.geometry.manifolds.comp import CompWithSym
             sage: V = VectorSpace(QQ, 3)
             sage: c = CompWithSym(QQ, V.basis(), 3, antisym=(1,2))
             sage: c[0,0,1], c[0,0,2], c[0,1,2] = (1,2,3)
@@ -2299,6 +2313,8 @@ class CompWithSym(Components):
 
         Self-contraction of symmetric 2-indices components::
         
+            sage: from sage.geometry.manifolds.comp import Components, CompWithSym, \
+            ...    CompFullySym, CompFullyAntiSym
             sage: V = VectorSpace(QQ, 3)
             sage: a = CompFullySym(QQ, V.basis(), 2)
             sage: a[:] = [[1,2,3],[2,4,5],[3,5,6]]
@@ -2504,6 +2520,8 @@ class CompWithSym(Components):
         
         Indices on a 2-dimensional space::
         
+            sage: from sage.geometry.manifolds.comp import Components, CompWithSym, \
+            ...    CompFullySym, CompFullyAntiSym
             sage: V = VectorSpace(QQ, 2)
             sage: c = CompFullySym(QQ, V.basis(), 2)
             sage: for ind in c.non_redundant_index_generator(): print ind,
@@ -2609,6 +2627,8 @@ class CompWithSym(Components):
         
         Symmetrization of 3-indices components on a 3-dimensional space::
         
+            sage: from sage.geometry.manifolds.comp import Components, CompWithSym, \
+            ...    CompFullySym, CompFullyAntiSym
             sage: V = VectorSpace(QQ, 3)
             sage: c = Components(QQ, V.basis(), 3)
             sage: c[:] = [[[1,2,3], [4,5,6], [7,8,9]], [[10,11,12], [13,14,15], [16,17,18]], [[19,20,21], [22,23,24], [25,26,27]]]
@@ -2908,6 +2928,8 @@ class CompWithSym(Components):
         
         Antisymmetrization of 3-indices components on a 3-dimensional space::
         
+            sage: from sage.geometry.manifolds.comp import Components, CompWithSym, \
+            ...    CompFullySym, CompFullyAntiSym
             sage: V = VectorSpace(QQ, 3)
             sage: a = Components(QQ, V.basis(), 1)
             sage: a[:] = (-2,1,3)
@@ -3184,6 +3206,7 @@ class CompFullySym(CompWithSym):
     
     Symmetric components with 2 indices on a 3-dimensional space::
     
+        sage: from sage.geometry.manifolds.comp import CompFullySym, CompWithSym
         sage: V = VectorSpace(QQ, 3)
         sage: c = CompFullySym(QQ, V.basis(), 2)
         sage: c[0,0], c[0,1], c[1,2] = 1, -2, 3
@@ -3461,6 +3484,7 @@ class CompFullyAntiSym(CompWithSym):
     
     Antisymmetric components with 2 indices on a 3-dimensional space::
     
+        sage: from sage.geometry.manifolds.comp import CompWithSym, CompFullyAntiSym
         sage: V = VectorSpace(QQ, 3)
         sage: c = CompFullyAntiSym(QQ, V.basis(), 2)
         sage: c[0,1], c[0,2], c[1,2] = 3, 1/2, -1
@@ -3648,6 +3672,7 @@ class KroneckerDelta(CompFullySym):
 
     The Kronecker delta on a 3-dimensional space::
         
+        sage: from sage.geometry.manifolds.comp import KroneckerDelta
         sage: V = VectorSpace(QQ,3)
         sage: d = KroneckerDelta(QQ, V.basis()) ; d
         Kronecker delta of size 3x3
