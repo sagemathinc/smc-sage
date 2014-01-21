@@ -17,6 +17,8 @@ from vectorframe import VectorFrame, CoordFrame, CoFrame, CoordCoFrame
 #from component import Components, CompWithSym, CompFullySym, CompFullyAntiSym, \
 #    KroneckerDelta
 from tensor_free_module import GenFreeModule, TensorFreeModule
+from free_module_tensor import FreeModuleTensor, FreeModuleVector
+from free_module_basis import FreeModuleBasis
 from metric import Metric, RiemannMetric, LorentzMetric
 from connection import AffConnection, LeviCivitaConnection
 from functions import xder, ctr, Lie

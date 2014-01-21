@@ -594,7 +594,7 @@ class TensorField(SageObject):
         if len(index_list) != len(set(index_list)):
             # There is a repeated index position:
             raise IndexError("Incompatible lists of symmetries: the same " + 
-                             "position appears more then once.")
+                             "position appears more than once.")
         # Initialization of derived quantities:
         TensorField._init_derived(self) 
 

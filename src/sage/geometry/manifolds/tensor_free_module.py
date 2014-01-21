@@ -74,7 +74,13 @@ class TensorFreeModule(Module):
             self.latex_name = latex_name
         self.rank = pow(fmodule.rank, self.tensor_type[0] + self.tensor_type[1])
         self.fmodule = fmodule
-        self.fmodule.tensor_modules[self.tensor_type] = self
+        # Unique representation:
+        if self.tensor_type in self.fmodule.tensor_modules:
+            raise TypeError("The module of tensors of type" + 
+                            str(self.tensor_type) + 
+                            " has already been created.")
+        else:
+            self.fmodule.tensor_modules[self.tensor_type] = self
     
     #### Methods required for any Parent 
     def _element_constructor_(self, name=None, latex_name=None):
@@ -143,7 +149,7 @@ class GenFreeModule(TensorFreeModule):
         self.sindex = start_index
         self.known_bases = []  # List of known bases on the free module
         self.def_basis = None # default basis
-        self.changes_of_bases = {} # Dictionary of the changes of bases
+        self.basis_changes = {} # Dictionary of the changes of bases
 
     #### Methods required for any Parent 
     def _element_constructor_(self, name=None, latex_name=None):
@@ -190,6 +196,32 @@ class GenFreeModule(TensorFreeModule):
             self.tensor_modules[(k,l)] = TensorFreeModule(self, (k,l))
         return self.tensor_modules[(k,l)]
 
+    def irange(self, start=None):
+        r"""
+        Single index generator, labelling the elements of a basis.
+                
+        INPUT:
+        
+        - ``start`` -- (default: None) initial value of the index; if none is 
+          provided, ``self.sindex`` is assumed
+
+        OUTPUT:
+        
+        - an iterable index, starting from ``start`` and ending at
+          ``self.sindex + self.dim -1``
+
+        EXAMPLES:
+               
+        """
+        si = self.sindex
+        imax = self.rank + si
+        if start is None:
+            i = si
+        else:
+            i = start
+        while i < imax:
+            yield i
+            i += 1
 
 
 

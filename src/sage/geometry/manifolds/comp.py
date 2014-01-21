@@ -243,7 +243,7 @@ class Components(SageObject):
     - ``output_formatter`` -- (default: None) function or unbound 
       method called to format the output of the component access 
       operator ``[...]`` (method __getitem__); ``output_formatter`` must take
-      1 or 2 arguments: the 1st argument must be an instance of ``ring`` and 
+      1 or 2 arguments: the 1st argument must be an element of ``ring`` and 
       the second one, if any, some format specification.
       
     EXAMPLES:
