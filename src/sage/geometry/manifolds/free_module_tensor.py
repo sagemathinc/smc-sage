@@ -51,10 +51,15 @@ class FreeModuleTensor(ModuleElement):
           arguments and a symmetry between the 2nd, 4th and 5th arguments.
     - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
       among the arguments, with the same convention as for ``sym``. 
+    - ``output_formatter`` -- (default: None) function or unbound 
+      method called to format the output of the component access 
+      function (see :meth:`comp`); ``output_formatter`` must take
+      1 or 2 arguments: the 1st argument must be an element of ``ring`` and 
+      the second one, if any, some format specification.
 
     """
     def __init__(self, fmodule, tensor_type, name=None, latex_name=None,
-                 sym=None, antisym=None):
+                 sym=None, antisym=None, output_formatter=None):
         ModuleElement.__init__(self, fmodule.tensor_module(*tensor_type))
         self.fmodule = fmodule
         self.tensor_type = tuple(tensor_type)
@@ -64,6 +69,7 @@ class FreeModuleTensor(ModuleElement):
             self.latex_name = self.name
         else:
             self.latex_name = latex_name
+        self.output_formatter = output_formatter
         self.components = {}    # components on various bases (not set yet)
         # Treatment of symmetry declarations:
         self.sym = []
@@ -205,19 +211,23 @@ class FreeModuleTensor(ModuleElement):
         """
         if self.sym == [] and self.antisym == []:
             return Components(self.fmodule.ring, basis, self.tensor_rank,
-                              start_index=self.fmodule.sindex)
+                              start_index=self.fmodule.sindex,
+                              output_formatter=self.output_formatter)
         for isym in self.sym:
             if len(isym) == self.tensor_rank:
                 return CompFullySym(self.fmodule.ring, basis, self.tensor_rank,
-                                    start_index=self.fmodule.sindex)
+                                    start_index=self.fmodule.sindex,
+                                    output_formatter=self.output_formatter)
         for isym in self.antisym:
             if len(isym) == self.tensor_rank:
                 return CompFullyAntiSym(self.fmodule.ring, basis, 
                                         self.tensor_rank, 
-                                        start_index=self.fmodule.sindex)
+                                        start_index=self.fmodule.sindex,
+                                        output_formatter=self.output_formatter)
         return CompWithSym(self.fmodule.ring, basis, self.tensor_rank, 
-                           start_index=self.fmodule.sindex, sym=self.sym,
-                           antisym=self.antisym)        
+                           start_index=self.fmodule.sindex, 
+                           output_formatter=self.output_formatter,
+                           sym=self.sym, antisym=self.antisym)        
 
 
     def comp(self, basis=None, from_basis=None):
@@ -413,9 +423,17 @@ class FreeModuleVector(FreeModuleTensor):
     - ``name`` -- (default: None) name given to the vector
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the vector; 
       if none is provided, the LaTeX symbol is set to ``name``
+    - ``output_formatter`` -- (default: None) function or unbound 
+      method called to format the output of the component access 
+      function (see :meth:`comp`); ``output_formatter`` must take
+      1 or 2 arguments: the 1st argument must be an element of ``ring`` and 
+      the second one, if any, some format specification.
     """
-    def __init__(self, fmodule, name=None, latex_name=None):
-        FreeModuleTensor.__init__(self, fmodule, (1,0), name, latex_name)
+    def __init__(self, fmodule, name=None, latex_name=None, 
+                 output_formatter=None):
+        FreeModuleTensor.__init__(self, fmodule, (1,0), name=name, 
+                                  latex_name=latex_name,
+                                  output_formatter=output_formatter)
 
     def _repr_(self):
         r"""
