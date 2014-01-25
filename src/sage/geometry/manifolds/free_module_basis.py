@@ -24,21 +24,27 @@ from sage.structure.sage_object import SageObject
 
 class FreeModuleBasis(SageObject):
     r""" 
-    Basis of a free module over a commutative ring.
+    Basis of a free module over a commutative ring `R`.
     
     INPUT:
     
     - ``fmodule`` -- free module `M` (must be an instance of 
-      :class:`GenFreeModule`)
+      :class:`FiniteFreeModule`)
     - ``symbol`` -- a letter (of a few letters) to denote a generic element of
       the basis
     - ``latex_symbol`` -- (default: None) symbol to denote a generic element of
       the basis; if None, the value of ``symbol`` is used. 
+    - ``output_formatter`` -- (default: None) function or unbound 
+      method called to format the output of the components of an element of 
+      the basis; ``output_formatter`` must take 1 or 2 arguments: the 1st 
+      argument must be an element of the ring `R` and the second one, if any, 
+      some format specification.
 
     EXAMPLES:
 
     """
-    def __init__(self, fmodule, symbol, latex_symbol=None):
+    def __init__(self, fmodule, symbol, latex_symbol=None, 
+                 output_formatter=None):
         from free_module_tensor import FreeModuleVector
         self.fmodule = fmodule
         self.name = "(" + \
@@ -62,12 +68,17 @@ class FreeModuleBasis(SageObject):
         for i in self.fmodule.irange():
             v_name = symbol + "_" + str(i)
             v_symb = latex_symbol + "_" + str(i)
-            v = FreeModuleVector(self.fmodule, v_name, v_symb)
+            v = FreeModuleVector(self.fmodule, name=v_name, latex_name=v_symb, 
+                                 output_formatter=output_formatter)
             for j in self.fmodule.irange():
                 v.set_comp(self)[j] = 0
             v.set_comp(self)[i] = 1
             vl.append(v)
         self.vec = tuple(vl)
+        # The dual basis
+        self.dual_basis = FreeModuleCoBasis(self, symbol, 
+                                            latex_symbol=latex_symbol, 
+                                            output_formatter=output_formatter)
 
     def _repr_(self):
         r"""
@@ -103,7 +114,7 @@ class FreeModuleBasis(SageObject):
         - ``index`` -- the index of the basis element
 
         """
-        n = self.fmodule.rank
+        n = self.fmodule._rank
         si = self.fmodule.sindex
         i = index - si
         if i < 0 or i > n-1:
@@ -116,5 +127,83 @@ class FreeModuleBasis(SageObject):
         r"""
         Return the basis length, i.e. the rank of the free module.
         """
-        return self.fmodule.rank
+        return self.fmodule._rank
 
+
+#******************************************************************************
+
+class FreeModuleCoBasis(SageObject):
+    r""" 
+    Dual basis of a free module over a commutative ring `R`.
+    
+    INPUT:
+    
+    - ``basis`` -- basis of a free module `M` of which ``self`` is the dual 
+      (must be an instance of :class:`FreeModuleBasis`)
+    - ``symbol`` -- a letter (of a few letters) to denote a generic element of
+      the cobasis
+    - ``latex_symbol`` -- (default: None) symbol to denote a generic element of
+      the cobasis; if None, the value of ``symbol`` is used. 
+    - ``output_formatter`` -- (default: None) function or unbound 
+      method called to format the output of the components of an element of the 
+      dual basis;  ``output_formatter`` must take 1 or 2 arguments: 
+      the 1st argument must be an element of the ring `R` and the second one, 
+      if any, some format specification.
+
+    EXAMPLES:
+
+    """
+    def __init__(self, basis, symbol, latex_symbol=None, 
+                 output_formatter=None):
+        from free_module_alt_form import FreeModuleLinForm
+        self.basis = basis
+        self.fmodule = basis.fmodule
+        self.name = "(" + \
+          ",".join([symbol + "^" + str(i) for i in self.fmodule.irange()]) +")"
+        if latex_symbol is None:
+            latex_symbol = symbol
+        self.latex_name = r" ,\left(" + \
+          ",".join([latex_symbol + "^" + str(i) 
+                    for i in self.fmodule.irange()]) + r"\right)"
+        # The individual 1-forms:
+        vl = list()
+        for i in self.fmodule.irange():
+            v_name = symbol + "^" + str(i)
+            v_symb = latex_symbol + "^" + str(i)
+            v = FreeModuleLinForm(self.fmodule, name=v_name, latex_name=v_symb,
+                                  output_formatter=output_formatter)
+            for j in self.fmodule.irange():
+                v.set_comp(basis)[j] = 0
+            v.set_comp(basis)[i] = 1
+            vl.append(v)
+        self.form = tuple(vl)
+        
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+        return "dual basis " + self.name + " on the " + str(self.fmodule)
+
+    def _latex_(self):
+        r"""
+        LaTeX representation of the object.
+        """
+        return self.latex_name
+
+    def __getitem__(self, index):
+        r"""
+        Returns the basis linear form corresponding to a given index.
+        
+        INPUT:
+        
+        - ``index`` -- the index of the linear form 
+
+        """
+        n = self.fmodule._rank
+        si = self.fmodule.sindex
+        i = index - si
+        if i < 0 or i > n-1:
+            raise ValueError("Index out of range: " +
+                              str(i+si) + " not in [" + str(si) + "," +
+                              str(n-1+si) + "]")
+        return self.form[i]

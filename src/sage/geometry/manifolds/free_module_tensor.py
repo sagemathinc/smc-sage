@@ -5,6 +5,28 @@ The class :class:`FreeModuleTensor` implements tensors over a free module `M`,
 i.e. elements of the free module `T^{(k,l)}(M)` of tensors of type (k,l) 
 acting as multilinear forms on `M`. 
 
+A tensor of type `(k,\ell)` is a multilinear map:
+
+.. MATH::
+
+    \underbrace{M^*\times\cdots\times M^*}_{k\ \; \mbox{times}}
+    \times \underbrace{M\times\cdots\times M}_{\ell\ \; \mbox{times}}
+    \longrightarrow R
+    
+where `M^*` stands for the dual of the free module `M` and `R` for the 
+commutative ring over which `M` is defined. The integer `k+\ell`
+is called the tensor rank. 
+
+Various derived classes of :class:`FreeModuleTensor` are devoted to specific 
+tensors:
+
+* :class:`FreeModuleVector` for elements of `M` (vectors), considered as rank-1 
+  contravariant tensors
+* :class:`FreeModuleLinForm`for elements of `M` (linear forms), considered as 
+  rank-1 covariant tensors
+* :class:`FreeModuleAltForm` for alternating forms (fully antisymmetric 
+  covariant tensors)
+
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
@@ -22,6 +44,7 @@ EXAMPLES:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
+from sage.rings.integer import Integer
 from sage.structure.element import ModuleElement  
 #!# or from sage.structure.element import Element
 # to avoid arithmetics defined in ModuleElement ??
@@ -35,8 +58,8 @@ class FreeModuleTensor(ModuleElement):
     
     INPUT:
     
-    - ``fmodule`` -- free module `M` (must be an instance of 
-      :class:`GenFreeModule`)
+    - ``fmodule`` -- free module `M` over a commutative ring `R` (must be an 
+      instance of :class:`FiniteFreeModule`)
     - ``tensor_type`` -- pair (k,l) with k being the contravariant rank and l 
       the covariant rank
     - ``name`` -- (default: None) name given to the tensor
@@ -54,7 +77,7 @@ class FreeModuleTensor(ModuleElement):
     - ``output_formatter`` -- (default: None) function or unbound 
       method called to format the output of the component access 
       function (see :meth:`comp`); ``output_formatter`` must take
-      1 or 2 arguments: the 1st argument must be an element of ``ring`` and 
+      1 or 2 arguments: the 1st argument must be an element of the ring `R` and 
       the second one, if any, some format specification.
 
     """
@@ -143,6 +166,96 @@ class FreeModuleTensor(ModuleElement):
         """
         pass # no derived quantities
 
+    def view(self, basis=None, format_type=None):
+        r"""
+        Displays the tensor in terms of its expansion onto a given basis.
+        
+        The output is either text-formatted (console mode) or LaTeX-formatted
+        (notebook mode). 
+        
+        INPUT:
+                
+        - ``basis`` -- (default: None) basis of the free module with respect to 
+          which the tensor is expanded; if none is provided, the module's 
+          default basis is assumed
+        - ``format_type`` -- (default: None) format specification passed to 
+          ``self.output_formatter`` to format the output.
+
+        EXAMPLES:
+                    
+        """
+        from sage.misc.latex import latex
+        from utilities import is_atomic, FormattedExpansion
+        if basis is None:
+            basis = self.fmodule.def_basis
+        cobasis = basis.dual_basis
+        comp = self.comp(basis)
+        terms_txt = []
+        terms_latex = []
+        n_con = self.tensor_type[0]
+        for ind in comp.index_generator():
+            ind_arg = ind + (format_type,)
+            coef = comp[ind]
+            if coef != 0:
+                bases_txt = []
+                bases_latex = []
+                for k in range(n_con):
+                    bases_txt.append(basis[ind[k]].name)
+                    bases_latex.append(latex(basis[ind[k]]))
+                for k in range(n_con, self.tensor_rank):
+                    bases_txt.append(cobasis[ind[k]].name)
+                    bases_latex.append(latex(cobasis[ind[k]]))
+                basis_term_txt = "*".join(bases_txt)    
+                basis_term_latex = r"\otimes ".join(bases_latex)    
+                if coef == 1:
+                    terms_txt.append(basis_term_txt)
+                    terms_latex.append(basis_term_latex)
+                elif coef == -1:
+                    terms_txt.append("-" + basis_term_txt)
+                    terms_latex.append("-" + basis_term_latex)
+                else:
+                    coef_txt = repr(coef)
+                    coef_latex = latex(coef)
+                    if is_atomic(coef_txt):
+                        terms_txt.append(coef_txt + " " + basis_term_txt)
+                    else:
+                        terms_txt.append("(" + coef_txt + ") " + 
+                                         basis_term_txt)
+                    if is_atomic(coef_latex):
+                        terms_latex.append(coef_latex + basis_term_latex)
+                    else:
+                        terms_latex.append(r"\left(" + coef_latex + r"\right)" + 
+                                           basis_term_latex)
+
+        if terms_txt == []:
+            expansion_txt = "0"
+        else:
+            expansion_txt = terms_txt[0]
+            for term in terms_txt[1:]:
+                if term[0] == "-":
+                    expansion_txt += " - " + term[1:]
+                else:
+                    expansion_txt += " + " + term
+        if terms_latex == []:
+            expansion_latex = "0"
+        else:
+            expansion_latex = terms_latex[0]
+            for term in terms_latex[1:]:
+                if term[0] == "-":
+                    expansion_latex += term
+                else:
+                    expansion_latex += "+" + term
+        result = FormattedExpansion(self)            
+        if self.name is None:
+            result.txt = expansion_txt
+        else:
+            result.txt = self.name + " = " + expansion_txt
+        if self.latex_name is None:
+            result.latex = expansion_latex
+        else:
+            result.latex = latex(self) + " = " + expansion_latex
+        return result
+    
     def symmetries(self):
         r"""
         Print the list of symmetries and antisymmetries.
@@ -151,9 +264,9 @@ class FreeModuleTensor(ModuleElement):
         
         Various symmetries / antisymmetries for a rank-4 tensor::
         
-            sage: from sage.geometry.manifolds.tensor_free_module import GenFreeModule
+            sage: from sage.geometry.manifolds.tensor_free_module import FiniteFreeModule
             sage: from sage.geometry.manifolds.free_module_tensor import FreeModuleTensor
-            sage: M = GenFreeModule(ZZ, 3, name='M')
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
             sage: t = FreeModuleTensor(M, (4,0), 'T') # no symmetry declared
             sage: t.symmetries()
             no symmetry;  no antisymmetry
@@ -418,15 +531,15 @@ class FreeModuleVector(FreeModuleTensor):
     
     INPUT:
     
-    - ``fmodule`` -- free module `M` (must be an instance of 
-      :class:`GenFreeModule`)
+    - ``fmodule`` -- free module `M` over a commutative ring `R` (must be an 
+      instance of :class:`FiniteFreeModule`)
     - ``name`` -- (default: None) name given to the vector
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the vector; 
       if none is provided, the LaTeX symbol is set to ``name``
     - ``output_formatter`` -- (default: None) function or unbound 
       method called to format the output of the component access 
       function (see :meth:`comp`); ``output_formatter`` must take
-      1 or 2 arguments: the 1st argument must be an element of ``ring`` and 
+      1 or 2 arguments: the 1st argument must be an element of the ring `R` and 
       the second one, if any, some format specification.
     """
     def __init__(self, fmodule, name=None, latex_name=None, 
@@ -442,7 +555,7 @@ class FreeModuleVector(FreeModuleTensor):
         description = "element "
         if self.name is not None:
             description += self.name + " " 
-        description += "on the " + str(self.fmodule)
+        description += "of the " + str(self.fmodule)
         return description
 
         
