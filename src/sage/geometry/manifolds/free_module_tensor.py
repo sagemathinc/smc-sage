@@ -2,19 +2,19 @@ r"""
 Tensors on free modules
 
 The class :class:`FreeModuleTensor` implements tensors over a free module `M`,
-i.e. elements of the free module `T^{(k,l)}(M)` of tensors of type (k,l) 
+i.e. elements of the free module `T^{(k,l)}(M)` of tensors of type `(k,l)`
 acting as multilinear forms on `M`. 
 
-A tensor of type `(k,\ell)` is a multilinear map:
+A tensor of type `(k,l)` is a multilinear map:
 
 .. MATH::
 
     \underbrace{M^*\times\cdots\times M^*}_{k\ \; \mbox{times}}
-    \times \underbrace{M\times\cdots\times M}_{\ell\ \; \mbox{times}}
+    \times \underbrace{M\times\cdots\times M}_{l\ \; \mbox{times}}
     \longrightarrow R
     
 where `M^*` stands for the dual of the free module `M` and `R` for the 
-commutative ring over which `M` is defined. The integer `k+\ell`
+commutative ring over which `M` is defined. The integer `k+l`
 is called the tensor rank. 
 
 Various derived classes of :class:`FreeModuleTensor` are devoted to specific 
@@ -33,6 +33,16 @@ AUTHORS:
 
 EXAMPLES:
 
+    A tensor of type (1,1) on a rank-3 free module over `\ZZ`::
+    
+        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: t = M.tensor((1,1), name='t') ; t
+        type-(1,1) tensor t on the rank-3 free module M over the Integer Ring
+        sage: t.parent()
+        free module of type-(1,1) tensors on the rank-3 free module M over the Integer Ring
+        sage: t in M.tensor_module(1,1)
+        True
+    
 """
 #******************************************************************************
 #       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
@@ -51,7 +61,6 @@ from sage.structure.element import ModuleElement
 
 from comp import Components, CompWithSym, CompFullySym, CompFullyAntiSym
 
-
 class FreeModuleTensor(ModuleElement):
     r"""
     Tensor over a free module `M`.
@@ -69,20 +78,32 @@ class FreeModuleTensor(ModuleElement):
       tensor arguments: each symmetry is described by a tuple containing 
       the positions of the involved arguments, with the convention position=0
       for the first argument. For instance:
-        * sym=(0,1) for a symmetry between the 1st and 2nd arguments 
-        * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
-          arguments and a symmetry between the 2nd, 4th and 5th arguments.
+
+       * sym=(0,1) for a symmetry between the 1st and 2nd arguments 
+       * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
+         arguments and a symmetry between the 2nd, 4th and 5th arguments.
+
     - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
       among the arguments, with the same convention as for ``sym``. 
-    - ``output_formatter`` -- (default: None) function or unbound 
-      method called to format the output of the component access 
-      function (see :meth:`comp`); ``output_formatter`` must take
-      1 or 2 arguments: the 1st argument must be an element of the ring `R` and 
-      the second one, if any, some format specification.
 
+    EXAMPLES:
+
+    A tensor of type (1,1) on a rank-3 free module over `\ZZ`::
+    
+        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: t = M.tensor((1,1), name='t') ; t
+        type-(1,1) tensor t on the rank-3 free module M over the Integer Ring
+
+    Tensors are *Element* objects whose parents are tensor free modules::
+    
+        sage: t.parent()
+        free module of type-(1,1) tensors on the rank-3 free module M over the Integer Ring
+        sage: t.parent() is M.tensor_module(1,1)
+        True
+        
     """
     def __init__(self, fmodule, tensor_type, name=None, latex_name=None,
-                 sym=None, antisym=None, output_formatter=None):
+                 sym=None, antisym=None):
         ModuleElement.__init__(self, fmodule.tensor_module(*tensor_type))
         self.fmodule = fmodule
         self.tensor_type = tuple(tensor_type)
@@ -92,7 +113,6 @@ class FreeModuleTensor(ModuleElement):
             self.latex_name = self.name
         else:
             self.latex_name = latex_name
-        self.output_formatter = output_formatter
         self.components = {}    # components on various bases (not set yet)
         # Treatment of symmetry declarations:
         self.sym = []
@@ -132,16 +152,14 @@ class FreeModuleTensor(ModuleElement):
         # Initialization of derived quantities:
         FreeModuleTensor._init_derived(self) 
 
-
     def _repr_(self):
         r"""
         String representation of the object.
         """
-        description = "tensor "
-        if self.name is not None:
-            description += self.name + " " 
-        description += "of type (%s,%s)" % \
+        description = "type-(%s,%s) tensor" % \
                            (str(self.tensor_type[0]), str(self.tensor_type[1]))
+        if self.name is not None:
+            description += " " + self.name
         description += " on the " + str(self.fmodule)
         return description
 
@@ -166,7 +184,7 @@ class FreeModuleTensor(ModuleElement):
         """
         pass # no derived quantities
 
-    def view(self, basis=None, format_type=None):
+    def view(self, basis=None, format_spec=None):
         r"""
         Displays the tensor in terms of its expansion onto a given basis.
         
@@ -178,8 +196,8 @@ class FreeModuleTensor(ModuleElement):
         - ``basis`` -- (default: None) basis of the free module with respect to 
           which the tensor is expanded; if none is provided, the module's 
           default basis is assumed
-        - ``format_type`` -- (default: None) format specification passed to 
-          ``self.output_formatter`` to format the output.
+        - ``format_spec`` -- (default: None) format specification passed to 
+          ``self.fmodule.output_formatter`` to format the output.
 
         EXAMPLES:
                     
@@ -194,8 +212,8 @@ class FreeModuleTensor(ModuleElement):
         terms_latex = []
         n_con = self.tensor_type[0]
         for ind in comp.index_generator():
-            ind_arg = ind + (format_type,)
-            coef = comp[ind]
+            ind_arg = ind + (format_spec,)
+            coef = comp[ind_arg]
             if coef != 0:
                 bases_txt = []
                 bases_latex = []
@@ -312,7 +330,18 @@ class FreeModuleTensor(ModuleElement):
         else:
             self.latex_name = latex_name
        
-    
+    def _new_instance(self):
+        r"""
+        Create a :class:`FreeModuleTensor` instance of the same tensor type and 
+        with the same symmetries.
+
+        This method must be redefined by derived classes of 
+        :class:`FreeModuleTensor`.
+        
+        """
+        return FreeModuleTensor(self.fmodule, self.tensor_type, sym=self.sym, 
+                                antisym=self.antisym)
+
     def _new_comp(self, basis): 
         r"""
         Create some components in the given basis. 
@@ -322,26 +351,25 @@ class FreeModuleTensor(ModuleElement):
         :class:`Components`.
         
         """
+        fmodule = self.fmodule  # the base free module
         if self.sym == [] and self.antisym == []:
-            return Components(self.fmodule.ring, basis, self.tensor_rank,
-                              start_index=self.fmodule.sindex,
-                              output_formatter=self.output_formatter)
+            return Components(fmodule.ring, basis, self.tensor_rank,
+                              start_index=fmodule.sindex,
+                              output_formatter=fmodule.output_formatter)
         for isym in self.sym:
             if len(isym) == self.tensor_rank:
-                return CompFullySym(self.fmodule.ring, basis, self.tensor_rank,
-                                    start_index=self.fmodule.sindex,
-                                    output_formatter=self.output_formatter)
+                return CompFullySym(fmodule.ring, basis, self.tensor_rank,
+                                    start_index=fmodule.sindex,
+                                    output_formatter=fmodule.output_formatter)
         for isym in self.antisym:
             if len(isym) == self.tensor_rank:
-                return CompFullyAntiSym(self.fmodule.ring, basis, 
-                                        self.tensor_rank, 
-                                        start_index=self.fmodule.sindex,
-                                        output_formatter=self.output_formatter)
-        return CompWithSym(self.fmodule.ring, basis, self.tensor_rank, 
-                           start_index=self.fmodule.sindex, 
-                           output_formatter=self.output_formatter,
+                return CompFullyAntiSym(fmodule.ring, basis, self.tensor_rank, 
+                                        start_index=fmodule.sindex,
+                                     output_formatter=fmodule.output_formatter)
+        return CompWithSym(fmodule.ring, basis, self.tensor_rank, 
+                           start_index=fmodule.sindex, 
+                           output_formatter=fmodule.output_formatter,
                            sym=self.sym, antisym=self.antisym)        
-
 
     def comp(self, basis=None, from_basis=None):
         r"""
@@ -447,6 +475,8 @@ class FreeModuleTensor(ModuleElement):
         
 
         """
+        if self is self.parent()._zero_element: #!# this is maybe not very efficient
+            raise ValueError("The zero element cannot be changed.")
         if basis is None: 
             basis = self.fmodule.def_basis
         if basis not in self.components:
@@ -513,7 +543,43 @@ class FreeModuleTensor(ModuleElement):
         for other_basis in to_be_deleted:
             del self.components[other_basis]
 
+    def __getitem__(self, indices):
+        r"""
+        Return a component w.r.t. the free module's default basis.
 
+        INPUT:
+        
+        - ``indices`` -- list of indices defining the component
+    
+        """
+        return self.comp()[indices]
+        
+    def __setitem__(self, indices, value):
+        r"""
+        Set a component w.r.t. the free module's default basis.
+
+        INPUT:
+        
+        - ``indices`` -- list of indices defining the component
+    
+        """        
+        self.set_comp()[indices] = value
+
+
+    def copy(self):
+        r"""
+        Returns an exact copy of ``self``.
+        
+        The name and the derived quantities are not copied. 
+        
+        EXAMPLES:
+        """
+        resu = self._new_instance()
+        for basis, comp in self.components.items():
+             resu.components[basis] = comp.copy()
+        return resu
+
+        
 #******************************************************************************
 
 # From sage/modules/module.pyx:
@@ -536,17 +602,11 @@ class FreeModuleVector(FreeModuleTensor):
     - ``name`` -- (default: None) name given to the vector
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the vector; 
       if none is provided, the LaTeX symbol is set to ``name``
-    - ``output_formatter`` -- (default: None) function or unbound 
-      method called to format the output of the component access 
-      function (see :meth:`comp`); ``output_formatter`` must take
-      1 or 2 arguments: the 1st argument must be an element of the ring `R` and 
-      the second one, if any, some format specification.
+
     """
-    def __init__(self, fmodule, name=None, latex_name=None, 
-                 output_formatter=None):
+    def __init__(self, fmodule, name=None, latex_name=None):
         FreeModuleTensor.__init__(self, fmodule, (1,0), name=name, 
-                                  latex_name=latex_name,
-                                  output_formatter=output_formatter)
+                                  latex_name=latex_name)
 
     def _repr_(self):
         r"""
@@ -558,6 +618,16 @@ class FreeModuleVector(FreeModuleTensor):
         description += "of the " + str(self.fmodule)
         return description
 
-        
+    def _new_comp(self, basis): 
+        r"""
+        Create some components in the given basis. 
+              
+        This method, which is already implemented in 
+        :meth:`FreeModuleTensor._new_comp`, is redefined here for efficiency
+        """
+        fmodule = self.fmodule  # the base free module
+        return Components(fmodule.ring, basis, 1, start_index=fmodule.sindex,
+                          output_formatter=fmodule.output_formatter)
+
 
         

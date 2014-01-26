@@ -38,7 +38,7 @@ EXAMPLES:
     Set of all tensors of type (1,2) defined on the module M::
     
         sage: T = M.tensor_module(1,2) ; T
-        free module of type (1,2) tensors on the rank-3 free module M over the Integer Ring
+        free module of type-(1,2) tensors on the rank-3 free module M over the Integer Ring
         sage: T.category()
         Category of modules over Integer Ring
         sage: T.rank()
@@ -49,6 +49,14 @@ EXAMPLES:
         sage: M is M.tensor_module(1,0)
         True
 
+    If the base ring is a field, the free module is in the category of vector 
+    spaces::
+    
+        sage: M = FiniteFreeModule(QQ, 3, name='M') ; M
+        rank-3 free module M over the Rational Field
+        sage: M.category()
+        Category of vector spaces over Rational Field
+  
 """
 #******************************************************************************
 #       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
@@ -120,7 +128,7 @@ class TensorFreeModule(Module):
     
         sage: M = FiniteFreeModule(ZZ, 3, name='M')
         sage: T = TensorFreeModule(M, (1,2)) ; T
-        free module of type (1,2) tensors on the rank-3 free module M over the Integer Ring
+        free module of type-(1,2) tensors on the rank-3 free module M over the Integer Ring
         
     T is a module (actually a free module) over `\ZZ`::
     
@@ -135,7 +143,7 @@ class TensorFreeModule(Module):
     :class:`FreeModuleTensor`::
 
         sage: t = T.an_element() ; t
-        tensor of type (1,2) on the rank-3 free module M over the Integer Ring
+        type-(1,2) tensor on the rank-3 free module M over the Integer Ring
         sage: from sage.geometry.manifolds.free_module_tensor import FreeModuleTensor
         sage: isinstance(t, FreeModuleTensor)
         True
@@ -143,7 +151,49 @@ class TensorFreeModule(Module):
         True
         sage: T.is_parent_of(t)
         True
-  
+
+    Elements can be constructed by means of the __call__ operator acting 
+    on the parent; 0 yields the zero element::
+        
+        sage: T(0)
+        type-(1,2) tensor zero on the rank-3 free module M over the Integer Ring
+        sage: T(0) is T.zero()
+        True
+        
+    Non-zero elements are constructed by providing their components in 
+    a given basis::
+    
+        sage: e = M.new_basis('e') ; e
+        basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+        sage: comp = [[[i-j+k for k in range(3)] for j in range(3)] for i in range(3)]
+        sage: t = T(comp, basis=e, name='t') ; t
+        type-(1,2) tensor t on the rank-3 free module M over the Integer Ring
+        sage: t.comp(e)[:]
+        [[[0, 1, 2], [-1, 0, 1], [-2, -1, 0]],
+         [[1, 2, 3], [0, 1, 2], [-1, 0, 1]],
+         [[2, 3, 4], [1, 2, 3], [0, 1, 2]]]
+        sage: t.view(e)
+        t = e_0*e^0*e^1 + 2 e_0*e^0*e^2 - e_0*e^1*e^0 + e_0*e^1*e^2 - 2 e_0*e^2*e^0 - e_0*e^2*e^1 + e_1*e^0*e^0 + 2 e_1*e^0*e^1 + 3 e_1*e^0*e^2 + e_1*e^1*e^1 + 2 e_1*e^1*e^2 - e_1*e^2*e^0 + e_1*e^2*e^2 + 2 e_2*e^0*e^0 + 3 e_2*e^0*e^1 + 4 e_2*e^0*e^2 + e_2*e^1*e^0 + 2 e_2*e^1*e^1 + 3 e_2*e^1*e^2 + e_2*e^2*e^1 + 2 e_2*e^2*e^2
+
+    An alternative is to construct the tensor from an empty list of components
+    and to set the nonzero components afterwards::
+    
+        sage: t = T([], name='t')
+        sage: t.set_comp(e)[0,1,1] = -3
+        sage: t.set_comp(e)[2,0,1] = 4
+        sage: t.view(e)
+        t = -3 e_0*e^1*e^1 + 4 e_2*e^0*e^1
+    
+    See the documentation of :class:`FreeModuleTensor` for the full list of
+    arguments that can be provided to the __call__ operator. For instance, to
+    contruct a tensor symmetric with respect to the last two indices::
+    
+        sage: t = T([], name='t', sym=(1,2))
+        sage: t.set_comp(e)[0,1,1] = -3
+        sage: t.set_comp(e)[2,0,1] = 4
+        sage: t.view(e)  # notice that t^2_{10} has be set equal to t^2_{01} by symmetry
+        t = -3 e_0*e^1*e^1 + 4 e_2*e^0*e^1 + 4 e_2*e^1*e^0
+    
     The tensor modules over a given module `M` are unique::
     
         sage: T is M.tensor_module(1,2)
@@ -154,11 +204,11 @@ class TensorFreeModule(Module):
     :meth:`FiniteFreeModule.tensor_module` of the base module::
     
         sage: T = M.tensor_module(1,2) ; T
-        free module of type (1,2) tensors on the rank-3 free module M over the Integer Ring
+        free module of type-(1,2) tensors on the rank-3 free module M over the Integer Ring
         sage: F = M.tensor_module(0,1) ; F
-        free module of type (0,1) tensors on the rank-3 free module M over the Integer Ring
+        free module of type-(0,1) tensors on the rank-3 free module M over the Integer Ring
         
-    The base module itself is considered as the set of type (1,0) tensors::
+    The base module itself is considered as the set of type-(1,0) tensors::
     
         sage: M is M.tensor_module(1,0)
         True
@@ -184,14 +234,27 @@ class TensorFreeModule(Module):
                             " has already been created.")
         else:
             self.fmodule.tensor_modules[self.tensor_type] = self
+        # Zero element:
+        ze = self._element_constructor_(name='zero', latex_name='0')
+        for basis in self.fmodule.known_bases:
+            ze.components[basis] = ze._new_comp(basis)
+            # since a just-created set of components is initialized to zero
+        self._zero_element = ze
     
     #### Methods required for any Parent 
-    def _element_constructor_(self, name=None, latex_name=None):
+    def _element_constructor_(self, comp=[], basis=None, name=None, 
+                              latex_name=None, sym=None, antisym=None):
         r"""
         Construct a tensor
         """
-        return self.element_class(self.fmodule, self.tensor_type, name, 
-                                  latex_name)
+        if comp == 0:
+            return self._zero_element
+        resu = self.element_class(self.fmodule, self.tensor_type, name=name, 
+                                  latex_name=latex_name, sym=sym, 
+                                  antisym=antisym)
+        if comp != []:
+            resu.set_comp(basis)[:] = comp
+        return resu
 
     def _an_element_(self):
         r"""
@@ -208,7 +271,7 @@ class TensorFreeModule(Module):
         description = "free module "
         if self.name is not None:
             description += self.name + " "
-        description += "of type (%s,%s)" % \
+        description += "of type-(%s,%s)" % \
                            (str(self.tensor_type[0]), str(self.tensor_type[1]))
         description += " tensors on the " + str(self.fmodule)
         return description
@@ -225,9 +288,71 @@ class TensorFreeModule(Module):
     def rank(self):
         r"""
         Return the rank of the free module ``self``.
+        
+        EXAMPLES:
+        
+        Rank of free modules over `\ZZ`::
+        
+            sage: M = FiniteFreeModule(ZZ, 3)
+            sage: M.rank()
+            3
+            sage: M.tensor_module(0,1).rank()
+            3
+            sage: M.tensor_module(0,2).rank()
+            9
+            sage: M.tensor_module(1,0).rank()
+            3
+            sage: M.tensor_module(1,1).rank()
+            9
+            sage: M.tensor_module(1,2).rank()
+            27
+            sage: M.tensor_module(2,2).rank()
+            81
+
         """
         return self._rank
         
+    def zero(self):
+        r"""
+        Return the zero element.
+        
+        EXAMPLES:
+        
+        Zero elements of free modules over `\ZZ`::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: M.zero()
+            element zero of the rank-3 free module M over the Integer Ring
+            sage: M.zero().parent() is M
+            True
+            sage: M.zero() is M(0)
+            True
+            sage: T = M.tensor_module(1,1)
+            sage: T.zero()
+            type-(1,1) tensor zero on the rank-3 free module M over the Integer Ring
+            sage: T.zero().parent() is T
+            True
+            sage: T.zero() is T(0)
+            True
+
+        Components of the zero element with respect to some basis::
+        
+            sage: e = M.new_basis('e')
+            sage: M.zero().comp(e)[:]
+            [0, 0, 0]
+            sage: for i in M.irange(): print M.zero().comp(e)[i] == M.base_ring().zero(),
+            True True True
+            sage: T.zero().comp(e)[:]
+            [0 0 0]
+            [0 0 0]
+            [0 0 0]
+            sage: M.tensor_module(1,2).zero().comp(e)[:]
+            [[[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+             [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+             [[0, 0, 0], [0, 0, 0], [0, 0, 0]]]
+
+        """
+        return self._zero_element
 
 #******************************************************************************
 
@@ -261,6 +386,11 @@ class FiniteFreeModule(TensorFreeModule):
       module; if none is provided, it is set to ``name``
     - ``start_index`` -- (integer; default: 0) lower bound of the range of 
       indices in bases defined on the free module
+    - ``output_formatter`` -- (default: None) function or unbound 
+      method called to format the output of the tensor components; 
+      ``output_formatter`` must take 1 or 2 arguments: the 1st argument must be
+      an element of the ring `R` and  the second one, if any, some format 
+      specification.
 
     EXAMPLES:
     
@@ -297,7 +427,43 @@ class FiniteFreeModule(TensorFreeModule):
         True
         sage: M.is_parent_of(v)
         True
+
+    Elements can be constructed by means of the __call__ operator acting 
+    on the parent; 0 yields the zero element::
         
+        sage: M(0)
+        element zero of the rank-3 free module M over the Integer Ring
+        sage: M(0) is M.zero()
+        True
+        
+    Non-zero elements are constructed by providing their components in 
+    a given basis::
+    
+        sage: e = M.new_basis('e') ; e
+        basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+        sage: v = M([-1,0,3]) ; v  # components in the default basis (e)
+        element of the rank-3 free module M over the Integer Ring
+        sage: v.view()
+        -e_0 + 3 e_2
+        sage: f = M.new_basis('f')
+        sage: v = M([-1,0,3], basis=f) ; v  # components in a specific basis
+        element of the rank-3 free module M over the Integer Ring
+        sage: v.view(f)
+        -f_0 + 3 f_2
+        sage: v = M([-1,0,3], basis=f, name='v') ; v
+        element v of the rank-3 free module M over the Integer Ring
+        sage: v.view(f)
+        v = -f_0 + 3 f_2
+
+    An alternative is to construct the element from an empty list of components
+    and to set the nonzero components afterwards::
+    
+        sage: v = M([], name='v')
+        sage: v.set_comp(e)[0] = -1
+        sage: v.set_comp(e)[2] = 3
+        sage: v.view(e)
+        v = -e_0 + 3 e_2
+
     M is in the category of modules over `\ZZ`::
 
         sage: M.category()
@@ -319,27 +485,48 @@ class FiniteFreeModule(TensorFreeModule):
         sage: for i in M.irange(): print i,
         1 2 3
 
+    The parameter ``output_formatter`` in the constructor of the free module
+    is used to set the output format of tensor components::
+    
+        sage: M = FiniteFreeModule(QQ, 3, output_formatter=Rational.numerical_approx)
+        sage: e = M.new_basis('e')
+        sage: v = M([1/3, 0, -2], basis=e)
+        sage: v.comp(e)[:]
+        [0.333333333333333, 0.000000000000000, -2.00000000000000]
+        sage: v.view(e)  # default format (53 bits of precision)
+        0.333333333333333 e_0 - 2.00000000000000 e_2
+        sage: v.view(e, format_spec=10)  # 10 bits of precision 
+        0.33 e_0 - 2.0 e_2
+
     """
     
     Element = FreeModuleVector
     
-    def __init__(self, ring, rank, name=None, latex_name=None, start_index=0):
+    def __init__(self, ring, rank, name=None, latex_name=None, start_index=0,
+                 output_formatter=None):
         self.ring = ring
         self._rank = rank 
+        self.sindex = start_index
+        self.output_formatter = output_formatter
         self.tensor_modules = {} # Dictionary of the tensor modules built on 
                                  # self (dict. keys = (k,l) --the tensor type)
-        TensorFreeModule.__init__(self, self, (1,0), name, latex_name)
-        self.sindex = start_index
         self.known_bases = []  # List of known bases on the free module
         self.def_basis = None # default basis
         self.basis_changes = {} # Dictionary of the changes of bases
+        TensorFreeModule.__init__(self, self, (1,0), name, latex_name)
 
     #### Methods required for any Parent 
-    def _element_constructor_(self, name=None, latex_name=None):
+    def _element_constructor_(self, comp=[], basis=None, name=None, 
+                              latex_name=None):
         r"""
-        Construct a element of the module
+        Construct an element of the module
         """
-        return self.element_class(self, name, latex_name)
+        if comp == 0:
+            return self._zero_element
+        resu = self.element_class(self, name=name, latex_name=latex_name)
+        if comp != []:
+            resu.set_comp(basis)[:] = comp
+        return resu
 
     def _an_element_(self):
         r"""
@@ -373,9 +560,29 @@ class FiniteFreeModule(TensorFreeModule):
         
         OUTPUT:
         
-        - the free module `T^{(k,l)}(M)` of tensors of type (k,l) acting as 
-          multilinear forms on the free module ``self``. 
-          
+        - instance of :class:`TensorFreeModule` representing the free module 
+          `T^{(k,l)}(M)` of type-`(k,l)` tensors on the free module ``self``. 
+        
+        EXAMPLES:
+        
+        Tensor modules over a free module over `\ZZ`::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: T = M.tensor_module(1,2) ; T
+            free module of type-(1,2) tensors on the rank-3 free module M over the Integer Ring
+            sage: T.an_element()
+            type-(1,2) tensor on the rank-3 free module M over the Integer Ring
+            
+        Tensor modules are unique::
+        
+            sage: M.tensor_module(1,2) is T
+            True
+
+        The base module is itself the module of all type-(1,0) tensors::
+        
+            sage: M.tensor_module(1,0) is M
+            True
+        
         """
         if (k,l) not in self.tensor_modules:
             self.tensor_modules[(k,l)] = TensorFreeModule(self, (k,l))
@@ -396,7 +603,25 @@ class FiniteFreeModule(TensorFreeModule):
           ``self.sindex + self.rank() -1``
 
         EXAMPLES:
-               
+        
+        Index range on a rank-3 module::
+        
+            sage: M = FiniteFreeModule(ZZ, 3)
+            sage: for i in M.irange(): print i,
+            0 1 2
+            sage: for i in M.irange(start=1): print i,
+            1 2
+
+        The default starting value corresponds to the parameter ``start_index``
+        provided at the module construction (the default value being 0)::
+        
+            sage: M1 = FiniteFreeModule(ZZ, 3, start_index=1)
+            sage: for i in M1.irange(): print i,
+            1 2 3
+            sage: M2 = FiniteFreeModule(ZZ, 3, start_index=-4)
+            sage: for i in M2.irange(): print i,
+            -4 -3 -2
+
         """
         si = self.sindex
         imax = self._rank + si
@@ -408,3 +633,116 @@ class FiniteFreeModule(TensorFreeModule):
             yield i
             i += 1
 
+    def new_basis(self, symbol, latex_symbol=None):
+        r""" 
+        Define a basis of the free module.
+        
+        INPUT:
+        
+        - ``symbol`` -- (string) a letter (of a few letters) to denote a 
+          generic element of the basis
+        - ``latex_symbol`` -- (string; default: None) symbol to denote a 
+          generic element of the basis; if None, the value of ``symbol`` is 
+          used. 
+
+        OUTPUT:
+        
+        - instance of :class:`FreeModuleBasis` representing a basis on ``self``.
+        
+        EXAMPLES:
+        
+        Bases on a rank-3 free module::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: e = M.new_basis('e') ; e
+            basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+            sage: e[0]
+            element e_0 of the rank-3 free module M over the Integer Ring
+            sage: latex(e)
+            \left(e_0,e_1,e_2\right)
+
+        The LaTeX symbol can be set explicitely, as the second argument of
+        :meth:`new_basis`::
+        
+            sage: eps = M.new_basis('eps', r'\epsilon') ; eps
+            basis (eps_0,eps_1,eps_2) on the rank-3 free module M over the Integer Ring
+            sage: latex(eps)
+            \left(\epsilon_0,\epsilon_1,\epsilon_2\right)
+            
+        The individual elements of the basis are labelled according the 
+        parameter ``start_index`` provided at the free module construction::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
+            sage: e = M.new_basis('e') ; e
+            basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring
+            sage: e[1]
+            element e_1 of the rank-3 free module M over the Integer Ring
+    
+        """
+        from free_module_basis import FreeModuleBasis
+        return FreeModuleBasis(self, symbol, latex_symbol)
+    
+    def tensor(self, tensor_type, name=None, latex_name=None, sym=None, 
+               antisym=None):
+        r"""
+        Construct a tensor on the free module. 
+        
+        INPUT:
+        
+        - ``tensor_type`` -- pair (k,l) with k being the contravariant rank and l 
+          the covariant rank
+        - ``name`` -- (default: None) name given to the tensor
+        - ``latex_name`` -- (default: None) LaTeX symbol to denote the tensor; 
+          if none is provided, the LaTeX symbol is set to ``name``
+        - ``sym`` -- (default: None) a symmetry or a list of symmetries among the 
+          tensor arguments: each symmetry is described by a tuple containing 
+          the positions of the involved arguments, with the convention position=0
+          for the first argument. For instance:
+
+          * sym=(0,1) for a symmetry between the 1st and 2nd arguments 
+          * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
+            arguments and a symmetry between the 2nd, 4th and 5th arguments.
+
+        - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
+          among the arguments, with the same convention as for ``sym``. 
+          
+        OUTPUT:
+        
+        - instance of :class:`FreeModuleTensor` representing the tensor defined
+          on ``self`` with the provided characteristics.
+          
+        EXAMPLES:
+        
+        Tensors on a rank-3 free module::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: t = M.tensor((1,0), name='t') ; t
+            element t of the rank-3 free module M over the Integer Ring
+            sage: t = M.tensor((0,1), name='t') ; t
+            linear form t on the rank-3 free module M over the Integer Ring
+            sage: t = M.tensor((1,1), name='t') ; t
+            type-(1,1) tensor t on the rank-3 free module M over the Integer Ring
+            sage: t = M.tensor((1,2), name='t') ; t
+            type-(1,2) tensor t on the rank-3 free module M over the Integer Ring
+            
+        See :class:`FreeModuleTensor` for more examples and documentation.
+                
+        """
+        from free_module_tensor import FreeModuleTensor, FreeModuleVector
+        from free_module_alt_form import FreeModuleLinForm
+        if tensor_type == (1,0):
+            return FreeModuleVector(self, name=name, latex_name=latex_name)
+        elif tensor_type == (0,1):
+            return FreeModuleLinForm(self, name=name, latex_name=latex_name)
+        else:
+            return FreeModuleTensor(self, tensor_type, name=name, 
+                                    latex_name=latex_name, sym=sym, 
+                                    antisym=antisym) 
+    
+    
+    
+    
+    
+    
+    
+    

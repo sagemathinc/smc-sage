@@ -42,18 +42,11 @@ class FreeModuleAltForm(FreeModuleTensor):
     - ``name`` -- (default: None) name given to the alternating form
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the alternating 
       form; if none is provided, the LaTeX symbol is set to ``name``
-    - ``output_formatter`` -- (default: None) function or unbound 
-      method called to format the output of the component access 
-      function (see :meth:`comp`); ``output_formatter`` must take
-      1 or 2 arguments: the 1st argument must be an element of the ring `R` and 
-      the second one, if any, some format specification.
 
     """
-    def __init__(self, fmodule, degree, name=None, latex_name=None,
-                 output_formatter=None):
+    def __init__(self, fmodule, degree, name=None, latex_name=None):
         FreeModuleTensor.__init__(self, fmodule, (0,degree), name=name, 
-                                  latex_name=latex_name, antisym=range(degree), 
-                                  output_formatter=output_formatter)
+                                  latex_name=latex_name, antisym=range(degree))
         FreeModuleAltForm._init_derived(self) # initialization of derived quantities
 
     def _repr_(self):
@@ -82,16 +75,19 @@ class FreeModuleAltForm(FreeModuleTensor):
     def _new_comp(self, basis): 
         r"""
         Create some components in the given basis. 
-                
+
+        This method, which is already implemented in 
+        :meth:`FreeModuleTensor._new_comp`, is redefined here for efficiency
         """
+        fmodule = self.fmodule  # the base free module
         if self.tensor_rank == 1: 
-            return Components(self.fmodule.ring, basis, 1,
-                              start_index=self.fmodule.sindex,
-                              output_formatter=self.output_formatter)
+            return Components(fmodule.ring, basis, 1,
+                              start_index=fmodule.sindex,
+                              output_formatter=fmodule.output_formatter)
         else:
-            return CompFullyAntiSym(self.fmodule.ring, basis, self.tensor_rank, 
-                                    start_index=self.fmodule.sindex,
-                                    output_formatter=self.output_formatter)
+            return CompFullyAntiSym(fmodule.ring, basis, self.tensor_rank, 
+                                    start_index=fmodule.sindex,
+                                    output_formatter=fmodule.output_formatter)
 
     def degree(self):
         r"""
@@ -112,18 +108,11 @@ class FreeModuleLinForm(FreeModuleAltForm):
     - ``name`` -- (default: None) name given to the linear form
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the linear 
       form; if none is provided, the LaTeX symbol is set to ``name``
-    - ``output_formatter`` -- (default: None) function or unbound 
-      method called to format the output of the component access 
-      function (see :meth:`comp`); ``output_formatter`` must take
-      1 or 2 arguments: the 1st argument must be an element of the ring `R` and 
-      the second one, if any, some format specification.
 
     """
-    def __init__(self, fmodule, name=None, latex_name=None,
-                 output_formatter=None):
+    def __init__(self, fmodule, name=None, latex_name=None):
         FreeModuleAltForm.__init__(self, fmodule, 1, name=name, 
-                                   latex_name=latex_name, 
-                                   output_formatter=output_formatter)
+                                   latex_name=latex_name)
 
     def _repr_(self):
         r"""
@@ -138,11 +127,13 @@ class FreeModuleLinForm(FreeModuleAltForm):
     def _new_comp(self, basis): 
         r"""
         Create some components in the given basis. 
-                
+              
+        This method, which is already implemented in 
+        :meth:`FreeModuleAltForm._new_comp`, is redefined here for efficiency
         """
-        return Components(self.fmodule.ring, basis, 1,
-                          start_index=self.fmodule.sindex,
-                          output_formatter=self.output_formatter)
+        fmodule = self.fmodule  # the base free module
+        return Components(fmodule.ring, basis, 1, start_index=fmodule.sindex,
+                          output_formatter=fmodule.output_formatter)
 
     def __call__(self, vector):
         r"""
