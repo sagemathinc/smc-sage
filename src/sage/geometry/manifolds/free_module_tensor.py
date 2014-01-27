@@ -152,6 +152,19 @@ class FreeModuleTensor(ModuleElement):
         # Initialization of derived quantities:
         FreeModuleTensor._init_derived(self) 
 
+    ####### Required methods for ModuleElement #######
+    
+    def __nonzero__(self):
+        r"""
+        Return True if ``self`` is nonzero and False otherwise. 
+        
+        This method is called by self.is_zero(). 
+        """
+        basis = self.pick_a_basis()
+        return not self.components[basis].is_zero()
+        
+    ####### End of required methods for ModuleElement #######
+    
     def _repr_(self):
         r"""
         String representation of the object.
@@ -579,7 +592,156 @@ class FreeModuleTensor(ModuleElement):
              resu.components[basis] = comp.copy()
         return resu
 
+    def common_basis(self, other):
+        r"""
+        Find a common basis for the components of ``self`` and ``other``. 
         
+        In case of multiple common bases, the free module's default basis is 
+        privileged. 
+        If the current components of ``self`` and ``other`` are all relative to
+        different bases, a common basis is searched by performing a component
+        transformation, via the transformations listed in 
+        ``self.fmodule.basis_changes``, still privileging transformations to 
+        the free module's default basis.
+        
+        INPUT:
+        
+        - ``other`` -- a tensor (instance of :class:`FreeModuleTensor`)
+        
+        OUPUT:
+        
+        - instance of :class:`FreeModuleBasis` representing the common basis; 
+          if no common basis is found, None is returned. 
+        
+        """
+        # Compatibility checks:
+        if not isinstance(other, FreeModuleTensor):
+            raise TypeError("The argument must be a tensor on a free module.")
+        fmodule = self.fmodule
+        if other.fmodule != fmodule:
+            raise TypeError("The two tensors are not defined on the same" +
+                            "free module.")
+        def_basis = fmodule.def_basis
+        #
+        # 1/ Search for a common basis among the existing components, i.e. 
+        #    without performing any component transformation. 
+        #    -------------------------------------------------------------
+        if def_basis in self.components and def_basis in other.components:
+            return def_basis # the module's default basis is privileged
+        for basis1 in self.components:
+            if basis1 in other.components:
+                return basis1
+        # 2/ Search for a common basis via one component transformation
+        #    ----------------------------------------------------------
+        # If this point is reached, it is indeed necessary to perform at least 
+        # one component transformation to get a common basis
+        if def_basis in self.components:
+            for obasis in other.components:
+                if (obasis, def_basis) in fmodule.basis_changes:
+                    other.comp(def_basis, from_basis=obasis)
+                    return def_basis
+        if def_basis in other.components:
+            for sbasis in self.components:
+                if (sbasis, def_basis) in fmodule.basis_changes:
+                    self.comp(def_basis, from_basis=sbasis)
+                    return def_basis
+        # If this point is reached, then def_basis cannot be a common basis
+        # via a single component transformation
+        for sbasis in self.components:
+            for obasis in other.components:
+                if (obasis, sbasis) in fmodule.basis_changes:
+                    other.comp(sbasis, from_basis=obasis)
+                    return sbasis
+                if (sbasis, obasis) in fmodule.basis_changes:
+                    self.comp(obasis, from_basis=sbasis)
+                    return obasis
+        #
+        # 3/ Search for a common basis via two component transformations
+        #    -----------------------------------------------------------
+        # If this point is reached, it is indeed necessary to perform at two
+        # component transformation to get a common basis
+        for sbasis in self.components:
+            for obasis in other.components:
+                if (sbasis, def_basis) in fmodule.basis_changes and \
+                   (obasis, def_basis) in fmodule.basis_changes:
+                    self.comp(def_basis, from_basis=sbasis)
+                    other.comp(def_basis, from_basis=obasis)
+                    return def_basis
+                for basis in fmodule.known_bases:
+                    if (sbasis, basis) in fmodule.basis_changes and \
+                       (obasis, basis) in fmodule.basis_changes:
+                        self.comp(basis, from_basis=sbasis)
+                        other.comp(basis, from_basis=obasis)
+                        return basis
+        #
+        # If this point is reached, no common basis could be found, even at 
+        # the price of component transformations:
+        return None
+    
+    def pick_a_basis(self):
+        r"""
+        Return a basis in which the tensor components are defined. 
+        
+        The free module's default basis is privileged. 
+
+        OUTPUT:
+        
+        - instance of :class:`FreeModuleBasis` representing the basis 
+
+        """
+        if self.fmodule.def_basis in self.components:
+            return self.fmodule.def_basis  # the default basis is privileged
+        else:
+            # a basis is picked arbitrarily:
+            return self.components.items()[0][0]  
+
+    def __eq__(self, other):
+        r"""
+        Comparison (equality) operator. 
+        
+        INPUT:
+        
+        - ``other`` -- a tensor or 0
+        
+        OUTPUT:
+        
+        - True if ``self`` is equal to ``other`` and False otherwise
+        
+        """
+        if self.tensor_rank == 0:
+            raise NotImplementedError("Scalar comparison not implemented.")
+        if isinstance(other, (int, Integer)): # other should be 0
+            if other == 0:
+                return self.is_zero()
+            else:
+                raise TypeError("Cannot compare a tensor to a integer.")
+        else: # other is another tensor
+            if not isinstance(other, FreeModuleTensor):
+                raise TypeError("An instance of FreeModuleTensor is expected.")
+            #!# base modules should be compared
+            if other.tensor_type != self.tensor_type:
+                return False
+            basis = self.common_basis(other)
+            if basis is None:
+                raise ValueError("No common basis for the comparison.")
+            return bool(self.components[basis] == other.components[basis])
+
+    def __ne__(self, other):
+        r"""
+        Inequality operator. 
+        
+        INPUT:
+        
+        - ``other`` -- a tensor or 0
+        
+        OUTPUT:
+        
+        - True if ``self`` is different from ``other`` and False otherwise
+        
+        """
+        return not self.__eq__(other)
+
+
 #******************************************************************************
 
 # From sage/modules/module.pyx:
