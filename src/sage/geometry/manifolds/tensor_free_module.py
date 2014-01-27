@@ -739,10 +739,101 @@ class FiniteFreeModule(TensorFreeModule):
                                     latex_name=latex_name, sym=sym, 
                                     antisym=antisym) 
     
-    
-    
-    
-    
-    
-    
-    
+    def tensor_from_comp(self, tensor_type, comp, name=None, latex_name=None):
+        r"""
+        Construct a tensor on the free module from a set of components.
+        
+        The tensor symmetries are deduced from those of the components.
+        
+        INPUT:
+        
+        - ``tensor_type`` -- pair (k,l) with k being the contravariant rank and l 
+          the covariant rank
+        - ``comp`` -- instance of :class:`Components` representing the tensor
+          components in a given basis
+        - ``name`` -- (default: None) name given to the tensor
+        - ``latex_name`` -- (default: None) LaTeX symbol to denote the tensor; 
+          if none is provided, the LaTeX symbol is set to ``name``
+          
+        OUTPUT:
+        
+        - instance of :class:`FreeModuleTensor` representing the tensor defined
+          on ``self`` with the provided characteristics.
+          
+        EXAMPLES:
+        
+        Construction of a tensor of rank 1::
+        
+            sage: from sage.geometry.manifolds.comp import Components, CompWithSym, CompFullySym, CompFullyAntiSym
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: e = M.new_basis('e') ; e
+            basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+            sage: c = Components(ZZ, e, 1)
+            sage: c[:]
+            [0, 0, 0]
+            sage: c[:] = [-1,4,2]
+            sage: t = M.tensor_from_comp((1,0), c)
+            sage: t 
+            element of the rank-3 free module M over the Integer Ring
+            sage: t.view(e)
+            -e_0 + 4 e_1 + 2 e_2
+            sage: t = M.tensor_from_comp((0,1), c) ; t
+            linear form on the rank-3 free module M over the Integer Ring
+            sage: t.view(e)
+            -e^0 + 4 e^1 + 2 e^2
+
+        Construction of a tensor of rank 2::
+        
+            sage: c = CompFullySym(ZZ, e, 2)
+            sage: c[0,0], c[1,2] = 4, 5
+            sage: t = M.tensor_from_comp((0,2), c) ; t
+            type-(0,2) tensor on the rank-3 free module M over the Integer Ring
+            sage: t.symmetries()
+            symmetry: (0, 1);  no antisymmetry
+            sage: t.view(e)
+            4 e^0*e^0 + 5 e^1*e^2 + 5 e^2*e^1
+            sage: c = CompFullyAntiSym(ZZ, e, 2)
+            sage: c[0,1], c[1,2] = 4, 5
+            sage: t = M.tensor_from_comp((0,2), c) ; t
+            alternating form of degree 2 on the rank-3 free module M over the Integer Ring
+            sage: t.view(e)
+            4 e^0*e^1 - 4 e^1*e^0 + 5 e^1*e^2 - 5 e^2*e^1
+                
+        """
+        from free_module_tensor import FreeModuleTensor, FreeModuleVector
+        from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
+        from comp import CompWithSym, CompFullySym, CompFullyAntiSym
+        #
+        # 0/ Compatibility checks:
+        if comp.ring is not self.ring:
+             raise TypeError("The components are not defined on the same" + 
+                            " ring as the module.")           
+        if comp.frame not in self.known_bases:
+            raise TypeError("The components are not defined on a basis of" + 
+                            " the module.")
+        if comp.nid != tensor_type[0] + tensor_type[1]:
+            raise TypeError("Number of component indices not compatible with "+
+                            " the tensor type.")
+        #
+        # 1/ Construction of the tensor:
+        if tensor_type == (1,0):
+            resu = FreeModuleVector(self, name=name, latex_name=latex_name)
+        elif tensor_type == (0,1):
+            resu = FreeModuleLinForm(self, name=name, latex_name=latex_name)
+        elif tensor_type[0] == 0 and tensor_type[1] > 1 and \
+                                        isinstance(comp, CompFullyAntiSym):
+            resu = FreeModuleAltForm(self, tensor_type[1], name=name, 
+                                     latex_name=latex_name)
+        else:
+            resu = FreeModuleTensor(self, tensor_type, name=name, 
+                                    latex_name=latex_name) 
+        #
+        # 2/ Tensor components set to comp:
+        resu.components[comp.frame] = comp
+        #
+        # 3/ Tensor symmetries deduced from those of comp
+        if isinstance(comp, CompWithSym):
+            resu.sym = comp.sym
+            resu.antisym = comp.antisym
+        return resu
+

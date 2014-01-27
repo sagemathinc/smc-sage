@@ -32,6 +32,6 @@ htmlhelp_basename = name
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
   ('index', name+'.tex', u'Tensors on free modules',
-   u'Eric Gourgoulhon and Michal Bejger', 'manual'),
+   u'', 'manual'),
 ]
 

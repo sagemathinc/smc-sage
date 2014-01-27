@@ -22,10 +22,9 @@ tensors:
 
 * :class:`FreeModuleVector` for elements of `M` (vectors), considered as rank-1 
   contravariant tensors
-* :class:`FreeModuleLinForm`for elements of `M` (linear forms), considered as 
-  rank-1 covariant tensors
+* :class:`FreeModuleLinForm` type-(0,1) tensors (linear forms)
 * :class:`FreeModuleAltForm` for alternating forms (fully antisymmetric 
-  covariant tensors)
+  type-(0,p) tensors)
 
 AUTHORS:
 
@@ -40,9 +39,82 @@ EXAMPLES:
         type-(1,1) tensor t on the rank-3 free module M over the Integer Ring
         sage: t.parent()
         free module of type-(1,1) tensors on the rank-3 free module M over the Integer Ring
+        sage: t.parent() is M.tensor_module(1,1)
+        True
         sage: t in M.tensor_module(1,1)
         True
+        
+    Setting some component of the tensor in a given basis::
     
+        sage: e = M.new_basis('e') ; e
+        basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+        sage: t.set_comp(e)[0,0] = -3  # the component [0,0] w.r.t. basis e is set to -3
+        
+    The unset components are assumed to be zero::
+    
+        sage: t.comp(e)[:]  # list of all components w.r.t. basis e
+        [-3  0  0]
+        [ 0  0  0]
+        [ 0  0  0]
+        sage: t.view(e)  # expansion of t on the basis e_i*e^j of T^(1,1)(M) 
+        t = -3 e_0*e^0
+
+    Since e is M's default basis, shorcuts for the above writings are::
+    
+        sage: t[0,0] = -3
+        sage: t[:]
+        [-3  0  0]
+        [ 0  0  0]
+        [ 0  0  0]
+    
+    Tensor components can be modified (reset) at any time::
+    
+        sage: t[0,0] = 0
+        sage: t[:]
+        [0 0 0]
+        [0 0 0]
+        [0 0 0]
+
+    Checking that t is zero::
+    
+        sage: t.is_zero()
+        True
+        sage: t == 0
+        True
+        sage: t == M.tensor_module(1,1).zero()  # the zero element of the module of all type-(1,1) tensors on M
+        True
+
+    The components are managed by the class :class:`Components`::
+    
+        sage: type(t.comp(e))
+        <class 'sage.geometry.manifolds.comp.Components'>
+
+    Only non-zero components are actually stored, in the dictionary :attr:`_comp`
+    of class :class:`Components`, whose keys are the indices::
+    
+        sage: t.comp(e)._comp
+        {}
+        sage: t.set_comp(e)[0,0] = -3 ; t.set_comp(e)[1,2] = 2
+        sage: t.comp(e)._comp  # random output order (dictionary)
+        {(0, 0): -3, (1, 2): 2}
+        sage: t.view(e)
+        t = -3 e_0*e^0 + 2 e_1*e^2
+
+    Further tests of the comparison operator::
+    
+        sage: t.is_zero()
+        False
+        sage: t == 0
+        False
+        sage: t == M.tensor_module(1,1).zero()
+        False
+        sage: t1 = t.copy()
+        sage: t1 == t
+        True
+        sage: t1[2,0] = 4
+        sage: t1 == t
+        False
+
 """
 #******************************************************************************
 #       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
@@ -295,19 +367,17 @@ class FreeModuleTensor(ModuleElement):
         
         Various symmetries / antisymmetries for a rank-4 tensor::
         
-            sage: from sage.geometry.manifolds.tensor_free_module import FiniteFreeModule
-            sage: from sage.geometry.manifolds.free_module_tensor import FreeModuleTensor
             sage: M = FiniteFreeModule(ZZ, 3, name='M')
-            sage: t = FreeModuleTensor(M, (4,0), 'T') # no symmetry declared
+            sage: t = M.tensor((4,0), name='T') # no symmetry declared
             sage: t.symmetries()
             no symmetry;  no antisymmetry
-            sage: t = FreeModuleTensor(M, (4,0), 'T', sym=(0,1))
+            sage: t = M.tensor((4,0), name='T', sym=(0,1))
             sage: t.symmetries()
             symmetry: (0, 1);  no antisymmetry
-            sage: t = FreeModuleTensor(M, (4,0), 'T', sym=[(0,1), (2,3)])
+            sage: t = M.tensor((4,0), name='T', sym=[(0,1), (2,3)])
             sage: t.symmetries()
             symmetries: [(0, 1), (2, 3)];  no antisymmetry
-            sage: t = FreeModuleTensor(M, (4,0), 'T', sym=(0,1), antisym=(2,3))
+            sage: t = M.tensor((4,0), name='T', sym=(0,1), antisym=(2,3))
             sage: t.symmetries()
             symmetry: (0, 1);  antisymmetry: (2, 3)
             
@@ -741,6 +811,176 @@ class FreeModuleTensor(ModuleElement):
         """
         return not self.__eq__(other)
 
+    def __pos__(self):
+        r"""
+        Unary plus operator. 
+        
+        OUTPUT:
+        
+        - an exact copy of ``self``
+    
+        """
+        result = self._new_instance()
+        for basis in self.components:
+            result.components[basis] = + self.components[basis]
+        if self.name is not None:
+            result.name = '+' + self.name 
+        if self.latex_name is not None:
+            result.latex_name = '+' + self.latex_name
+        return result
+
+    def __neg__(self):
+        r"""
+        Unary minus operator. 
+        
+        OUTPUT:
+        
+        - the tensor `-T`, where `T` is ``self``
+    
+        """
+        result = self._new_instance()
+        for basis in self.components:
+            result.components[basis] = - self.components[basis]
+        if self.name is not None:
+            result.name = '-' + self.name 
+        if self.latex_name is not None:
+            result.latex_name = '-' + self.latex_name
+        return result
+
+    ######### ModuleElement arithmetic operators ########
+    
+    def _add_(self, other):
+        r"""
+        Tensor addition. 
+        
+        INPUT:
+        
+        - ``other`` -- a tensor, of the same type as ``self``
+        
+        OUPUT:
+        
+        - the tensor resulting from the addition of ``self`` and ``other``
+        
+        """
+        if other == 0:
+            return +self
+        if not isinstance(other, FreeModuleTensor):
+            raise TypeError("For the addition, other must be a tensor.")
+        if other.tensor_type != self.tensor_type:
+            raise TypeError("The two tensors are not of the same type.")
+        basis = self.common_basis(other)
+        if basis is None:
+            raise ValueError("No common basis for the addition.")
+        comp_result = self.components[basis] + other.components[basis]
+        result = self.fmodule.tensor_from_comp(self.tensor_type, comp_result)
+        if self.name is not None and other.name is not None:
+            result.name = self.name + '+' + other.name
+        if self.latex_name is not None and other.latex_name is not None:
+            result.latex_name = self.latex_name + '+' + other.latex_name
+        return result
+
+    def _sub_(self, other):
+        r"""
+        Tensor subtraction. 
+        
+        INPUT:
+        
+        - ``other`` -- a tensor, of the same type as ``self``
+        
+        OUPUT:
+        
+        - the tensor resulting from the subtraction of ``other`` from ``self``
+        
+        """
+        if other == 0:
+            return +self
+        if not isinstance(other, FreeModuleTensor):
+            raise TypeError("For the subtraction, other must be a tensor.")
+        if other.tensor_type != self.tensor_type:
+            raise TypeError("The two tensors are not of the same type.")
+        basis = self.common_basis(other)
+        if basis is None:
+            raise ValueError("No common basis for the subtraction.")
+        comp_result = self.components[basis] - other.components[basis]
+        result = self.fmodule.tensor_from_comp(self.tensor_type, comp_result)
+        if self.name is not None and other.name is not None:
+            result.name = self.name + '-' + other.name
+        if self.latex_name is not None and other.latex_name is not None:
+            result.latex_name = self.latex_name + '-' + other.latex_name
+        return result
+
+    def _rmul_(self, other):
+        r"""
+        Multiplication on the left by ``other``. 
+        
+        """
+        if isinstance(other, FreeModuleTensor):
+            raise NotImplementedError("Left tensor product not implemented.")
+        # Left multiplication by a scalar: 
+        result = self._new_instance()
+        for basis in self.components:
+            result.components[basis] = other * self.components[basis]
+        return result
+
+    ######### End of ModuleElement arithmetic operators ########
+    
+    def __radd__(self, other):
+        r"""
+        Addition on the left with ``other``. 
+        
+        """
+        return self.__add__(other)
+
+    def __rsub__(self, other):
+        r"""
+        Subtraction from ``other``. 
+        
+        """
+        return (-self).__add__(other)
+
+    def __mul__(self, other):
+        r"""
+        Tensor product. 
+        """
+        from utilities import format_mul_txt, format_mul_latex
+        if isinstance(other, FreeModuleTensor):
+            basis = self.common_basis(other)
+            if basis is None:
+                raise ValueError("No common basis for the tensor product.")
+            comp_prov = self.components[basis] * other.components[basis]
+            # Reordering of the contravariant and covariant indices:
+            k1, l1 = self.tensor_type
+            k2, l2 = other.tensor_type
+            if l1 != 0:
+                comp_result = comp_prov.swap_adjacent_indices(k1, 
+                                                              self.tensor_rank, 
+                                                              self.tensor_rank+k2)
+            else:
+                comp_result = comp_prov  # no reordering is necessary
+            result = self.fmodule.tensor_from_comp((k1+k2, l1+l2), comp_result)
+            result.name = format_mul_txt(self.name, '*', other.name)
+            result.latex_name = format_mul_latex(self.latex_name, r'\otimes ', 
+                                                 other.latex_name)
+            return result
+        else:
+            # multiplication by a scalar: 
+            result = self._new_instance()
+            for basis in self.components:
+                result.components[basis] = other * self.components[basis]
+            return result
+
+
+    def __div__(self, other):
+        r"""
+        Division (by a scalar)
+        """
+        result = self._new_instance()
+        for basis in self.components:
+            result.components[basis] = self.components[basis] / other
+        return result
+        
+
+
 
 #******************************************************************************
 
@@ -764,6 +1004,65 @@ class FreeModuleVector(FreeModuleTensor):
     - ``name`` -- (default: None) name given to the vector
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the vector; 
       if none is provided, the LaTeX symbol is set to ``name``
+      
+    ARITHMETIC EXAMPLES:
+    
+    Addition::
+    
+        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: e = M.new_basis('e') ; e
+        basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+        sage: a = M([0,1,3], name='a') ; a
+        element a of the rank-3 free module M over the Integer Ring
+        sage: a.view()
+        a = e_1 + 3 e_2
+        sage: b = M([2,-2,1], name='b') ; b
+        element b of the rank-3 free module M over the Integer Ring
+        sage: b.view()
+        b = 2 e_0 - 2 e_1 + e_2
+        sage: s = a + b ; s
+        element a+b of the rank-3 free module M over the Integer Ring
+        sage: s.view()
+        a+b = 2 e_0 - e_1 + 4 e_2
+        sage: # Test of the addition:
+        sage: for i in M.irange(): print s[i] == a[i] + b[i],
+        True True True
+
+    Subtraction::
+    
+        sage: s = a - b ; s
+        element a-b of the rank-3 free module M over the Integer Ring
+        sage: s.view()
+        a-b = -2 e_0 + 3 e_1 + 2 e_2
+        sage: # Test of the substraction:
+        sage: for i in M.irange(): print s[i] == a[i] - b[i],
+        True True True
+        
+    Multiplication by a scalar::
+    
+        sage: s = 2*a ; s
+        element of the rank-3 free module M over the Integer Ring
+        sage: s.view()
+        2 e_1 + 6 e_2
+        sage: a.view()
+        a = e_1 + 3 e_2
+
+    Tensor product::
+    
+        sage: s = a*b ; s
+        type-(2,0) tensor a*b on the rank-3 free module M over the Integer Ring
+        sage: s.symmetries()
+        no symmetry;  no antisymmetry
+        sage: s[:]
+        [ 0  0  0]
+        [ 2 -2  1]
+        [ 6 -6  3]
+        sage: s = a*s ; s
+        type-(3,0) tensor a*a*b on the rank-3 free module M over the Integer Ring
+        sage: s[:]
+        [[[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+         [[0, 0, 0], [2, -2, 1], [6, -6, 3]],
+         [[0, 0, 0], [6, -6, 3], [18, -18, 9]]]
 
     """
     def __init__(self, fmodule, name=None, latex_name=None):
@@ -791,5 +1090,12 @@ class FreeModuleVector(FreeModuleTensor):
         return Components(fmodule.ring, basis, 1, start_index=fmodule.sindex,
                           output_formatter=fmodule.output_formatter)
 
+
+    def _new_instance(self):
+        r"""
+        Create a :class:`FreeModuleVector` instance.
+        
+        """
+        return FreeModuleVector(self.fmodule)
 
         

@@ -1,13 +1,15 @@
 r"""
 Free module bases.
 
-The class :class:`FreeModuleBasis` implements bases over a free module `M`.
+The class :class:`FreeModuleBasis` implements bases over a free module `M`,
+while the class :class:`FreeModuleCoBasis` implements the dual bases (i.e. 
+bases of the dual free module `M^*`). 
+
 
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
 
-EXAMPLES:
 
 """
 #******************************************************************************
@@ -36,7 +38,48 @@ class FreeModuleBasis(SageObject):
       the basis; if None, the value of ``symbol`` is used. 
 
     EXAMPLES:
+    
+    A basis on a rank-3 free module over `\ZZ`::
+        
+        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: from sage.geometry.manifolds.free_module_basis import FreeModuleBasis
+        sage: e = FreeModuleBasis(M, 'e') ; e
+        basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
 
+    Instead of importing FreeModuleBasis in the global name space, one can 
+    use the module's method :meth:`new_basis`::
+    
+        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: e = M.new_basis('e') ; e
+        basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+
+    The individual elements constituting the basis are accessed via the 
+    square bracket operator::
+    
+        sage: e[0]
+        element e_0 of the rank-3 free module M over the Integer Ring
+        sage: e[0] in M
+        True
+
+    The LaTeX symbol can be set explicitely, as the second argument of
+    :meth:`new_basis`::
+    
+        sage: latex(e)
+        \left(e_0,e_1,e_2\right)
+        sage: eps = M.new_basis('eps', r'\epsilon') ; eps
+        basis (eps_0,eps_1,eps_2) on the rank-3 free module M over the Integer Ring
+        sage: latex(eps)
+        \left(\epsilon_0,\epsilon_1,\epsilon_2\right)
+        
+    The individual elements of the basis are labelled according the 
+    parameter ``start_index`` provided at the free module construction::
+    
+        sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
+        sage: e = M.new_basis('e') ; e
+        basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring
+        sage: e[1]
+        element e_1 of the rank-3 free module M over the Integer Ring
+        
     """
     def __init__(self, fmodule, symbol, latex_symbol=None):
         from free_module_tensor import FreeModuleVector
