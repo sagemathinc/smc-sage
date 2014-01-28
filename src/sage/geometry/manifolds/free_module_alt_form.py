@@ -153,21 +153,20 @@ class FreeModuleLinForm(FreeModuleAltForm):
             raise TypeError("The argument must be a free module element.")
         basis = self.common_basis(vector)
         if basis is None:
-            raise ValueError("No common basisfor the components.")
+            raise ValueError("No common basis for the components.")
         omega = self.components[basis]
         vv = vector.components[basis]
         resu = 0
-        for i in self.manifold.irange():
+        for i in self.fmodule.irange():
             resu += omega[[i]]*vv[[i]]
-        # Name of the output:
-        resu.name = None
-        if self.name is not None and vector.name is not None:
-            resu.name = self.name + "(" + vector.name + ")"
-        # LaTeX symbol for the output:
-        resu.latex_name = None
-        if self.latex_name is not None and vector.latex_name is not None:
-            resu.latex_name = self.latex_name + r"\left(" + \
-                              vector.latex_name + r"\right)"
+        # Name and LaTeX symbol of the output:
+        if hasattr(resu, 'name'): 
+            if self.name is not None and vector.name is not None:
+                resu.name = self.name + "(" + vector.name + ")"
+        if hasattr(resu, 'latex_name'): 
+            if self.latex_name is not None and vector.latex_name is not None:
+                resu.latex_name = self.latex_name + r"\left(" + \
+                                  vector.latex_name + r"\right)"
         return resu
 
 

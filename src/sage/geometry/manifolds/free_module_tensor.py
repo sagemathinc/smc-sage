@@ -115,6 +115,17 @@ EXAMPLES:
         sage: t1 == t
         False
 
+    As a multilinear map `M^*\times M \rightarrow \ZZ`, the type-(1,1) tensor t 
+    acts on pairs formed by a linear form and a vector::
+    
+        sage: a = M.tensor((0,1), name='a') ; a[:] = (2, 1, -3) ; a
+        linear form a on the rank-3 free module M over the Integer Ring
+        sage: b = M([1,-6,2], name='b') ; b
+        element b of the rank-3 free module M over the Integer Ring
+        sage: t(a,b)
+        -2
+
+    
 """
 #******************************************************************************
 #       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
@@ -224,7 +235,7 @@ class FreeModuleTensor(ModuleElement):
         # Initialization of derived quantities:
         FreeModuleTensor._init_derived(self) 
 
-    ####### Required methods for ModuleElement #######
+    ####### Required methods for ModuleElement (beside arithmetic) #######
     
     def __nonzero__(self):
         r"""
@@ -235,7 +246,7 @@ class FreeModuleTensor(ModuleElement):
         basis = self.pick_a_basis()
         return not self.components[basis].is_zero()
         
-    ####### End of required methods for ModuleElement #######
+    ####### End of required methods for ModuleElement (beside arithmetic) #######
     
     def _repr_(self):
         r"""
@@ -980,6 +991,98 @@ class FreeModuleTensor(ModuleElement):
         return result
         
 
+    def __call__(self, *args):
+        r"""
+        The tensor acting on linear forms and vectors as a multilinear map.
+        
+        INPUT:
+        
+        - ``*args`` -- list of k 1-forms and l vectors, self being a tensor
+          of type (k,l). 
+          
+        """
+        from free_module_alt_form import FreeModuleLinForm
+        # Consistency checks:
+        p = len(args)
+        if p != self.tensor_rank:
+            raise TypeError(str(self.tensor_rank) + 
+                            " arguments must be provided.")
+        for i in range(self.tensor_type[0]):
+            if not isinstance(args[i], FreeModuleLinForm):
+                raise TypeError("The argument no. " + str(i+1) + 
+                                " must be a linear form.")
+        for i in range(self.tensor_type[0],p):
+            if not isinstance(args[i], FreeModuleVector):
+                raise TypeError("The argument no. " + str(i+1) + 
+                                " must be a vector.")
+        fmodule = self.fmodule
+        # Search for a common basis
+        basis = None
+        # First try with the default basis of self's domain
+        def_basis = fmodule.def_basis
+        if def_basis in self.components:
+            basis = def_basis
+            for arg in args:
+                if def_basis not in arg.components:
+                    basis = None
+                    break
+        if basis is None:
+            # Search for another basis:
+            for bas in self.components:
+                basis = bas
+                for arg in args:
+                    if bas not in arg.components:
+                        basis = None
+                        break
+                if basis is not None: # common basis found ! 
+                    break
+        if basis is None:
+            raise ValueError("No common basis for the components.")
+        t = self.components[basis]
+        v = [args[i].components[basis] for i in range(p)]
+        
+        res = 0
+        for ind in t.index_generator():
+            prod = t[[ind]]
+            for i in range(p):
+                prod *= v[i][[ind[i]]]
+            res += prod
+        # Name of the output:
+        if hasattr(res, 'name'): 
+            res_name = None
+            if self.name is not None:
+                res_name = self.name + "("
+                for i in range(p-1):
+                    if args[i].name is not None:
+                        res_name += args[i].name + ","
+                    else:
+                        res_name = None
+                        break
+                if res_name is not None:
+                    if args[p-1].name is not None:
+                        res_name += args[p-1].name + ")"
+                    else:
+                        res_name = None
+            res.name = res_name       
+        # LaTeX symbol of the output:
+        if hasattr(res, 'latex_name'): 
+            res_latex = None
+            if self.latex_name is not None:
+                res_latex = self.latex_name + r"\left("
+                for i in range(p-1):
+                    if args[i].latex_name is not None:
+                        res_latex += args[i].latex_name + ","
+                    else:
+                        res_latex = None
+                        break
+                if res_latex is not None:
+                    if args[p-1].latex_name is not None:
+                        res_latex += args[p-1].latex_name + r"\right)"
+                    else:
+                        res_latex = None
+            res.latex_name = res_latex
+        return res
+
 
 
 #******************************************************************************
@@ -1004,7 +1107,74 @@ class FreeModuleVector(FreeModuleTensor):
     - ``name`` -- (default: None) name given to the vector
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the vector; 
       if none is provided, the LaTeX symbol is set to ``name``
-      
+    
+    EXAMPLES:
+    
+    Let us consider a rank-3 module over `\ZZ`::
+    
+        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: e = M.new_basis('e') ; e
+        basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+        
+    There are four ways to construct an element of the free module M: the first 
+    one (recommended) is via the operator __call__ acting on the free module::
+    
+        sage: v = M([2,0,-1], basis=e, name='v') ; v
+        element v of the rank-3 free module M over the Integer Ring
+        sage: v.view()  # expansion on the default basis (e)
+        v = 2 e_0 - e_2
+        sage: v.parent() is M
+        True
+
+    The second way is by a direct call to the class constructor::
+    
+        sage: from sage.geometry.manifolds.free_module_tensor import FreeModuleVector
+        sage: v2 = FreeModuleVector(M, name='v')
+        sage: v2[0], v2[2] = 2, -1 # setting the nonzero components in the default basis (e)
+        sage: v2
+        element v of the rank-3 free module M over the Integer Ring
+        sage: v2.view()
+        v = 2 e_0 - e_2
+        sage: v2 == v
+        True
+
+    The third way is to construct a tensor of type (1,0) on M::
+    
+        sage: v3 = M.tensor((1,0), name='v')
+        sage: v3[0], v3[2] = 2, -1 ; v3
+        element v of the rank-3 free module M over the Integer Ring
+        sage: v3.view()
+        v = 2 e_0 - e_2
+        sage: v3 == v
+        True
+        
+    Finally, the fourth way is via some linear combination of the basis 
+    elements::
+    
+        sage: v4 = 2*e[0] - e[2]
+        sage: v4.set_name('v') ; v4 # in this case, the name has to be set separately
+        element v of the rank-3 free module M over the Integer Ring
+        sage: v4.view()
+        v = 2 e_0 - e_2
+        sage: v4 == v
+        True
+        
+    As linear maps `M^* \rightarrow \ZZ`, the module elements act on linear 
+    forms::
+    
+        sage: a = M.tensor((0,1), name='a')
+        sage: a[:] = (2, 1, -3) ; a
+        linear form a on the rank-3 free module M over the Integer Ring
+        sage: v(a)
+        7
+
+    Of course, linear forms themselves act on the module elements (by definition)::
+    
+        sage: a(v)
+        7
+        sage: a(v) == v(a)
+        True
+    
     ARITHMETIC EXAMPLES:
     
     Addition::

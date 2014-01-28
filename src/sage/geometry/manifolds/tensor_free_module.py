@@ -260,7 +260,11 @@ class TensorFreeModule(Module):
         r"""
         Construct some (unamed) tensor
         """
-        return self.element_class(self.fmodule, self.tensor_type)
+        resu = self.element_class(self.fmodule, self.tensor_type)
+        sindex = self.fmodule.sindex
+        ind = [sindex for i in range(resu.tensor_rank)]
+        resu.set_comp()[ind] = self.fmodule.ring(1)
+        return resu
             
     #### End of methods required for any Parent 
 
@@ -533,7 +537,7 @@ class FiniteFreeModule(TensorFreeModule):
         Construct some (unamed) element of the module
         """
         resu = self.element_class(self)
-        resu.set_comp()[:] = [1 for i in range(self._rank)]
+        resu.set_comp()[:] = [self.ring(1) for i in range(self._rank)]
         return resu
             
     #### End of methods required for any Parent 
