@@ -689,7 +689,7 @@ class FreeModuleTensor(ModuleElement):
             raise TypeError("The argument must be a tensor on a free module.")
         fmodule = self.fmodule
         if other.fmodule != fmodule:
-            raise TypeError("The two tensors are not defined on the same" +
+            raise TypeError("The two tensors are not defined on the same " +
                             "free module.")
         def_basis = fmodule.def_basis
         #
@@ -784,10 +784,10 @@ class FreeModuleTensor(ModuleElement):
             if other == 0:
                 return self.is_zero()
             else:
-                raise TypeError("Cannot compare a tensor to a integer.")
+                return False
+        elif not isinstance(other, FreeModuleTensor):
+            return False
         else: # other is another tensor
-            if not isinstance(other, FreeModuleTensor):
-                raise TypeError("An instance of FreeModuleTensor is expected.")
             #!# base modules should be compared
             if other.tensor_type != self.tensor_type:
                 return False

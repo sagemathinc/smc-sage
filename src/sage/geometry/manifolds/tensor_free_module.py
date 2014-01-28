@@ -532,7 +532,9 @@ class FiniteFreeModule(TensorFreeModule):
         r"""
         Construct some (unamed) element of the module
         """
-        return self.element_class(self)
+        resu = self.element_class(self)
+        resu.set_comp()[:] = [1 for i in range(self._rank)]
+        return resu
             
     #### End of methods required for any Parent 
 
