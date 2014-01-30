@@ -261,9 +261,10 @@ class TensorFreeModule(Module):
         Construct some (unamed) tensor
         """
         resu = self.element_class(self.fmodule, self.tensor_type)
-        sindex = self.fmodule.sindex
-        ind = [sindex for i in range(resu.tensor_rank)]
-        resu.set_comp()[ind] = self.fmodule.ring(1)
+        if self.fmodule.def_basis is not None:
+            sindex = self.fmodule.sindex
+            ind = [sindex for i in range(resu.tensor_rank)]
+            resu.set_comp()[ind] = self.fmodule.ring.an_element()
         return resu
             
     #### End of methods required for any Parent 
@@ -537,7 +538,9 @@ class FiniteFreeModule(TensorFreeModule):
         Construct some (unamed) element of the module
         """
         resu = self.element_class(self)
-        resu.set_comp()[:] = [self.ring(1) for i in range(self._rank)]
+        if self.fmodule.def_basis is not None:
+            resu.set_comp()[:] = [self.ring.an_element() for i in 
+                                                             range(self._rank)]
         return resu
             
     #### End of methods required for any Parent 
@@ -697,9 +700,9 @@ class FiniteFreeModule(TensorFreeModule):
         
         - ``tensor_type`` -- pair (k,l) with k being the contravariant rank and l 
           the covariant rank
-        - ``name`` -- (default: None) name given to the tensor
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the tensor; 
-          if none is provided, the LaTeX symbol is set to ``name``
+        - ``name`` -- (string; default: None) name given to the tensor
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          tensor; if none is provided, the LaTeX symbol is set to ``name``
         - ``sym`` -- (default: None) a symmetry or a list of symmetries among the 
           tensor arguments: each symmetry is described by a tuple containing 
           the positions of the involved arguments, with the convention position=0
@@ -757,8 +760,8 @@ class FiniteFreeModule(TensorFreeModule):
           the covariant rank
         - ``comp`` -- instance of :class:`Components` representing the tensor
           components in a given basis
-        - ``name`` -- (default: None) name given to the tensor
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the tensor; 
+        - ``name`` -- (string; default: None) name given to the tensor
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the tensor; 
           if none is provided, the LaTeX symbol is set to ``name``
           
         OUTPUT:
@@ -842,4 +845,53 @@ class FiniteFreeModule(TensorFreeModule):
             resu.sym = comp.sym
             resu.antisym = comp.antisym
         return resu
+
+    def alternating_form(self, degree, name=None, latex_name=None):
+        r"""
+        Construct an alternating form on the free module. 
+        
+        INPUT:
+    
+        - ``degree`` -- the degree of the alternating form (i.e. its tensor rank)
+        - ``name`` -- (string; default: None) name given to the alternating 
+          form
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          alternating   form; if none is provided, the LaTeX symbol is set to 
+          ``name``
+          
+        EXAMPLES:
+        
+        Alternating forms on a rank-3 module::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: a = M.alternating_form(2, 'a') ; a
+            alternating form a of degree 2 on the rank-3 free module M over the Integer Ring
+
+        The nonzero components in a given basis have to be set in a second step, 
+        thereby fully specifying the alternating form::
+            
+            sage: e = M.new_basis('e') ; e
+            basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+            sage: a.set_comp(e)[0,1] = 2
+            sage: a.set_comp(e)[1,2] = -3
+            sage: a.view(e)
+            a = 2 e^0*e^1 - 2 e^1*e^0 - 3 e^1*e^2 + 3 e^2*e^1
+
+        An alternating form of degree 1 is a linear form::
+
+            sage: a = M.alternating_form(1, 'a') ; a
+            linear form a on the rank-3 free module M over the Integer Ring
+
+        """
+        from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
+        if degree == 1:
+            return FreeModuleLinForm(self, name=name, latex_name=latex_name)
+        else:
+            return FreeModuleAltForm(self, degree, name=name, 
+                                     latex_name=latex_name)
+
+
+
+
+
 

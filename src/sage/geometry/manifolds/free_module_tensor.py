@@ -1083,6 +1083,97 @@ class FreeModuleTensor(ModuleElement):
             res.latex_name = res_latex
         return res
 
+    def self_contract(self, pos1, pos2):
+        r""" 
+        Contraction on two slots of the tensor. 
+        
+        INPUT:
+            
+        - ``pos1`` -- position of the first index for the contraction, with the
+          convention ``pos1=0`` for the first slot
+        - ``pos2`` -- position of the second index for the contraction, with 
+          the same convention as for ``pos1``. 
+          
+        OUTPUT:
+        
+        - tensor resulting from the (pos1, pos2) contraction
+       
+        EXAMPLES:
+        
+        Contraction on the two slots of a type-(1,1) tensor::
+
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: e = M.new_basis('e') ; e
+            basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+            sage: a = M.tensor((1,1), name='a') ; a
+            type-(1,1) tensor a on the rank-3 free module M over the Integer Ring
+            sage: a[:] = [[1,2,3], [4,5,6], [7,8,9]]
+            sage: a.self_contract(0,1)  # contraction of slot 0 with slot 1
+            15
+            sage: a.self_contract(1,0)  # the order of the slots does not matter
+            15
+
+        The contraction on two slots having the same tensor type cannot occur::
+        
+            sage: b =  M.tensor((2,0), name='b') ; b
+            type-(2,0) tensor b on the rank-3 free module M over the Integer Ring
+            sage: b[:] = [[1,2,3], [4,5,6], [7,8,9]]
+            sage: b.self_contract(0,1)
+            Traceback (most recent call last):
+            ...
+            IndexError: Contraction on two contravariant indices is not allowed.
+
+        The contraction either preserves or destroys the symmetries::
+        
+            sage: b = M.alternating_form(2, 'b') ; b
+            alternating form b of degree 2 on the rank-3 free module M over the Integer Ring
+            sage: b[0,1], b[0,2], b[1,2] = 3, 2, 1
+            sage: t = a*b ; t
+            type-(1,3) tensor a*b on the rank-3 free module M over the Integer Ring
+            sage: # by construction, t is a tensor field antisymmetric w.r.t. its last two slots:
+            sage: t.symmetries()
+            no symmetry;  antisymmetry: (2, 3)
+            sage: s = t.self_contract(0,1) ; s   # contraction on the first two slots
+            alternating form of degree 2 on the rank-3 free module M over the Integer Ring
+            sage: s.symmetries()    # the antisymmetry is preserved
+            no symmetry;  antisymmetry: (0, 1)
+            sage: s[:]
+            [  0  45  30]
+            [-45   0  15]
+            [-30 -15   0]
+            sage: s == 15*b  # check
+            True
+            sage: s = t.self_contract(0,2) ; s   # contraction on the first and third slots
+            type-(0,2) tensor on the rank-3 free module M over the Integer Ring
+            sage: s.symmetries()  # the antisymmetry has been destroyed by the above contraction:
+            no symmetry;  no antisymmetry
+            sage: s[:]  # indeed:
+            [-26  -4   6]
+            [-31  -2   9]
+            [-36   0  12]
+            sage: s[:] == matrix( [[sum(t[k,i,k,j] for k in M.irange()) for j in M.irange()] for i in M.irange()] )  # check
+            True
+            
+        """
+        # The indices at pos1 and pos2 must be of different types: 
+        k_con = self.tensor_type[0]
+        l_cov = self.tensor_type[1]
+        if pos1 < k_con and pos2 < k_con:
+            raise IndexError("Contraction on two contravariant indices is " +
+                             "not allowed.")
+        if pos1 >= k_con and pos2 >= k_con:
+            raise IndexError("Contraction on two covariant indices is " +
+                             "not allowed.")
+        # Frame selection for the computation: 
+        if self.fmodule.def_basis in self.components:
+            basis = self.fmodule.def_basis
+        else: # a basis is picked arbitrarily:
+            basis = self.pick_a_basis()     
+        resu_comp = self.components[basis].self_contract(pos1, pos2)
+        if self.tensor_rank == 2:  # result is a scalar
+            return resu_comp
+        else:
+            return self.fmodule.tensor_from_comp((k_con-1, l_cov-1), resu_comp)
 
 
 #******************************************************************************
