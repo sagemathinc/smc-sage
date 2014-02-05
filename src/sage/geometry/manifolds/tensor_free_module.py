@@ -738,11 +738,15 @@ class FiniteFreeModule(TensorFreeModule):
                 
         """
         from free_module_tensor import FreeModuleTensor, FreeModuleVector
+        from free_module_tensor_spec import FreeModuleEndomorphism
         from free_module_alt_form import FreeModuleLinForm
         if tensor_type == (1,0):
             return FreeModuleVector(self, name=name, latex_name=latex_name)
         elif tensor_type == (0,1):
             return FreeModuleLinForm(self, name=name, latex_name=latex_name)
+        elif tensor_type == (1,1):
+            return FreeModuleEndomorphism(self, name=name, 
+                                                         latex_name=latex_name)
         else:
             return FreeModuleTensor(self, tensor_type, name=name, 
                                     latex_name=latex_name, sym=sym, 
@@ -810,6 +814,7 @@ class FiniteFreeModule(TensorFreeModule):
                 
         """
         from free_module_tensor import FreeModuleTensor, FreeModuleVector
+        from free_module_tensor_spec import FreeModuleEndomorphism
         from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
         from comp import CompWithSym, CompFullySym, CompFullyAntiSym
         #
@@ -829,6 +834,8 @@ class FiniteFreeModule(TensorFreeModule):
             resu = FreeModuleVector(self, name=name, latex_name=latex_name)
         elif tensor_type == (0,1):
             resu = FreeModuleLinForm(self, name=name, latex_name=latex_name)
+        elif tensor_type == (1,1):
+            resu = FreeModuleEndomorphism(self, name=name, latex_name=latex_name)
         elif tensor_type[0] == 0 and tensor_type[1] > 1 and \
                                         isinstance(comp, CompFullyAntiSym):
             resu = FreeModuleAltForm(self, tensor_type[1], name=name, 
