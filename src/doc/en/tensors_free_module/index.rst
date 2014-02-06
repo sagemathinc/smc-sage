@@ -23,6 +23,8 @@ __ http://creativecommons.org/licenses/by-sa/3.0/
    free_module_basis
    
    free_module_tensor
+
+   free_module_tensor_spec
    
    free_module_alt_form
 

@@ -36,7 +36,7 @@ EXAMPLES:
     
         sage: M = FiniteFreeModule(ZZ, 3, name='M')
         sage: t = M.tensor((1,1), name='t') ; t
-        type-(1,1) tensor t on the rank-3 free module M over the Integer Ring
+        endomorphism t on the rank-3 free module M over the Integer Ring
         sage: t.parent()
         free module of type-(1,1) tensors on the rank-3 free module M over the Integer Ring
         sage: t.parent() is M.tensor_module(1,1)
@@ -175,7 +175,7 @@ class FreeModuleTensor(ModuleElement):
     
         sage: M = FiniteFreeModule(ZZ, 3, name='M')
         sage: t = M.tensor((1,1), name='t') ; t
-        type-(1,1) tensor t on the rank-3 free module M over the Integer Ring
+        endomorphism t on the rank-3 free module M over the Integer Ring
 
     Tensors are *Element* objects whose parents are tensor free modules::
     
@@ -1106,7 +1106,7 @@ class FreeModuleTensor(ModuleElement):
             sage: e = M.new_basis('e') ; e
             basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
             sage: a = M.tensor((1,1), name='a') ; a
-            type-(1,1) tensor a on the rank-3 free module M over the Integer Ring
+            endomorphism a on the rank-3 free module M over the Integer Ring
             sage: a[:] = [[1,2,3], [4,5,6], [7,8,9]]
             sage: a.self_contract(0,1)  # contraction of slot 0 with slot 1
             15

@@ -730,7 +730,7 @@ class FiniteFreeModule(TensorFreeModule):
             sage: t = M.tensor((0,1), name='t') ; t
             linear form t on the rank-3 free module M over the Integer Ring
             sage: t = M.tensor((1,1), name='t') ; t
-            type-(1,1) tensor t on the rank-3 free module M over the Integer Ring
+            endomorphism t on the rank-3 free module M over the Integer Ring
             sage: t = M.tensor((1,2), name='t') ; t
             type-(1,2) tensor t on the rank-3 free module M over the Integer Ring
             
@@ -866,6 +866,11 @@ class FiniteFreeModule(TensorFreeModule):
           alternating   form; if none is provided, the LaTeX symbol is set to 
           ``name``
           
+        OUTPUT:
+        
+        - instance of :class:`FreeModuleAltForm` (``degree`` > 1) or 
+          :class:`FreeModuleLinForm` (``degree`` = 1)
+
         EXAMPLES:
         
         Alternating forms on a rank-3 module::
@@ -898,6 +903,28 @@ class FiniteFreeModule(TensorFreeModule):
                                      latex_name=latex_name)
 
 
+    def endomorphism(self, name=None, latex_name=None):
+        r"""
+        Construct an endomorphism on the free module. 
+        
+        INPUT:
+    
+        - ``name`` -- (string; default: None) name given to the endomorphism
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          endomorphism; if none is provided, the LaTeX symbol is set to 
+          ``name``
+          
+        OUTPUT:
+        
+        - instance of :class:`FreeModuleEndomorphism`
+          
+        EXAMPLES:
+
+        """
+        from free_module_tensor_spec import FreeModuleEndomorphism
+        return FreeModuleEndomorphism(self, name=name, latex_name=latex_name)
+
+        
 
 
 
