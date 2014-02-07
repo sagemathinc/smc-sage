@@ -2377,6 +2377,28 @@ class CompWithSym(Components):
             if pos_set.issubset(set(isym)):
                 return self.copy()
         #
+        # Interference of the new symmetry with existing ones:
+        # 
+        sym_res = [pos]  # starting the list of symmetries of the result
+        for isym in self.sym:
+            inter = pos_set.intersection(set(isym))
+            # if len(inter) == len(isym), isym is included in the new symmetry
+            # and therefore has not to be included in sym_res
+            if len(inter) != len(isym):
+                if len(inter) >= 1: 
+                    # some part of isym is lost
+                    isym_set = set(isym)
+                    for k in inter:
+                        isym_set.remove(k)
+                    if len(isym_set) > 1:
+                        # some part of isym remains and must be included in sym_res:
+                        isym_res = tuple(isym_set)
+                        sym_res.append(isym_res)
+                else:
+                    # case len(inter)=0: no interference: the existing symmetry is
+                    # added to the list of symmetries for the result:
+                    sym_res.append(isym)
+        #
         # Interference of the new symmetry with existing antisymmetries:
         # 
         antisym_res = []  # list of antisymmetries of the result
@@ -2402,19 +2424,8 @@ class CompWithSym(Components):
                 # added to the list of antisymmetries for the result:
                 antisym_res.append(iasym)
         #
-        # Does the new symmetry extend previous ones ? 
+        # Creation of the result object
         #
-        esym_set = pos_set
-        index_esym = []
-        for i, isym in enumerate(self.sym):
-            if not esym_set.isdisjoint(set(isym)): # extension of a previous symmetry
-                esym_set = esym_set.union(set(isym))
-                index_esym.append(i)
-        sym_res = [tuple(esym_set)]
-        for i, isym in enumerate(self.sym):
-            if i not in index_esym:
-                sym_res.append(isym)
-        # Creation of the result object:
         max_sym = 0
         for isym in sym_res:
             max_sym = max(max_sym, len(isym))
@@ -2423,7 +2434,9 @@ class CompWithSym(Components):
         else:
             result = CompWithSym(self.frame, self.nid, sym=sym_res, 
                                  antisym=antisym_res)
-        # Symmetrization:
+        #
+        # Symmetrization
+        #
         n_sym = len(pos) # number of indices involved in the symmetry
         sym_group = SymmetricGroup(n_sym)
         for ind in result.non_redundant_index_generator():
@@ -2491,23 +2504,22 @@ class CompWithSym(Components):
             sage: s[1,2,3] == (c[1,2,3]-c[1,3,2]+c[2,3,1]-c[2,1,3]+c[3,1,2]-c[3,2,1])/6
             True
             
-        Partial antisymmetrization::
+        Partial antisymmetrization: the antisymmetrization on the first two indices erases the 
+        existing antisymmetry on the last two ones::
         
-            sage: s = c.antisymmetrize([0,1]) ; s  # antisymmetrization on the first two indices
-            fully antisymmetric 3-indices components w.r.t. the coordinate frame (M, (d/dx,d/dy,d/dz))
-            sage: # the result is fully antisymmetric because of the previous antisymmetry on the last two indices
+            sage: s = c.antisymmetrize([0,1]) ; s  
+            3-indices components w.r.t. the coordinate frame (M, (d/dx,d/dy,d/dz)), with antisymmetry on the index positions (0, 1)
             sage: c[:], s[:]
             ([[[0, x, 2*x], [-x, 0, 3*x], [-2*x, -3*x, 0]],
               [[0, y, 2*y], [-y, 0, 3*y], [-2*y, -3*y, 0]],
               [[0, z, 2*z], [-z, 0, 3*z], [-2*z, -3*z, 0]]],
-             [[[0, 0, 0], [0, 0, 3/2*x - y], [0, -3/2*x + y, 0]],
-              [[0, 0, -3/2*x + y], [0, 0, 0], [3/2*x - y, 0, 0]],
-              [[0, 3/2*x - y, 0], [-3/2*x + y, 0, 0], [0, 0, 0]]])
+             [[[0, 0, 0], [-1/2*x, -1/2*y, 3/2*x - y], [-x, -3/2*x - 1/2*z, -z]],
+              [[1/2*x, 1/2*y, -3/2*x + y], [0, 0, 0], [-y + 1/2*z, -3/2*y, -3/2*z]],
+              [[x, 3/2*x + 1/2*z, z], [y - 1/2*z, 3/2*y, 3/2*z], [0, 0, 0]]])
             sage: s[1,2,3]
             3/2*x - y
             sage: s[1,2,3] == (c[1,2,3]-c[2,1,3])/2
             True
-            
             sage: s = c.antisymmetrize([1,2]) ; s  # antisymmetrization on the last two indices
             3-indices components w.r.t. the coordinate frame (M, (d/dx,d/dy,d/dz)), with antisymmetry on the index positions (1, 2)
             sage: s == c
@@ -2575,6 +2587,30 @@ class CompWithSym(Components):
             if pos_set.issubset(set(iasym)):
                 return self.copy()
         #
+        # Interference of the new antisymmetry with existing ones
+        # 
+        antisym_res = [pos]  # starting the list of symmetries of the result
+        for iasym in self.antisym:
+            inter = pos_set.intersection(set(iasym))
+            # if len(inter) == len(iasym), iasym is included in the new 
+            # antisymmetry and therefore has not to be included in antisym_res
+            if len(inter) != len(iasym):
+                if len(inter) >= 1: 
+                    # some part of iasym is lost
+                    iasym_set = set(iasym)
+                    for k in inter:
+                        iasym_set.remove(k)
+                    if len(iasym_set) > 1:
+                        # some part of iasym remains and must be included in 
+                        # antisym_res:
+                        iasym_res = tuple(iasym_set)
+                        antisym_res.append(iasym_res)
+                else:
+                    # case len(inter)=0: no interference: the existing 
+                    # antisymmetry is added to the list of antisymmetries for 
+                    # the result:
+                    antisym_res.append(iasym)
+        #
         # Interference of the new antisymmetry with existing symmetries:
         # 
         sym_res = []  # list of symmetries of the result
@@ -2600,20 +2636,8 @@ class CompWithSym(Components):
                 # added to the list of symmetries for the result:
                 sym_res.append(isym)
         #
-        # Does the new antisymmetry extend previous ones ?
+        # Creation of the result object
         #
-        esym_set = pos_set
-        index_esym = []
-        for i, isym in enumerate(self.antisym):
-            if not esym_set.isdisjoint(set(isym)): # extension of a previous symmetry
-                esym_set = esym_set.union(set(isym))
-                index_esym.append(i)
-        antisym_res = [tuple(esym_set)]
-        for i, isym in enumerate(self.antisym):
-            if i not in index_esym:
-                antisym_res.append(isym)
-        #
-        # Creation of the result object:
         max_sym = 0
         for isym in antisym_res:
             max_sym = max(max_sym, len(isym))
@@ -2622,7 +2646,9 @@ class CompWithSym(Components):
         else:
             result = CompWithSym(self.frame, self.nid, sym=sym_res, 
                                  antisym=antisym_res)
-        # Antisymmetrization:
+        #
+        # Antisymmetrization
+        #
         n_sym = len(pos) # number of indices involved in the antisymmetry
         sym_group = SymmetricGroup(n_sym)
         for ind in result.non_redundant_index_generator():
