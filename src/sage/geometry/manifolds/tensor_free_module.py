@@ -738,15 +738,27 @@ class FiniteFreeModule(TensorFreeModule):
                 
         """
         from free_module_tensor import FreeModuleTensor, FreeModuleVector
-        from free_module_tensor_spec import FreeModuleEndomorphism
-        from free_module_alt_form import FreeModuleLinForm
-        if tensor_type == (1,0):
+        from free_module_tensor_spec import FreeModuleEndomorphism, \
+                                                        FreeModuleSymBilinForm
+        from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
+        if tensor_type==(1,0):
             return FreeModuleVector(self, name=name, latex_name=latex_name)
-        elif tensor_type == (0,1):
+        elif tensor_type==(0,1):
             return FreeModuleLinForm(self, name=name, latex_name=latex_name)
-        elif tensor_type == (1,1):
+        elif tensor_type==(1,1):
             return FreeModuleEndomorphism(self, name=name, 
                                                          latex_name=latex_name)
+        elif tensor_type==(0,2) and sym==(0,1):
+            return FreeModuleSymBilinForm(self, name=name, 
+                                                         latex_name=latex_name)
+        elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
+            if len(antisym)==tensor_type[1]:
+                return FreeModuleAltForm(self, tensor_type[1], name=name, 
+                                         latex_name=latex_name)
+            else:
+                return FreeModuleTensor(self, tensor_type, name=name, 
+                                        latex_name=latex_name, sym=sym, 
+                                        antisym=antisym)
         else:
             return FreeModuleTensor(self, tensor_type, name=name, 
                                     latex_name=latex_name, sym=sym, 
@@ -814,7 +826,8 @@ class FiniteFreeModule(TensorFreeModule):
                 
         """
         from free_module_tensor import FreeModuleTensor, FreeModuleVector
-        from free_module_tensor_spec import FreeModuleEndomorphism
+        from free_module_tensor_spec import FreeModuleEndomorphism, \
+                                                        FreeModuleSymBilinForm
         from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
         from comp import CompWithSym, CompFullySym, CompFullyAntiSym
         #
@@ -835,7 +848,11 @@ class FiniteFreeModule(TensorFreeModule):
         elif tensor_type == (0,1):
             resu = FreeModuleLinForm(self, name=name, latex_name=latex_name)
         elif tensor_type == (1,1):
-            resu = FreeModuleEndomorphism(self, name=name, latex_name=latex_name)
+            resu = FreeModuleEndomorphism(self, name=name, 
+                                          latex_name=latex_name)
+        elif tensor_type == (0,2) and isinstance(comp, CompFullySym):
+            resu = FreeModuleSymBilinForm(self, name=name, 
+                                          latex_name=latex_name)
         elif tensor_type[0] == 0 and tensor_type[1] > 1 and \
                                         isinstance(comp, CompFullyAntiSym):
             resu = FreeModuleAltForm(self, tensor_type[1], name=name, 
@@ -843,14 +860,14 @@ class FiniteFreeModule(TensorFreeModule):
         else:
             resu = FreeModuleTensor(self, tensor_type, name=name, 
                                     latex_name=latex_name) 
+            # Tensor symmetries deduced from those of comp:
+            if isinstance(comp, CompWithSym):
+                resu.sym = comp.sym
+                resu.antisym = comp.antisym
         #
         # 2/ Tensor components set to comp:
         resu.components[comp.frame] = comp
         #
-        # 3/ Tensor symmetries deduced from those of comp
-        if isinstance(comp, CompWithSym):
-            resu.sym = comp.sym
-            resu.antisym = comp.antisym
         return resu
 
     def alternating_form(self, degree, name=None, latex_name=None):
@@ -923,6 +940,72 @@ class FiniteFreeModule(TensorFreeModule):
         """
         from free_module_tensor_spec import FreeModuleEndomorphism
         return FreeModuleEndomorphism(self, name=name, latex_name=latex_name)
+
+
+    def automorphism(self, name=None, latex_name=None):
+        r"""
+        Construct an automorphism on the free module. 
+        
+        INPUT:
+    
+        - ``name`` -- (string; default: None) name given to the automorphism
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          automorphism; if none is provided, the LaTeX symbol is set to 
+          ``name``
+          
+        OUTPUT:
+        
+        - instance of :class:`FreeModuleAutomorphism`
+          
+        EXAMPLES:
+
+        """
+        from free_module_tensor_spec import FreeModuleAutomorphism
+        return FreeModuleAutomorphism(self, name=name, latex_name=latex_name)
+
+        
+    def identity_map(self, name='Id', latex_name=None):
+        r"""
+        Construct the identity map on the free module. 
+        
+        INPUT:
+    
+        - ``name`` -- (string; default: 'Id') name given to the identity map
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          automorphism; if none is provided, the LaTeX symbol is set to 
+          ``name``
+          
+        OUTPUT:
+        
+        - instance of :class:`FreeModuleIdentityMap`
+          
+        EXAMPLES:
+
+        """
+        from free_module_tensor_spec import FreeModuleIdentityMap
+        return FreeModuleIdentityMap(self, name=name, latex_name=latex_name)
+
+        
+    def sym_bilinear_form(self, name=None, latex_name=None):
+        r"""
+        Construct the identity map on the free module. 
+        
+        INPUT:
+    
+        - ``name`` -- (string; default: None) name given to the endomorphism
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          endomorphism; if none is provided, the LaTeX symbol is set to 
+          ``name``
+          
+        OUTPUT:
+        
+        - instance of :class:`FreeModuleSymBilinForm`
+          
+        EXAMPLES:
+
+        """
+        from free_module_tensor_spec import FreeModuleSymBilinForm
+        return FreeModuleSymBilinForm(self, name=name, latex_name=latex_name)
 
         
 

@@ -18,6 +18,8 @@ from vectorframe import VectorFrame, CoordFrame, CoFrame, CoordCoFrame
 #    KroneckerDelta
 from tensor_free_module import FiniteFreeModule, TensorFreeModule
 from free_module_tensor import FreeModuleTensor, FreeModuleVector
+#from free_module_tensor_spec import FreeModuleEndomorphism, \
+#          FreeModuleAutomorphism, FreeModuleIdentityMap, FreeModuleSymBilinForm
 from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
 from free_module_basis import FreeModuleBasis
 from metric import Metric, RiemannMetric, LorentzMetric

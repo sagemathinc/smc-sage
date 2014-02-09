@@ -5,7 +5,7 @@ The class :class:`FreeModuleTensor` implements tensors over a free module `M`,
 i.e. elements of the free module `T^{(k,l)}(M)` of tensors of type `(k,l)`
 acting as multilinear forms on `M`. 
 
-A tensor of type `(k,l)` is a multilinear map:
+A *tensor of type* `(k,l)` is a multilinear map:
 
 .. MATH::
 
@@ -15,7 +15,7 @@ A tensor of type `(k,l)` is a multilinear map:
     
 where `M^*` stands for the dual of the free module `M` and `R` for the 
 commutative ring over which `M` is defined. The integer `k+l`
-is called the tensor rank. 
+is called the *tensor rank*. 
 
 Various derived classes of :class:`FreeModuleTensor` are devoted to specific 
 tensors:
@@ -25,6 +25,14 @@ tensors:
 * :class:`FreeModuleLinForm` type-(0,1) tensors (linear forms)
 * :class:`FreeModuleAltForm` for alternating forms (fully antisymmetric 
   type-(0,p) tensors)
+* :class:`~sage.geometry.manifolds.free_module_tensor_spec.FreeModuleEndomorphism` 
+  for type-(1,1) tensors (endomorphisms)
+* :class:`~sage.geometry.manifolds.free_module_tensor_spec.FreeModuleAutomorphism` 
+  for invertible endomorphisms
+* :class:`~sage.geometry.manifolds.free_module_tensor_spec.FreeModuleIdentityMap` 
+  for the identity map on a free module
+* :class:`~sage.geometry.manifolds.free_module_tensor_spec.FreeModuleSymBilinForm` 
+  for symmetric type-(0,2) tensors (symmetric bilinear forms)
 
 AUTHORS:
 
@@ -84,13 +92,13 @@ EXAMPLES:
         sage: t == M.tensor_module(1,1).zero()  # the zero element of the module of all type-(1,1) tensors on M
         True
 
-    The components are managed by the class :class:`Components`::
+    The components are managed by the class :class:`~sage.geometry.manifolds.comp.Components`::
     
         sage: type(t.comp(e))
         <class 'sage.geometry.manifolds.comp.Components'>
 
     Only non-zero components are actually stored, in the dictionary :attr:`_comp`
-    of class :class:`Components`, whose keys are the indices::
+    of class :class:`~sage.geometry.manifolds.comp.Components`, whose keys are the indices::
     
         sage: t.comp(e)._comp
         {}
@@ -442,7 +450,11 @@ class FreeModuleTensor(ModuleElement):
         
         This method, to be called by :meth:`comp`, must be redefined by derived 
         classes to adapt the output to the relevant subclass of 
-        :class:`Components`.
+        :class:`~sage.geometry.manifolds.comp.Components`.
+        
+        OUTPUT:
+        
+        - an instance of :class:`~sage.geometry.manifolds.comp.Components` (or of one of its subclass)
         
         """
         fmodule = self.fmodule  # the base free module
@@ -474,9 +486,9 @@ class FreeModuleTensor(ModuleElement):
         
         INPUT:
         
-        - ``basis`` -- (default: None)  vector basis in which the components 
-          are required; if none is provided, the components are assumed to 
-          refer to the domain's default basis
+        - ``basis`` -- (default: None) basis in which the components are 
+          required; if none is provided, the components are assumed to refer to
+          the module's default basis
         - ``from_basis`` -- (default: None) basis from which the
           required components are computed, via the tensor change-of-basis 
           formula, if they are not known already in the basis ``basis``; 
@@ -485,7 +497,7 @@ class FreeModuleTensor(ModuleElement):
         OUTPUT: 
         
         - components in the basis ``basis``, as an instance of the 
-          class :class:`Components` 
+          class :class:`~sage.geometry.manifolds.comp.Components` 
         
         EXAMPLES:
         
@@ -562,7 +574,7 @@ class FreeModuleTensor(ModuleElement):
         OUTPUT: 
         
         - components in the given basis, as an instance of the 
-          class :class:`Components`; if such components did not exist
+          class :class:`~sage.geometry.manifolds.comp.Components`; if such components did not exist
           previously, they are created.  
         
         EXAMPLES:
@@ -605,7 +617,7 @@ class FreeModuleTensor(ModuleElement):
         OUTPUT: 
         
         - components in the given basis, as an instance of the 
-          class :class:`Components`; if such components did not exist
+          class :class:`~sage.geometry.manifolds.comp.Components`; if such components did not exist
           previously, they are created.  
         
         EXAMPLES:
@@ -1018,7 +1030,7 @@ class FreeModuleTensor(ModuleElement):
         fmodule = self.fmodule
         # Search for a common basis
         basis = None
-        # First try with the default basis of self's domain
+        # First try with the module's default basis 
         def_basis = fmodule.def_basis
         if def_basis in self.components:
             basis = def_basis
