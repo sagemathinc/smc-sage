@@ -731,6 +731,10 @@ class FiniteFreeModule(TensorFreeModule):
             linear form t on the rank-3 free module M over the Integer Ring
             sage: t = M.tensor((1,1), name='t') ; t
             endomorphism t on the rank-3 free module M over the Integer Ring
+            sage: t = M.tensor((0,2), name='t', sym=(0,1)) ; t
+            symmetric bilinear form t on the rank-3 free module M over the Integer Ring
+            sage: t = M.tensor((0,2), name='t', antisym=(0,1)) ; t
+            alternating form t of degree 2 on the rank-3 free module M over the Integer Ring
             sage: t = M.tensor((1,2), name='t') ; t
             type-(1,2) tensor t on the rank-3 free module M over the Integer Ring
             
@@ -812,7 +816,7 @@ class FiniteFreeModule(TensorFreeModule):
             sage: c = CompFullySym(ZZ, e, 2)
             sage: c[0,0], c[1,2] = 4, 5
             sage: t = M.tensor_from_comp((0,2), c) ; t
-            type-(0,2) tensor on the rank-3 free module M over the Integer Ring
+            symmetric bilinear form on the rank-3 free module M over the Integer Ring
             sage: t.symmetries()
             symmetry: (0, 1);  no antisymmetry
             sage: t.view(e)
@@ -937,6 +941,27 @@ class FiniteFreeModule(TensorFreeModule):
           
         EXAMPLES:
 
+        Endomorphism on a rank-3 module::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: t = M.endomorphism('T') ; t
+            endomorphism T on the rank-3 free module M over the Integer Ring
+    
+        An endomorphism is type-(1,1) tensor::
+    
+            sage: t.parent()
+            free module of type-(1,1) tensors on the rank-3 free module M over the Integer Ring
+            sage: t.tensor_type
+            (1, 1)
+
+        Consequently, an endomorphism can also be created by the method 
+        :meth:`tensor`::
+        
+            sage: t = M.tensor((1,1), name='T') ; t
+            endomorphism T on the rank-3 free module M over the Integer Ring
+    
+        See class :class:`FreeModuleEndomorphism` for further documentation. 
+
         """
         from free_module_tensor_spec import FreeModuleEndomorphism
         return FreeModuleEndomorphism(self, name=name, latex_name=latex_name)
@@ -959,6 +984,21 @@ class FiniteFreeModule(TensorFreeModule):
           
         EXAMPLES:
 
+        Automorphism on a rank-2 free module (vector space) on `\QQ`::
+        
+            sage: M = FiniteFreeModule(QQ, 2, name='M')
+            sage: a = M.automorphism('A') ; a
+            automorphism A on the rank-2 free module M over the Rational Field
+    
+        Automorphisms are tensors of type (1,1)::
+        
+            sage: a.parent()
+            free module of type-(1,1) tensors on the rank-2 free module M over the Rational Field
+            sage: a.tensor_type
+            (1, 1)
+
+        See class :class:`FreeModuleAutomorphism` for further documentation. 
+ 
         """
         from free_module_tensor_spec import FreeModuleAutomorphism
         return FreeModuleAutomorphism(self, name=name, latex_name=latex_name)
@@ -981,6 +1021,30 @@ class FiniteFreeModule(TensorFreeModule):
           
         EXAMPLES:
 
+        Identity map on a rank-3 free module::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: e = M.new_basis('e')
+            sage: a = M.identity_map() ; a
+            identity map on the rank-3 free module M over the Integer Ring
+    
+        The LaTeX symbol is set by default to Id, but can be changed::
+        
+            sage: latex(a)
+            \mathrm{Id}
+            sage: a = M.identity_map(latex_name=r'\mathrm{1}')
+            sage: latex(a)
+            \mathrm{1}
+    
+        The identity map is a tensor of type (1,1) on the free module::
+        
+            sage: a.parent()
+            free module of type-(1,1) tensors on the rank-3 free module M over the Integer Ring
+            sage: a.tensor_type
+            (1, 1)
+
+        See class :class:`FreeModuleIdentityMap` for further documentation. 
+ 
         """
         from free_module_tensor_spec import FreeModuleIdentityMap
         return FreeModuleIdentityMap(self, name=name, latex_name=latex_name)
@@ -1002,7 +1066,24 @@ class FiniteFreeModule(TensorFreeModule):
         - instance of :class:`FreeModuleSymBilinForm`
           
         EXAMPLES:
+    
+        Symmetric bilinear form on a rank-3 free module::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: a = M.sym_bilinear_form('A') ; a
+            symmetric bilinear form A on the rank-3 free module M over the Integer Ring
+            
+        A symmetric bilinear form is a type-(0,2) tensor that is symmetric::
+        
+            sage: a.parent()
+            free module of type-(0,2) tensors on the rank-3 free module M over the Integer Ring
+            sage: a.tensor_type
+            (0, 2)
+            sage: a.symmetries()
+            symmetry: (0, 1);  no antisymmetry
 
+        See class :class:`FreeModuleSymBilinForm` for further documentation. 
+ 
         """
         from free_module_tensor_spec import FreeModuleSymBilinForm
         return FreeModuleSymBilinForm(self, name=name, latex_name=latex_name)
