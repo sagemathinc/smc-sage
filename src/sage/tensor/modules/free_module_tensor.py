@@ -25,13 +25,13 @@ tensors:
 * :class:`FreeModuleLinForm` type-(0,1) tensors (linear forms)
 * :class:`FreeModuleAltForm` for alternating forms (fully antisymmetric 
   type-(0,p) tensors)
-* :class:`~sage.geometry.manifolds.free_module_tensor_spec.FreeModuleEndomorphism` 
+* :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphism` 
   for type-(1,1) tensors (endomorphisms)
-* :class:`~sage.geometry.manifolds.free_module_tensor_spec.FreeModuleAutomorphism` 
+* :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphism` 
   for invertible endomorphisms
-* :class:`~sage.geometry.manifolds.free_module_tensor_spec.FreeModuleIdentityMap` 
+* :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityMap` 
   for the identity map on a free module
-* :class:`~sage.geometry.manifolds.free_module_tensor_spec.FreeModuleSymBilinForm` 
+* :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleSymBilinForm` 
   for symmetric type-(0,2) tensors (symmetric bilinear forms)
 
 AUTHORS:
@@ -92,13 +92,13 @@ EXAMPLES:
         sage: t == M.tensor_module(1,1).zero()  # the zero element of the module of all type-(1,1) tensors on M
         True
 
-    The components are managed by the class :class:`~sage.geometry.manifolds.comp.Components`::
+    The components are managed by the class :class:`~sage.tensor.modules.comp.Components`::
     
         sage: type(t.comp(e))
-        <class 'sage.geometry.manifolds.comp.Components'>
+        <class 'sage.tensor.modules.comp.Components'>
 
     Only non-zero components are actually stored, in the dictionary :attr:`_comp`
-    of class :class:`~sage.geometry.manifolds.comp.Components`, whose keys are the indices::
+    of class :class:`~sage.tensor.modules.comp.Components`, whose keys are the indices::
     
         sage: t.comp(e)._comp
         {}
@@ -307,7 +307,7 @@ class FreeModuleTensor(ModuleElement):
                     
         """
         from sage.misc.latex import latex
-        from utilities import is_atomic, FormattedExpansion
+        from format_utilities import is_atomic, FormattedExpansion
         if basis is None:
             basis = self.fmodule.def_basis
         cobasis = basis.dual_basis
@@ -450,11 +450,11 @@ class FreeModuleTensor(ModuleElement):
         
         This method, to be called by :meth:`comp`, must be redefined by derived 
         classes to adapt the output to the relevant subclass of 
-        :class:`~sage.geometry.manifolds.comp.Components`.
+        :class:`~sage.tensor.modules.comp.Components`.
         
         OUTPUT:
         
-        - an instance of :class:`~sage.geometry.manifolds.comp.Components` (or of one of its subclass)
+        - an instance of :class:`~sage.tensor.modules.comp.Components` (or of one of its subclass)
         
         """
         fmodule = self.fmodule  # the base free module
@@ -497,7 +497,7 @@ class FreeModuleTensor(ModuleElement):
         OUTPUT: 
         
         - components in the basis ``basis``, as an instance of the 
-          class :class:`~sage.geometry.manifolds.comp.Components` 
+          class :class:`~sage.tensor.modules.comp.Components` 
         
         EXAMPLES:
         
@@ -574,7 +574,7 @@ class FreeModuleTensor(ModuleElement):
         OUTPUT: 
         
         - components in the given basis, as an instance of the 
-          class :class:`~sage.geometry.manifolds.comp.Components`; if such components did not exist
+          class :class:`~sage.tensor.modules.comp.Components`; if such components did not exist
           previously, they are created.  
         
         EXAMPLES:
@@ -617,7 +617,7 @@ class FreeModuleTensor(ModuleElement):
         OUTPUT: 
         
         - components in the given basis, as an instance of the 
-          class :class:`~sage.geometry.manifolds.comp.Components`; if such components did not exist
+          class :class:`~sage.tensor.modules.comp.Components`; if such components did not exist
           previously, they are created.  
         
         EXAMPLES:
@@ -811,7 +811,8 @@ class FreeModuleTensor(ModuleElement):
         elif not isinstance(other, FreeModuleTensor):
             return False
         else: # other is another tensor
-            #!# base modules should be compared
+            if other.fmodule != self.fmodule:
+                return False
             if other.tensor_type != self.tensor_type:
                 return False
             basis = self.common_basis(other)
@@ -965,7 +966,7 @@ class FreeModuleTensor(ModuleElement):
         r"""
         Tensor product. 
         """
-        from utilities import format_mul_txt, format_mul_latex
+        from format_utilities import format_mul_txt, format_mul_latex
         if isinstance(other, FreeModuleTensor):
             basis = self.common_basis(other)
             if basis is None:
@@ -1231,7 +1232,7 @@ class FreeModuleVector(FreeModuleTensor):
 
     The second way is by a direct call to the class constructor::
     
-        sage: from sage.geometry.manifolds.free_module_tensor import FreeModuleVector
+        sage: from sage.tensor.modules.free_module_tensor import FreeModuleVector
         sage: v2 = FreeModuleVector(M, name='v')
         sage: v2[0], v2[2] = 2, -1 # setting the nonzero components in the default basis (e)
         sage: v2

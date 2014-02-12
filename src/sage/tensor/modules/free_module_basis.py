@@ -42,7 +42,7 @@ class FreeModuleBasis(SageObject):
     A basis on a rank-3 free module over `\ZZ`::
         
         sage: M = FiniteFreeModule(ZZ, 3, name='M')
-        sage: from sage.geometry.manifolds.free_module_basis import FreeModuleBasis
+        sage: from sage.tensor.modules.free_module_basis import FreeModuleBasis
         sage: e = FreeModuleBasis(M, 'e') ; e
         basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
 

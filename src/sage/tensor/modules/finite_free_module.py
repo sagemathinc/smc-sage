@@ -125,7 +125,7 @@ class FiniteFreeModule(Module):
     
         sage: v = M.an_element() ; v
         element of the rank-3 free module M over the Integer Ring
-        sage: from sage.geometry.manifolds.free_module_tensor import FreeModuleVector
+        sage: from sage.tensor.modules.free_module_tensor import FreeModuleVector
         sage: isinstance(v, FreeModuleVector)
         True        
         sage: v in M
@@ -228,7 +228,9 @@ class FiniteFreeModule(Module):
         self.def_basis = None # default basis
         self.basis_changes = {} # Dictionary of the changes of bases
         # Zero element:
-        self._zero_element = self._element_constructor_(name='zero', latex_name='0')
+        if not hasattr(self, '_zero_element'):
+            self._zero_element = self._element_constructor_(name='zero', 
+                                                            latex_name='0')
 
         
 
@@ -250,7 +252,7 @@ class FiniteFreeModule(Module):
         Construct some (unamed) element of the module
         """
         resu = self.element_class(self)
-        if self.fmodule.def_basis is not None:
+        if self.def_basis is not None:
             resu.set_comp()[:] = [self.ring.an_element() for i in 
                                                              range(self._rank)]
         return resu
@@ -266,6 +268,15 @@ class FiniteFreeModule(Module):
             description += self.name + " "
         description += "over the " + str(self.ring)
         return description
+
+    def _latex_(self):
+        r"""
+        LaTeX representation of the object.
+        """
+        if self.latex_name is None:
+            return r'\mbox{' + str(self) + r'}'
+        else:
+           return self.latex_name
 
     def rank(self):
         r"""
@@ -375,6 +386,7 @@ class FiniteFreeModule(Module):
             True
         
         """
+        from tensor_free_module import TensorFreeModule
         if (k,l) not in self.tensor_modules:
             self.tensor_modules[(k,l)] = TensorFreeModule(self, (k,l))
         return self.tensor_modules[(k,l)]
@@ -575,7 +587,7 @@ class FiniteFreeModule(Module):
         
         Construction of a tensor of rank 1::
         
-            sage: from sage.geometry.manifolds.comp import Components, CompWithSym, CompFullySym, CompFullyAntiSym
+            sage: from sage.tensor.modules.comp import Components, CompWithSym, CompFullySym, CompFullyAntiSym
             sage: M = FiniteFreeModule(ZZ, 3, name='M')
             sage: e = M.new_basis('e') ; e
             basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
