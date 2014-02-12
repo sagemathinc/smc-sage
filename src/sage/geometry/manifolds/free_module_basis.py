@@ -32,10 +32,10 @@ class FreeModuleBasis(SageObject):
     
     - ``fmodule`` -- free module `M` (must be an instance of 
       :class:`FiniteFreeModule`)
-    - ``symbol`` -- a letter (of a few letters) to denote a generic element of
-      the basis
-    - ``latex_symbol`` -- (default: None) symbol to denote a generic element of
-      the basis; if None, the value of ``symbol`` is used. 
+    - ``symbol`` -- (string) a letter (of a few letters) to denote a generic 
+      element of the basis
+    - ``latex_symbol`` -- (string; default: None) symbol to denote a generic 
+      element of the basis; if None, the value of ``symbol`` is used. 
 
     EXAMPLES:
     
@@ -169,6 +169,85 @@ class FreeModuleBasis(SageObject):
         """
         return self.fmodule._rank
 
+    def new_basis(self, change_of_basis, symbol, latex_symbol=None):
+        r"""
+        Define a new module basis from the current one. 
+        
+        The new basis is defined by means of a module automorphism. 
+        
+        INPUT:
+        
+        - ``change_of_basis`` -- instance of :class:`FreeModuleAutomorphism`
+          describing the automorphism `P` that relates the current basis 
+          `(e_i)` (described by ``self``) to the new basis `(n_i)` according
+          to `n_i = P(e_i)`
+        - ``symbol`` -- (string) a letter (of a few letters) to denote a 
+          generic element of the basis
+        - ``latex_symbol`` -- (string; default: None) symbol to denote a 
+          generic element of the basis; if None, the value of ``symbol`` is 
+          used. 
+          
+        OUTPUT:
+        
+        - the new basis `(n_i)`, as an instance of :class:`FreeModuleBasis`
+        
+        EXAMPLES:
+        
+        Change of basis on a rank-2 free module::
+        
+            sage: M = FiniteFreeModule(QQ, 2, name='M', start_index=1)
+            sage: e = M.new_basis('e')
+            sage: a = M.automorphism()
+            sage: a[:] = [[1, 2], [-1, 3]]
+            sage: f = e.new_basis(a, 'f') ; f
+            basis (f_1,f_2) on the rank-2 free module M over the Rational Field
+            sage: f[1].view()
+            f_1 = e_1 - e_2
+            sage: f[2].view()
+            f_2 = 2 e_1 + 3 e_2
+            sage: e[1].view(f)
+            e_1 = 3/5 f_1 + 1/5 f_2
+            sage: e[2].view(f)
+            e_2 = -2/5 f_1 + 1/5 f_2
+
+        """
+        from free_module_tensor_spec import FreeModuleAutomorphism
+        if not isinstance(change_of_basis, FreeModuleAutomorphism):
+            raise TypeError("The argument change_of_basis must be some " +
+                            "instance of FreeModuleAutomorphism.")
+        fmodule = self.fmodule
+        the_new_basis = FreeModuleBasis(fmodule, symbol, latex_symbol)
+        transf = change_of_basis.copy()
+        inv_transf = change_of_basis.inverse().copy()
+        si = fmodule.sindex
+        # Components of the new basis vectors in the old basis: 
+        for i in fmodule.irange():
+            for j in fmodule.irange():
+                the_new_basis.vec[i-si].add_comp(self)[[j]] = \
+                                                  transf.comp(self)[[j,i]]
+        # Components of the new dual-basis elements in the old dual basis: 
+        for i in fmodule.irange():
+            for j in fmodule.irange():
+                the_new_basis.dual_basis.form[i-si].add_comp(self)[[j]] = \
+                                              inv_transf.comp(self)[[i,j]]
+        # The components of the transformation and its inverse are the same in 
+        # the two bases:
+        for i in fmodule.irange():
+            for j in fmodule.irange():
+                transf.add_comp(the_new_basis)[[i,j]] = transf.comp(self)[[i,j]]
+                inv_transf.add_comp(the_new_basis)[[i,j]] = \
+                                              inv_transf.comp(self)[[i,j]]
+        # Components of the old basis vectors in the new basis: 
+        for i in fmodule.irange():
+            for j in fmodule.irange():
+                self.vec[i-si].add_comp(the_new_basis)[[j]] = \
+                                                   inv_transf.comp(self)[[j,i]]
+        # Components of the old dual-basis elements in the new cobasis: 
+        for i in fmodule.irange():
+            for j in fmodule.irange():
+                self.dual_basis.form[i-si].add_comp(the_new_basis)[[j]] = \
+                                                       transf.comp(self)[[i,j]]
+        return the_new_basis
 
 #******************************************************************************
 
@@ -199,7 +278,7 @@ class FreeModuleCoBasis(SageObject):
         self.latex_name = r"\left(" + \
           ",".join([latex_symbol + "^" + str(i) 
                     for i in self.fmodule.irange()]) + r"\right)"
-        # The individual 1-forms:
+        # The individual linear forms:
         vl = list()
         for i in self.fmodule.irange():
             v_name = symbol + "^" + str(i)

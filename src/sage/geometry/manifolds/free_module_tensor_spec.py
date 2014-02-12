@@ -299,7 +299,8 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
                 except (KeyError, ValueError):
                     continue
                 mat_inv = mat_self.inverse()
-                cinv = Components(fmodule.ring, basis, 2)
+                cinv = Components(fmodule.ring, basis, 2, start_index=si,
+                                  output_formatter=fmodule.output_formatter)
                 for i in range(si, nsi):
                     for j in range(si, nsi):   
                         cinv[i, j] = mat_inv[i-si,j-si]
