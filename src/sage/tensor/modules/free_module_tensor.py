@@ -20,8 +20,7 @@ is called the *tensor rank*.
 Various derived classes of :class:`FreeModuleTensor` are devoted to specific 
 tensors:
 
-* :class:`FreeModuleVector` for elements of `M` (vectors), considered as rank-1 
-  contravariant tensors
+* :class:`FiniteFreeModuleElement` for elements of `M`, considered as type-(1,0) tensors
 * :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm` for 
   type-(0,1) tensors (linear forms)
 * :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm` for 
@@ -125,7 +124,7 @@ EXAMPLES:
         False
 
     As a multilinear map `M^*\times M \rightarrow \ZZ`, the type-(1,1) tensor t 
-    acts on pairs formed by a linear form and a vector::
+    acts on pairs formed by a linear form and a module element::
     
         sage: a = M.tensor((0,1), name='a') ; a[:] = (2, 1, -3) ; a
         linear form a on the rank-3 free module M over the Integer Ring
@@ -155,7 +154,7 @@ from comp import Components, CompWithSym, CompFullySym, CompFullyAntiSym
 
 class FreeModuleTensor(ModuleElement):
     r"""
-    Tensor over a free module `M`.
+    Tensor over a free module of finite rank over a commutative ring.
     
     INPUT:
     
@@ -704,8 +703,10 @@ class FreeModuleTensor(ModuleElement):
         
         OUPUT:
         
-        - instance of :class:`FreeModuleBasis` representing the common basis; 
-          if no common basis is found, None is returned. 
+        - instance of 
+          :class:`~sage.tensor.modules.free_module_basis.FreeModuleBasis`
+          representing the common basis; if no common basis is found, None is 
+          returned. 
         
         """
         # Compatibility checks:
@@ -780,7 +781,9 @@ class FreeModuleTensor(ModuleElement):
 
         OUTPUT:
         
-        - instance of :class:`FreeModuleBasis` representing the basis 
+        - instance of 
+          :class:`~sage.tensor.modules.free_module_basis.FreeModuleBasis` 
+          representing the basis 
 
         """
         if self.fmodule.def_basis in self.components:
@@ -1007,12 +1010,13 @@ class FreeModuleTensor(ModuleElement):
 
     def __call__(self, *args):
         r"""
-        The tensor acting on linear forms and vectors as a multilinear map.
+        The tensor acting on linear forms and module elements as a multilinear 
+        map.
         
         INPUT:
         
-        - ``*args`` -- list of k 1-forms and l vectors, self being a tensor
-          of type (k,l). 
+        - ``*args`` -- list of k linear forms and l module elements, ``self`` 
+          being a tensor of type (k,l). 
           
         """
         from free_module_alt_form import FreeModuleLinForm
@@ -1026,9 +1030,9 @@ class FreeModuleTensor(ModuleElement):
                 raise TypeError("The argument no. " + str(i+1) + 
                                 " must be a linear form.")
         for i in range(self.tensor_type[0],p):
-            if not isinstance(args[i], FreeModuleVector):
+            if not isinstance(args[i], FiniteFreeModuleElement):
                 raise TypeError("The argument no. " + str(i+1) + 
-                                " must be a vector.")
+                                " must be a module element.")
         fmodule = self.fmodule
         # Search for a common basis
         basis = None
@@ -1201,16 +1205,16 @@ class FreeModuleTensor(ModuleElement):
 #         ...
 
 
-class FreeModuleVector(FreeModuleTensor):
+class FiniteFreeModuleElement(FreeModuleTensor):
     r"""
-    Element (vector) of a free module `M`.
+    Element of a free module of finite rank over a commutative ring.
     
     INPUT:
     
     - ``fmodule`` -- free module `M` over a commutative ring `R` (must be an 
       instance of :class:`FiniteFreeModule`)
-    - ``name`` -- (default: None) name given to the vector
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the vector; 
+    - ``name`` -- (default: None) name given to the element
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the element; 
       if none is provided, the LaTeX symbol is set to ``name``
     
     EXAMPLES:
@@ -1233,8 +1237,8 @@ class FreeModuleVector(FreeModuleTensor):
 
     The second way is by a direct call to the class constructor::
     
-        sage: from sage.tensor.modules.free_module_tensor import FreeModuleVector
-        sage: v2 = FreeModuleVector(M, name='v')
+        sage: from sage.tensor.modules.free_module_tensor import FiniteFreeModuleElement
+        sage: v2 = FiniteFreeModuleElement(M, name='v')
         sage: v2[0], v2[2] = 2, -1 # setting the nonzero components in the default basis (e)
         sage: v2
         element v of the rank-3 free module M over the Integer Ring
@@ -1368,9 +1372,9 @@ class FreeModuleVector(FreeModuleTensor):
 
     def _new_instance(self):
         r"""
-        Create a :class:`FreeModuleVector` instance.
+        Create a :class:`FiniteFreeModuleElement` instance.
         
         """
-        return FreeModuleVector(self.fmodule)
+        return FiniteFreeModuleElement(self.fmodule)
 
         

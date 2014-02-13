@@ -38,7 +38,7 @@ AUTHORS:
 
 from sage.modules.module import Module
 from finite_free_module import FiniteFreeModule
-from free_module_tensor import FreeModuleTensor, FreeModuleVector
+from free_module_tensor import FreeModuleTensor, FiniteFreeModuleElement
 
 
 # From sage/modules/module.pyx:

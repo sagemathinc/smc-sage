@@ -1,8 +1,9 @@
 """
 Specific rank-2 tensors on free modules
 
-Four derived classes of :class:`FreeModuleTensor` are devoted to rank-2 
-tensors:
+Four derived classes of 
+:class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor` are devoted 
+to rank-2 tensors:
 
 * :class:`FreeModuleEndomorphism` for endomorphisms (type-(1,1) tensors)
 * :class:`FreeModuleAutomorphism` for invertible endomorphisms
@@ -11,7 +12,7 @@ tensors:
   type-(0,2) tensors)
   
 Antisymmetric bilinear forms are dealt with by the class
-:class:`FreeModuleAltForm`.
+:class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm`.
 
 AUTHORS:
 
@@ -118,22 +119,23 @@ class FreeModuleEndomorphism(FreeModuleTensor):
     def __call__(self, *arg):
         r"""
         Redefinition of :meth:`FreeModuleTensor.__call__` to allow for a single 
-        vector argument. 
+        argument (module element). 
         """
-        from free_module_tensor import FreeModuleVector
+        from free_module_tensor import FiniteFreeModuleElement
         if len(arg) > 1:
             # the endomorphism acting as a type (1,1) tensor on a pair 
-            # (linear form, vector), returning a scalar:
+            # (linear form, module element), returning a scalar:
             return FreeModuleTensor.__call__(self, *arg) 
-        # the endomorphism acting as such, on a vector, returning a vector:
+        # the endomorphism acting as such, on a module element, returning a
+        # module element:
         vector = arg[0]
-        if not isinstance(vector, FreeModuleVector):
+        if not isinstance(vector, FiniteFreeModuleElement):
             raise TypeError("The argument must be an element of a free module.")
         basis = self.common_basis(vector)
         t = self.components[basis]
         v = vector.components[basis]
         fmodule = self.fmodule
-        result = FreeModuleVector(fmodule)
+        result = FiniteFreeModuleElement(fmodule)
         for i in fmodule.irange():
             res = 0
             for j in fmodule.irange():
@@ -452,14 +454,14 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
                 
         INPUT:
         
-        - ``basis`` -- (default: None)  vector basis in which the components 
+        - ``basis`` -- (default: None) module basis in which the components 
           are required; if none is provided, the components are assumed to 
           refer to the domain's default basis
  
         OUTPUT: 
         
         - components in the basis ``basis``, as an instance of the 
-          class :class:`KroneckerDelta` 
+          class :class:`~sage.tensor.modules.comp.KroneckerDelta` 
         
         EXAMPLES:
 
@@ -509,12 +511,12 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
         r"""
         Redefinition of :meth:`FreeModuleEndomorphism.__call__`.
         """
-        from free_module_tensor import FreeModuleVector
+        from free_module_tensor import FiniteFreeModuleElement
         from free_module_alt_form import FreeModuleLinForm
         if len(arg) == 1:
             # the identity map acting as such, on a module element:
             vector = arg[0]
-            if not isinstance(vector, FreeModuleVector):
+            if not isinstance(vector, FiniteFreeModuleElement):
                 raise TypeError("The argument must be a module element.")
             return vector
             #!# should it be return vector.copy() instead ? 
@@ -525,7 +527,7 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
             if not isinstance(linform, FreeModuleLinForm):
                 raise TypeError("The first argument must be a linear form.")
             vector = arg[1]
-            if not isinstance(vector, FreeModuleVector):
+            if not isinstance(vector, FiniteFreeModuleElement):
                 raise TypeError("The second argument must be a module element.")
             return linform(vector)
         else:

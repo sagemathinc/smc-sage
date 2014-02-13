@@ -2,10 +2,11 @@ r"""
 Alternating forms on free modules
 
 The class :class:`FreeModuleAltForm` implement alternating forms on a free 
-module over a commutative ring. 
+module of finite rank over a commutative ring. 
 
-It is a subclass of :class:`FreeModuleTensor`, alternating forms being a 
-special type of tensors. 
+It is a subclass of 
+:class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`, alternating 
+forms being a special type of tensors. 
 
 A subclass of :class:`FreeModuleAltForm` is :class:`FreeModuleLinForm` for 
 alternating forms of degree 1, i.e. linear forms. 
@@ -14,7 +15,6 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
 
-EXAMPLES:
 
 """
 #******************************************************************************
@@ -27,7 +27,7 @@ EXAMPLES:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from free_module_tensor import FreeModuleTensor, FreeModuleVector
+from free_module_tensor import FreeModuleTensor, FiniteFreeModuleElement
 from comp import Components, CompFullyAntiSym
 
 class FreeModuleAltForm(FreeModuleTensor):
@@ -36,7 +36,7 @@ class FreeModuleAltForm(FreeModuleTensor):
     
     INPUT:
     
-    - ``fmodule`` -- free module `M` over a commutative ring `R` 
+    - ``fmodule`` -- free module `M` of finite rank over a commutative ring `R` 
       (must be an instance of :class:`FiniteFreeModule`)
     - ``degree`` -- the degree of the alternating form (i.e. its tensor rank)
     - ``name`` -- (default: None) name given to the alternating form
@@ -103,7 +103,7 @@ class FreeModuleLinForm(FreeModuleAltForm):
     
     INPUT:
     
-    - ``fmodule`` -- free module `M` over a commutative ring `R` 
+    - ``fmodule`` -- free module `M` of finite rank over a commutative ring `R` 
       (must be an instance of :class:`FiniteFreeModule`)
     - ``name`` -- (default: None) name given to the linear form
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the linear 
@@ -142,14 +142,14 @@ class FreeModuleLinForm(FreeModuleAltForm):
         INPUT:
         
         - ``vector`` -- an element of the module (instance of 
-          :class:`FreeModuleVector`)
+          :class:`FiniteFreeModuleElement`)
         
         OUTPUT:
         
         - ring element `\langle \omega, v \rangle`
           
         """
-        if not isinstance(vector, FreeModuleVector):
+        if not isinstance(vector, FiniteFreeModuleElement):
             raise TypeError("The argument must be a free module element.")
         basis = self.common_basis(vector)
         if basis is None:

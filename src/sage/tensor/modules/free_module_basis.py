@@ -83,7 +83,7 @@ class FreeModuleBasis(SageObject):
         
     """
     def __init__(self, fmodule, symbol, latex_symbol=None):
-        from free_module_tensor import FreeModuleVector
+        from free_module_tensor import FiniteFreeModuleElement
         self.fmodule = fmodule
         self.name = "(" + \
           ",".join([symbol + "_" + str(i) for i in self.fmodule.irange()]) +")"
@@ -103,7 +103,7 @@ class FreeModuleBasis(SageObject):
         for i in self.fmodule.irange():
             v_name = symbol + "_" + str(i)
             v_symb = latex_symbol + "_" + str(i)
-            v = FreeModuleVector(self.fmodule, name=v_name, latex_name=v_symb)
+            v = FiniteFreeModuleElement(self.fmodule, name=v_name, latex_name=v_symb)
             for j in self.fmodule.irange():
                 v.set_comp(self)[j] = 0
             v.set_comp(self)[i] = 1

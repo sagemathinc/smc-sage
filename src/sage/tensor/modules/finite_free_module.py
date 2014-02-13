@@ -38,7 +38,7 @@ AUTHORS:
 #******************************************************************************
 
 from sage.modules.module import Module
-from free_module_tensor import FreeModuleVector
+from free_module_tensor import FiniteFreeModuleElement
 
 # From sage/modules/module.pyx:
 # ----------------------------
@@ -72,7 +72,7 @@ class FiniteFreeModule(Module):
 
     The class :class:`FiniteFreeModule` is a Sage *Parent* class whose elements 
     belong to the class 
-    :class:`~sage.tensor.modules.free_module_tensor.FreeModuleVector`. 
+    :class:`~sage.tensor.modules.free_module_tensor.FiniteFreeModuleElement`. 
 
     INPUT:
     
@@ -122,12 +122,12 @@ class FiniteFreeModule(Module):
         \mathcal{M}
 
     M is a *parent* object, whose elements are instances of 
-    :class:`~sage.tensor.modules.free_module_tensor.FreeModuleVector`::
+    :class:`~sage.tensor.modules.free_module_tensor.FiniteFreeModuleElement`::
     
         sage: v = M.an_element() ; v
         element of the rank-3 free module M over the Integer Ring
-        sage: from sage.tensor.modules.free_module_tensor import FreeModuleVector
-        sage: isinstance(v, FreeModuleVector)
+        sage: from sage.tensor.modules.free_module_tensor import FiniteFreeModuleElement
+        sage: isinstance(v, FiniteFreeModuleElement)
         True        
         sage: v in M
         True
@@ -215,7 +215,7 @@ class FiniteFreeModule(Module):
 
     """
     
-    Element = FreeModuleVector
+    Element = FiniteFreeModuleElement
     
     def __init__(self, ring, rank, name=None, latex_name=None, start_index=0,
                  output_formatter=None):
@@ -631,12 +631,12 @@ class FiniteFreeModule(Module):
         for more examples and documentation.
                 
         """
-        from free_module_tensor import FreeModuleTensor, FreeModuleVector
+        from free_module_tensor import FreeModuleTensor, FiniteFreeModuleElement
         from free_module_tensor_spec import FreeModuleEndomorphism, \
                                                         FreeModuleSymBilinForm
         from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
         if tensor_type==(1,0):
-            return FreeModuleVector(self, name=name, latex_name=latex_name)
+            return FiniteFreeModuleElement(self, name=name, latex_name=latex_name)
         elif tensor_type==(0,1):
             return FreeModuleLinForm(self, name=name, latex_name=latex_name)
         elif tensor_type==(1,1):
@@ -721,7 +721,7 @@ class FiniteFreeModule(Module):
             4 e^0*e^1 - 4 e^1*e^0 + 5 e^1*e^2 - 5 e^2*e^1
                 
         """
-        from free_module_tensor import FreeModuleTensor, FreeModuleVector
+        from free_module_tensor import FreeModuleTensor, FiniteFreeModuleElement
         from free_module_tensor_spec import FreeModuleEndomorphism, \
                                                         FreeModuleSymBilinForm
         from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
@@ -740,7 +740,7 @@ class FiniteFreeModule(Module):
         #
         # 1/ Construction of the tensor:
         if tensor_type == (1,0):
-            resu = FreeModuleVector(self, name=name, latex_name=latex_name)
+            resu = FiniteFreeModuleElement(self, name=name, latex_name=latex_name)
         elif tensor_type == (0,1):
             resu = FreeModuleLinForm(self, name=name, latex_name=latex_name)
         elif tensor_type == (1,1):
