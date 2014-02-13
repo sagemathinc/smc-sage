@@ -22,9 +22,10 @@ tensors:
 
 * :class:`FreeModuleVector` for elements of `M` (vectors), considered as rank-1 
   contravariant tensors
-* :class:`FreeModuleLinForm` type-(0,1) tensors (linear forms)
-* :class:`FreeModuleAltForm` for alternating forms (fully antisymmetric 
-  type-(0,p) tensors)
+* :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm` for 
+  type-(0,1) tensors (linear forms)
+* :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm` for 
+  alternating forms (fully antisymmetric type-(0,p) tensors)
 * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphism` 
   for type-(1,1) tensors (endomorphisms)
 * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphism` 
@@ -310,7 +311,7 @@ class FreeModuleTensor(ModuleElement):
         from format_utilities import is_atomic, FormattedExpansion
         if basis is None:
             basis = self.fmodule.def_basis
-        cobasis = basis.dual_basis
+        cobasis = basis._dual_basis
         comp = self.comp(basis)
         terms_txt = []
         terms_latex = []

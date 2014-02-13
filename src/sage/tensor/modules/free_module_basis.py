@@ -1,9 +1,10 @@
 r"""
 Free module bases.
 
-The class :class:`FreeModuleBasis` implements bases over a free module `M`,
+The class :class:`FreeModuleBasis` implements bases on a free module `M` of
+finite rank over a commutative ring,
 while the class :class:`FreeModuleCoBasis` implements the dual bases (i.e. 
-bases of the dual free module `M^*`). 
+bases of the dual module `M^*`). 
 
 
 AUTHORS:
@@ -109,7 +110,7 @@ class FreeModuleBasis(SageObject):
             vl.append(v)
         self.vec = tuple(vl)
         # The dual basis
-        self.dual_basis = FreeModuleCoBasis(self, symbol, 
+        self._dual_basis = FreeModuleCoBasis(self, symbol, 
                                             latex_symbol=latex_symbol)
         # The first defined basis is considered as the default one
         # and is used to initialize the components of the zero elements of 
@@ -117,7 +118,7 @@ class FreeModuleBasis(SageObject):
         # itself, since it is considered as a type-(1,0) tensor module)
         if self.fmodule.def_basis is None:
             self.fmodule.def_basis = self
-            for t in self.fmodule.tensor_modules.values():
+            for t in self.fmodule._tensor_modules.values():
                 t._zero_element.components[self] = \
                                                 t._zero_element._new_comp(self)
                 # (since new components are initialized to zero)
@@ -230,7 +231,7 @@ class FreeModuleBasis(SageObject):
         # Components of the new dual-basis elements in the old dual basis: 
         for i in fmodule.irange():
             for j in fmodule.irange():
-                the_new_basis.dual_basis.form[i-si].add_comp(self)[[j]] = \
+                the_new_basis._dual_basis.form[i-si].add_comp(self)[[j]] = \
                                               inv_transf.comp(self)[[i,j]]
         # The components of the transformation and its inverse are the same in 
         # the two bases:
@@ -247,10 +248,48 @@ class FreeModuleBasis(SageObject):
         # Components of the old dual-basis elements in the new cobasis: 
         for i in fmodule.irange():
             for j in fmodule.irange():
-                self.dual_basis.form[i-si].add_comp(the_new_basis)[[j]] = \
+                self._dual_basis.form[i-si].add_comp(the_new_basis)[[j]] = \
                                                        transf.comp(self)[[i,j]]
         return the_new_basis
 
+    def dual_basis(self):
+        r""" 
+        Return the basis dual to ``self``.
+        
+        OUTPUT:
+        
+        - instance of :class:`FreeModuleCoBasis` representing the dual of
+          ``self``
+
+        EXAMPLES:
+        
+        Dual basis on a rank-3 free module::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
+            sage: e = M.new_basis('e') ; e
+            basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring
+            sage: f = e.dual_basis() ; f
+            dual basis (e^1,e^2,e^3) on the rank-3 free module M over the Integer Ring
+        
+        Let us check that the elements of f are tensors of type (0,1) on M::
+    
+            sage: f[1] in M.tensor_module(0,1)
+            True
+            sage: f[1]
+            linear form e^1 on the rank-3 free module M over the Integer Ring
+    
+        and that f is indeed the dual of e::
+        
+            sage: f[1](e[1]), f[1](e[2]), f[1](e[3])
+            (1, 0, 0)
+            sage: f[2](e[1]), f[2](e[2]), f[2](e[3])
+            (0, 1, 0)
+            sage: f[3](e[1]), f[3](e[2]), f[3](e[3])
+            (0, 0, 1)
+        
+        """
+        return self._dual_basis
+        
 #******************************************************************************
 
 class FreeModuleCoBasis(SageObject):
@@ -267,6 +306,31 @@ class FreeModuleCoBasis(SageObject):
       the cobasis; if None, the value of ``symbol`` is used. 
 
     EXAMPLES:
+    
+    Dual basis on a rank-3 free module::
+    
+        sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
+        sage: e = M.new_basis('e') ; e
+        basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring
+        sage: from sage.tensor.modules.free_module_basis import FreeModuleCoBasis
+        sage: f = FreeModuleCoBasis(e, 'f') ; f
+        dual basis (f^1,f^2,f^3) on the rank-3 free module M over the Integer Ring
+    
+    Let us check that the elements of f are tensors of type (0,1) on M::
+
+        sage: f[1] in M.tensor_module(0,1)
+        True
+        sage: f[1]
+        linear form f^1 on the rank-3 free module M over the Integer Ring
+
+    and that f is indeed the dual of e::
+    
+        sage: f[1](e[1]), f[1](e[2]), f[1](e[3])
+        (1, 0, 0)
+        sage: f[2](e[1]), f[2](e[2]), f[2](e[3])
+        (0, 1, 0)
+        sage: f[3](e[1]), f[3](e[2]), f[3](e[3])
+        (0, 0, 1)
 
     """
     def __init__(self, basis, symbol, latex_symbol=None):

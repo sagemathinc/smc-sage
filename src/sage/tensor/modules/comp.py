@@ -1,12 +1,13 @@
 r"""
 Components
 
-The class :class:`Components` takes in charge the storage of the components of 
-a geometrical entity with respect to some "frame". The latter can be a 
-vector-space basis or a vector frame on some manifold (i.e. a field of bases). 
-The components can be of course components of tensors or tensor fields, 
-but also  non-tensorial quantities, like connection coefficients or 
-structure coefficients of a vector frame. 
+The class :class:`Components` takes in charge the storage of some ring elements
+that represent the components of an "entity" with respect to some "frame". 
+The "entity/frame" are for instance "vector/vector-space basis" or 
+"vector field/vector frame on some manifold". More generally, the components
+can be those of a tensor on a free module or those of a tensor field on a 
+manifold. They can also be non-tensorial quantities, like connection 
+coefficients or structure coefficients of a vector frame. 
 
 Various subclasses of the class :class:`Components` are
 

@@ -2,56 +2,28 @@ r"""
 Tensor free modules
 
 
-The class :class:`TensorFreeModule` implements the free modules `T^{(k,l)}(M)` 
-of tensors of type `(k,l)` acting as multilinear forms on a free module `M` 
-of finite rank over a commutative ring `R`. The module `T^{(k,l)}(M)` is
-canonically identified with the following tensor product:
+The class :class:`TensorFreeModule` implements the tensor products 
+`T^{(k,l)}(M)` of the type  
 
 .. MATH::
 
     T^{(k,l)}(M) = \underbrace{M\otimes\cdots\otimes M}_{k\ \; \mbox{times}}
     \otimes \underbrace{M^*\otimes\cdots\otimes M^*}_{l\ \; \mbox{times}}
     
-where `M^*` stands for the dual of the free module `M`. 
-In particular, the free module `M` itself is canonically identified 
-with `T^{(1,0)}(M)`. 
+where `M` is a free module of finite rank over a commutative ring `R` and
+`M^*` is the dual of `M`. 
+`T^{(k,l)}(M)` can be canonically identified with the set of tensors of 
+type `(k,l)` acting as multilinear forms on `M`. 
+Note that `T^{(1,0)}(M) = M`. 
+
+`T^{(k,l)}(M)` is itself a free module over `R`, of rank `n^{k+l}`, `n`
+being the rank of `M`. Accordingly the class :class:`TensorFreeModule` 
+inherits from the class 
+:class:`FiniteFreeModule`
 
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
-
-EXAMPLES:
-
-    Free module of rank 3 over `\ZZ`::
-    
-        sage: M = FiniteFreeModule(ZZ, 3, name='M') ; M
-        rank-3 free module M over the Integer Ring
-        sage: M.category()
-        Category of modules over Integer Ring
-        sage: M.rank()
-        3
-
-    Set of all tensors of type (1,2) defined on the module M::
-    
-        sage: T = M.tensor_module(1,2) ; T
-        free module of type-(1,2) tensors on the rank-3 free module M over the Integer Ring
-        sage: T.category()
-        Category of modules over Integer Ring
-        sage: T.rank()
-        27
-
-    The module `M` itself is considered as the set of tensors of type (1,0)::
-    
-        sage: M is M.tensor_module(1,0)
-        True
-
-    If the base ring is a field, the free module is in the category of vector 
-    spaces::
-    
-        sage: M = FiniteFreeModule(QQ, 3, name='M') ; M
-        rank-3 free module M over the Rational Field
-        sage: M.category()
-        Category of vector spaces over Rational Field
   
 """
 #******************************************************************************
@@ -84,31 +56,21 @@ from free_module_tensor import FreeModuleTensor, FreeModuleVector
 
 class TensorFreeModule(FiniteFreeModule):
     r"""
-    Set `T^{(k,l)}(M)` of tensors of type `(k,l)` acting as multilinear 
-    forms on a free module `M` over a commutative ring `R`. 
-    `T^{(k,l)}(M)` is a free module over `R`, which can be canonically 
-    identified with the following tensor product of modules:
-
+    Class for the free modules over a commutative ring `R` that are 
+    tensor products of a given free module `M` over `R` with itself and its 
+    dual `M^*`:
+    
     .. MATH::
     
         T^{(k,l)}(M) = \underbrace{M\otimes\cdots\otimes M}_{k\ \; \mbox{times}}
         \otimes \underbrace{M^*\otimes\cdots\otimes M^*}_{l\ \; \mbox{times}}
-        
-    where `M^*` stands for the dual of the free module `M`. 
-    
-    .. NOTE::
-    
-        The class :class:`TensorFreeModule` inherits from the generic class
-        :class:`sage.modules.module.Module` and not from 
-        :class:`sage.modules.free_module.FreeModule_generic` since the latter 
-        is a derived class of :class:`sage.modules.module.Module_old`, which 
-        does not conform to the new coercion model.
-        Besides, the class :class:`TensorFreeModule` does not inherit 
-        from the class :class:`CombinatorialFreeModule` since the latter is
-        devoted to modules *with a basis*. 
+
+    `T^{(k,l)}(M)` can be canonically identified with the set of tensors of 
+    type `(k,l)` acting as multilinear forms on `M`. 
 
     :class:`TensorFreeModule` is a Sage *Parent* class whose elements belong 
-    to the class :class:`FreeModuleTensor`. 
+    to the class 
+    :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`. 
 
     INPUT:
     
@@ -130,10 +92,16 @@ class TensorFreeModule(FiniteFreeModule):
         free module of type-(1,2) tensors on the rank-3 free module M over the Integer Ring
     
     Instead of importing TensorFreeModule in the global name space, one can 
-    use the module's method :meth:`tensor_module`::
+    use the module's method 
+    :meth:`~sage.tensor.modules.finite_free_module.FiniteFreeModule.tensor_module`::
     
         sage: T = M.tensor_module(1,2) ; T
         free module of type-(1,2) tensors on the rank-3 free module M over the Integer Ring
+
+    The module `M` itself is considered as the set of tensors of type (1,0)::
+    
+        sage: M is M.tensor_module(1,0)
+        True
 
     T is a module (actually a free module) over `\ZZ`::
     
@@ -143,9 +111,13 @@ class TensorFreeModule(FiniteFreeModule):
         True
         sage: T.rank()
         27
+        sage: T.base_ring()
+        Integer Ring
+        sage: T.base_module()
+        rank-3 free module M over the Integer Ring
 
     T is a *parent* object, whose elements are instances of 
-    :class:`FreeModuleTensor`::
+    :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`::
 
         sage: t = T.an_element() ; t
         type-(1,2) tensor on the rank-3 free module M over the Integer Ring
@@ -189,9 +161,11 @@ class TensorFreeModule(FiniteFreeModule):
         sage: t.view(e)
         t = -3 e_0*e^1*e^1 + 4 e_2*e^0*e^1
     
-    See the documentation of :class:`FreeModuleTensor` for the full list of
-    arguments that can be provided to the __call__ operator. For instance, to
-    contruct a tensor symmetric with respect to the last two indices::
+    See the documentation of 
+    :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor` 
+    for the full list of arguments that can be provided to the __call__ 
+    operator. For instance, to contruct a tensor symmetric with respect to the 
+    last two indices::
     
         sage: t = T([], name='t', sym=(1,2))
         sage: t.set_comp(e)[0,1,1] = -3
@@ -206,7 +180,8 @@ class TensorFreeModule(FiniteFreeModule):
 
     Instead of a direct call to the constructor of class 
     :class:`TensorFreeModule`, one should construct them by the method
-    :meth:`FiniteFreeModule.tensor_module` of the base module::
+    :meth:`~sage.tensor.modules.finite_free_module.FiniteFreeModule.tensor_module` 
+    of the base module::
     
         sage: T = M.tensor_module(1,2) ; T
         free module of type-(1,2) tensors on the rank-3 free module M over the Integer Ring
@@ -233,12 +208,12 @@ class TensorFreeModule(FiniteFreeModule):
                                   start_index=fmodule.sindex,
                                   output_formatter=fmodule.output_formatter)
         # Unique representation:
-        if self.tensor_type in self.fmodule.tensor_modules:
+        if self.tensor_type in self.fmodule._tensor_modules:
             raise TypeError("The module of tensors of type" + 
                             str(self.tensor_type) + 
                             " has already been created.")
         else:
-            self.fmodule.tensor_modules[self.tensor_type] = self
+            self.fmodule._tensor_modules[self.tensor_type] = self
         # Zero element 
         self._zero_element = self._element_constructor_(name='zero', 
                                                         latex_name='0')
@@ -288,4 +263,24 @@ class TensorFreeModule(FiniteFreeModule):
         description += " tensors on the " + str(self.fmodule)
         return description
 
+    def base_module(self):
+        r""" 
+        Return the free module on which ``self`` is constructed.
+        
+        OUTPUT:
+        
+        - instance of :class:`FiniteFreeModule` representing the free module 
+          on which the tensor module is defined. 
+        
+        EXAMPLE:
+
+        Base module of a type-(1,2) tensor module::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: T = M.tensor_module(1,2)
+            sage: T.base_module()
+            rank-3 free module M over the Integer Ring
+
+        """
+        return self.fmodule
 

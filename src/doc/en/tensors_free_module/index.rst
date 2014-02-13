@@ -18,6 +18,8 @@ __ http://creativecommons.org/licenses/by-sa/3.0/
 .. toctree::
    :maxdepth: 2
 
+   finite_free_module
+   
    tensor_free_module
    
    free_module_basis
