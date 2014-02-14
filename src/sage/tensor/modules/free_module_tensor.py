@@ -304,6 +304,65 @@ class FreeModuleTensor(ModuleElement):
           ``self.fmodule.output_formatter`` to format the output.
 
         EXAMPLES:
+        
+        Display of a module element (type-(1,0) tensor)::
+        
+            sage: M = FiniteFreeModule(QQ, 2, name='M', start_index=1)
+            sage: e = M.new_basis('e')
+            sage: v = M([1/3,-2], name='v')
+            sage: v.view()
+            v = 1/3 e_1 - 2 e_2
+            sage: latex(v.view())  # display in the notebook
+            v = \frac{1}{3} e_1 -2 e_2
+
+        Display of a linear form (type-(0,1) tensor)::
+        
+            sage: de = e.dual_basis()
+            sage: w = - 3/4 * de[1] + de[2] ; w
+            linear form on the rank-2 free module M over the Rational Field
+            sage: w.set_name('w', latex_name='\omega')
+            sage: w.view()
+            w = -3/4 e^1 + e^2
+            sage: latex(w.view())  # display in the notebook
+            \omega = -\frac{3}{4} e^1 +e^2
+
+        Display of a type-(1,1) tensor::
+        
+            sage: t = v*w ; t  # the type-(1,1) is formed as the tensor product of v by w
+            endomorphism v*w on the rank-2 free module M over the Rational Field
+            sage: t.view()
+            v*w = -1/4 e_1*e^1 + 1/3 e_1*e^2 + 3/2 e_2*e^1 - 2 e_2*e^2
+            sage: latex(t.view())  # display in the notebook
+            v\otimes \omega = -\frac{1}{4} e_1\otimes e^1 + \frac{1}{3} e_1\otimes e^2 + \frac{3}{2} e_2\otimes e^1 -2 e_2\otimes e^2
+
+        Display in a basis which is not the default one::
+        
+            sage: a = M.automorphism()
+            sage: a[:] = [[1,2],[3,4]]
+            sage: f = e.new_basis(a, 'f')
+            sage: v.view(f) # the components w.r.t basis f are first computed via the change-of-basis formula defined by a
+            v = -8/3 f_1 + 3/2 f_2
+            sage: w.view(f)
+            w = 9/4 f^1 + 5/2 f^2
+            sage: t.view(f)
+            v*w = -6 f_1*f^1 - 20/3 f_1*f^2 + 27/8 f_2*f^1 + 15/4 f_2*f^2
+
+        The output format can be set via the argument ``output_formatter`` 
+        passed at the module construction::
+
+            sage: N = FiniteFreeModule(QQ, 2, name='N', start_index=1, output_formatter=Rational.numerical_approx)
+            sage: e = N.new_basis('e')
+            sage: v = N([1/3,-2], name='v')
+            sage: v.view()  # default format (53 bits of precision)
+            v = 0.333333333333333 e_1 - 2.00000000000000 e_2
+            sage: latex(v.view()) 
+            v = 0.333333333333333 e_1 -2.00000000000000 e_2
+            
+        The output format is then controled by the argument ``format_spec`` of
+        the method :meth:`view`::
+        
+            sage: v.view(format_spec=10)  # 10 bits of precision
+            v = 0.33 e_1 - 2.0 e_2
                     
         """
         from sage.misc.latex import latex
@@ -501,6 +560,43 @@ class FreeModuleTensor(ModuleElement):
         
         EXAMPLES:
         
+        Components of a tensor of type-(1,1)::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
+            sage: e = M.new_basis('e')
+            sage: t = M.tensor((1,1), name='t')
+            sage: t[1,2] = -3 ; t[3,3] = 2
+            sage: t.comp()
+            2-indices components w.r.t. basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring
+            sage: t.comp() is t.comp(e)  # since e is M's default basis
+            True
+            sage: t.comp()[:]
+            [ 0 -3  0]
+            [ 0  0  0]
+            [ 0  0  2]
+
+        A direct access to the components w.r.t. the module's default basis is
+        provided by the square brackets applied to the tensor itself::
+
+            sage: t[1,2] is t.comp(e)[1,2]
+            True
+            sage: t[:]
+            [ 0 -3  0]
+            [ 0  0  0]
+            [ 0  0  2]
+
+        Components computed via a change-of-basis formula::
+        
+            sage: a = M.automorphism()
+            sage: a[:] = [[0,0,1], [1,0,0], [0,-1,0]]
+            sage: f = e.new_basis(a, 'f')
+            sage: t.comp(f)
+            2-indices components w.r.t. basis (f_1,f_2,f_3) on the rank-3 free module M over the Integer Ring
+            sage: t.comp(f)[:]
+            [ 0  0  0]
+            [ 0  2  0]
+            [-3  0  0]
+            
         """
         fmodule = self.fmodule
         if basis is None: 
@@ -545,7 +641,7 @@ class FreeModuleTensor(ModuleElement):
                 # Summation on the old components multiplied by the proper 
                 # change-of-basis matrix elements (tensor formula): 
                 res = 0 
-                for ind_old in fmodule.index_generator(rank): 
+                for ind_old in old_comp.index_generator(): 
                     t = old_comp[[ind_old]]
                     for i in range(n_con): # loop on contravariant indices
                         t *= ppinv[[ind_new[i], ind_old[i]]]
@@ -579,6 +675,41 @@ class FreeModuleTensor(ModuleElement):
         
         EXAMPLES:
         
+        Setting components of a type-(1,1) tensor::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: e = M.new_basis('e')
+            sage: t = M.tensor((1,1), name='t')
+            sage: t.set_comp()[0,1] = -3
+            sage: t.view()
+            t = -3 e_0*e^1
+            sage: t.set_comp()[1,2] = 2
+            sage: t.view()
+            t = -3 e_0*e^1 + 2 e_1*e^2
+            sage: t.set_comp(e)
+            2-indices components w.r.t. basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+            
+        Setting components in a new basis::
+        
+            sage: f =  M.new_basis('f')
+            sage: t.set_comp(f)[0,1] = 4
+            sage: t.components.keys() # the components w.r.t. basis e have been deleted
+            [basis (f_0,f_1,f_2) on the rank-3 free module M over the Integer Ring]
+            sage: t.view(f)
+            t = 4 f_0*f^1
+            
+        The components w.r.t. basis e can be deduced from those w.r.t. basis f,
+        once a relation between the two bases has been set::
+        
+            sage: a = M.automorphism()
+            sage: a[:] = [[0,0,1], [1,0,0], [0,-1,0]]
+            sage: M.basis_changes[(e,f)] = a
+            sage: M.basis_changes[(f,e)] = a.inverse()
+            sage: t.view(e)
+            t = -4 e_1*e^2
+            sage: t.components.keys()  # random output (dictionary keys)
+            [basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring,
+             basis (f_0,f_1,f_2) on the rank-3 free module M over the Integer Ring]
 
         """
         if self is self.parent()._zero_element: #!# this is maybe not very efficient
@@ -622,6 +753,35 @@ class FreeModuleTensor(ModuleElement):
         
         EXAMPLES:
         
+        Setting components of a type-(1,1) tensor::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: e = M.new_basis('e')
+            sage: t = M.tensor((1,1), name='t')
+            sage: t.add_comp()[0,1] = -3
+            sage: t.view()
+            t = -3 e_0*e^1
+            sage: t.add_comp()[1,2] = 2
+            sage: t.view()
+            t = -3 e_0*e^1 + 2 e_1*e^2
+            sage: t.add_comp(e)
+            2-indices components w.r.t. basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+            
+        Adding components in a new basis::
+        
+            sage: f =  M.new_basis('f')
+            sage: t.add_comp(f)[0,1] = 4
+            
+        The components w.r.t. basis e have been kept::
+        
+            sage: t.components.keys() # # random output (dictionary keys) 
+            [basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring,
+             basis (f_0,f_1,f_2) on the rank-3 free module M over the Integer Ring]
+            sage: t.view(f)
+            t = 4 f_0*f^1
+            sage: t.view(e)
+            t = -3 e_0*e^1 + 2 e_1*e^2
+
         """
         if basis is None: basis = self.fmodule.def_basis
         if basis not in self.components:
@@ -637,6 +797,37 @@ class FreeModuleTensor(ModuleElement):
         r"""
         Delete all the components but those corresponding to ``basis``.
         
+        INPUT:
+        
+        - ``basis`` -- (default: None) basis in which the components are
+          kept; if none the module's default basis is assumed
+
+        EXAMPLE:
+        
+        Deleting components of a module element::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
+            sage: e = M.new_basis('e')
+            sage: u = M([2,1,-5])
+            sage: f = M.new_basis('f')
+            sage: u.add_comp(f)[:] = [0,4,2]
+            sage: u.components.keys() # random output (dictionary keys)
+            [basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring,
+             basis (f_1,f_2,f_3) on the rank-3 free module M over the Integer Ring]
+            sage: u.del_other_comp(f)
+            sage: u.components.keys()
+            [basis (f_1,f_2,f_3) on the rank-3 free module M over the Integer Ring]
+
+        Let us restore the components w.r.t. e and delete those w.r.t. f::
+        
+            sage: u.add_comp(e)[:] = [2,1,-5]
+            sage: u.components.keys()  # random output (dictionary keys)
+            [basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring,
+             basis (f_1,f_2,f_3) on the rank-3 free module M over the Integer Ring]
+            sage: u.del_other_comp()  # default argument: basis = e
+            sage: u.components.keys()
+            [basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring]
+
         """
         if basis is None: basis = self.fmodule.def_basis
         if basis not in self.components:
@@ -679,6 +870,31 @@ class FreeModuleTensor(ModuleElement):
         The name and the derived quantities are not copied. 
         
         EXAMPLES:
+        
+        Copy of a tensor of type (1,1)::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
+            sage: e = M.new_basis('e')
+            sage: t = M.tensor((1,1), name='t')
+            sage: t[1,2] = -3 ; t[3,3] = 2
+            sage: t1 = t.copy()
+            sage: t1[:]
+            [ 0 -3  0]
+            [ 0  0  0]
+            [ 0  0  2]
+            sage: t1 == t
+            True
+
+        If the original tensor is modified, the copy is not::
+        
+            sage: t[2,2] = 4
+            sage: t1[:]
+            [ 0 -3  0]
+            [ 0  0  0]
+            [ 0  0  2]
+            sage: t1 == t
+            False
+
         """
         resu = self._new_instance()
         for basis, comp in self.components.items():
@@ -707,7 +923,41 @@ class FreeModuleTensor(ModuleElement):
           :class:`~sage.tensor.modules.free_module_basis.FreeModuleBasis`
           representing the common basis; if no common basis is found, None is 
           returned. 
+          
+        EXAMPLES:
         
+        Common basis for the components of two module elements::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
+            sage: e = M.new_basis('e')
+            sage: u = M([2,1,-5])
+            sage: f = M.new_basis('f')
+            sage: v = M([0,4,2], basis=f)
+            sage: u.common_basis(v) 
+            
+        The above result is None since u and v have been defined on different
+        bases and no connection between these bases have been set::
+        
+            sage: u.components.keys()
+            [basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring]
+            sage: v.components.keys()
+            [basis (f_1,f_2,f_3) on the rank-3 free module M over the Integer Ring]
+
+        Linking bases e and f changes the result::
+        
+            sage: a = M.automorphism()
+            sage: a[:] = [[0,0,1], [1,0,0], [0,-1,0]]
+            sage: M.basis_changes[(e,f)] = a
+            sage: M.basis_changes[(f,e)] = a.inverse()
+            sage: u.common_basis(v)
+            basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring
+
+        Indeed, v is now known in basis e::
+        
+            sage: v.components.keys() # random output (dictionary keys)
+            [basis (f_1,f_2,f_3) on the rank-3 free module M over the Integer Ring,
+             basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring]
+
         """
         # Compatibility checks:
         if not isinstance(other, FreeModuleTensor):

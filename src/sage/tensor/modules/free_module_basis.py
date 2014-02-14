@@ -250,6 +250,11 @@ class FreeModuleBasis(SageObject):
             for j in fmodule.irange():
                 self._dual_basis.form[i-si].add_comp(the_new_basis)[[j]] = \
                                                        transf.comp(self)[[i,j]]
+        # The automorphism and its inverse are added to the module's dictionary 
+        # of changes of bases:
+        fmodule.basis_changes[(self, the_new_basis)] = transf
+        fmodule.basis_changes[(the_new_basis, self)] = inv_transf
+        #
         return the_new_basis
 
     def dual_basis(self):

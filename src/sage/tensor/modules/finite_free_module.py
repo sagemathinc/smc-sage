@@ -25,7 +25,117 @@ category, when so prompted by a concrete use case*).
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
- 
+
+EXAMPLE:
+
+Let us define a free module of rank 2 over `\ZZ`::
+
+    sage: M = FiniteFreeModule(ZZ, 2, name='M') ; M
+    rank-2 free module M over the Integer Ring
+    
+We introduce a first basis on M::
+
+    sage: e = M.new_basis('e') ; e
+    basis (e_0,e_1) on the rank-2 free module M over the Integer Ring
+
+The elements of the basis are of course module elements::
+
+    sage: e[0]
+    element e_0 of the rank-2 free module M over the Integer Ring
+    sage: e[1]
+    element e_1 of the rank-2 free module M over the Integer Ring
+    sage: e[0].parent()
+    rank-2 free module M over the Integer Ring
+
+We define a module element by its components w.r.t. basis e::
+
+    sage: u = M([2,-3], basis=e, name='u')
+    sage: u.view(basis=e)
+    u = 2 e_0 - 3 e_1
+
+Since the first defined basis is considered as the default one on the module,
+the above can be abridged to::
+
+    sage: u = M([2,-3], name='u')
+    sage: u.view()
+    u = 2 e_0 - 3 e_1
+
+Module elements can be compared::
+
+    sage: u == 2*e[0] - 3*e[1]
+    True
+
+We define a second basis on M by linking it to e via a module automorphism::
+
+    sage: a = M.automorphism()
+    sage: a.set_comp(basis=e)[0,1] = -1 ; a.set_comp(basis=e)[1,0] = 1 # only the non-zero components have to be set
+    sage: a[:]  # a matrix view of the automorphism in the module's default basis
+    [ 0 -1]
+    [ 1  0]
+    sage: f = e.new_basis(a, 'f') ; f
+    basis (f_0,f_1) on the rank-2 free module M over the Integer Ring
+    sage: f[0].view()
+    f_0 = e_1
+    sage: f[1].view()
+    f_1 = -e_0
+    
+We may check that the basis f is the image of e by the automorphism a::
+
+    sage: f[0] == a(e[0])
+    True
+    sage: f[1] == a(e[1])
+    True
+
+We introduce a new module element via its components w.r.t. basis f::
+
+    sage: v = M([2,4], basis=f, name='v')
+    sage: v.view(basis=f)
+    v = 2 f_0 + 4 f_1
+    
+The sum of the two module elements u and v can be performed even if they have
+been defined on different bases, thanks to the known relation between the 
+two bases::
+
+    sage: s = u + v ; s
+    element u+v of the rank-2 free module M over the Integer Ring
+    
+We can view the result in either basis::
+
+    sage: s.view(basis=e)    # a shortcut is s.view(), e being the default basis
+    u+v = -2 e_0 - e_1
+    sage: s.view(basis=f)
+    u+v = -f_0 + 2 f_1
+
+Of course, we can view each of the individual element in either basis::
+
+    sage: u.view(basis=f)    # recall: u was introduced via basis e
+    u = -3 f_0 - 2 f_1
+    sage: v.view(basis=e)    # recall: v was introduced via basis f
+    v = -4 e_0 + 2 e_1
+
+Tensor products are implemented::
+
+    sage: t = u*v ; t
+    type-(2,0) tensor u*v on the rank-2 free module M over the Integer Ring
+    sage: t.parent()
+    free module of type-(2,0) tensors on the rank-2 free module M over the Integer Ring
+    sage: t.view()
+    u*v = -8 e_0*e_0 + 4 e_0*e_1 + 12 e_1*e_0 - 6 e_1*e_1    
+
+The automorphism a is considered as a tensor of type (1,1) on M::
+
+    sage: a.parent()
+    free module of type-(1,1) tensors on the rank-2 free module M over the Integer Ring
+    sage: a.view()
+    -e_0*e^1 + e_1*e^0
+
+As such, we can form its tensor product with t, yielding a tensor of type (3,1)::
+
+    sage: (t*a).parent()
+    free module of type-(3,1) tensors on the rank-2 free module M over the Integer Ring
+    sage: (t*a).view()
+    8 e_0*e_0*e_0*e^1 - 8 e_0*e_0*e_1*e^0 - 4 e_0*e_1*e_0*e^1 + 4 e_0*e_1*e_1*e^0 - 12 e_1*e_0*e_0*e^1 + 12 e_1*e_0*e_1*e^0 + 6 e_1*e_1*e_0*e^1 - 6 e_1*e_1*e_1*e^0
+
 """
 #******************************************************************************
 #       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
