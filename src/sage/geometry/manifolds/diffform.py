@@ -292,7 +292,6 @@ class DiffForm(TensorField):
         comp = self.comp(frame)
         terms_txt = []
         terms_latex = []
-        n_con = self.tensor_type[0]
         for ind in comp.non_redundant_index_generator():
             coef = comp[[ind]].expr(chart)
             if coef != 0:
@@ -302,7 +301,7 @@ class DiffForm(TensorField):
                     bases_txt.append(coframe[ind[k]].name)
                     bases_latex.append(latex(coframe[ind[k]]))
                 basis_term_txt = "/\\".join(bases_txt)    
-                basis_term_latex = r"\wedge".join(bases_latex)    
+                basis_term_latex = r"\wedge ".join(bases_latex)    
                 if coef == 1:
                     terms_txt.append(basis_term_txt)
                     terms_latex.append(basis_term_latex)

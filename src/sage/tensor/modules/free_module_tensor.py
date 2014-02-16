@@ -369,7 +369,7 @@ class FreeModuleTensor(ModuleElement):
         from format_utilities import is_atomic, FormattedExpansion
         if basis is None:
             basis = self.fmodule.def_basis
-        cobasis = basis._dual_basis
+        cobasis = basis.dual_basis()
         comp = self.comp(basis)
         terms_txt = []
         terms_latex = []
@@ -407,7 +407,6 @@ class FreeModuleTensor(ModuleElement):
                     else:
                         terms_latex.append(r"\left(" + coef_latex + r"\right)" + 
                                            basis_term_latex)
-
         if terms_txt == []:
             expansion_txt = "0"
         else:

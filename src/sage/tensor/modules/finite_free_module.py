@@ -828,7 +828,7 @@ class FiniteFreeModule(Module):
             sage: t = M.tensor_from_comp((0,2), c) ; t
             alternating form of degree 2 on the rank-3 free module M over the Integer Ring
             sage: t.view(e)
-            4 e^0*e^1 - 4 e^1*e^0 + 5 e^1*e^2 - 5 e^2*e^1
+            4 e^0/\e^1 + 5 e^1/\e^2
                 
         """
         from free_module_tensor import FreeModuleTensor, FiniteFreeModuleElement
@@ -886,7 +886,7 @@ class FiniteFreeModule(Module):
         - ``name`` -- (string; default: None) name given to the alternating 
           form
         - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
-          alternating   form; if none is provided, the LaTeX symbol is set to 
+          alternating form; if none is provided, the LaTeX symbol is set to 
           ``name``
           
         OUTPUT:
@@ -913,12 +913,22 @@ class FiniteFreeModule(Module):
             sage: a.set_comp(e)[0,1] = 2
             sage: a.set_comp(e)[1,2] = -3
             sage: a.view(e)
-            a = 2 e^0*e^1 - 2 e^1*e^0 - 3 e^1*e^2 + 3 e^2*e^1
+            a = 2 e^0/\e^1 - 3 e^1/\e^2
 
         An alternating form of degree 1 is a linear form::
 
             sage: a = M.alternating_form(1, 'a') ; a
             linear form a on the rank-3 free module M over the Integer Ring
+
+        To construct such a form, it is preferable to call the method 
+        :meth:`linear_form` instead::
+        
+            sage: a = M.linear_form('a') ; a
+            linear form a on the rank-3 free module M over the Integer Ring
+        
+        See 
+        :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm` 
+        for further documentation. 
 
         """
         from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
@@ -928,6 +938,58 @@ class FiniteFreeModule(Module):
             return FreeModuleAltForm(self, degree, name=name, 
                                      latex_name=latex_name)
 
+    def linear_form(self, name=None, latex_name=None):
+        r"""
+        Construct a linear form on the free module. 
+        
+        A *linear form* on a free module `M` over a ring `R` is a map
+        `M\rightarrow R` that is linear. It can be viewed as a tensor of type
+        (0,1) on `M`. 
+
+        INPUT:
+    
+        - ``name`` -- (string; default: None) name given to the linear 
+          form
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          linear form; if none is provided, the LaTeX symbol is set to 
+          ``name``
+          
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm` 
+
+        EXAMPLES:
+        
+        Linear form on a rank-3 free module::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: e = M.new_basis('e')
+            sage: a = M.linear_form('A') ; a
+            linear form A on the rank-3 free module M over the Integer Ring
+            sage: a[:] = [2,-1,3]  # components w.r.t. the module's default basis (e)
+            sage: a.view()
+            A = 2 e^0 - e^1 + 3 e^2
+            
+        A linear form maps module elements to ring elements::
+
+            sage: v = M([1,1,1])
+            sage: a(v)
+            4
+
+        Test of linearity::
+            
+            sage: u = M([-5,-2,7])
+            sage: a(3*u - 4*v) == 3*a(u) - 4*a(v)
+            True
+
+        See 
+        :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm` 
+        for further documentation. 
+
+        """
+        from free_module_alt_form import FreeModuleLinForm
+        return FreeModuleLinForm(self, name=name, latex_name=latex_name)
 
     def endomorphism(self, name=None, latex_name=None):
         r"""
@@ -966,7 +1028,7 @@ class FiniteFreeModule(Module):
             sage: t = M.tensor((1,1), name='T') ; t
             endomorphism T on the rank-3 free module M over the Integer Ring
     
-        See class 
+        See 
         :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphism` 
         for further documentation. 
 
@@ -1006,7 +1068,7 @@ class FiniteFreeModule(Module):
             sage: a.tensor_type
             (1, 1)
 
-        See class 
+        See
         :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphism` 
         for further documentation. 
  
@@ -1055,7 +1117,7 @@ class FiniteFreeModule(Module):
             sage: a.tensor_type
             (1, 1)
 
-        See class 
+        See
         :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityMap` 
         for further documentation. 
  
@@ -1097,7 +1159,7 @@ class FiniteFreeModule(Module):
             sage: a.symmetries()
             symmetry: (0, 1);  no antisymmetry
 
-        See class 
+        See 
         :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleSymBilinForm` 
         for further documentation. 
  
