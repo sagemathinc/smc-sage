@@ -363,7 +363,7 @@ class FreeModuleAltForm(FreeModuleTensor):
 
 class FreeModuleLinForm(FreeModuleAltForm):
     r"""
-    Linear form over a free module `M` over a ommutative ring `R`.
+    Linear form on a free module `M` over a commutative ring `R`.
 
     A *linear form* is a map `M\rightarrow R` that is linear.
 

@@ -1443,6 +1443,371 @@ class FreeModuleTensor(ModuleElement):
             return self.fmodule.tensor_from_comp((k_con-1, l_cov-1), resu_comp)
 
 
+    def symmetrize(self, pos=None, basis=None):
+        r"""
+        Symmetrization over some arguments.
+        
+        INPUT:
+        
+        - ``pos`` -- (default: None) list of argument positions involved in the 
+          symmetrization (with the convention position=0 for the first 
+          argument); if none, the symmetrization is performed over all the 
+          arguments
+        - ``basis`` -- (default: None) module basis with respect to which the 
+          component computation is to be performed; if none, the module's 
+          default basis is used if the tensor field has already components
+          in it; otherwise another basis w.r.t. which the tensor has 
+          components will be picked
+                  
+        OUTPUT:
+        
+        - the symmetrized tensor (instance of :class:`FreeModuleTensor`)
+          
+        EXAMPLES:
+        
+        Symmetrization of a tensor of type (2,0)::
+        
+            sage: M = FiniteFreeModule(QQ, 3, name='M')
+            sage: e = M.new_basis('e')
+            sage: t = M.tensor((2,0))
+            sage: t[:] = [[2,1,-3],[0,-4,5],[-1,4,2]]
+            sage: s = t.symmetrize() ; s
+            type-(2,0) tensor on the rank-3 free module M over the Rational Field
+            sage: t[:], s[:]
+            (
+            [ 2  1 -3]  [  2 1/2  -2]
+            [ 0 -4  5]  [1/2  -4 9/2]
+            [-1  4  2], [ -2 9/2   2]
+            )
+            sage: s.symmetries()
+            symmetry: (0, 1);  no antisymmetry
+            sage: # Check:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         print s[i,j] == 1/2*(t[i,j]+t[j,i]),
+            ....:         
+            True True True True True True True True True
+    
+        Symmetrization of a tensor of type (0,3) on the first two arguments::
+        
+            sage: t = M.tensor((0,3))
+            sage: t[:] = [[[1,2,3], [-4,5,6], [7,8,-9]], [[10,-11,12], [13,14,-15], [16,17,18]], [[19,-20,-21], [-22,23,24], [25,26,-27]]]
+            sage: s = t.symmetrize((0,1)) ; s  # (0,1) = the first two arguments
+            type-(0,3) tensor on the rank-3 free module M over the Rational Field
+            sage: s.symmetries()
+            symmetry: (0, 1);  no antisymmetry
+            sage: s[:]
+            [[[1, 2, 3], [3, -3, 9], [13, -6, -15]],
+             [[3, -3, 9], [13, 14, -15], [-3, 20, 21]],
+             [[13, -6, -15], [-3, 20, 21], [25, 26, -27]]]
+            sage: # Check:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == 1/2*(t[i,j,k]+t[j,i,k]), 
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: s.symmetrize((0,1)) == s  # another test
+            True
+
+        Symmetrization of a tensor of type (0,3) on the first and last arguments::
+
+            sage: s = t.symmetrize((0,2)) ; s  # (0,2) = first and last arguments
+            type-(0,3) tensor on the rank-3 free module M over the Rational Field
+            sage: s.symmetries()
+            symmetry: (0, 2);  no antisymmetry
+            sage: s[:]
+            [[[1, 6, 11], [-4, 9, -8], [7, 12, 8]],
+             [[6, -11, -4], [9, 14, 4], [12, 17, 22]],
+             [[11, -4, -21], [-8, 4, 24], [8, 22, -27]]]
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == 1/2*(t[i,j,k]+t[k,j,i]),
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: s.symmetrize((0,2)) == s  # another test
+            True
+
+        Symmetrization of a tensor of type (0,3) on the last two arguments::
+        
+            sage: s = t.symmetrize((1,2)) ; s  # (1,2) = the last two arguments
+            type-(0,3) tensor on the rank-3 free module M over the Rational Field
+            sage: s.symmetries()
+            symmetry: (1, 2);  no antisymmetry
+            sage: s[:]
+            [[[1, -1, 5], [-1, 5, 7], [5, 7, -9]],
+             [[10, 1, 14], [1, 14, 1], [14, 1, 18]],
+             [[19, -21, 2], [-21, 23, 25], [2, 25, -27]]]
+            sage: # Check:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == 1/2*(t[i,j,k]+t[i,k,j]),  
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: s.symmetrize((1,2)) == s  # another test
+            True
+    
+        Full symmetrization of a tensor of type (0,3)::
+        
+            sage: s = t.symmetrize() ; s
+            type-(0,3) tensor on the rank-3 free module M over the Rational Field
+            sage: s.symmetries()
+            symmetry: (0, 1, 2);  no antisymmetry
+            sage: s[:]
+            [[[1, 8/3, 29/3], [8/3, 7/3, 0], [29/3, 0, -5/3]],
+             [[8/3, 7/3, 0], [7/3, 14, 25/3], [0, 25/3, 68/3]],
+             [[29/3, 0, -5/3], [0, 25/3, 68/3], [-5/3, 68/3, -27]]]
+            sage: # Check:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == 1/6*(t[i,j,k]+t[i,k,j]+t[j,k,i]+t[j,i,k]+t[k,i,j]+t[k,j,i]),
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: s.symmetrize() == s  # another test
+            True
+
+        Symmetrization can be performed only on arguments on the same type::
+        
+            sage: t = M.tensor((1,2))
+            sage: t[:] = [[[1,2,3], [-4,5,6], [7,8,-9]], [[10,-11,12], [13,14,-15], [16,17,18]], [[19,-20,-21], [-22,23,24], [25,26,-27]]]
+            sage: s = t.symmetrize((0,1)) 
+            Traceback (most recent call last):
+            ...
+            TypeError: 0 is a contravariant position, while 1 is a covariant position; 
+            symmetrization is meaningfull only on tensor arguments of the same type.
+            sage: s = t.symmetrize((1,2)) # OK: both 1 and 2 are covariant positions
+
+        The order of positions does not matter::
+        
+            sage: t.symmetrize((2,1)) == t.symmetrize((1,2))
+            True
+            
+        """
+        if pos is None:
+            pos = range(self.tensor_rank)
+        # check whether the symmetrization is possible:
+        pos_cov = self.tensor_type[0]   # first covariant position 
+        pos0 = pos[0]
+        if pos0 < pos_cov:  # pos0 is a contravariant position
+            for k in range(1,len(pos)):
+                if pos[k] >= pos_cov:
+                    raise TypeError(
+                        str(pos[0]) + " is a contravariant position, while " + 
+                        str(pos[k]) + " is a covariant position; \n"
+                        "symmetrization is meaningfull only on tensor " + 
+                        "arguments of the same type.")
+        else:  # pos0 is a covariant position
+            for k in range(1,len(pos)):
+                if pos[k] < pos_cov:
+                    raise TypeError(
+                        str(pos[0]) + " is a covariant position, while " + \
+                        str(pos[k]) + " is a contravariant position; \n"
+                        "symmetrization is meaningfull only on tensor " + 
+                        "arguments of the same type.")                
+        if basis is None:
+            basis = self.pick_a_basis()
+        res_comp = self.components[basis].symmetrize(pos)
+        return self.fmodule.tensor_from_comp(self.tensor_type, res_comp)
+
+        
+    def antisymmetrize(self, pos=None, basis=None):
+        r"""
+        Antisymmetrization over some arguments.
+        
+        INPUT:
+        
+        - ``pos`` -- (default: None) list of argument positions involved in the 
+          antisymmetrization (with the convention position=0 for the first 
+          argument); if none, the antisymmetrization is performed over all the 
+          arguments
+        - ``basis`` -- (default: None) module basis with respect to which the 
+          component computation is to be performed; if none, the module's 
+          default basis is used if the tensor field has already components
+          in it; otherwise another basis w.r.t. which the tensor has 
+          components will be picked
+                  
+        OUTPUT:
+        
+        - the antisymmetrized tensor (instance of :class:`FreeModuleTensor`)
+          
+        EXAMPLES:
+                
+        Antisymmetrization of a tensor of type (2,0)::
+        
+            sage: M = FiniteFreeModule(QQ, 3, name='M')
+            sage: e = M.new_basis('e')
+            sage: t = M.tensor((2,0))
+            sage: t[:] = [[1,-2,3], [4,5,6], [7,8,-9]]
+            sage: s = t.antisymmetrize() ; s
+            type-(2,0) tensor on the rank-3 free module M over the Rational Field
+            sage: s.symmetries()
+            no symmetry;  antisymmetry: (0, 1)
+            sage: t[:], s[:]
+            (
+            [ 1 -2  3]  [ 0 -3 -2]
+            [ 4  5  6]  [ 3  0 -1]
+            [ 7  8 -9], [ 2  1  0]
+            )
+            sage: # Check:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         print s[i,j] == 1/2*(t[i,j]-t[j,i]),
+            ....:         
+            True True True True True True True True True
+            sage: s.antisymmetrize() == s  # another test
+            True
+            sage: t.antisymmetrize() == t.antisymmetrize((0,1))
+            True
+
+        Antisymmetrization of a tensor of type (0,3) over the first two 
+        arguments::
+
+            sage: t = M.tensor((0,3))
+            sage: t[:] = [[[1,2,3], [-4,5,6], [7,8,-9]], [[10,-11,12], [13,14,-15], [16,17,18]], [[19,-20,-21], [-22,23,24], [25,26,-27]]]
+            sage: s = t.antisymmetrize((0,1)) ; s  # (0,1) = the first two arguments
+            type-(0,3) tensor on the rank-3 free module M over the Rational Field
+            sage: s.symmetries()
+            no symmetry;  antisymmetry: (0, 1)
+            sage: s[:]
+            [[[0, 0, 0], [-7, 8, -3], [-6, 14, 6]],
+             [[7, -8, 3], [0, 0, 0], [19, -3, -3]],
+             [[6, -14, -6], [-19, 3, 3], [0, 0, 0]]]
+            sage: # Check:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == 1/2*(t[i,j,k]-t[j,i,k]),
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: s.antisymmetrize((0,1)) == s  # another test
+            True
+            sage: s.symmetrize((0,1)) == 0  # of course
+            True
+        
+        Antisymmetrization of a tensor of type (0,3) over the first and last 
+        arguments::
+
+            sage: s = t.antisymmetrize((0,2)) ; s  # (0,2) = first and last arguments
+            type-(0,3) tensor on the rank-3 free module M over the Rational Field
+            sage: s.symmetries()
+            no symmetry;  antisymmetry: (0, 2)
+            sage: s[:]
+            [[[0, -4, -8], [0, -4, 14], [0, -4, -17]],
+             [[4, 0, 16], [4, 0, -19], [4, 0, -4]],
+             [[8, -16, 0], [-14, 19, 0], [17, 4, 0]]]
+            sage: # Check:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == 1/2*(t[i,j,k]-t[k,j,i]),
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: s.antisymmetrize((0,2)) == s  # another test
+            True
+            sage: s.symmetrize((0,2)) == 0  # of course
+            True
+            sage: s.symmetrize((0,1)) == 0  # no reason for this to hold
+            False
+        
+        Antisymmetrization of a tensor of type (0,3) over the last two 
+        arguments::
+
+            sage: s = t.antisymmetrize((1,2)) ; s  # (1,2) = the last two arguments
+            type-(0,3) tensor on the rank-3 free module M over the Rational Field
+            sage: s.symmetries()
+            no symmetry;  antisymmetry: (1, 2)
+            sage: s[:]
+            [[[0, 3, -2], [-3, 0, -1], [2, 1, 0]],
+             [[0, -12, -2], [12, 0, -16], [2, 16, 0]],
+             [[0, 1, -23], [-1, 0, -1], [23, 1, 0]]]
+            sage: # Check:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == 1/2*(t[i,j,k]-t[i,k,j]),
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: s.antisymmetrize((1,2)) == s  # another test
+            True
+            sage: s.symmetrize((1,2)) == 0  # of course
+            True
+
+        Full antisymmetrization of a tensor of type (0,3)::
+        
+            sage: s = t.antisymmetrize() ; s
+            alternating form of degree 3 on the rank-3 free module M over the Rational Field
+            sage: s.symmetries()
+            no symmetry;  antisymmetry: (0, 1, 2)
+            sage: s[:]
+            [[[0, 0, 0], [0, 0, 2/3], [0, -2/3, 0]],
+             [[0, 0, -2/3], [0, 0, 0], [2/3, 0, 0]],
+             [[0, 2/3, 0], [-2/3, 0, 0], [0, 0, 0]]]
+            sage: # Check:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == 1/6*(t[i,j,k]-t[i,k,j]+t[j,k,i]-t[j,i,k]+t[k,i,j]-t[k,j,i]),
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+            sage: s.antisymmetrize() == s  # another test
+            True
+            sage: s.symmetrize((0,1)) == 0  # of course
+            True
+            sage: s.symmetrize((0,2)) == 0  # of course
+            True
+            sage: s.symmetrize((1,2)) == 0  # of course
+            True
+            sage: t.antisymmetrize() == t.antisymmetrize((0,1,2))
+            True
+
+        Antisymmetrization can be performed only on arguments on the same type::
+        
+            sage: t = M.tensor((1,2))
+            sage: t[:] = [[[1,2,3], [-4,5,6], [7,8,-9]], [[10,-11,12], [13,14,-15], [16,17,18]], [[19,-20,-21], [-22,23,24], [25,26,-27]]]
+            sage: s = t.antisymmetrize((0,1)) 
+            Traceback (most recent call last):
+            ...
+            TypeError: 0 is a contravariant position, while 1 is a covariant position; 
+            antisymmetrization is meaningfull only on tensor arguments of the same type.
+            sage: s = t.antisymmetrize((1,2)) # OK: both 1 and 2 are covariant positions
+
+        The order of positions does not matter::
+        
+            sage: t.antisymmetrize((2,1)) == t.antisymmetrize((1,2))
+            True
+            
+        """
+        if pos is None:
+            pos = range(self.tensor_rank)
+        # check whether the antisymmetrization is possible:
+        pos_cov = self.tensor_type[0]   # first covariant position 
+        pos0 = pos[0]
+        if pos0 < pos_cov:  # pos0 is a contravariant position
+            for k in range(1,len(pos)):
+                if pos[k] >= pos_cov:
+                    raise TypeError(
+                        str(pos[0]) + " is a contravariant position, while " + 
+                        str(pos[k]) + " is a covariant position; \n"
+                        "antisymmetrization is meaningfull only on tensor " + 
+                        "arguments of the same type.")
+        else:  # pos0 is a covariant position
+            for k in range(1,len(pos)):
+                if pos[k] < pos_cov:
+                    raise TypeError(
+                        str(pos[0]) + " is a covariant position, while " + \
+                        str(pos[k]) + " is a contravariant position; \n"
+                        "antisymmetrization is meaningfull only on tensor " + 
+                        "arguments of the same type.")                
+        if basis is None:
+            basis = self.pick_a_basis()
+        res_comp = self.components[basis].antisymmetrize(pos)
+        return self.fmodule.tensor_from_comp(self.tensor_type, res_comp)
+        
+
+
 #******************************************************************************
 
 # From sage/modules/module.pyx:
