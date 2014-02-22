@@ -1442,6 +1442,191 @@ class FreeModuleTensor(ModuleElement):
         else:
             return self.fmodule.tensor_from_comp((k_con-1, l_cov-1), resu_comp)
 
+    def contract(self, *args):
+        r""" 
+        Contraction with another tensor. 
+        
+        INPUT:
+            
+        - ``pos1`` -- position of the first index (in ``self``) for the 
+          contraction; if not given, the last index position is assumed
+        - ``other`` -- the tensor to contract with
+        - ``pos2`` -- position of the second index (in ``other``) for the 
+          contraction; if not given, the first index position is assumed
+          
+        OUTPUT:
+        
+        - tensor resulting from the (pos1, pos2) contraction of ``self`` with 
+          ``other``
+       
+        EXAMPLES:
+        
+        Contraction of a tensor of type (0,1) with a tensor of type (1,0)::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: e = M.new_basis('e')
+            sage: a = M.linear_form()  # tensor of type (0,1) is a linear form
+            sage: a[:] = [-3,2,1]
+            sage: b = M([2,5,-2])  # tensor of type (1,0) is a module element
+            sage: s = a.contract(b) ; s
+            2
+            sage: s in M.base_ring()
+            True
+            sage: s == a[0]*b[0] + a[1]*b[1] + a[2]*b[2]  # check of the computation
+            True
+
+        The positions of the contraction indices can be set explicitely::
+        
+            sage: s == a.contract(0, b, 0)
+            True
+            sage: s == a.contract(0, b)
+            True
+            sage: s == a.contract(b, 0)
+            True
+           
+        In the present case, performing the contraction is identical to 
+        applying the linear form to the module element::
+        
+            sage: a.contract(b) == a(b)
+            True
+
+        or to applying the module element, considered as a tensor of type (1,0),
+        to the linear form::
+        
+            sage: a.contract(b) == b(a)
+            True
+
+        We have also::
+
+            sage: a.contract(b) == b.contract(a)
+            True
+
+        Contraction of a tensor of type (1,1) with a tensor of type (1,0)::
+        
+            sage: a = M.endomorphism()  # tensor of type (1,1)
+            sage: a[:] = [[-1,2,3],[4,-5,6],[7,8,9]]
+            sage: s = a.contract(b) ; s
+            element of the rank-3 free module M over the Integer Ring
+            sage: s.view()
+            2 e_0 - 29 e_1 + 36 e_2
+    
+        Since the index positions have not been specified, the contraction
+        takes place on the last position of a (i.e. no. 1) and the first
+        position of b (i.e. no. 0)::
+        
+            sage: a.contract(b) == a.contract(1, b, 0)
+            True
+            sage: a.contract(b) == b.contract(0, a, 1)
+            True
+            sage: a.contract(b) == b.contract(a, 1) 
+            True
+            
+        Contraction is possible only between a contravariant index and a 
+        covariant one::
+        
+            sage: a.contract(0, b)
+            Traceback (most recent call last):
+            ...
+            TypeError: Contraction not possible: the two index positions are both contravariant.
+
+        In the present case, performing the contraction is identical to 
+        applying the endomorphism to the module element::
+        
+            sage: a.contract(b) == a(b)
+            True
+
+        Contraction of a tensor of type (2,1) with a tensor of type (0,2)::
+        
+            sage: a = a*b ; a
+            type-(2,1) tensor on the rank-3 free module M over the Integer Ring
+            sage: b = M.tensor((0,2))
+            sage: b[:] = [[-2,3,1], [0,-2,3], [4,-7,6]]
+            sage: s = a.contract(1, b, 1) ; s
+            type-(1,2) tensor on the rank-3 free module M over the Integer Ring
+            sage: s[:]
+            [[[-9, 16, 39], [18, -32, -78], [27, -48, -117]],
+             [[36, -64, -156], [-45, 80, 195], [54, -96, -234]],
+             [[63, -112, -273], [72, -128, -312], [81, -144, -351]]]
+            sage: # check of the computation:
+            sage: for i in range(3):
+            ....:     for j in range(3):
+            ....:         for k in range(3):
+            ....:             print s[i,j,k] == a[i,0,j]*b[k,0]+a[i,1,j]*b[k,1]+a[i,2,j]*b[k,2],
+            ....:             
+            True True True True True True True True True True True True True True True True True True True True True True True True True True True
+
+        The two tensors do not have to be defined on the same basis for the 
+        contraction to take place, reflecting the fact that the contraction is 
+        basis-independent::
+        
+            sage: A = M.automorphism()
+            sage: A[:] =  [[0,0,1], [1,0,0], [0,-1,0]]
+            sage: f = e.new_basis(A, 'f')
+            sage: b.comp(f)[:]  # forces the computation of b's components w.r.t. basis f
+            [-2 -3  0]
+            [ 7  6 -4]
+            [ 3 -1 -2]
+            sage: b.del_other_comp(f)  # deletes components w.r.t. basis e
+            sage: b.components.keys()  # indeed:
+            [basis (f_0,f_1,f_2) on the rank-3 free module M over the Integer Ring]
+            sage: a.components.keys()  # while a is known only in basis e:
+            [basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring]
+            sage: s1 = a.contract(1, b, 1) ; s1  # yet the computation is possible
+            type-(1,2) tensor on the rank-3 free module M over the Integer Ring
+            sage: s1 == s  # ... and yields the same result as previously:
+            True
+
+        """
+        nargs = len(args)
+        if nargs == 1:
+            pos1 = self.tensor_rank - 1
+            other = args[0]
+            pos2 = 0
+        elif nargs == 2:
+            if isinstance(args[0], FreeModuleTensor):
+                pos1 = self.tensor_rank - 1
+                other = args[0]
+                pos2 = args[1]
+            else:
+                pos1 = args[0]
+                other = args[1]
+                pos2 = 0
+        elif nargs == 3:
+            pos1 = args[0]
+            other = args[1]
+            pos2 = args[2]
+        else:
+            raise TypeError("Wrong number of arguments in contract(): " + 
+                str(nargs) + 
+                " arguments provided, while between 1 and 3 are expected.")
+        if not isinstance(other, FreeModuleTensor):
+            raise TypeError("For the contraction, other must be a tensor " + 
+                            "field.")
+        k1, l1 = self.tensor_type
+        k2, l2 = other.tensor_type
+        if pos1 < k1 and pos2 < k2:
+            raise TypeError("Contraction not possible: the two index " + 
+                            "positions are both contravariant.")
+        if pos1 >= k1 and pos2 >= k2:
+            raise TypeError("Contraction not possible: the two index " + 
+                            "positions are both covavariant.")
+        basis = self.common_basis(other)
+        if basis is None:
+            raise ValueError("No common basis for the contraction.")
+        cmp_res = self.components[basis].contract(pos1, 
+                                            other.components[basis], pos2)
+        # reordering of the indices to have all contravariant indices first:
+        if k2 > 1:
+            if pos1 < k1:
+                cmp_res = cmp_res.swap_adjacent_indices(k1-1, k1+l1-1, k1+l1+k2-1)
+            else:
+                cmp_res = cmp_res.swap_adjacent_indices(k1, k1+l1-1, k1+l1+k2-2)
+        type_res = (k1+k2-1, l1+l2-1)
+        if type_res == (0, 0):
+            return cmp_res  # scalar case
+        else:
+            return self.fmodule.tensor_from_comp(type_res, cmp_res)
+
 
     def symmetrize(self, pos=None, basis=None):
         r"""
