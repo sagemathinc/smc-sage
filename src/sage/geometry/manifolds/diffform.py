@@ -105,7 +105,7 @@ class DiffForm(TensorField):
         sage: a.view() # expansion with respect to the default coframe (dt, dx, dy, dz)
         a = 2 dt/\dx + 3 dx/\dy
         sage: latex(a.view()) # output for the notebook
-        a = 2 \mathrm{d} t\wedge\mathrm{d} x + 3 \mathrm{d} x\wedge\mathrm{d} y
+        a = 2 \mathrm{d} t\wedge \mathrm{d} x + 3 \mathrm{d} x\wedge \mathrm{d} y
 
     Differential forms can be added or subtracted::
     
@@ -269,7 +269,7 @@ class DiffForm(TensorField):
             sage: a.view() # expansion on the manifold's default coframe (dx, dy, dz)
             A = x*z dx/\dy + (x^2 + y^2) dy/\dz
             sage: latex(a.view()) # output for the notebook
-            A = x z \mathrm{d} x\wedge\mathrm{d} y + \left( x^{2} + y^{2} \right) \mathrm{d} y\wedge\mathrm{d} z
+            A = x z \mathrm{d} x\wedge \mathrm{d} y + \left( x^{2} + y^{2} \right) \mathrm{d} y\wedge \mathrm{d} z
 
         Display in a coframe different from the default one::
         
@@ -497,7 +497,7 @@ class DiffForm(TensorField):
             sage: latex(h)
             A\wedge B
             sage: latex(h.view())
-            A\wedge B = x z^{2} \mathrm{d} x\wedge\mathrm{d} z + y z^{2} \mathrm{d} y\wedge\mathrm{d} z
+            A\wedge B = x z^{2} \mathrm{d} x\wedge \mathrm{d} z + y z^{2} \mathrm{d} y\wedge \mathrm{d} z
 
         The exterior product of two 1-forms is antisymmetric::
         
