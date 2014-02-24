@@ -1,26 +1,50 @@
 r"""
 Free modules of finite rank
 
-The class :class:`FiniteFreeModule` implements free modules `M` of finite rank
+The class :class:`FiniteFreeModule` implements free modules of finite rank
 over a commutative ring `R`. 
 
 Since `R` is commutative, it has the invariant basis number property, so that
-the rank of the free module `M` is defined uniquely, as the cardinality of any 
+the rank of any free module `M` is defined uniquely, as the cardinality of any 
 basis of `M`. 
 
 No distinguished basis of `M` is assumed. On the contrary, many bases can be 
 introduced on the free module along with change-of-basis rules (as module 
 automorphisms). Each
 module element has then various representations over the various bases. 
-Accordingly, the class :class:`FiniteFreeModule` inherits from the generic class 
-:class:`~sage.modules.module.Module` and each instance of :class:`FiniteFreeModule`
-belongs to the category  
+
+.. NOTE::
+
+    The class :class:`FiniteFreeModule` does not inherit from 
+    :class:`~sage.modules.free_module.FreeModule_generic` since the latter 
+    is a derived class of :class:`~sage.modules.module.Module_old`, 
+    which does not conform to the new coercion model.
+    Moreover, the class :class:`~sage.modules.free_module.FreeModule_generic`
+    seems to assume a distinguished basis (cf. its method
+    :meth:`~sage.modules.free_module.FreeModule_generic.basis`).
+    Besides, the class :class:`FiniteFreeModule` does not inherit 
+    from the class 
+    :class:`~sage.combinat.free_module.CombinatorialFreeModule`, which conforms
+    to the new coercion model, since this class is devoted to modules with a 
+    distinguished basis. 
+
+For the above reasons, the class :class:`FiniteFreeModule` inherits directly from 
+the generic class :class:`~sage.modules.module.Module` and each instance of 
+:class:`FiniteFreeModule` belongs to the category  
 :class:`~sage.categories.modules.Modules`
 and not to the category 
-:class:`~sage.categories.modules_with_basis.ModulesWithBasis`
-(cf. the *TODO* statement in the documentation of 
-:class:`~sage.categories.modules.Modules`: *Implement a FreeModules(R) 
-category, when so prompted by a concrete use case*).
+:class:`~sage.categories.modules_with_basis.ModulesWithBasis`.
+
+TODO:
+
+- implement submodules
+- implement free module homomorphisms (only endomorphisms are implemented at
+  the moment, as type-(1,1) tensors, cf. 
+  :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphism`)
+- create a FreeModules category (cf. the *TODO* statement in the documentation 
+  of :class:`~sage.categories.modules.Modules`: *Implement a FreeModules(R) 
+  category, when so prompted by a concrete use case*)
+
 
 AUTHORS:
 

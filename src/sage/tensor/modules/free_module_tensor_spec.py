@@ -6,8 +6,11 @@ Four derived classes of
 to rank-2 tensors:
 
 * :class:`FreeModuleEndomorphism` for endomorphisms (type-(1,1) tensors)
-* :class:`FreeModuleAutomorphism` for invertible endomorphisms
-* :class:`FreeModuleIdentityMap` for the identity map on a free module
+
+  * :class:`FreeModuleAutomorphism` for invertible endomorphisms
+
+    * :class:`FreeModuleIdentityMap` for the identity map on a free module
+
 * :class:`FreeModuleSymBilinForm` for symmetric bilinear forms (symmetric 
   type-(0,2) tensors)
   
@@ -62,13 +65,13 @@ class FreeModuleEndomorphism(FreeModuleTensor):
         sage: t.tensor_rank
         2
 
-    Consequently, an endomorphism can also be created by the method 
-    :meth:`tensor`::
+    Consequently, an endomorphism can also be created by the module method 
+    :meth:`~sage.tensor.modules.finite_free_module.FiniteFreeModule.tensor`::
     
         sage: t = M.tensor((1,1), name='T') ; t
         endomorphism T on the rank-3 free module M over the Integer Ring
     
-    Components with respect to a given basis::
+    Components of the endomorphism with respect to a given basis::
     
         sage: e = M.new_basis('e') ; e
         basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring

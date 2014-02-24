@@ -13,26 +13,35 @@ A *tensor of type* `(k,l)` is a multilinear map:
     \times \underbrace{M\times\cdots\times M}_{l\ \; \mbox{times}}
     \longrightarrow R
     
-where `M^*` stands for the dual of the free module `M` and `R` for the 
-commutative ring over which `M` is defined. The integer `k+l`
-is called the *tensor rank*. 
+where `R` is the commutative ring over which the free module `M` is defined and
+`M^*=\mathrm{Hom}_R(M,R)` is the dual of `M`. The integer `k+l` is called the 
+*tensor rank*. 
 
 Various derived classes of :class:`FreeModuleTensor` are devoted to specific 
 tensors:
 
 * :class:`FiniteFreeModuleElement` for elements of `M`, considered as type-(1,0) tensors
-* :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm` for 
-  type-(0,1) tensors (linear forms)
 * :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm` for 
-  alternating forms (fully antisymmetric type-(0,p) tensors)
+  fully antisymmetric type-`(0,l)` tensors (alternating forms)
+
+  * :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm` for 
+    type-(0,1) tensors (linear forms)
+
 * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphism` 
   for type-(1,1) tensors (endomorphisms)
-* :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphism` 
-  for invertible endomorphisms
-* :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityMap` 
-  for the identity map on a free module
+
+  * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphism` 
+    for invertible endomorphisms
+
+    * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityMap` 
+      for the identity map on a free module
+
 * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleSymBilinForm` 
   for symmetric type-(0,2) tensors (symmetric bilinear forms)
+
+:class:`FreeModuleTensor` is a Sage *element* class, the corresponding *parent*
+class being :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule`. 
+
 
 AUTHORS:
 
@@ -170,8 +179,8 @@ class FreeModuleTensor(ModuleElement):
       the positions of the involved arguments, with the convention position=0
       for the first argument. For instance:
 
-       * sym=(0,1) for a symmetry between the 1st and 2nd arguments 
-       * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
+      * sym=(0,1) for a symmetry between the 1st and 2nd arguments 
+      * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
          arguments and a symmetry between the 2nd, 4th and 5th arguments.
 
     - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 

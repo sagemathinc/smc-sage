@@ -1,25 +1,43 @@
 r"""
 Components
 
-The class :class:`Components` takes in charge the storage of some ring elements
-that represent the components of an "entity" with respect to some "frame". 
-The "entity/frame" are for instance "vector/vector-space basis" or 
+The class :class:`Components` is a technical class to take in charge the 
+storage of some ring elements that represent the components of 
+a "mathematical entity" with respect to some "frame". 
+Examples of "entity/frame" are "vector/vector-space basis" or 
 "vector field/vector frame on some manifold". More generally, the components
 can be those of a tensor on a free module or those of a tensor field on a 
 manifold. They can also be non-tensorial quantities, like connection 
 coefficients or structure coefficients of a vector frame. 
 
+The individual components are assumed to belong to a given ring and are 
+labelled by *indices*, i.e. tuple of integers.
+The following operations are implemented on components with respect 
+to a given frame:
+
+* arithmetics (addition, subtraction, multiplication by a ring element)
+* handling of symmetries or antisymmetries on the indices
+* symmetrization and antisymmetrization
+* tensor product
+* contraction
+
 Various subclasses of the class :class:`Components` are
 
 * :class:`CompWithSym` for storing components with symmetries (symmetric and/or 
   antisymmetric indices)
-* :class:`CompFullySym` for storing fully symmetric components.
-* :class:`CompFullyAntiSym` for storing fully antisymmetric components.
-* :class:`KroneckerDelta` for the Kronecker delta symbol. 
+  
+  * :class:`CompFullySym` for storing fully symmetric components
+
+    * :class:`KroneckerDelta` for the Kronecker delta symbol 
+  
+  * :class:`CompFullyAntiSym` for storing fully antisymmetric components
 
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
+- Joris Vankerschaver (2010): for the idea of storing only the non-zero
+  components as dictionaries, which keys are the component indices (see 
+  class :class:`~sage.tensor.differential_form_element.DifferentialForm`)
 
 EXAMPLES:
 

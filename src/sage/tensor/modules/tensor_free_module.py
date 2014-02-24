@@ -11,15 +11,18 @@ The class :class:`TensorFreeModule` implements the tensor products
     \otimes \underbrace{M^*\otimes\cdots\otimes M^*}_{l\ \; \mbox{times}}
     
 where `M` is a free module of finite rank over a commutative ring `R` and
-`M^*` is the dual of `M`. 
+`M^*=\mathrm{Hom}_R(M,R)` is the dual of `M`. 
 `T^{(k,l)}(M)` can be canonically identified with the set of tensors of 
 type `(k,l)` acting as multilinear forms on `M`. 
 Note that `T^{(1,0)}(M) = M`. 
 
 `T^{(k,l)}(M)` is itself a free module over `R`, of rank `n^{k+l}`, `n`
 being the rank of `M`. Accordingly the class :class:`TensorFreeModule` 
-inherits from the class 
-:class:`FiniteFreeModule`
+inherits from the class :class:`FiniteFreeModule`
+
+:class:`TensorFreeModule` is a Sage *parent* class, the corresponding *element* 
+class being 
+:class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`. 
 
 AUTHORS:
 
@@ -67,10 +70,6 @@ class TensorFreeModule(FiniteFreeModule):
 
     `T^{(k,l)}(M)` can be canonically identified with the set of tensors of 
     type `(k,l)` acting as multilinear forms on `M`. 
-
-    :class:`TensorFreeModule` is a Sage *Parent* class whose elements belong 
-    to the class 
-    :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`. 
 
     INPUT:
     
