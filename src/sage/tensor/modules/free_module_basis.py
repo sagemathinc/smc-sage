@@ -24,8 +24,9 @@ AUTHORS:
 #******************************************************************************
 
 from sage.structure.sage_object import SageObject
+from sage.structure.unique_representation import UniqueRepresentation
 
-class FreeModuleBasis(SageObject):
+class FreeModuleBasis(UniqueRepresentation, SageObject):
     r""" 
     Basis of a free module over a commutative ring `R`.
     
@@ -42,10 +43,10 @@ class FreeModuleBasis(SageObject):
     
     A basis on a rank-3 free module over `\ZZ`::
         
-        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: M0 = FiniteFreeModule(ZZ, 3, name='M_0')
         sage: from sage.tensor.modules.free_module_basis import FreeModuleBasis
-        sage: e = FreeModuleBasis(M, 'e') ; e
-        basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+        sage: e = FreeModuleBasis(M0, 'e') ; e
+        basis (e_0,e_1,e_2) on the rank-3 free module M_0 over the Integer Ring
 
     Instead of importing FreeModuleBasis in the global name space, one can 
     use the module's method :meth:`new_basis`::

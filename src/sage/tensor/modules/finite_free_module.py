@@ -173,6 +173,7 @@ As such, we can form its tensor product with t, yielding a tensor of type (3,1):
 
 from sage.modules.module import Module
 from free_module_tensor import FiniteFreeModuleElement
+from sage.structure.unique_representation import UniqueRepresentation
 
 # From sage/modules/module.pyx:
 # ----------------------------
@@ -187,7 +188,7 @@ from free_module_tensor import FiniteFreeModuleElement
 #
 
 
-class FiniteFreeModule(Module):
+class FiniteFreeModule(UniqueRepresentation, Module):
     r"""
     Free module of finite rank over a commutative ring `R`.
 
@@ -346,6 +347,33 @@ class FiniteFreeModule(Module):
         0.333333333333333 e_0 - 2.00000000000000 e_2
         sage: v.view(e, format_spec=10)  # 10 bits of precision 
         0.33 e_0 - 2.0 e_2
+        
+    All the tests from the suite for the category 
+    :class:`~sage.categories.modules.Modules` are passed::
+        
+        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: e = M.new_basis('e')
+        sage: TestSuite(M).run(verbose=True)
+        running ._test_additive_associativity() . . . pass
+        running ._test_an_element() . . . pass
+        running ._test_category() . . . pass
+        running ._test_elements() . . .
+          Running the test suite of self.an_element()
+          running ._test_category() . . . pass
+          running ._test_eq() . . . pass
+          running ._test_nonzero_equal() . . . pass
+          running ._test_not_implemented_methods() . . . pass
+          running ._test_pickling() . . . pass
+          pass
+        running ._test_elements_eq_reflexive() . . . pass
+        running ._test_elements_eq_symmetric() . . . pass
+        running ._test_elements_eq_transitive() . . . pass
+        running ._test_elements_neq() . . . pass
+        running ._test_eq() . . . pass
+        running ._test_not_implemented_methods() . . . pass
+        running ._test_pickling() . . . pass
+        running ._test_some_elements() . . . pass
+        running ._test_zero() . . . pass
 
     """
     
@@ -657,19 +685,19 @@ class FiniteFreeModule(Module):
         
         At the module construction, no default basis is assumed::
         
-            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: M = FiniteFreeModule(ZZ, 2, name='M', start_index=1)
             sage: M.default_basis()
             
         The first defined basis becomes the default one::
         
             sage: e = M.new_basis('e') ; e
-            basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+            basis (e_1,e_2) on the rank-2 free module M over the Integer Ring
             sage: M.default_basis()
-            basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+            basis (e_1,e_2) on the rank-2 free module M over the Integer Ring
             sage: f =  M.new_basis('f') ; f
-            basis (f_0,f_1,f_2) on the rank-3 free module M over the Integer Ring
+            basis (f_1,f_2) on the rank-2 free module M over the Integer Ring
             sage: M.default_basis()
-            basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+            basis (e_1,e_2) on the rank-2 free module M over the Integer Ring
 
         """
         return self.def_basis
@@ -692,16 +720,16 @@ class FiniteFreeModule(Module):
         
         Changing the default basis on a rank-3 free module::
         
-            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
             sage: e = M.new_basis('e') ; e
-            basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+            basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring
             sage: f =  M.new_basis('f') ; f
-            basis (f_0,f_1,f_2) on the rank-3 free module M over the Integer Ring
+            basis (f_1,f_2,f_3) on the rank-3 free module M over the Integer Ring
             sage: M.default_basis()
-            basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
+            basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring
             sage: M.set_default_basis(f)
             sage: M.default_basis()
-            basis (f_0,f_1,f_2) on the rank-3 free module M over the Integer Ring
+            basis (f_1,f_2,f_3) on the rank-3 free module M over the Integer Ring
 
         """
         from free_module_basis import FreeModuleBasis

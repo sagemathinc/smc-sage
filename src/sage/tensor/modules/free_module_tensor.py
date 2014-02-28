@@ -940,6 +940,7 @@ class FreeModuleTensor(ModuleElement):
             sage: e = M.new_basis('e')
             sage: u = M([2,1,-5])
             sage: f = M.new_basis('f')
+            sage: M.basis_changes.clear() # to ensure that bases e and f are unrelated at this stage
             sage: v = M([0,4,2], basis=f)
             sage: u.common_basis(v) 
             
