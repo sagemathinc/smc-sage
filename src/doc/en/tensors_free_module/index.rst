@@ -20,10 +20,10 @@ __ http://creativecommons.org/licenses/by-sa/3.0/
    :maxdepth: 2
 
    finite_free_module
+      
+   free_module_basis
    
    tensor_free_module
-   
-   free_module_basis
    
    free_module_tensor
 

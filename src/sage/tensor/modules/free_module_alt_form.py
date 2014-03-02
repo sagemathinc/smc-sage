@@ -117,7 +117,7 @@ class FreeModuleAltForm(FreeModuleTensor):
         Display of an alternating form of degree 1 on a rank-3 free module::
         
             sage: M = FiniteFreeModule(ZZ, 3, name='M')
-            sage: e = M.new_basis('e')
+            sage: e = M.basis('e')
             sage: a = M.alternating_form(1, 'a', latex_name=r'\alpha')
             sage: a[:] = [1,-3,4]
             sage: a.view()
@@ -170,7 +170,7 @@ class FreeModuleAltForm(FreeModuleTensor):
         passed at the module construction::
 
             sage: N = FiniteFreeModule(QQ, 3, name='N', start_index=1, output_formatter=Rational.numerical_approx)
-            sage: e = N.new_basis('e')
+            sage: e = N.basis('e')
             sage: b = N.alternating_form(2, 'b')
             sage: b[1,2], b[1,3], b[2,3] = 1/3, 5/2, 4
             sage: b.view()  # default format (53 bits of precision)
@@ -269,7 +269,7 @@ class FreeModuleAltForm(FreeModuleTensor):
         Exterior product of two linear forms::
         
             sage: M = FiniteFreeModule(ZZ, 3, name='M')
-            sage: e = M.new_basis('e')
+            sage: e = M.basis('e')
             sage: a = M.alternating_form(1, 'A')
             sage: a[:] = [1,-3,4]
             sage: b = M.alternating_form(1, 'B')
@@ -380,7 +380,7 @@ class FreeModuleLinForm(FreeModuleAltForm):
     Linear form on a rank-3 free module::
     
         sage: M = FiniteFreeModule(ZZ, 3, name='M')
-        sage: e = M.new_basis('e')
+        sage: e = M.basis('e')
         sage: a = M.linear_form('A') ; a
         linear form A on the rank-3 free module M over the Integer Ring
         sage: a[:] = [2,-1,3]  # components w.r.t. the module's default basis (e)

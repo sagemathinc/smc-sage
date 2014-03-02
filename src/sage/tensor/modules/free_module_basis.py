@@ -49,10 +49,10 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         basis (e_0,e_1,e_2) on the rank-3 free module M_0 over the Integer Ring
 
     Instead of importing FreeModuleBasis in the global name space, one can 
-    use the module's method :meth:`new_basis`::
+    use the module's method :meth:`basis`::
     
         sage: M = FiniteFreeModule(ZZ, 3, name='M')
-        sage: e = M.new_basis('e') ; e
+        sage: e = M.basis('e') ; e
         basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
 
     The individual elements constituting the basis are accessed via the 
@@ -64,11 +64,11 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         True
 
     The LaTeX symbol can be set explicitely, as the second argument of
-    :meth:`new_basis`::
+    :meth:`basis`::
     
         sage: latex(e)
         \left(e_0,e_1,e_2\right)
-        sage: eps = M.new_basis('eps', r'\epsilon') ; eps
+        sage: eps = M.basis('eps', r'\epsilon') ; eps
         basis (eps_0,eps_1,eps_2) on the rank-3 free module M over the Integer Ring
         sage: latex(eps)
         \left(\epsilon_0,\epsilon_1,\epsilon_2\right)
@@ -77,7 +77,7 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
     parameter ``start_index`` provided at the free module construction::
     
         sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
-        sage: e = M.new_basis('e') ; e
+        sage: e = M.basis('e') ; e
         basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring
         sage: e[1]
         element e_1 of the rank-3 free module M over the Integer Ring
@@ -93,10 +93,11 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         self.latex_name = r"\left(" + \
           ",".join([latex_symbol + "_" + str(i) 
                     for i in self.fmodule.irange()]) + r"\right)"
+        self.symbol = symbol
         # The basis is added to the module list of bases
         for other in self.fmodule.known_bases:
-            if repr(self) == repr(other):
-                raise ValueError("The " + str(self) + " already exist on the " +
+            if symbol == other.symbol:
+                raise ValueError("The " + str(other) + " already exist on the " +
                                  str(self.fmodule))
         self.fmodule.known_bases.append(self)
         # The individual vectors:
@@ -181,7 +182,8 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         
         INPUT:
         
-        - ``change_of_basis`` -- instance of :class:`FreeModuleAutomorphism`
+        - ``change_of_basis`` -- instance of 
+          :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphism`
           describing the automorphism `P` that relates the current basis 
           `(e_i)` (described by ``self``) to the new basis `(n_i)` according
           to `n_i = P(e_i)`
@@ -200,7 +202,7 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         Change of basis on a rank-2 free module::
         
             sage: M = FiniteFreeModule(QQ, 2, name='M', start_index=1)
-            sage: e = M.new_basis('e')
+            sage: e = M.basis('e')
             sage: a = M.automorphism()
             sage: a[:] = [[1, 2], [-1, 3]]
             sage: f = e.new_basis(a, 'f') ; f
@@ -272,7 +274,7 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         Dual basis on a rank-3 free module::
         
             sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
-            sage: e = M.new_basis('e') ; e
+            sage: e = M.basis('e') ; e
             basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring
             sage: f = e.dual_basis() ; f
             dual basis (e^1,e^2,e^3) on the rank-3 free module M over the Integer Ring
@@ -300,7 +302,7 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
 
 class FreeModuleCoBasis(SageObject):
     r""" 
-    Dual basis of a free module over a commutative ring `R`.
+    Dual basis of a free module over a commutative ring.
     
     INPUT:
     
@@ -316,7 +318,7 @@ class FreeModuleCoBasis(SageObject):
     Dual basis on a rank-3 free module::
     
         sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
-        sage: e = M.new_basis('e') ; e
+        sage: e = M.basis('e') ; e
         basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring
         sage: from sage.tensor.modules.free_module_basis import FreeModuleCoBasis
         sage: f = FreeModuleCoBasis(e, 'f') ; f

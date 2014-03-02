@@ -73,7 +73,7 @@ class FreeModuleEndomorphism(FreeModuleTensor):
     
     Components of the endomorphism with respect to a given basis::
     
-        sage: e = M.new_basis('e') ; e
+        sage: e = M.basis('e') ; e
         basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
         sage: t[:] = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
         sage: t[:]
@@ -188,7 +188,7 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
 
     Setting the components in a basis::
     
-        sage: e = M.new_basis('e') ; e
+        sage: e = M.basis('e') ; e
         basis (e_0,e_1) on the rank-2 free module M over the Rational Field
         sage: a[:] = [[1, 2], [-1, 3]]
         sage: a[:]
@@ -258,7 +258,7 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
         
             sage: M = FiniteFreeModule(QQ, 3, name='M')
             sage: a = M.automorphism('A')
-            sage: e = M.new_basis('e')
+            sage: e = M.basis('e')
             sage: a[:] = [[1,0,-1], [0,3,0], [0,0,2]]
             sage: b = a.inverse() ; b
             automorphism A^(-1) on the rank-3 free module M over the Rational Field
@@ -324,15 +324,15 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
     - ``fmodule`` -- free module `M` over a commutative ring `R` 
       (must be an instance of :class:`FiniteFreeModule`)
     - ``name`` -- (default: 'Id') name given to the identity map. 
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
-      automorphism; if none is provided, the LaTeX symbol is set to ``name``
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity 
+      map; if none is provided, the LaTeX symbol is set to ``name``
     
     EXAMPLES:
     
     Identity map on a rank-3 free module::
     
         sage: M = FiniteFreeModule(ZZ, 3, name='M')
-        sage: e = M.new_basis('e')
+        sage: e = M.basis('e')
         sage: a = M.identity_map() ; a
         identity map on the rank-3 free module M over the Integer Ring
 
@@ -363,7 +363,7 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
         Kronecker delta of size 3x3
         sage: a.view()
         Id = e_0*e^0 + e_1*e^1 + e_2*e^2
-        sage: f = M.new_basis('f')
+        sage: f = M.basis('f')
         sage: a.comp(basis=f)
         Kronecker delta of size 3x3
         sage: a.comp(f)[:]
@@ -471,7 +471,7 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
         Components of the identity map on a rank-3 free module::
     
             sage: M = FiniteFreeModule(ZZ, 3, name='M')
-            sage: e = M.new_basis('e')
+            sage: e = M.basis('e')
             sage: a = M.identity_map()
             sage: a.comp(basis=e) 
             Kronecker delta of size 3x3
@@ -573,7 +573,7 @@ class FreeModuleSymBilinForm(FreeModuleTensor):
     
     Components with respect to a given basis::
     
-        sage: e = M.new_basis('e')
+        sage: e = M.basis('e')
         sage: a[0,0], a[0,1], a[0,2] = 1, 2, 3
         sage: a[1,1], a[1,2] = 4, 5
         sage: a[2,2] = 6
