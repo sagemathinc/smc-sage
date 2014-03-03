@@ -574,6 +574,46 @@ class FiniteFreeModule(UniqueRepresentation, Module):
             self._tensor_modules[(k,l)] = TensorFreeModule(self, (k,l))
         return self._tensor_modules[(k,l)]
 
+    def dual(self):
+        r"""
+        Return the dual module.
+        
+        EXAMPLE:
+        
+        Dual of a free module over `\ZZ`::
+        
+            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: M.dual()
+            dual of the rank-3 free module M over the Integer Ring
+            sage: latex(M.dual())
+            M^*
+            
+        The dual is a free module of the same rank as M::
+        
+            sage: isinstance(M.dual(), FiniteFreeModule)
+            True
+            sage: M.dual().rank()
+            3
+
+        It is formed by tensors of type (0,1), i.e. linear forms::
+        
+            sage: M.dual() is M.tensor_module(0,1)
+            True
+            sage: M.dual().an_element()
+            type-(0,1) tensor on the rank-3 free module M over the Integer Ring
+            sage: a = M.linear_form()
+            sage: a in M.dual()
+            True
+
+        The elements of a dual basis belong of course to the dual module::
+        
+            sage: e = M.basis('e')
+            sage: e.dual_basis()[0] in M.dual()
+            True
+
+        """
+        return self.tensor_module(0,1)
+
     def irange(self, start=None):
         r"""
         Single index generator, labelling the elements of a basis.

@@ -114,11 +114,12 @@ class FreeModuleAltForm(FreeModuleTensor):
           
         EXAMPLES:
         
-        Display of an alternating form of degree 1 on a rank-3 free module::
+        Display of an alternating form of degree 1 (linear form) on a rank-3 
+        free module::
         
             sage: M = FiniteFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
-            sage: a = M.alternating_form(1, 'a', latex_name=r'\alpha')
+            sage: a = M.linear_form('a', latex_name=r'\alpha')
             sage: a[:] = [1,-3,4]
             sage: a.view()
             a = e^0 - 3 e^1 + 4 e^2
@@ -270,9 +271,9 @@ class FreeModuleAltForm(FreeModuleTensor):
         
             sage: M = FiniteFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
-            sage: a = M.alternating_form(1, 'A')
+            sage: a = M.linear_form('A')
             sage: a[:] = [1,-3,4]
-            sage: b = M.alternating_form(1, 'B')
+            sage: b = M.linear_form('B')
             sage: b[:] = [2,-1,2]
             sage: c = a.wedge(b) ; c
             alternating form A/\B of degree 2 on the rank-3 free module M over the Integer Ring
@@ -288,9 +289,9 @@ class FreeModuleAltForm(FreeModuleTensor):
             sage: a.wedge(b) == a*b - b*a
             True
 
-        Exterior product of a linear form and an alt. form of degree 2::
+        Exterior product of a linear form and an alternating form of degree 2::
         
-            sage: d = M.alternating_form(1, 'D')
+            sage: d = M.linear_form('D')
             sage: d[:] = [-1,2,4]
             sage: s = d.wedge(c) ; s
             alternating form D/\A/\B of degree 3 on the rank-3 free module M over the Integer Ring
@@ -413,10 +414,13 @@ class FreeModuleLinForm(FreeModuleAltForm):
         sage: a(3*u - 4*v) == 3*a(u) - 4*a(v)
         True
 
-    A linear form is a tensor of type (0,1)::
+    A linear form is an element of the dual module::
         
         sage: a.parent()
-        free module of type-(0,1) tensors on the rank-3 free module M over the Integer Ring
+        dual of the rank-3 free module M over the Integer Ring
+
+    As such, it is a tensor of type (0,1)::
+
         sage: a.tensor_type
         (0, 1)
 

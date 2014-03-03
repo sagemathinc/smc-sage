@@ -202,6 +202,11 @@ class TensorFreeModule(FiniteFreeModule):
         rank = pow(fmodule._rank, tensor_type[0] + tensor_type[1])
         self._zero_element = 0 # provisory (to avoid infinite recursion in what
                                # follows)
+        if tensor_type == (0,1):  # case of the dual
+            if name is None and fmodule.name is not None:
+                name = fmodule.name + '*'
+            if latex_name is None and fmodule.latex_name is not None:
+                latex_name = fmodule.latex_name + r'^*'
         FiniteFreeModule.__init__(self, fmodule.ring, rank, name=name, 
                                   latex_name=latex_name, 
                                   start_index=fmodule.sindex,
@@ -254,13 +259,16 @@ class TensorFreeModule(FiniteFreeModule):
         r"""
         String representation of the object.
         """
-        description = "free module "
-        if self.name is not None:
-            description += self.name + " "
-        description += "of type-(%s,%s)" % \
+        if self.tensor_type == (0,1):
+            return "dual of the " + str(self.fmodule)
+        else:
+            description = "free module "
+            if self.name is not None:
+                description += self.name + " "
+            description += "of type-(%s,%s)" % \
                            (str(self.tensor_type[0]), str(self.tensor_type[1]))
-        description += " tensors on the " + str(self.fmodule)
-        return description
+            description += " tensors on the " + str(self.fmodule)
+            return description
 
     def base_module(self):
         r""" 
