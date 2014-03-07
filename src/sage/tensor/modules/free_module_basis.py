@@ -1,5 +1,5 @@
 r"""
-Free module bases.
+Free module bases
 
 The class :class:`FreeModuleBasis` implements bases on a free module `M` of
 finite rank over a commutative ring,
