@@ -1733,9 +1733,11 @@ class CompWithSym(Components):
       indices: each symmetry is described by a tuple containing the positions 
       of the involved indices, with the convention position=0 for the first
       slot. For instance:
+      
         * sym=(0,1) for a symmetry between the 1st and 2nd indices 
         * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
           indices and a symmetry between the 2nd, 4th and 5th indices.
+
     - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
       among the indices, with the same convention as for ``sym``. 
       
@@ -3198,7 +3200,7 @@ class CompWithSym(Components):
 class CompFullySym(CompWithSym):
     r"""
     Class for storing fully symmetric components with respect to a given 
-    "frame"`.
+    "frame".
     
     The "frame" can be a basis of some vector space or a vector frame on some 
     manifold (i.e. a field of bases). 
@@ -3476,7 +3478,7 @@ class CompFullySym(CompWithSym):
 class CompFullyAntiSym(CompWithSym):
     r"""
     Class for storing fully antisymmetric components with respect to a given 
-    "frame"`.
+    "frame".
     
     The "frame" can be a basis of some vector space or a vector frame on some 
     manifold (i.e. a field of bases). 

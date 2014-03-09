@@ -384,7 +384,6 @@ class FiniteFreeModule(UniqueRepresentation, Module):
     
     def __init__(self, ring, rank, name=None, latex_name=None, start_index=0,
                  output_formatter=None):
-        from free_module_basis import FreeModuleBasis
         if not ring.is_commutative():
             raise TypeError("The module base ring must be commutative.")
         Module.__init__(self, ring)
