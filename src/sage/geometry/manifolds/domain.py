@@ -185,6 +185,8 @@ class Domain(Parent):
         self.def_frame = None  # default frame
         self.frame_changes = {} # dictionary of changes of frames
         self.coframes = []  # list of coframes defined on subdomains of self
+        self._scalar_field_ring = None # ring of scalar fields defined on self
+                                       # (not contructed yet)
         # The zero scalar field is constructed:
         if self.name != 'field R':  
             #!# to avoid circular import of RealLine
@@ -236,6 +238,15 @@ class Domain(Parent):
         Special Sage function for the LaTeX representation of the object.
         """
         return self.latex_name
+
+    def scalar_field_ring(self):
+        r"""
+        Returns the ring of scalar fields defined on ``self``.
+        """
+        from scalarfield_ring import ScalarFieldRing
+        if self._scalar_field_ring is None:
+            self._scalar_field_ring = ScalarFieldRing(self)
+        return self._scalar_field_ring
 
     def domain(self, name, latex_name=None, is_open=False):
         r"""

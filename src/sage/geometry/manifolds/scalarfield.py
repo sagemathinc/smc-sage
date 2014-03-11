@@ -32,14 +32,14 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from sage.structure.sage_object import SageObject
+from sage.structure.element import CommutativeRingElement
 from sage.rings.integer import Integer
 from domain import Domain
 from chart import FunctionChart, ZeroFunctionChart, MultiFunctionChart
 from diffmapping import DiffMapping
 from diffform import DiffForm, OneForm
 
-class ScalarField(DiffMapping, DiffForm):
+class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
     r"""
     Class for scalar fields on a differentiable manifold.
     
@@ -356,6 +356,7 @@ class ScalarField(DiffMapping, DiffForm):
         from manifold import RealLine
         DiffMapping.__init__(self, domain, RealLine, coord_expression, chart)
         DiffForm.__init__(self, domain, 0, name, latex_name)
+        CommutativeRingElement.__init__(self, domain.scalar_field_ring())
         if coord_expression is not None:
             if chart is None:
                 chart = self.domain.def_chart
@@ -1043,7 +1044,7 @@ class ScalarField(DiffMapping, DiffForm):
             result.latex_name = '-' + self.latex_name
         return result
 
-    def __add__(self, other):
+    def _add_(self, other):
         r"""
         Scalar field addition. 
         
@@ -1099,7 +1100,7 @@ class ScalarField(DiffMapping, DiffForm):
         """
         return self.__add__(other)
 
-    def __sub__(self, other):
+    def _sub_(self, other):
         r"""
         Scalar field subtraction. 
         
@@ -1156,7 +1157,7 @@ class ScalarField(DiffMapping, DiffForm):
         return self.__sub__(other)
         
 
-    def __mul__(self, other):
+    def _mul_(self, other):
         r"""
         Scalar field multiplication. 
         
@@ -1239,7 +1240,7 @@ class ScalarField(DiffMapping, DiffForm):
         """
         return self.__mul__(other)
 
-    def __div__(self, other):
+    def _div_(self, other):
         r"""
         Scalar field division. 
         
@@ -1608,6 +1609,7 @@ class ZeroScalarField(ScalarField):
         from manifold import RealLine
         DiffMapping.__init__(self, domain, RealLine)
         DiffForm.__init__(self, domain, 0, name, latex_name)
+        CommutativeRingElement.__init__(self, domain.scalar_field_ring())
 
     def _repr_(self):
         r"""
@@ -1777,7 +1779,7 @@ class ZeroScalarField(ScalarField):
         """
         return self
 
-    def __add__(self, other):
+    def _add_(self, other):
         r"""
         Scalar field addition. 
         
@@ -1803,7 +1805,7 @@ class ZeroScalarField(ScalarField):
         else:
             return ScalarField(self.domain, coord_expression=other)
             
-    def __sub__(self, other):
+    def _sub_(self, other):
         r"""
         Scalar field subtraction. 
         
@@ -1829,7 +1831,7 @@ class ZeroScalarField(ScalarField):
         else:
             return ScalarField(self.domain, coord_expression=-other)
 
-    def __mul__(self, other):
+    def _mul_(self, other):
         r"""
         Scalar field multiplication. 
         
@@ -1857,7 +1859,7 @@ class ZeroScalarField(ScalarField):
         else: # other is not a tensor field:
             return self
 
-    def __div__(self, other):
+    def _div_(self, other):
         r"""
         Scalar field division. 
         

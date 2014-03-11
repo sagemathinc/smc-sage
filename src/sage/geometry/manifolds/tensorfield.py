@@ -1864,7 +1864,7 @@ class TensorField(SageObject):
         return result
 
 
-    def __add__(self, other):
+    def _add_(self, other):
         r"""
         Tensor addition. 
         
@@ -1903,7 +1903,7 @@ class TensorField(SageObject):
         return self.__add__(other)
 
 
-    def __sub__(self, other):
+    def _sub_(self, other):
         r"""
         Tensor subtraction. 
         
@@ -1943,7 +1943,7 @@ class TensorField(SageObject):
         return (-self).__add__(other)
 
 
-    def __mul__(self, other):
+    def _mul_(self, other):
         r"""
         Tensor product. 
         """
@@ -1991,7 +1991,7 @@ class TensorField(SageObject):
             result.components[frame] = other * self.components[frame]
         return result
 
-    def __div__(self, other):
+    def _div_(self, other):
         r"""
         Division (by a scalar)
         """
