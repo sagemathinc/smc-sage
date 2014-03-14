@@ -47,6 +47,7 @@ class ScalarFieldRing(Parent):
     def __init__(self, domain):
         Parent.__init__(self, category=CommutativeRings())
         self.domain = domain
+        self._populate_coercion_lists_()
         
     #### Methods required for any Parent 
     def _element_constructor_(self, coord_expression=None, chart=None, 
@@ -58,6 +59,8 @@ class ScalarFieldRing(Parent):
             return ZeroScalarField(self.domain)
         if isinstance(coord_expression, ScalarField):
             if self.domain.is_subdomain(coord_expression.domain):
+                if chart is None:
+                    chart = self.domain.def_chart
                 resu = self.element_class(self.domain, 
                                 coord_expression=coord_expression.expr(chart), 
                                 chart=chart, name=name, 
@@ -86,8 +89,15 @@ class ScalarFieldRing(Parent):
         """
         if other is SR:
             return True
-        elif other is ZZ or QQ:
+        elif other is ZZ:
+            # print "coerce from ZZ"
             return True
+        elif other is QQ:
+            # print "coerce from QQ"
+            return True
+        elif isinstance(other, ScalarFieldRing):
+            # print "coerce from ScalarFieldRing"
+            return self.domain.is_subdomain(other.domain)
         else:
             return False
 

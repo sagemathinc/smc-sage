@@ -1086,19 +1086,19 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
         else:
             return self + ScalarField(self.domain, coord_expression=other)
 
-    def __radd__(self, other):
-        r"""
-        Addition on the left with ``other``. 
+    #def __radd__(self, other):
+        #r"""
+        #Addition on the left with ``other``. 
         
-        """
-        return self.__add__(other)
+        #"""
+        #return self.__add__(other)
 
-    def __iadd__(self, other):
-        r"""
-        In-place addition operator.  
+    #def __iadd__(self, other):
+        #r"""
+        #In-place addition operator.  
                         
-        """
-        return self.__add__(other)
+        #"""
+        #return self.__add__(other)
 
     def _sub_(self, other):
         r"""
@@ -1142,19 +1142,19 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
         else:
             return self - ScalarField(self.domain, coord_expression=other)
 
-    def __rsub__(self, other):
-        r"""
-        Subtraction from ``other``. 
+    #def __rsub__(self, other):
+        #r"""
+        #Subtraction from ``other``. 
         
-        """
-        return (-self).__add__(other)
+        #"""
+        #return (-self).__add__(other)
 
-    def __isub__(self, other):
-        r"""
-        In-place subtraction operator.  
+    #def __isub__(self, other):
+        #r"""
+        #In-place subtraction operator.  
                         
-        """
-        return self.__sub__(other)
+        #"""
+        #return self.__sub__(other)
         
 
     def _mul_(self, other):
@@ -1225,20 +1225,20 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
 
         return result
 
-    def __rmul__(self, other):
-        r"""
-        Multiplication on the left with ``other``. 
+    #def __rmul__(self, other):
+        #r"""
+        #Multiplication on the left with ``other``. 
         
-        """
-        # Since the multiplication with a scalar field must be commutative:
-        return self.__mul__(other)  
+        #"""
+        ## Since the multiplication with a scalar field must be commutative:
+        #return self.__mul__(other)  
 
-    def __imul__(self, other):
-        r"""
-        In-place multiplication operator.  
+    #def __imul__(self, other):
+        #r"""
+        #In-place multiplication operator.  
                         
-        """
-        return self.__mul__(other)
+        #"""
+        #return self.__mul__(other)
 
     def _div_(self, other):
         r"""
@@ -1285,20 +1285,20 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
             return self / ScalarField(self.domain, coord_expression=other)
 
 
-    def __rdiv__(self, other):
-        r"""
-        Division of ``other`` by ``self``. 
+    #def __rdiv__(self, other):
+        #r"""
+        #Division of ``other`` by ``self``. 
         
-        """
-        raise NotImplementedError("Operator ScalarField.__rdiv__ not " + 
-                                  "implemented.")
+        #"""
+        #raise NotImplementedError("Operator ScalarField.__rdiv__ not " + 
+                                  #"implemented.")
                                   
-    def __idiv__(self, other):
-        r"""
-        In-place division operator.  
+    #def __idiv__(self, other):
+        #r"""
+        #In-place division operator.  
                         
-        """
-        return self.__div__(other)
+        #"""
+        #return self.__div__(other)
 
     def exterior_der(self, chart=None):
         r"""
@@ -1554,36 +1554,7 @@ class ZeroScalarField(ScalarField):
         Traceback (most recent call last):
         ...
         ZeroDivisionError: Division of a scalar field by zero.
-
-    Arithmetics with a non-zero instance of :class:`FunctionChart`::
-
-        sage: g = FunctionChart(c_xy, x+y)
-        sage: s = f+g ; s ; s.expr()
-        scalar field on the 2-dimensional manifold 'M'
-        x + y
-        sage: s = g+f ; s ; s.expr()
-        scalar field on the 2-dimensional manifold 'M'
-        x + y
-        sage: s = f-g ; s ; s.expr()
-        scalar field on the 2-dimensional manifold 'M'
-        -x - y
-        sage: s = g-f ; s ; s.expr()
-        scalar field on the 2-dimensional manifold 'M'
-        x + y
-        sage: s = f*g ; s ; s.expr()
-        zero scalar field on the 2-dimensional manifold 'M'
-        0
-        sage: s = g*f ; s ; s.expr()
-        zero scalar field on the 2-dimensional manifold 'M'
-        0
-        sage: s = f/g ; s ; s.expr()
-        zero scalar field on the 2-dimensional manifold 'M'
-        0
-        sage: s = g/f ; s ; s.expr()
-        Traceback (most recent call last):
-        ...
-        ZeroDivisionError: Division of a FunctionChart by zero.
-        
+       
     Arithmetics with an instance of :class:`ZeroFunctionChart`::
 
         sage: g = ZeroFunctionChart(c_xy)

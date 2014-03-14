@@ -453,7 +453,8 @@ class DiffForm(TensorField):
                 for i in range(n):
                     ind_d = (i+si,) + ind
                     if len(ind_d) == len(set(ind_d)): # all indices are different
-                          dc[[ind_d]] += val.function_chart(chart).diff(chart.xx[i])
+                          dc[[ind_d]] += \
+                            val.function_chart(chart).diff(chart.xx[i]).scalar_field()
             dc._del_zeros()
             # Name and LaTeX name of the result (rname and rlname):
             rname = format_unop_txt('d', self.name)
