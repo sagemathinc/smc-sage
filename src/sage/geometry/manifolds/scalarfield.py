@@ -37,9 +37,10 @@ from sage.rings.integer import Integer
 from domain import Domain
 from chart import FunctionChart, ZeroFunctionChart, MultiFunctionChart
 from diffmapping import DiffMapping
-from diffform import DiffForm, OneForm
+#from diffform import DiffForm, OneForm
 
-class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
+#class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
+class ScalarField(DiffMapping, CommutativeRingElement):
     r"""
     Class for scalar fields on a differentiable manifold.
     
@@ -134,20 +135,8 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
 
         sage: f.expr() is f.function_chart().expr()
         True
-
-    A scalar field is a tensor field of rank 0::
-    
-        sage: isinstance(f, TensorField)
-        True
-        sage: f.rank
-        0
         
-    As such, it is a differential form of degree 0::
-    
-        sage: isinstance(f, DiffForm)
-        True
-        
-    It is also a differential mapping from the manifold to the field of
+    A scalar field is a differential mapping from the manifold to the field of
     real numbers (modeled by the unique instance :data:`RealLine` of the class
     :class:`RealLineManifold`)::
     
@@ -179,16 +168,6 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
         True
         sage: g.set_expr(cos(th))
         sage: f == g
-        False
-
-    ...to an instance of :class:`FunctionChart`::
-    
-        sage: h = FunctionChart(c_spher, sin(th)*cos(ph)) ; h
-        cos(ph)*sin(th)
-        sage: f == h
-        True
-        sage: h = FunctionChart(c_spher, cos(th))
-        sage: f == h
         False
         
     ...to a symbolic expression::
@@ -355,8 +334,15 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
                  latex_name=None):
         from manifold import RealLine
         DiffMapping.__init__(self, domain, RealLine, coord_expression, chart)
-        DiffForm.__init__(self, domain, 0, name, latex_name)
+#        DiffForm.__init__(self, domain, 0, name, latex_name)
         CommutativeRingElement.__init__(self, domain.scalar_field_ring())
+        self.manifold = domain.manifold
+        self.domain = domain
+        self.name = name
+        if latex_name is None:
+            self.latex_name = self.name
+        else:
+            self.latex_name = latex_name
         if coord_expression is not None:
             if chart is None:
                 chart = self.domain.def_chart
@@ -366,7 +352,88 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
                 self.express = {chart: FunctionChart(chart, coord_expression)}
         else:
             self.express = {}
+        self._init_derived()   # initialization of derived quantities
 
+
+    ####### Required methods for a ring element (beside arithmetic) #######
+    
+    def __nonzero__(self):
+        r"""
+        Return True if ``self`` is nonzero and False otherwise. 
+        
+        This method is called by self.is_zero(). 
+
+        EXAMPLES:
+        
+        Tests on a 2-dimensional manifold::
+        
+            sage: m = Manifold(2, 'M')
+            sage: c_xy.<x,y> = m.chart('x y')
+            sage: f = ScalarField(m, x*y)
+            sage: f.is_zero()
+            False
+            sage: f.set_expr(0)
+            sage: f.is_zero()
+            True
+            sage: g = ScalarField(m, 0)
+            sage: g.is_zero()
+            True
+
+        """
+        res = True
+        for funct in self.express.values():
+            res = res and funct.is_zero()
+        return not res
+
+    def __eq__(self, other):
+        r"""
+        Comparison (equality) operator. 
+        
+        INPUT:
+        
+        - ``other`` -- a scalar field
+        
+        OUTPUT:
+        
+        - True if ``self`` is equal to ``other``,  or False otherwise
+        
+        """
+        if not isinstance(other, ScalarField):
+            try:
+                other = self.parent()(other)    # conversion to a scalar field
+            except TypeError:
+                return False
+        if other.domain != self.domain:
+            return False
+        if other.is_zero():
+            return self.is_zero()
+        com_charts = self.common_charts(other)
+        if com_charts is None:
+            raise ValueError("No common chart for the comparison.")
+        resu = True
+        for chart in com_charts:
+            resu = resu and (self.express[chart] == other.express[chart])
+        return resu
+        
+    ####### End of required methods a ring element (beside arithmetic) #######
+
+    def _init_derived(self):
+        r"""
+        Initialize the derived quantities
+        """
+        self._exterior_derivative = None # differential
+        self._lie_derivatives = {} # collection of Lie derivatives of self
+
+    def _del_derived(self):
+        r"""
+        Delete the derived quantities
+        """
+        DiffMapping._del_derived(self) # derived quantities of the mother class
+        self._exterior_derivative = None 
+        # First deletes any reference to self in the vectors' dictionary:
+        for vid, val in self._lie_derivatives.items():
+            del val[0]._lie_der_along_self[id(self)]
+        self._lie_derivatives.clear()
 
     def _repr_(self):
         r"""
@@ -384,18 +451,6 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
         
         """
         return ScalarField(self.domain)        
-
-    # There is no function _init_derived because ScalarField has no derived 
-    # quantity per se
-    # The function _del_derived is mandatory because ScalarField has two mother
-    # classes:
-    
-    def _del_derived(self):
-        r"""
-        Delete the derived quantities.
-        """
-        DiffMapping._del_derived(self) # derived quantities of the 1st mother class
-        DiffForm._del_derived(self) # derived quantities of the 2nd mother class
 
     def copy(self):
         r"""
@@ -425,39 +480,6 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
         for key, mfunct in self.coord_expression.items():
             result.coord_expression[key] = mfunct.copy()
         return result
-
-    def comp(self, frame=None, from_frame=None):
-        r"""
-        Redefinition of the TensorField method :meth:`TensorField.comp`. 
-        
-        This method should not be called, since a scalar field has no 
-        component w.r.t. a vector frame! 
-        It therefore returns None. 
-        
-        """
-        return None
-
-    def set_comp(self, frame=None):
-        r"""
-        Redefinition of the TensorField method :meth:`TensorField.set_comp`.
-        
-        This method should not be called, since a scalar field has no 
-        component w.r.t. a vector frame! 
-        It therefore returns None. 
-                
-        """
-        return None
-
-    def add_comp(self, frame=None):
-        r"""
-        Redefinition of the TensorField method :meth:`TensorField.add_comp`.
-        
-        This method should not be called, since a scalar field has no 
-        component w.r.t. a vector frame! 
-        It therefore returns None. 
-                
-        """
-        return None
 
     def function_chart(self, chart=None, from_chart=None):
         r""" 
@@ -913,95 +935,6 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
         else:
             return resu
 
-
-    def is_zero(self):
-        r""" 
-        Return True if the scalar field is zero and False otherwise.
-
-        EXAMPLES:
-        
-        Tests on a 2-dimensional manifold::
-        
-            sage: m = Manifold(2, 'M')
-            sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = ScalarField(m, x*y)
-            sage: f.is_zero()
-            False
-            sage: f.set_expr(0)
-            sage: f.is_zero()
-            True
-            sage: g = ScalarField(m, 0)
-            sage: g.is_zero()
-            True
-
-        """
-        res = True
-        for funct in self.express.values():
-            res = res and funct.is_zero()
-        return res
-
-    def __eq__(self, other):
-        r"""
-        Comparison (equality) operator. 
-        
-        INPUT:
-        
-        - ``other`` -- a scalar field or something else
-        
-        OUTPUT:
-        
-        - True if ``self`` is equal to ``other``,  or False otherwise
-        
-        """
-        from sage.symbolic.expression import Expression
-        from sage.symbolic.ring import SR
-        if isinstance(other, ScalarField):
-            if other.domain != self.domain:
-                return False
-            com_charts = self.common_charts(other)
-            if com_charts is None:
-                raise ValueError("No common chart for the comparison.")
-            resu = True
-            for chart in com_charts:
-                resu = resu and (self.express[chart] == other.express[chart])
-            return resu
-        elif isinstance(other, FunctionChart):
-            chart = other.chart
-            if chart not in self.express:
-                return False
-            else:
-                return bool(self.express[chart] == other.express)
-        elif isinstance(other, Expression):
-            var_other = set(other.variables())
-            for val in self.express.values():
-                if var_other.issubset(set(val.express.variables())):
-                    return bool(val == other)
-        else:
-            try:
-                xother = SR(other)
-                result = False
-                for val in self.express.values():
-                    if val == xother:
-                        result = True
-                return result
-            except TypeError:
-                return False
-
-    def __ne__(self, other):
-        r"""
-        Inequality operator. 
-        
-        INPUT:
-        
-        - ``other`` -- a scalar field or something else
-        
-        OUTPUT:
-        
-        - True if ``self`` is different from ``other``,  or False otherwise
-        
-        """
-        return not self.__eq__(other)
-
     def __pos__(self):
         r"""
         Unary plus operator. 
@@ -1058,33 +991,26 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
           ``other``
         
         """
-        if isinstance(other, ScalarField):
-            if isinstance(other, ZeroScalarField):
-                return self.copy()
-            com_charts = self.common_charts(other)
-            if com_charts is None:
-                raise ValueError("No common chart for the addition.")
-            dom_result = self.domain.intersection(other.domain)
-            result = ScalarField(dom_result)
-            for chart in com_charts:
-                # FunctionChart addition:
-                res = self.express[chart] + other.express[chart]
-                result.express[chart] = res
-                result.coord_expression[(chart, self.domain2.def_chart)] = \
-                                    MultiFunctionChart(res.chart, res.express)
-            if result.is_zero():
-                return dom_result.zero_scalar_field
-            if self.name is not None and other.name is not None:
-                result.name = self.name + '+' + other.name
-            if self.latex_name is not None and other.latex_name is not None:
-                result.latex_name = self.latex_name + '+' + other.latex_name
-            return result
-        elif isinstance(other, FunctionChart):
-            return self + other.scalar_field()
-        elif other == 0:
+        if isinstance(other, ZeroScalarField):
             return self.copy()
-        else:
-            return self + ScalarField(self.domain, coord_expression=other)
+        com_charts = self.common_charts(other)
+        if com_charts is None:
+            raise ValueError("No common chart for the addition.")
+        dom_result = self.domain.intersection(other.domain)
+        result = ScalarField(dom_result)
+        for chart in com_charts:
+            # FunctionChart addition:
+            res = self.express[chart] + other.express[chart]
+            result.express[chart] = res
+            result.coord_expression[(chart, self.domain2.def_chart)] = \
+                                MultiFunctionChart(res.chart, res.express)
+        if result.is_zero():
+            return dom_result.zero_scalar_field
+        if self.name is not None and other.name is not None:
+            result.name = self.name + '+' + other.name
+        if self.latex_name is not None and other.latex_name is not None:
+            result.latex_name = self.latex_name + '+' + other.latex_name
+        return result
 
     #def __radd__(self, other):
         #r"""
@@ -1114,33 +1040,26 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
           ``self``
 
         """
-        if isinstance(other, ScalarField):
-            if isinstance(other, ZeroScalarField):
-                return self.copy()
-            com_charts = self.common_charts(other)
-            if com_charts is None:
-                raise ValueError("No common chart for the subtraction.")
-            dom_result = self.domain.intersection(other.domain)
-            result = ScalarField(dom_result)
-            for chart in com_charts:
-                # FunctionChart subtraction:
-                res = self.express[chart] - other.express[chart]
-                result.express[chart] = res
-                result.coord_expression[(chart, self.domain2.def_chart)] = \
-                                    MultiFunctionChart(res.chart, res.express)
-            if result.is_zero():
-                return dom_result.zero_scalar_field
-            if self.name is not None and other.name is not None:
-                result.name = self.name + '-' + other.name
-            if self.latex_name is not None and other.latex_name is not None:
-                result.latex_name = self.latex_name + '-' + other.latex_name
-            return result
-        elif isinstance(other, FunctionChart):
-            return self - other.scalar_field()
-        elif other == 0:
+        if isinstance(other, ZeroScalarField):
             return self.copy()
-        else:
-            return self - ScalarField(self.domain, coord_expression=other)
+        com_charts = self.common_charts(other)
+        if com_charts is None:
+            raise ValueError("No common chart for the subtraction.")
+        dom_result = self.domain.intersection(other.domain)
+        result = ScalarField(dom_result)
+        for chart in com_charts:
+            # FunctionChart subtraction:
+            res = self.express[chart] - other.express[chart]
+            result.express[chart] = res
+            result.coord_expression[(chart, self.domain2.def_chart)] = \
+                                MultiFunctionChart(res.chart, res.express)
+        if result.is_zero():
+            return dom_result.zero_scalar_field
+        if self.name is not None and other.name is not None:
+            result.name = self.name + '-' + other.name
+        if self.latex_name is not None and other.latex_name is not None:
+            result.latex_name = self.latex_name + '-' + other.latex_name
+        return result
 
     #def __rsub__(self, other):
         #r"""
@@ -1171,58 +1090,25 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
           ``other``
         
         """
-        from component import Components
-        from tensorfield import TensorField
-        from utilities import format_mul_txt, format_mul_latex        
-        if isinstance(other, ScalarField):
-            if isinstance(other, ZeroScalarField):
-                return other
-            com_charts = self.common_charts(other)
-            if com_charts is None:
-                raise ValueError("No common chart for the multiplication.")
-            dom_result = self.domain.intersection(other.domain)
-            result = ScalarField(dom_result)
-            for chart in com_charts:
-                # FunctionChart multiplication:
-                res = self.express[chart] * other.express[chart]
-                result.express[chart] = res
-                result.coord_expression[(chart, self.domain2.def_chart)] = \
-                                    MultiFunctionChart(res.chart, res.express)
-            if result.is_zero():
-                return dom_result.zero_scalar_field
-            result.name = format_mul_txt(self.name, '*', other.name)
-            result.latex_name = format_mul_latex(self.latex_name, ' ', 
-                                                 other.latex_name)        
-
-        elif isinstance(other, TensorField):
-            #!# subdomains almost treated here 
-            result = other._new_instance()
-            dom1 = self.domain
-            for frame in other.components:
-                comp = other.components[frame]
-                dom2 = comp.domain
-                if dom1 in dom2.subdomains or dom2 in dom1.subdomains:
-                    try:
-                        result.components[frame] = self * comp
-                    except ValueError:
-                        pass
-            result.name = format_mul_txt(self.name, '*', other.name)
-            result.latex_name = format_mul_latex(self.latex_name, ' ', 
-                                                 other.latex_name)
-
-        elif isinstance(other, Components):
-            #!# subdomains not treated here 
-            result = other._new_instance()
-            for ind in other._comp:
-                result._comp[ind] = self * other._comp[ind]
-
-        elif isinstance(other, FunctionChart):
-            return self * other.scalar_field()
-        elif other == 0:
-            return self.domain.zero_scalar_field
-        else:
-            return self * ScalarField(self.domain, coord_expression=other)
-
+        from utilities import format_mul_txt, format_mul_latex
+        if isinstance(other, ZeroScalarField):
+            return other
+        com_charts = self.common_charts(other)
+        if com_charts is None:
+            raise ValueError("No common chart for the multiplication.")
+        dom_result = self.domain.intersection(other.domain)
+        result = ScalarField(dom_result)
+        for chart in com_charts:
+            # FunctionChart multiplication:
+            res = self.express[chart] * other.express[chart]
+            result.express[chart] = res
+            result.coord_expression[(chart, self.domain2.def_chart)] = \
+                                MultiFunctionChart(res.chart, res.express)
+        if result.is_zero():
+            return dom_result.zero_scalar_field
+        result.name = format_mul_txt(self.name, '*', other.name)
+        result.latex_name = format_mul_latex(self.latex_name, ' ', 
+                                             other.latex_name)        
         return result
 
     #def __rmul__(self, other):
@@ -1255,35 +1141,26 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
         
         """
         from utilities import format_mul_txt, format_mul_latex
-        if isinstance(other, ScalarField):
-            if isinstance(other, ZeroScalarField):
-                raise ZeroDivisionError("Division of a scalar field by zero.")
-            com_charts = self.common_charts(other)
-            if com_charts is None:
-                raise ValueError("No common chart for the division.")
-            dom_result = self.domain.intersection(other.domain)
-            result = ScalarField(dom_result)
-            for chart in com_charts:
-                # FunctionChart division:
-                res = self.express[chart] / other.express[chart]
-                result.express[chart] = res
-                result.coord_expression[(chart, self.domain2.def_chart)] = \
-                                    MultiFunctionChart(res.chart, res.express)
-            #!# the following 2 lines could be skipped:
-            if result.is_zero():
-                return dom_result.zero_scalar_field
-            result.name = format_mul_txt(self.name, '/', other.name)
-            result.latex_name = format_mul_latex(self.latex_name, '/', 
-                                                 other.latex_name)
-            return result
-
-        elif isinstance(other, FunctionChart):
-            return self / other.scalar_field()
-        elif other == 0:
+        if isinstance(other, ZeroScalarField):
             raise ZeroDivisionError("Division of a scalar field by zero.")
-        else:
-            return self / ScalarField(self.domain, coord_expression=other)
-
+        com_charts = self.common_charts(other)
+        if com_charts is None:
+            raise ValueError("No common chart for the division.")
+        dom_result = self.domain.intersection(other.domain)
+        result = ScalarField(dom_result)
+        for chart in com_charts:
+            # FunctionChart division:
+            res = self.express[chart] / other.express[chart]
+            result.express[chart] = res
+            result.coord_expression[(chart, self.domain2.def_chart)] = \
+                                MultiFunctionChart(res.chart, res.express)
+        #!# the following 2 lines could be skipped:
+        if result.is_zero():
+            return dom_result.zero_scalar_field
+        result.name = format_mul_txt(self.name, '/', other.name)
+        result.latex_name = format_mul_latex(self.latex_name, '/', 
+                                             other.latex_name)
+        return result
 
     #def __rdiv__(self, other):
         #r"""
@@ -1358,6 +1235,7 @@ class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
 
         """
         from component import Components
+        from diffform import OneForm
         from utilities import format_unop_txt, format_unop_latex
         if self._exterior_derivative is None:
            # A new computation is necessary:
@@ -1554,33 +1432,58 @@ class ZeroScalarField(ScalarField):
         Traceback (most recent call last):
         ...
         ZeroDivisionError: Division of a scalar field by zero.
-       
-    Arithmetics with an instance of :class:`ZeroFunctionChart`::
-
-        sage: g = ZeroFunctionChart(c_xy)
-        sage: s = f+g ; s
-        zero scalar field on the 2-dimensional manifold 'M'
-        sage: s = g+f ; s
-        zero scalar field on the 2-dimensional manifold 'M'
-        sage: s = f-g ; s
-        zero scalar field on the 2-dimensional manifold 'M'
-        sage: s = g-f ; s
-        zero scalar field on the 2-dimensional manifold 'M'
-        sage: s = f*g ; s
-        zero scalar field on the 2-dimensional manifold 'M'
-        sage: s = g*f ; s
-        zero scalar field on the 2-dimensional manifold 'M'
-        sage: s = f/g ; s
-        Traceback (most recent call last):
-        ...
-        ZeroDivisionError: Division of a scalar field by zero.
 
     """
     def __init__(self, domain, name=None, latex_name=None):
         from manifold import RealLine
         DiffMapping.__init__(self, domain, RealLine)
-        DiffForm.__init__(self, domain, 0, name, latex_name)
+#        DiffForm.__init__(self, domain, 0, name, latex_name)
         CommutativeRingElement.__init__(self, domain.scalar_field_ring())
+        self.manifold = domain.manifold
+        self.domain = domain
+        self.name = name
+        if latex_name is None:
+            self.latex_name = self.name
+        else:
+            self.latex_name = latex_name
+
+    ####### Required methods for a ring element (beside arithmetic) #######
+    
+    def __nonzero__(self):
+        r"""
+        Return always False (since ``self`` is zero). 
+        
+        This method is called by self.is_zero(). 
+
+        EXAMPLES:
+        
+
+        """
+        return False
+
+    def __eq__(self, other):
+        r"""
+        Comparison (equality) operator. 
+        
+        INPUT:
+        
+        - ``other`` -- a scalar field
+        
+        OUTPUT:
+        
+        - True if ``self`` is equal to ``other``,  or False otherwise
+        
+        """
+        if not isinstance(other, ScalarField):
+            try:
+                other = self.parent()(other)    # conversion to a scalar field
+            except TypeError:
+                return False
+        if other.domain != self.domain:
+            return False
+        return other.is_zero()
+        
+    ####### End of required methods a ring element (beside arithmetic) #######
 
     def _repr_(self):
         r"""
@@ -1664,8 +1567,7 @@ class ZeroScalarField(ScalarField):
         INPUT:
         
         - ``chart`` -- (default: None) chart for the  coordinate expression 
-          of the scalar field; unused here, since the scalar field is 
-          identically zero. 
+          of the scalar field
           
         The output is either text-formatted (console mode) or LaTeX-formatted
         (notebook mode). 
@@ -1674,14 +1576,16 @@ class ZeroScalarField(ScalarField):
         from sage.misc.latex import latex
         from utilities import FormattedExpansion
         result = FormattedExpansion(self)
+        if chart is None:
+            chart = self.domain.def_chart
         if self.name is None:
-            result.txt = "0"
+            result.txt = repr(chart[:]) + " |--> 0"
         else:
-            result.txt = self.name + " = 0"
+            result.txt = self.name + ": " + repr(chart[:]) + " |--> 0"
         if self.latex_name is None:
-            result.latex = "0"
+            result.latex = latex(chart[:]) + r"\mapsto 0"
         else:
-            result.latex = latex(self) + " = 0"
+            result.latex = latex(self) + ":\ " + latex(chart[:]) + r"\mapsto 0"
         return result
 
     def __call__(self, p):
@@ -1701,33 +1605,7 @@ class ZeroScalarField(ScalarField):
         if not isinstance(p, Point):
             return TypeError("The argument must be a point.")
         return 0
-   
-    def is_zero(self):
-        r""" 
-        Return True if the scalar field is zero and False otherwise.
-
-        """
-        return True
-            
-    def __eq__(self, other):
-        r"""
-        Comparison (equality) operator. 
-        
-        INPUT:
-        
-        - ``other`` -- a scalar field or something else
-        
-        OUTPUT:
-        
-        - True if ``self`` is equal to ``other``,  or False otherwise
-        
-        """
-        if isinstance(other, ScalarField):
-            return other.is_zero()
-        else:
-            return bool(isinstance(other, (int, Integer)) and other==0)
-        #!# what about __req___ ?
- 
+                
     def __pos__(self):
         r"""
         Unary plus operator. 
@@ -1764,17 +1642,7 @@ class ZeroScalarField(ScalarField):
           ``other``
         
         """
-        if isinstance(other, ScalarField):
-            if other.manifold != self.manifold:
-                raise TypeError("Scalar fields defined on different " + 
-                                "manifolds cannot be added.")
-            return other.copy()    
-        elif isinstance(other, FunctionChart):
-            return other.scalar_field()
-        elif other == 0:
-            return self.domain.zero_scalar_field
-        else:
-            return ScalarField(self.domain, coord_expression=other)
+        return other.copy()    
             
     def _sub_(self, other):
         r"""
@@ -1790,17 +1658,7 @@ class ZeroScalarField(ScalarField):
           ``self``          
         
         """
-        if isinstance(other, ScalarField):
-            if other.manifold != self.manifold:
-                raise TypeError("Scalar fields defined on different " + 
-                                "manifolds cannot be subtracted.")
-            return -other    
-        elif isinstance(other, FunctionChart):
-            return (-other).scalar_field()
-        elif other == 0:
-            return self.domain.zero_scalar_field
-        else:
-            return ScalarField(self.domain, coord_expression=-other)
+        return -other    
 
     def _mul_(self, other):
         r"""
@@ -1816,19 +1674,7 @@ class ZeroScalarField(ScalarField):
           ``other``
         
         """
-        from component import Components
-        from tensorfield import TensorField
-        if isinstance(other, ScalarField):
-            return self
-        elif isinstance(other, TensorField):
-            result = other._new_instance()
-            for frame in other.components:
-                result.components[frame] = self * other.components[frame]
-            return result
-        elif isinstance(other, Components):
-            return other._new_instance()  # a just created Components is zero
-        else: # other is not a tensor field:
-            return self
+        return self
 
     def _div_(self, other):
         r"""
@@ -1865,6 +1711,7 @@ class ZeroScalarField(ScalarField):
                 
         """
         from component import Components
+        from diffform import OneForm
         if self._exterior_derivative is None:
             # A new computation is necessary:
             if chart is None:

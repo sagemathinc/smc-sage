@@ -28,9 +28,9 @@ from sage.rings.integer_ring import ZZ
 from sage.rings.rational_field import QQ
 from sage.symbolic.ring import SR
 from sage.geometry.manifolds.scalarfield import ScalarField, ZeroScalarField
-#from sage.structure.unique_representation import UniqueRepresentation
+from sage.structure.unique_representation import UniqueRepresentation
 
-class ScalarFieldRing(Parent):
+class ScalarFieldRing(UniqueRepresentation, Parent):
     r"""
     Ring of differentiable scalar fields on an open set of a differentiable 
     manifolds over `\RR`
@@ -79,7 +79,7 @@ class ScalarFieldRing(Parent):
         r"""
         Construct some (unamed) element of the module
         """
-        resu = self.element_class(self.domain, coord_expression=1)
+        resu = self.element_class(self.domain, coord_expression=2)
         return resu
             
             
