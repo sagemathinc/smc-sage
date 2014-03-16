@@ -18,13 +18,13 @@ The subclass :class:`ZeroScalarField` deals with null scalar fields.
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013): initial version
+- Eric Gourgoulhon, Michal Bejger (2013,2014): initial version
 
 """
 
 #******************************************************************************
-#       Copyright (C) 2013 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -37,9 +37,7 @@ from sage.rings.integer import Integer
 from domain import Domain
 from chart import FunctionChart, ZeroFunctionChart, MultiFunctionChart
 from diffmapping import DiffMapping
-#from diffform import DiffForm, OneForm
 
-#class ScalarField(DiffMapping, DiffForm, CommutativeRingElement):
 class ScalarField(DiffMapping, CommutativeRingElement):
     r"""
     Class for scalar fields on a differentiable manifold.
@@ -297,13 +295,13 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         sage: f.add_expr(u, c_uv)
         sage: g = ScalarField(M, 2*v, c_uv)
         sage: g.add_expr(y, c_xy)
-        sage: f.express
+        sage: f.express  # random (dictionary output)
         {chart (U, (x, y)): x^2, chart (V, (u, v)): u}
-        sage: g.express
+        sage: g.express  # random (dictionary output)
         {chart (V, (u, v)): 2*v, chart (U, (x, y)): y}
         sage: s = f + g ; s
         scalar field on the 2-dimensional manifold 'M'
-        sage: s.express
+        sage: s.express  # random (dictionary output)
         {chart (U, (x, y)): x^2 + y, chart (V, (u, v)): u + 2*v}
         sage: g.set_expr(3*x, c_xy)
         sage: g.express
@@ -334,7 +332,6 @@ class ScalarField(DiffMapping, CommutativeRingElement):
                  latex_name=None):
         from manifold import RealLine
         DiffMapping.__init__(self, domain, RealLine, coord_expression, chart)
-#        DiffForm.__init__(self, domain, 0, name, latex_name)
         CommutativeRingElement.__init__(self, domain.scalar_field_ring())
         self.manifold = domain.manifold
         self.domain = domain
@@ -437,7 +434,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
         description = "scalar field"
         if self.name is not None:
@@ -839,7 +836,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             sage: g.add_expr(u, c_uv)
             sage: f.express
             {chart (U, (x, y)): x^2}
-            sage: g.express
+            sage: g.express  # random (dictionary output)
             {chart (U, (x, y)): x + y, chart (V, (u, v)): u}
             sage: f.common_charts(g)
             [chart (U, (x, y))]
@@ -857,21 +854,22 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             [chart (U, (x, y))]
             sage: f.expr(c_xy_W)  
             x^2
-            sage: f.express
+            sage: f.express  # random (dictionary output)
             {chart (U, (x, y)): x^2, chart (W, (x, y)): x^2}
-            sage: g.express
+            sage: g.express  # random (dictionary output)
             {chart (U, (x, y)): x + y, chart (V, (u, v)): u}
             sage: g.common_charts(f)  # c_xy_W is not returned because it is subchart of 'xy'
             [chart (U, (x, y))]
             sage: f.expr(c_uv_W)
             1/4*u^2 + 1/2*u*v + 1/4*v^2
-            sage: f.express 
+            sage: f.express  # random (dictionary output)
             {chart (U, (x, y)): x^2, chart (W, (x, y)): x^2, chart (W, (u, v)): 1/4*u^2 + 1/2*u*v + 1/4*v^2}
-            sage: g.express
+            sage: g.express  # random (dictionary output)
             {chart (U, (x, y)): x + y, chart (V, (u, v)): u}
             sage: f.common_charts(g)
             [chart (U, (x, y)), chart (W, (u, v))]
-            sage: g.express # the expressions have been updated on the subcharts
+            sage: # the expressions have been updated on the subcharts
+            sage: g.express #  random (dictionary output)
             {chart (U, (x, y)): x + y, chart (V, (u, v)): u, chart (W, (u, v)): u}
 
         Common charts found by computing some coordinate changes::
@@ -898,7 +896,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         coord_changes = self.manifold.coord_changes
         resu = []
         #
-        # 1/ Search for common chart among the existing expressions, i.e. 
+        # 1/ Search for common charts among the existing expressions, i.e. 
         #    without performing any expression transformation. 
         #    -------------------------------------------------------------
         for chart1 in self.express:
@@ -918,8 +916,8 @@ class ScalarField(DiffMapping, CommutativeRingElement):
                             other.expr(chart1)
                             resu.append(chart1)
         #
-        # 2/ Search for a common chart via one expression transformation
-        #    -----------------------------------------------------------
+        # 2/ Search for common charts via one expression transformation
+        #    ----------------------------------------------------------
         for chart1 in known_expr1:
             if chart1 not in resu:
                 for chart2 in known_expr2:
@@ -1012,20 +1010,6 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             result.latex_name = self.latex_name + '+' + other.latex_name
         return result
 
-    #def __radd__(self, other):
-        #r"""
-        #Addition on the left with ``other``. 
-        
-        #"""
-        #return self.__add__(other)
-
-    #def __iadd__(self, other):
-        #r"""
-        #In-place addition operator.  
-                        
-        #"""
-        #return self.__add__(other)
-
     def _sub_(self, other):
         r"""
         Scalar field subtraction. 
@@ -1061,20 +1045,6 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             result.latex_name = self.latex_name + '-' + other.latex_name
         return result
 
-    #def __rsub__(self, other):
-        #r"""
-        #Subtraction from ``other``. 
-        
-        #"""
-        #return (-self).__add__(other)
-
-    #def __isub__(self, other):
-        #r"""
-        #In-place subtraction operator.  
-                        
-        #"""
-        #return self.__sub__(other)
-        
 
     def _mul_(self, other):
         r"""
@@ -1111,21 +1081,6 @@ class ScalarField(DiffMapping, CommutativeRingElement):
                                              other.latex_name)        
         return result
 
-    #def __rmul__(self, other):
-        #r"""
-        #Multiplication on the left with ``other``. 
-        
-        #"""
-        ## Since the multiplication with a scalar field must be commutative:
-        #return self.__mul__(other)  
-
-    #def __imul__(self, other):
-        #r"""
-        #In-place multiplication operator.  
-                        
-        #"""
-        #return self.__mul__(other)
-
     def _div_(self, other):
         r"""
         Scalar field division. 
@@ -1161,21 +1116,6 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         result.latex_name = format_mul_latex(self.latex_name, '/', 
                                              other.latex_name)
         return result
-
-    #def __rdiv__(self, other):
-        #r"""
-        #Division of ``other`` by ``self``. 
-        
-        #"""
-        #raise NotImplementedError("Operator ScalarField.__rdiv__ not " + 
-                                  #"implemented.")
-                                  
-    #def __idiv__(self, other):
-        #r"""
-        #In-place division operator.  
-                        
-        #"""
-        #return self.__div__(other)
 
     def exterior_der(self, chart=None):
         r"""
@@ -1437,7 +1377,6 @@ class ZeroScalarField(ScalarField):
     def __init__(self, domain, name=None, latex_name=None):
         from manifold import RealLine
         DiffMapping.__init__(self, domain, RealLine)
-#        DiffForm.__init__(self, domain, 0, name, latex_name)
         CommutativeRingElement.__init__(self, domain.scalar_field_ring())
         self.manifold = domain.manifold
         self.domain = domain

@@ -30,12 +30,13 @@ AUTHORS:
 #*****************************************************************************
 
 from sage.structure.sage_object import SageObject
+from sage.structure.unique_representation import UniqueRepresentation
 from sage.structure.element import RingElement
 from sage.rings.integer import Integer
 from domain import OpenDomain
 from utilities import simplify_chain
 
-class Chart(SageObject):
+class Chart(UniqueRepresentation, SageObject):
     r"""
     Class for charts on a manifold.
     
@@ -398,18 +399,6 @@ class Chart(SageObject):
         """
         return self[:]
 
-    def __hash__(self):
-        r"""
-        Hash function (since instances of :class:`Chart` are used as
-        dictionary keys).
-        """
-        return id(self)
-
-    def __eq__(self, other):
-        r"""
-        Comparison operator
-        """
-        return other is self
 
     def __getitem__(self, i):
         r"""

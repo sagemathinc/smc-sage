@@ -84,9 +84,11 @@ State of various data members after the above operations::
 #*****************************************************************************
 
 from sage.structure.parent import Parent
+from sage.structure.unique_representation import UniqueRepresentation
 from sage.categories.sets_cat import Sets
 from point import Point
 
+#class Domain(UniqueRepresentation, Parent):
 class Domain(Parent):
     r"""
     Subset of a differentiable manifold over `\RR`.
