@@ -1569,6 +1569,7 @@ class OpenDomain(Domain):
     """
     def __init__(self, manifold, name, latex_name=None):
         Domain.__init__(self, manifold, name, latex_name)
+        self._vector_field_modules = {} # dict. of vector field modules along self
 
     def _repr_(self):
         r"""
@@ -1718,4 +1719,27 @@ class OpenDomain(Domain):
         """
         from chart import Chart
         return Chart(self, coordinates)
+
+    def vector_field_module(self, ambient_domain=None):
+        r"""
+        Returns the set of vector fields defined on ``self``, possibly 
+        within some ambient manifold. 
+        
+        INPUT:
+        
+        - ``ambient_domain`` -- (default: None) open subset `V` of the 
+          ambient manifold `M` containing the image of ``self`` in case
+          ``self`` is part of an immersed submanifold of `M`; if None, 
+          ``ambient_domain`` is set to ``self``.
+        
+        """
+        from vectorfield_module import VectorFieldFreeModule
+        if ambient_domain is None:
+            ambient_domain = self
+        if ambient_domain.name not in self._vector_field_modules:
+            # if self.is_manifestly_parallelizable():
+            self._vector_field_modules[ambient_domain.name] = \
+                VectorFieldFreeModule(self, ambient_domain=ambient_domain)
+            # else:
+        return self._vector_field_modules[ambient_domain.name]
 
