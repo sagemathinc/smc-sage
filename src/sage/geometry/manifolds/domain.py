@@ -1570,6 +1570,7 @@ class OpenDomain(Domain):
     def __init__(self, manifold, name, latex_name=None):
         Domain.__init__(self, manifold, name, latex_name)
         self._vector_field_modules = {} # dict. of vector field modules along self
+        self._tensor_field_modules = {} # dict. of tensor field modules along self
 
     def _repr_(self):
         r"""
@@ -1723,7 +1724,8 @@ class OpenDomain(Domain):
     def vector_field_module(self, ambient_domain=None):
         r"""
         Returns the set of vector fields defined on ``self``, possibly 
-        within some ambient manifold. 
+        within some ambient manifold, as a module over the ring of scalar
+        fields defined on ``self``.
         
         INPUT:
         
@@ -1733,13 +1735,43 @@ class OpenDomain(Domain):
           ``ambient_domain`` is set to ``self``.
         
         """
-        from vectorfield_module import VectorFieldFreeModule
+        from tensorfield_module import VectorFieldFreeModule
         if ambient_domain is None:
             ambient_domain = self
         if ambient_domain.name not in self._vector_field_modules:
-            # if self.is_manifestly_parallelizable():
+            #!# if self.is_manifestly_parallelizable():
             self._vector_field_modules[ambient_domain.name] = \
-                VectorFieldFreeModule(self, ambient_domain=ambient_domain)
+                     VectorFieldFreeModule(self, ambient_domain=ambient_domain)
             # else:
         return self._vector_field_modules[ambient_domain.name]
+
+    def tensor_field_module(self, tensor_type, ambient_domain=None):
+        r"""
+        Returns the set of tensor fields of a given type defined on ``self``, 
+        possibly within some ambient manifold, as a module over the ring of 
+        scalar fields defined on ``self``.
+        
+        INPUT:
+        
+        - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant 
+          rank and `l` the covariant rank
+        - ``ambient_domain`` -- (default: None) open subset `V` of the 
+          ambient manifold `M` containing the image of ``self`` in case
+          ``self`` is part of an immersed submanifold of `M`; if None, 
+          ``ambient_domain`` is set to ``self``.
+        
+        """
+        from tensorfield_module import TensorFieldFreeModule
+        if tensor_type == (1,0):
+            return self.vector_field_module(ambient_domain=ambient_domain)
+        if ambient_domain is None:
+            ambient_domain = self
+        ttype = tuple(tensor_type)
+        if (ttype, ambient_domain.name) not in self._tensor_field_modules:
+            #!# if self.is_manifestly_parallelizable():
+            self._tensor_field_modules[(ttype, ambient_domain.name)] = \
+              TensorFieldFreeModule(self.vector_field_module(ambient_domain=ambient_domain),
+                                    ttype)
+            # else:
+        return self._tensor_field_modules[(ttype, ambient_domain.name)]
 

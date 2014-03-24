@@ -7,13 +7,13 @@ manifolds over `\RR`.
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013) : initial version
+- Eric Gourgoulhon, Michal Bejger (2013, 2014) : initial version
 
 """
 
 #******************************************************************************
-#       Copyright (C) 2013 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -21,17 +21,24 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from tensorfield import TensorField
-from scalarfield import ScalarField
+from sage.tensor.modules.free_module_tensor import FiniteFreeModuleElement
+from tensorfield import TensorFieldParal
 
-class VectorField(TensorField) :
+class VectorFieldParal(TensorFieldParal, FiniteFreeModuleElement) :
     r"""
-    Class for vector fields on a differentiable manifold.
+    Vector field on an open set of a differentiable manifold, 
+    with values on parallelizable open subset of a differentiable manifold. 
     
+    An instance of this class is a vector field along an open subset `U` 
+    of some immersed  submanifold `S` of a manifold `M` with values in 
+    a parallelizable open subset `V` of `M`. 
+    The standard case of a vector field *on* a manifold corresponds to 
+    `U=V` (and hence `S=M`).
+
     INPUT:
     
-    - ``domain`` -- the manifold domain on which the vector field is defined
-      (must be an instance of class :class:`Domain`)
+    - ``vector_field_module`` -- free module `X(U,V)` of vector fields along
+      `U` with values on `V`
     - ``name`` -- (default: None) name given to the vector field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the vector field; 
       if none is provided, the LaTeX symbol is set to ``name``
@@ -127,33 +134,37 @@ class VectorField(TensorField) :
         v\left(f\right)
 
     """
-    def __init__(self, domain, name=None, latex_name=None) :
-        TensorField.__init__(self, domain, 1, 0, name, latex_name)
+    def __init__(self, vector_field_module, name=None, latex_name=None):
+        TensorFieldParal.__init__(self, vector_field_module, (1,0), name=name, 
+                                  latex_name=latex_name)
         self._init_dependencies()
         
     def _repr_(self) :
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
         description = "vector field"
         if self.name is not None:
             description += " '%s'" % self.name
-        description += " on the " + str(self.domain)
+        if self.domain == self.ambient_domain:
+            description += " on the " + str(self.domain)
+        else:
+            description += " along the " + str(self.domain) + " within the " + \
+                           str(self.ambient_domain)
         return description
-
 
     def _new_instance(self):
         r"""
-        Create a :class:`VectorField` instance. 
+        Create a :class:`VectorFieldParal` instance. 
         
         """
-        return VectorField(self.domain)
+        return VectorFieldParal(self.fmodule)
 
     def _del_derived(self):
         r"""
         Delete the derived quantities
         """
-        TensorField._del_derived(self)
+        TensorFieldParal._del_derived(self)
         self._del_dependencies()
         
     def _init_dependencies(self):
@@ -170,76 +181,3 @@ class VectorField(TensorField) :
             for idtens, tens in self._lie_der_along_self.items():
                 del tens._lie_derivatives[id(self)]
             self._lie_der_along_self.clear()
-
-        
-    def __call__(self, scalar):
-        r"""
-        Action on a scalar field.
-            
-        INPUT:
-            
-        - ``scalar`` -- scalar field `f`
-            
-        OUTPUT:
-            
-        - scalar field formed by the derivative of `f` along the vector 
-          field, i.e. `v^i \frac{\partial f}{\partial x^i}`
-          
-        EXAMPLES:
-        
-        Action of a vector field on a scalar field on a 2-dimensional manifold::
-        
-            sage: m = Manifold(2, 'M')            
-            sage: c_cart.<x,y> = m.chart('x y')
-            sage: f = ScalarField(m, x*y^2)  
-            sage: v = VectorField(m, 'v')         
-            sage: v[:] = (-y, x)
-            sage: v(f)
-            scalar field on the 2-dimensional manifold 'M'
-            sage: v(f).expr()
-            2*x^2*y - y^3
-          
-        """
-        from diffform import OneForm
-        from scalarfield import ZeroScalarField
-        if isinstance(scalar, OneForm):
-            # This is actually the action of the vector field on a 1-form, 
-            # as a tensor field of type (1,0):
-            return scalar(self)
-        if not isinstance(scalar, ScalarField):
-            raise TypeError("The argument must be a scalar field")
-        if scalar.manifold != self.manifold:
-            raise ValueError("The scalar field and the vector field must" + 
-                                 " be defined on the same manifold.")
-        if isinstance(scalar, ZeroScalarField):
-            return scalar
-        # search for a commont chart: 
-        chart = None
-        def_chart = self.domain.def_chart
-        if def_chart in scalar.express:
-            if def_chart.frame in self.components:
-                chart = def_chart
-        else:
-            for kchart in scalar.express:
-                if kchart.frame in self.components: 
-                    chart = kchart
-                    break
-        if chart is None:
-            raise ValueError("No common chart found.")
-        v = self.comp(chart.frame)
-        f = scalar.function_chart(chart) 
-        si = self.manifold.sindex
-        res = 0 
-        for i in range(self.manifold.dim):
-            res += v[i+si, chart] * f.diff(chart.xx[i])
-        # Name of the output:
-        res_name = None
-        if self.name is not None and scalar.name is not None:
-            res_name = self.name + "(" + scalar.name + ")"
-        # LaTeX symbol for the output:
-        res_latex = None
-        if self.latex_name is not None and scalar.latex_name is not None:
-            res_latex = self.latex_name + r"\left(" + scalar.latex_name + \
-                        r"\right)"
-        return res.scalar_field(name=res_name, latex_name=res_latex)
-

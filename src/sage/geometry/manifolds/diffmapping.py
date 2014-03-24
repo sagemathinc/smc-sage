@@ -88,7 +88,6 @@ from domain import Domain
 from chart import Chart, FunctionChart, MultiFunctionChart, CoordChange
 from point import Point
 from component import Components, CompWithSym, CompFullySym, CompFullyAntiSym
-from tensorfield import TensorField
 
      
 class DiffMapping(SageObject):
@@ -873,8 +872,8 @@ class DiffMapping(SageObject):
         from rank2field import SymBilinFormField
         from diffform import DiffForm, OneForm
 
-        if not isinstance(tensor, TensorField):
-            raise TypeError("The argument 'tensor' must be a tensor field.")
+        #!# if not isinstance(tensor, TensorField):
+        #    raise TypeError("The argument 'tensor' must be a tensor field.")
         dom1 = self.domain1
         dom2 = self.domain2
         if not tensor.domain.is_subdomain(dom2):
