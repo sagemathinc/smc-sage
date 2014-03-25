@@ -205,6 +205,8 @@ class VectorFrame(FreeModuleBasis):
             sd.frames.append(self)
             if sd.def_frame is None: 
                 sd.def_frame = self
+        # The frame is added to the list of the domain's covering frames:
+        self.domain.covering_frames.append(self)
 
         # Dual coframe 
         self.coframe = self.dual_basis()  # self.coframe = a shortcut for self._dual_basis

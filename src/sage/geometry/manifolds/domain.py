@@ -941,8 +941,17 @@ class OpenDomain(Domain):
     """
     def __init__(self, manifold, name, latex_name=None):
         Domain.__init__(self, manifold, name, latex_name)
-        self._vector_field_modules = {} # dict. of vector field modules along self
-        self._tensor_field_modules = {} # dict. of tensor field modules along self
+        # list of charts that individually cover the domain, i.e. whose 
+        # domains are self (if non-empty, self is coordinate domain):
+        self.covering_charts = [] 
+        # list of vector frames that individually cover the domain, i.e. whose 
+        # domains are self (if non-empty, self is parallelizable):
+        self.covering_frames = [] 
+        # dict. of vector field modules along self:
+        self._vector_field_modules = {}
+        # dict. of tensor field modules along self: 
+        self._tensor_field_modules = {} 
+    
 
     def _repr_(self):
         r"""

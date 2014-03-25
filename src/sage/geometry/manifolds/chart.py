@@ -347,6 +347,8 @@ class Chart(UniqueRepresentation, SageObject):
             sd.atlas.append(self)
             if sd.def_chart is None: 
                 sd.def_chart = self
+        # The chart is added to the list of the domain's covering charts:
+        self.domain.covering_charts.append(self)
         # Construction of the coordinate frame associated to the chart:
         if self.domain.name != 'field R':      
             #!# to avoid circular import of RealLine
