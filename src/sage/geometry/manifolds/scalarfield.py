@@ -541,6 +541,10 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             -T^2 + X^2
 
         """
+        if isinstance(self, ZeroScalarField):
+            # to ensure that the ZeroScalarField version is called in case
+            # of a direct call to the unbound function (ScalarField.function_chart)
+            return self.function_chart(chart) 
         if chart is None:
             chart = self.domain.def_chart
         else:

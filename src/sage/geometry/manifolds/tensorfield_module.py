@@ -105,6 +105,34 @@ class VectorFieldFreeModule(FiniteFreeModule):
             self._tensor_modules[(k,l)] = TensorFieldFreeModule(self, (k,l))
         return self._tensor_modules[(k,l)]
 
+    def linear_form(self, name=None, latex_name=None):
+        r"""
+        Construct a linear form on the free module. 
+        
+        A *linear form* on a free module `M` over a ring `R` is a map
+        `M\rightarrow R` that is linear. It can be viewed as a tensor field
+        of type (0,1) on `M`. 
+
+        INPUT:
+    
+        - ``name`` -- (string; default: None) name given to the linear 
+          form
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          linear form; if none is provided, the LaTeX symbol is set to 
+          ``name``
+          
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm` 
+
+        EXAMPLES:
+        
+
+        """
+        from tensorfield import TensorFieldParal
+        #!# provisory
+        return TensorFieldParal(self, (0,1), name=name, latex_name=latex_name)
 
 
 #******************************************************************************

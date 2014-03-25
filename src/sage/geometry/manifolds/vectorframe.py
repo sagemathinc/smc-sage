@@ -14,7 +14,7 @@ coframes deriving from a chart.
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013): initial version
+- Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
 
 EXAMPLES:
     
@@ -140,8 +140,8 @@ EXAMPLES:
 """
 
 #******************************************************************************
-#       Copyright (C) 2013 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -149,10 +149,9 @@ EXAMPLES:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from sage.structure.sage_object import SageObject
-from domain import Domain
+from sage.tensor.modules.free_module_basis import FreeModuleBasis, FreeModuleCoBasis
 
-class VectorFrame(SageObject):
+class VectorFrame(FreeModuleBasis):
     r"""
     Class for vector frames on a differentiable manifold over `\RR`. 
     
@@ -191,19 +190,10 @@ class VectorFrame(SageObject):
     
     """
     def __init__(self, domain, symbol, latex_symbol=None):
-        from vectorfield import VectorField
-        if not isinstance(domain, Domain):
-            raise TypeError("The first argument must be a manifold domain.")
-        self.manifold = domain.manifold
         self.domain = domain
-        self.name = "(" + self.domain.name + ", (" + \
-          ",".join([symbol + "_" + str(i) for i in self.manifold.irange()]) + "))"
-        if latex_symbol is None:
-            latex_symbol = symbol
-        self.latex_name = r"\left(" + self.domain.latex_name + \
-                          r" ,\left(" + \
-          ",".join([latex_symbol + "_" + str(i) for i in self.manifold.irange()]) + \
-                          r"\right)\right)"
+        self.manifold = domain.manifold
+        FreeModuleBasis.__init__(self, domain.vector_field_module(), symbol, 
+                                 latex_symbol=latex_symbol)
         # The frame is added to the domain's set of frames, as well as to all 
         # the superdomains' sets of frames; moreover the first defined frame 
         # is considered as the default one
@@ -215,23 +205,9 @@ class VectorFrame(SageObject):
             sd.frames.append(self)
             if sd.def_frame is None: 
                 sd.def_frame = self
-        # The individual vectors:
-        vl = list()
-        for i in self.manifold.irange():
-            v_name = symbol + "_" + str(i)
-            v_symb = latex_symbol + "_" + str(i)
-            v = VectorField(self.domain, v_name, v_symb)
-            for j in self.manifold.irange():
-                v.set_comp(self)[j] = 0
-            v.set_comp(self)[i] = 1
-            vl.append(v)
-        self.vec = tuple(vl)
 
         # Dual coframe 
-        # (if self is a CoordFrame, the coframe will be created by the 
-        #  CoordFrame constructor)
-        if not isinstance(self, CoordFrame):
-            self.coframe = CoFrame(self, symbol, latex_symbol)        
+        self.coframe = self.dual_basis()  # self.coframe = a shortcut for self._dual_basis
 
         # Derived quantities:
         self._structure_coef = None
@@ -242,48 +218,28 @@ class VectorFrame(SageObject):
         # restriction of:
         self.superframes = set([self]) 
 
+
+    ###### Methods that must be redefined by derived classes of FreeModuleBasis ######
+
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
         return "vector frame " + self.name
 
-    def _latex_(self):
-        r"""
-        Special Sage function for the LaTeX representation of the object.
-        """
-        return self.latex_name
-
-    def __hash__(self):
-        r"""
-        Hash function (since instances of :class:`VectorFrame` are used as
-        dictionary keys).
-        """
-        return id(self)
-
-    def __eq__(self, other):
-        r"""
-        Comparison operator
-        """
-        return other is self
+    def _init_dual_basis(self):
+        r""" 
+        Construct the basis dual to ``self``.
         
-    def __getitem__(self, index):
-        r"""
-        Returns the frame vector field corresponding to the index.
+        OUTPUT:
         
-        INPUT:
+        - instance of :class:`CoFrame` representing the dual of
+          ``self``
         
-        - ``index`` -- the index of the vector 
-
         """
-        n = self.manifold.dim
-        si = self.manifold.sindex
-        i = index - si
-        if i < 0 or i > n-1:
-            raise ValueError("Index out of range: " +
-                              str(i+si) + " not in [" + str(si) + "," +
-                              str(n-1+si) + "]")
-        return self.vec[i]
+        return CoFrame(self, self.symbol, latex_symbol=self.latex_symbol)
+
+    ###### End of methods redefined by derived classes ######
 
         
     def new_frame(self, change_of_frame, symbol, latex_symbol=None):
@@ -352,46 +308,7 @@ class VectorFrame(SageObject):
             [1/2, 1/2*sqrt(3)]
   
         """
-        from rank2field import AutomorphismField
-        if not isinstance(change_of_frame, AutomorphismField):
-            raise TypeError("The argument change_of_frame must be an " +
-                            "instance of AutomorphismField.")
-        the_new_frame = VectorFrame(self.domain, symbol, latex_symbol)
-        transf = change_of_frame.copy()
-        inv_transf = change_of_frame.inverse().copy()
-        si = self.manifold.sindex
-        nsi = self.manifold.dim + si
-        # Components of the new frame vectors in the old frame: 
-        for i in range(si,nsi):
-            for j in range(si,nsi):
-                the_new_frame.vec[i-si].add_comp(self)[[j]] = \
-                                                  transf.comp(self)[[j,i]]
-        # Components of the new coframe 1-forms in the old coframe: 
-        for i in range(si,nsi):
-            for j in range(si,nsi):
-                the_new_frame.coframe.form[i-si].add_comp(self)[[j]] = \
-                                              inv_transf.comp(self)[[i,j]]
-        # The components of the transformation and its inverse are the same in 
-        # the two frames:
-        for i in range(si,nsi):
-            for j in range(si,nsi):
-                transf.add_comp(the_new_frame)[[i,j]] = transf.comp(self)[[i,j]]
-                inv_transf.add_comp(the_new_frame)[[i,j]] = \
-                                              inv_transf.comp(self)[[i,j]]
-        # Components of the old frame vectors in the new frame: 
-        for i in range(si,nsi):
-            for j in range(si,nsi):
-                self.vec[i-si].add_comp(the_new_frame)[[j]] = \
-                                                   inv_transf.comp(self)[[j,i]]
-        # Components of the old coframe 1-forms in the new coframe: 
-        for i in range(si,nsi):
-            for j in range(si,nsi):
-                self.coframe.form[i-si].add_comp(the_new_frame)[[j]] = \
-                                                       transf.comp(self)[[i,j]]
-        for sdom in self.domain.superdomains:
-            sdom.frame_changes[(self, the_new_frame)] = transf
-            sdom.frame_changes[(the_new_frame, self)] = inv_transf
-        return the_new_frame
+        return self.new_basis(change_of_frame, symbol, latex_symbol=latex_symbol)
         
     def new_subframe(self, domain, symbol, latex_symbol=None):
         r"""
@@ -524,9 +441,8 @@ class CoordFrame(VectorFrame):
         from chart import Chart
         if not isinstance(chart, Chart):
             raise TypeError("The first argument must be a chart.")
-        VectorFrame.__init__(self, chart.domain, 'X') # 'X' = provisory symbol
         self.chart = chart
-        self.coframe = CoordCoFrame(self)
+        VectorFrame.__init__(self, chart.domain, 'X') # 'X' = provisory symbol
         n = self.manifold.dim
         for i in range(n):
             self.vec[i].name = "d/d" + str(self.chart.xx[i])
@@ -539,11 +455,28 @@ class CoordFrame(VectorFrame):
                 ",".join([self.vec[i].latex_name for i in range(n)])+ \
                           r"\right)\right)"
 
+
+    ###### Methods that must be redefined by derived classes of FreeModuleBasis ######
+
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
         return "coordinate frame " + self.name
+
+    def _init_dual_basis(self):
+        r""" 
+        Construct the basis dual to ``self``.
+        
+        OUTPUT:
+        
+        - instance of :class:`FreeModuleCoBasis` representing the dual of
+          ``self``
+        
+        """
+        return CoordCoFrame(self)
+
+    ###### End of methods redefined by derived classes ######
 
     def structure_coef(self):
         r"""
@@ -587,10 +520,9 @@ class CoordFrame(VectorFrame):
         return self._structure_coef
         
 
-
 #******************************************************************************
 
-class CoFrame(SageObject):
+class CoFrame(FreeModuleCoBasis):
     r"""
     Class for coframes on a differentiable manifold over `\RR`. 
     
@@ -634,20 +566,10 @@ class CoFrame(SageObject):
 
     """
     def __init__(self, frame, symbol, latex_symbol=None):
-        from diffform import OneForm
-        if not isinstance(frame, VectorFrame):
-            raise TypeError("The first argument must be a vector frame.")
-        self.manifold = frame.manifold
         self.domain = frame.domain
-        self.frame = frame
-        self.name = "(" + self.domain.name + ", (" + \
-          ",".join([symbol + "^" + str(i) for i in self.manifold.irange()]) + "))"
-        if latex_symbol is None:
-            latex_symbol = symbol
-        self.latex_name = r"\left(" + self.domain.latex_name + \
-                          r" ,\left(" + \
-          ",".join([latex_symbol + "^" + str(i) for i in self.manifold.irange()]) + \
-                          r"\right)\right)"
+        self.manifold = self.domain.manifold
+        FreeModuleCoBasis.__init__(self, frame, symbol, 
+                                   latex_symbol=latex_symbol)
         # The coframe is added to the domain's set of coframes, as well as to 
         # all the superdomains' sets of coframes
         for sd in self.domain.superdomains:
@@ -656,48 +578,13 @@ class CoFrame(SageObject):
                     raise ValueError("The " + str(self) + " already exist on" +
                                      " the " + str(sd))
             sd.coframes.append(self)
-        # The individual 1-forms:
-        vl = list()
-        for i in self.manifold.irange():
-            v_name = symbol + "^" + str(i)
-            v_symb = latex_symbol + "^" + str(i)
-            v = OneForm(self.domain, v_name, v_symb)
-            for j in self.manifold.irange():
-                v.set_comp(frame)[j] = 0
-            v.set_comp(frame)[i] = 1
-            vl.append(v)
-        self.form = tuple(vl)
         
     
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
         return "coframe " + self.name
-
-    def _latex_(self):
-        r"""
-        Special Sage function for the LaTeX representation of the object.
-        """
-        return self.latex_name
-
-    def __getitem__(self, index):
-        r"""
-        Returns the coframe 1-form corresponding to the index.
-        
-        INPUT:
-        
-        - ``index`` -- the index of the 1-form
-
-        """
-        n = self.manifold.dim
-        si = self.manifold.sindex
-        i = index - si
-        if i < 0 or i > n-1:
-            raise ValueError("Index out of range: " +
-                              str(i+si) + " not in [" + str(si) + "," +
-                              str(n-1+si) + "]")
-        return self.form[i]
 
 
 #******************************************************************************
@@ -779,6 +666,6 @@ class CoordCoFrame(CoFrame):
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
         return "coordinate coframe " + self.name 

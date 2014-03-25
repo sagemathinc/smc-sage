@@ -865,6 +865,289 @@ class Domain(Parent):
         return self.frame_changes[(frame1, frame2)]
 
 
+#******************************************************************************
+
+class OpenDomain(Domain):
+    r"""
+    This class is devoted to open subsets of a differentiable manifold 
+    over `\RR`.
+    
+    The class :class:`OpenDomain` inherits from the class :class:`Domain`.
+    Via the latter, it inherits also from the generic Sage class 
+    :class:`Parent` and is declared to belong to the category of sets (Sage 
+    category :class:`Sets`). The corresponding Sage :class:`Element`'s are 
+    implemented via the class :class:`Point`. 
+    
+    INPUT:
+    
+    - ``manifold`` -- manifold on which the open domain is defined
+    - ``name`` -- name given to the open domain
+    - ``latex_name`` --  (default: None) LaTeX symbol to denote the open 
+      domain; if none is provided, it is set to ``name``
+    
+    EXAMPLES:
+    
+    A open domain on a manifold::
+    
+        sage: M = Manifold(2, 'M')
+        sage: A = OpenDomain(M, 'A', latex_name=r'\mathcal{A}') ; A
+        open domain 'A' on the 2-dimensional manifold 'M'
+        sage: latex(A)
+        \mathcal{A}
+        
+    An open domain can also be created via the method :meth:`open_domain`::
+        
+        sage: B = M.open_domain('B', latex_name=r'\mathcal{B}') ; B
+        open domain 'B' on the 2-dimensional manifold 'M'
+        sage: M.domains
+        {'A': open domain 'A' on the 2-dimensional manifold 'M',
+         'B': open domain 'B' on the 2-dimensional manifold 'M',
+         'M': 2-dimensional manifold 'M'}
+         
+    The manifold is itself an open domain (by definition!)::
+    
+        sage: isinstance(M, OpenDomain)
+        True
+    
+    Open domains are Sage :class:`Parent`, the :class:`Element` of which are
+    the points (class :class:`Point`)::
+    
+        sage: p = A.an_element() ; p
+        point on 2-dimensional manifold 'M'
+        sage: p.parent()
+        open domain 'A' on the 2-dimensional manifold 'M'
+        sage: A.category()
+        Category of sets
+
+    Consequently, points can be created by providing their coordinates in some
+    chart via the operator () applied to the domain::
+
+        sage: chart1 = A.chart('x y')
+        sage: p = A((-2,3)) ; p   
+        point on 2-dimensional manifold 'M'
+        sage: p.coord()
+        (-2, 3)
+        
+    Other arguments can be specified::
+    
+        sage: p = A((-2,3), chart=chart1, name='p') ; p
+        point 'p' on 2-dimensional manifold 'M'
+
+    It is equivalent to use the method :meth:`point`::
+    
+        sage: A((-2,3)) == A.point((-2,3))
+        True
+
+    """
+    def __init__(self, manifold, name, latex_name=None):
+        Domain.__init__(self, manifold, name, latex_name)
+        self._vector_field_modules = {} # dict. of vector field modules along self
+        self._tensor_field_modules = {} # dict. of tensor field modules along self
+
+    def _repr_(self):
+        r"""
+        Special Sage function for the string representation of the object.
+        """
+        return "open domain '" + self.name + "' on the " + str(self.manifold)
+
+    def open_domain(self, name, latex_name=None):
+        r"""
+        Create an open subdomain of the current domain. 
+
+        An open subdomain is a set that is (i) included in ``self`` and (ii)
+        open with respect to the manifold's topology.
+        
+        INPUT: 
+        
+        - ``name`` -- name given to the open subdomain
+        - ``latex_name`` --  (default: None) LaTeX symbol to denote the 
+          subdomain; if none is provided, it is set to ``name``
+
+        OUTPUT:
+        
+        - the open subdomain, as an instance of :class:`OpenDomain`.
+        
+        EXAMPLES:
+        
+        Creating an open domain on a manifold::
+        
+            sage: M = Manifold(2, 'M')
+            sage: a = M.open_domain('A') ; a                   
+            open domain 'A' on the 2-dimensional manifold 'M'
+
+        Creating an open subdomain of A::
+        
+            sage: b = a.open_domain('B') ; b
+            open domain 'B' on the 2-dimensional manifold 'M'
+
+        B is then a subdomain of A and A is a superdomain of B::
+        
+            sage: a.subdomains
+            set([open domain 'A' on the 2-dimensional manifold 'M', 
+                 open domain 'B' on the 2-dimensional manifold 'M'])
+            sage: b.superdomains
+            set([open domain 'A' on the 2-dimensional manifold 'M', 
+                 2-dimensional manifold 'M', 
+                 open domain 'B' on the 2-dimensional manifold 'M'])
+
+        """
+        return self.domain(name, latex_name=latex_name, is_open=True)
+
+    def chart(self, coordinates, names=None):
+        r"""
+        Define a chart on the open domain. 
+        
+        A *chart* is a pair `(U,\varphi)`, where `U` is the open domain 
+        represented by ``self`` and `\varphi: U \rightarrow V \subset \RR^n` 
+        is a homeomorphism from `U` to an open domain `V` of `\RR^n`. 
+        
+        The components `(x^1,\ldots,x^n)` of `\varphi`, defined by 
+        `\varphi(p) = (x^1(p),\ldots,x^n(p))`, are called the *coordinates* 
+        of the chart `(U,\varphi)`.
+
+        See :class:`Chart` for a complete documentation.  
+    
+        INPUT:
+        
+        - ``coordinates`` -- single string defining the coordinate symbols and 
+          ranges: the coordinates are separated by ' ' (space) and each 
+          coordinate has at most three fields, separated by ':': 
+            
+            1. The coordinate symbol (a letter or a few letters)
+            2. (optional) The interval `I` defining the coordinate range: if not
+               provided, the coordinate is assumed to span all `\RR`; otherwise 
+               `I` must be provided in the form (a,b) (or equivalently ]a,b[)
+               The bounds a and b can be +/-Infinity, Inf, infinity, inf or oo.
+               For *singular* coordinates, non-open intervals such as [a,b] and 
+               (a,b] (or equivalently ]a,b]) are allowed. 
+               Note that the interval declaration must not contain any space 
+               character.
+            3. (optional) The LaTeX spelling of the coordinate; if not provided the
+               coordinate symbol given in the first field will be used.
+          
+          The order of the fields 2 and 3 does not matter and each of them can 
+          be omitted.
+          If it contains any LaTeX expression, the string ``coordinates`` must 
+          be declared with the prefix 'r' (for "raw") to allow for a proper 
+          treatment of the backslash character (see examples below). 
+        - ``names`` -- (default: None) unused argument (present only to enable
+          the use of the shortcut operator <,>). 
+        
+        OUTPUT:
+        
+        - the created chart, as an instance of :class:`Chart`.
+        
+        EXAMPLES: 
+        
+        Chart on a 2-dimensional manifold::
+        
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U')
+            sage: X = U.chart('x y') ; X
+            chart (U, (x, y))
+            sage: X[0]
+            x
+            sage: X[1]
+            y
+            sage: X[:]
+            (x, y)
+
+        The declared coordinates are not known at the global level::
+        
+            sage: y
+            Traceback (most recent call last):
+            ...
+            NameError: name 'y' is not defined
+        
+        They can be recovered by the Chart method [:]::
+        
+            sage: (x, y) = X[:]
+            sage: y
+            y
+            sage: type(y)
+            <type 'sage.symbolic.expression.Expression'>
+
+        But a shorter way to proceed is to use the operator <,> in the chart
+        declaration::
+        
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U')
+            sage: X.<x,y> = U.chart('x y') ; X
+            chart (U, (x, y))
+            
+        Indeed, the declared coordinates are then known at the global level::
+        
+            sage: y
+            y
+            sage: (x,y) == X[:]
+            True
+    
+        Actually the instruction ``X.<x,y> = U.chart('x y')`` is
+        equivalent to the two instructions ``X = U.chart('x y')`` 
+        and ``(x,y) = X[:]``. 
+            
+        See the documentation of class :class:`Chart` for more examples, 
+        especially regarding the coordinates ranges and restrictions. 
+        
+        """
+        from chart import Chart
+        return Chart(self, coordinates)
+
+    def vector_field_module(self, ambient_domain=None):
+        r"""
+        Returns the set of vector fields defined on ``self``, possibly 
+        within some ambient manifold, as a module over the ring of scalar
+        fields defined on ``self``.
+        
+        INPUT:
+        
+        - ``ambient_domain`` -- (default: None) open subset `V` of the 
+          ambient manifold `M` containing the image of ``self`` in case
+          ``self`` is part of an immersed submanifold of `M`; if None, 
+          ``ambient_domain`` is set to ``self``.
+        
+        """
+        from tensorfield_module import VectorFieldFreeModule
+        if ambient_domain is None:
+            ambient_domain = self
+        if ambient_domain.name not in self._vector_field_modules:
+            #!# if self.is_manifestly_parallelizable():
+            self._vector_field_modules[ambient_domain.name] = \
+                     VectorFieldFreeModule(self, ambient_domain=ambient_domain)
+            # else:
+        return self._vector_field_modules[ambient_domain.name]
+
+    def tensor_field_module(self, tensor_type, ambient_domain=None):
+        r"""
+        Returns the set of tensor fields of a given type defined on ``self``, 
+        possibly within some ambient manifold, as a module over the ring of 
+        scalar fields defined on ``self``.
+        
+        INPUT:
+        
+        - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant 
+          rank and `l` the covariant rank
+        - ``ambient_domain`` -- (default: None) open subset `V` of the 
+          ambient manifold `M` containing the image of ``self`` in case
+          ``self`` is part of an immersed submanifold of `M`; if None, 
+          ``ambient_domain`` is set to ``self``.
+        
+        """
+        from tensorfield_module import TensorFieldFreeModule
+        if tensor_type == (1,0):
+            return self.vector_field_module(ambient_domain=ambient_domain)
+        if ambient_domain is None:
+            ambient_domain = self
+        ttype = tuple(tensor_type)
+        if (ttype, ambient_domain.name) not in self._tensor_field_modules:
+            #!# if self.is_manifestly_parallelizable():
+            self._tensor_field_modules[(ttype, ambient_domain.name)] = \
+              TensorFieldFreeModule(self.vector_field_module(ambient_domain=ambient_domain),
+                                    ttype)
+            # else:
+        return self._tensor_field_modules[(ttype, ambient_domain.name)]
+
+
     def scalar_field(self, coord_expression=None, chart=None, name=None, 
                      latex_name=None):
 
@@ -907,17 +1190,21 @@ class Domain(Parent):
         return ScalarField(self, coord_expression, chart, name, latex_name) 
 
 
-    def vector_field(self, name=None, latex_name=None):
+    def vector_field(self, name=None, latex_name=None, ambient_domain=None):
         r"""
         Define a vector field on the domain.
 
-        See :class:`VectorField` for a complete documentation. 
+        See :class:`VectorFieldParal` for a complete documentation. 
 
         INPUT:
     
         - ``name`` -- (default: None) name given to the vector field
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the vector 
           field; if none is provided, the LaTeX symbol is set to ``name``
+        - ``ambient_domain`` -- (default: None) manifold open subset on which 
+          the vector field is taking its values; if None, ``ambient_domain`` 
+          is set to ``self``.
+
 
         OUTPUT:
         
@@ -938,8 +1225,10 @@ class Domain(Parent):
         See the documentation of class :class:`VectorField` for more examples.
     
         """
-        from vectorfield import VectorField
-        return VectorField(self, name, latex_name)
+        from vectorfield import VectorFieldParal
+        #!# if self.is_manifestly_parallelizable():
+        return VectorFieldParal(self.vector_field_module(ambient_domain), 
+                                name=name, latex_name=latex_name)
 
 
     def tensor_field(self, k, l, name=None, latex_name=None, sym=None, 
@@ -1492,286 +1781,4 @@ class Domain(Parent):
         from connection import AffConnection
         return AffConnection(self, name, latex_name)
 
-
-#******************************************************************************
-
-class OpenDomain(Domain):
-    r"""
-    This class is devoted to open subsets of a differentiable manifold 
-    over `\RR`.
-    
-    The class :class:`OpenDomain` inherits from the class :class:`Domain`.
-    Via the latter, it inherits also from the generic Sage class 
-    :class:`Parent` and is declared to belong to the category of sets (Sage 
-    category :class:`Sets`). The corresponding Sage :class:`Element`'s are 
-    implemented via the class :class:`Point`. 
-    
-    INPUT:
-    
-    - ``manifold`` -- manifold on which the open domain is defined
-    - ``name`` -- name given to the open domain
-    - ``latex_name`` --  (default: None) LaTeX symbol to denote the open 
-      domain; if none is provided, it is set to ``name``
-    
-    EXAMPLES:
-    
-    A open domain on a manifold::
-    
-        sage: M = Manifold(2, 'M')
-        sage: A = OpenDomain(M, 'A', latex_name=r'\mathcal{A}') ; A
-        open domain 'A' on the 2-dimensional manifold 'M'
-        sage: latex(A)
-        \mathcal{A}
-        
-    An open domain can also be created via the method :meth:`open_domain`::
-        
-        sage: B = M.open_domain('B', latex_name=r'\mathcal{B}') ; B
-        open domain 'B' on the 2-dimensional manifold 'M'
-        sage: M.domains
-        {'A': open domain 'A' on the 2-dimensional manifold 'M',
-         'B': open domain 'B' on the 2-dimensional manifold 'M',
-         'M': 2-dimensional manifold 'M'}
-         
-    The manifold is itself an open domain (by definition!)::
-    
-        sage: isinstance(M, OpenDomain)
-        True
-    
-    Open domains are Sage :class:`Parent`, the :class:`Element` of which are
-    the points (class :class:`Point`)::
-    
-        sage: p = A.an_element() ; p
-        point on 2-dimensional manifold 'M'
-        sage: p.parent()
-        open domain 'A' on the 2-dimensional manifold 'M'
-        sage: A.category()
-        Category of sets
-
-    Consequently, points can be created by providing their coordinates in some
-    chart via the operator () applied to the domain::
-
-        sage: chart1 = A.chart('x y')
-        sage: p = A((-2,3)) ; p   
-        point on 2-dimensional manifold 'M'
-        sage: p.coord()
-        (-2, 3)
-        
-    Other arguments can be specified::
-    
-        sage: p = A((-2,3), chart=chart1, name='p') ; p
-        point 'p' on 2-dimensional manifold 'M'
-
-    It is equivalent to use the method :meth:`point`::
-    
-        sage: A((-2,3)) == A.point((-2,3))
-        True
-
-    """
-    def __init__(self, manifold, name, latex_name=None):
-        Domain.__init__(self, manifold, name, latex_name)
-        self._vector_field_modules = {} # dict. of vector field modules along self
-        self._tensor_field_modules = {} # dict. of tensor field modules along self
-
-    def _repr_(self):
-        r"""
-        Special Sage function for the string representation of the object.
-        """
-        return "open domain '" + self.name + "' on the " + str(self.manifold)
-
-    def open_domain(self, name, latex_name=None):
-        r"""
-        Create an open subdomain of the current domain. 
-
-        An open subdomain is a set that is (i) included in ``self`` and (ii)
-        open with respect to the manifold's topology.
-        
-        INPUT: 
-        
-        - ``name`` -- name given to the open subdomain
-        - ``latex_name`` --  (default: None) LaTeX symbol to denote the 
-          subdomain; if none is provided, it is set to ``name``
-
-        OUTPUT:
-        
-        - the open subdomain, as an instance of :class:`OpenDomain`.
-        
-        EXAMPLES:
-        
-        Creating an open domain on a manifold::
-        
-            sage: M = Manifold(2, 'M')
-            sage: a = M.open_domain('A') ; a                   
-            open domain 'A' on the 2-dimensional manifold 'M'
-
-        Creating an open subdomain of A::
-        
-            sage: b = a.open_domain('B') ; b
-            open domain 'B' on the 2-dimensional manifold 'M'
-
-        B is then a subdomain of A and A is a superdomain of B::
-        
-            sage: a.subdomains
-            set([open domain 'A' on the 2-dimensional manifold 'M', 
-                 open domain 'B' on the 2-dimensional manifold 'M'])
-            sage: b.superdomains
-            set([open domain 'A' on the 2-dimensional manifold 'M', 
-                 2-dimensional manifold 'M', 
-                 open domain 'B' on the 2-dimensional manifold 'M'])
-
-        """
-        return self.domain(name, latex_name=latex_name, is_open=True)
-
-    def chart(self, coordinates, names=None):
-        r"""
-        Define a chart on the open domain. 
-        
-        A *chart* is a pair `(U,\varphi)`, where `U` is the open domain 
-        represented by ``self`` and `\varphi: U \rightarrow V \subset \RR^n` 
-        is a homeomorphism from `U` to an open domain `V` of `\RR^n`. 
-        
-        The components `(x^1,\ldots,x^n)` of `\varphi`, defined by 
-        `\varphi(p) = (x^1(p),\ldots,x^n(p))`, are called the *coordinates* 
-        of the chart `(U,\varphi)`.
-
-        See :class:`Chart` for a complete documentation.  
-    
-        INPUT:
-        
-        - ``coordinates`` -- single string defining the coordinate symbols and 
-          ranges: the coordinates are separated by ' ' (space) and each 
-          coordinate has at most three fields, separated by ':': 
-            
-            1. The coordinate symbol (a letter or a few letters)
-            2. (optional) The interval `I` defining the coordinate range: if not
-               provided, the coordinate is assumed to span all `\RR`; otherwise 
-               `I` must be provided in the form (a,b) (or equivalently ]a,b[)
-               The bounds a and b can be +/-Infinity, Inf, infinity, inf or oo.
-               For *singular* coordinates, non-open intervals such as [a,b] and 
-               (a,b] (or equivalently ]a,b]) are allowed. 
-               Note that the interval declaration must not contain any space 
-               character.
-            3. (optional) The LaTeX spelling of the coordinate; if not provided the
-               coordinate symbol given in the first field will be used.
-          
-          The order of the fields 2 and 3 does not matter and each of them can 
-          be omitted.
-          If it contains any LaTeX expression, the string ``coordinates`` must 
-          be declared with the prefix 'r' (for "raw") to allow for a proper 
-          treatment of the backslash character (see examples below). 
-        - ``names`` -- (default: None) unused argument (present only to enable
-          the use of the shortcut operator <,>). 
-        
-        OUTPUT:
-        
-        - the created chart, as an instance of :class:`Chart`.
-        
-        EXAMPLES: 
-        
-        Chart on a 2-dimensional manifold::
-        
-            sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U')
-            sage: X = U.chart('x y') ; X
-            chart (U, (x, y))
-            sage: X[0]
-            x
-            sage: X[1]
-            y
-            sage: X[:]
-            (x, y)
-
-        The declared coordinates are not known at the global level::
-        
-            sage: y
-            Traceback (most recent call last):
-            ...
-            NameError: name 'y' is not defined
-        
-        They can be recovered by the Chart method [:]::
-        
-            sage: (x, y) = X[:]
-            sage: y
-            y
-            sage: type(y)
-            <type 'sage.symbolic.expression.Expression'>
-
-        But a shorter way to proceed is to use the operator <,> in the chart
-        declaration::
-        
-            sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U')
-            sage: X.<x,y> = U.chart('x y') ; X
-            chart (U, (x, y))
-            
-        Indeed, the declared coordinates are then known at the global level::
-        
-            sage: y
-            y
-            sage: (x,y) == X[:]
-            True
-    
-        Actually the instruction ``X.<x,y> = U.chart('x y')`` is
-        equivalent to the two instructions ``X = U.chart('x y')`` 
-        and ``(x,y) = X[:]``. 
-            
-        See the documentation of class :class:`Chart` for more examples, 
-        especially regarding the coordinates ranges and restrictions. 
-        
-        """
-        from chart import Chart
-        return Chart(self, coordinates)
-
-    def vector_field_module(self, ambient_domain=None):
-        r"""
-        Returns the set of vector fields defined on ``self``, possibly 
-        within some ambient manifold, as a module over the ring of scalar
-        fields defined on ``self``.
-        
-        INPUT:
-        
-        - ``ambient_domain`` -- (default: None) open subset `V` of the 
-          ambient manifold `M` containing the image of ``self`` in case
-          ``self`` is part of an immersed submanifold of `M`; if None, 
-          ``ambient_domain`` is set to ``self``.
-        
-        """
-        from tensorfield_module import VectorFieldFreeModule
-        if ambient_domain is None:
-            ambient_domain = self
-        if ambient_domain.name not in self._vector_field_modules:
-            #!# if self.is_manifestly_parallelizable():
-            self._vector_field_modules[ambient_domain.name] = \
-                     VectorFieldFreeModule(self, ambient_domain=ambient_domain)
-            # else:
-        return self._vector_field_modules[ambient_domain.name]
-
-    def tensor_field_module(self, tensor_type, ambient_domain=None):
-        r"""
-        Returns the set of tensor fields of a given type defined on ``self``, 
-        possibly within some ambient manifold, as a module over the ring of 
-        scalar fields defined on ``self``.
-        
-        INPUT:
-        
-        - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant 
-          rank and `l` the covariant rank
-        - ``ambient_domain`` -- (default: None) open subset `V` of the 
-          ambient manifold `M` containing the image of ``self`` in case
-          ``self`` is part of an immersed submanifold of `M`; if None, 
-          ``ambient_domain`` is set to ``self``.
-        
-        """
-        from tensorfield_module import TensorFieldFreeModule
-        if tensor_type == (1,0):
-            return self.vector_field_module(ambient_domain=ambient_domain)
-        if ambient_domain is None:
-            ambient_domain = self
-        ttype = tuple(tensor_type)
-        if (ttype, ambient_domain.name) not in self._tensor_field_modules:
-            #!# if self.is_manifestly_parallelizable():
-            self._tensor_field_modules[(ttype, ambient_domain.name)] = \
-              TensorFieldFreeModule(self.vector_field_module(ambient_domain=ambient_domain),
-                                    ttype)
-            # else:
-        return self._tensor_field_modules[(ttype, ambient_domain.name)]
 
