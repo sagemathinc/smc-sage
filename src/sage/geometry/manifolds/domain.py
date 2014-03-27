@@ -864,6 +864,29 @@ class Domain(Parent):
                             "defined on the " + repr(self))
         return self.frame_changes[(frame1, frame2)]
 
+    def is_manifestly_coordinate_domain(self):
+        r"""
+        Returns True if self is known to be the domain of some coordinate 
+        chart and False otherwise. 
+        
+        If False is returned, either self cannot be the domain of some 
+        coordinate chart or no such chart has been declared yet. 
+        """
+        if not self.is_open():
+            return False
+        return not self.covering_charts == [] 
+
+    def is_manifestly_parallelizable(self):
+        r"""
+        Returns True if self is known to be a parallelizable domain and False
+        otherwise.
+        
+        If False is returned, either self is not parallelizable or no vector
+        frame has been defined on self yet.
+        """
+        if not self.is_open():
+            return False
+        return not self.covering_frames == [] 
 
 #******************************************************************************
 
