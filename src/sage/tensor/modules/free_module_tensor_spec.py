@@ -299,7 +299,7 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
             for basis in self.components:
                 try:    
                     mat_self = matrix(
-                              [[self.comp(basis)[i, j]
+                              [[self.comp(basis)[[i, j]]
                               for j in range(si, nsi)] for i in range(si, nsi)])
                 except (KeyError, ValueError):
                     continue

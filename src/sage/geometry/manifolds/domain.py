@@ -863,7 +863,7 @@ class Domain(Parent):
                             "' to '" + repr(frame2) + "' has not been " + 
                             "defined on the " + repr(self))
         return self.frame_changes[(frame1, frame2)]
-
+    
     def is_manifestly_coordinate_domain(self):
         r"""
         Returns True if self is known to be the domain of some coordinate 
@@ -872,7 +872,7 @@ class Domain(Parent):
         If False is returned, either self cannot be the domain of some 
         coordinate chart or no such chart has been declared yet. 
         """
-        if not self.is_open():
+        if not isinstance(self, OpenDomain):
             return False
         return not self.covering_charts == [] 
 
@@ -884,7 +884,7 @@ class Domain(Parent):
         If False is returned, either self is not parallelizable or no vector
         frame has been defined on self yet.
         """
-        if not self.is_open():
+        if not isinstance(self, OpenDomain):
             return False
         return not self.covering_frames == [] 
 
@@ -1234,9 +1234,8 @@ class OpenDomain(Domain):
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the vector 
           field; if none is provided, the LaTeX symbol is set to ``name``
         - ``ambient_domain`` -- (default: None) manifold open subset on which 
-          the vector field is taking its values; if None, ``ambient_domain`` 
+          the vector field takes its values; if None, ``ambient_domain`` 
           is set to ``self``.
-
 
         OUTPUT:
         
@@ -1258,13 +1257,15 @@ class OpenDomain(Domain):
     
         """
         from vectorfield import VectorFieldParal
-        #!# if self.is_manifestly_parallelizable():
-        return VectorFieldParal(self.vector_field_module(ambient_domain), 
-                                name=name, latex_name=latex_name)
+        if self.is_manifestly_parallelizable():
+            return VectorFieldParal(self.vector_field_module(ambient_domain), 
+                                    name=name, latex_name=latex_name)
+        else:
+            raise NotImplementedError("VectorField not implemented yet")
 
 
     def tensor_field(self, k, l, name=None, latex_name=None, sym=None, 
-        antisym=None):
+        antisym=None, ambient_domain=None):
         r"""
         Define a tensor field on the domain.
         
@@ -1286,6 +1287,9 @@ class OpenDomain(Domain):
               arguments and a symmetry between the 2nd, 4th and 5th arguments.
         - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
           among the arguments, with the same convention as for ``sym``. 
+        - ``ambient_domain`` -- (default: None) manifold open subset on which 
+          the vector field takes its values; if None, ``ambient_domain`` 
+          is set to ``self``.
 
         OUTPUT:
         
@@ -1306,8 +1310,13 @@ class OpenDomain(Domain):
         See the documentation of class :class:`TensorField` for more examples.
 
         """
-        from tensorfield import TensorField
-        return TensorField(self, k, l, name, latex_name, sym, antisym)
+        from tensorfield import TensorFieldParal
+        if self.is_manifestly_parallelizable():
+            return TensorFieldParal(self.vector_field_module(ambient_domain), 
+                                    (k,l), name, latex_name, sym, antisym)
+        else:
+            raise NotImplementedError("TensorField not implemented yet")
+
 
 
     def sym_bilin_form_field(self, name=None, latex_name=None):  

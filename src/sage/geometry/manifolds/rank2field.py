@@ -28,17 +28,26 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from tensorfield import TensorField
-from vectorfield import VectorField
+from sage.tensor.modules.free_module_tensor_spec import FreeModuleSymBilinForm, \
+    FreeModuleEndomorphism, FreeModuleAutomorphism, FreeModuleIdentityMap
+from tensorfield import TensorFieldParal
+from vectorfield import VectorFieldParal
 
-class SymBilinFormField(TensorField):
+class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
     r"""
-    Class for fields of symmetric bilinear forms on a differentiable manifold.
+    Field of symmetric bilinear forms with values in a parallelizable open
+    subset of a differentiable manifold. 
+    
+    An instance of this class is a field of symmetric bilinear forms along an 
+    open subset `U` of some immersed  submanifold `S` of a manifold `M` with 
+    values in a parallelizable open subset `V` of `M`. 
+    The standard case of symmetric bilinear forms *on* a manifold corresponds 
+    to `U=V` (and hence `S=M`).
     
     INPUT:
     
-    - ``domain`` -- the manifold domain on which the field of symmetric bilinear 
-      forms  is defined (must be an instance of class :class:`Domain`)
+    - ``vector_field_module`` -- free module `X(U,V)` of vector fields along
+      `U` with values on `V`
     - ``name`` -- (default: None) name given to the field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
       if none is provided, the LaTeX symbol is set to ``name``
@@ -140,46 +149,44 @@ class SymBilinFormField(TensorField):
         [ 3 10]
         
     """
-    def __init__(self, domain, name=None, latex_name=None):
-        TensorField.__init__(self, domain, 0, 2, name, latex_name, sym=(0,1))
+    def __init__(self, vector_field_module, name=None, latex_name=None):
+        TensorFieldParal.__init__(self, vector_field_module, (0,2), name=name, 
+                                  latex_name=latex_name, sym=(0,1))
 
     def _repr_(self):
         r"""
         Special Sage function for the string representation of the object.
         """
-        description = "field of symmetric bilinear forms"
+        description = "field of symmetric bilinear forms "
         if self.name is not None:
-            description += " '%s'" % self.name
-        description += " on the " + str(self.domain)
-        return description
+            description += "'%s' " % self.name
+        return self._final_repr(description)
         
-    def _new_comp(self, frame): 
-        r"""
-        Create some components in the given frame. 
-                
-        """
-        from component import CompFullySym
-        return CompFullySym(frame, 2)
-
     def _new_instance(self):
         r"""
-        Create a :class:`SymBilinFormField` instance. 
-        
+        Create a :class:`SymBilinFormFieldParal` instance on the same domain. 
         """
-        return SymBilinFormField(self.domain)
+        return SymBilinFormFieldParal(self.fmodule)
 
 
 #******************************************************************************
 
-class EndomorphismField(TensorField):
+class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
     r"""
-    Class for fields of endomorphisms (i.e. linear operators in each tangent 
-    space) on a differentiable manifold.
+    Field of tangent-space endomorphisms with values in a parallelizable open 
+    subset of a differentiable manifold. 
+    
+    An instance of this class is a field of endomorphisms (i.e. linear 
+    operators in each tangent space) along an open subset `U` of some immersed 
+    submanifold `S` of a manifold `M` with values in a parallelizable open 
+    subset `V` of `M`. 
+    The standard case of fields of endomorphisms *on* a manifold corresponds 
+    to `U=V` (and hence `S=M`).
     
     INPUT:
     
-    - ``domain`` -- the manifold domain on which the field of endomorphisms is 
-      defined (must be an instance of class :class:`Domain`)
+    - ``vector_field_module`` -- free module `X(U,V)` of vector fields along
+      `U` with values on `V`
     - ``name`` -- (default: None) name given to the field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
       if none is provided, the LaTeX symbol is set to ``name``
@@ -236,74 +243,44 @@ class EndomorphismField(TensorField):
         T\left(v\right)
 
     """
-    def __init__(self, domain, name=None, latex_name=None):
-        TensorField.__init__(self, domain, 1, 1, name, latex_name)
+    def __init__(self, vector_field_module, name=None, latex_name=None):
+        TensorFieldParal.__init__(self, vector_field_module, (1,1), name=name, 
+                                  latex_name=latex_name)
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
-        description = "field of endomorphisms"
+        description = "field of endomorphisms "
         if self.name is not None:
-            description += " '%s'" % self.name
-        description += " on the " + str(self.domain)
-        return description
+            description += "'%s' " % self.name
+        return self._final_repr(description)
         
     def _new_instance(self):
         r"""
-        Create a :class:`EndomorphismField` instance. 
-        
+        Create a :class:`EndomorphismFieldParal` instance on the same domain.
         """
-        return EndomorphismField(self.domain)
-        
-    def __call__(self, *arg):
-        r"""
-        Redefinition of :meth:`TensorField.__call__` to allow for a single 
-        vector argument. 
-        """
-        if len(arg) > 1:
-            # the endomorphism acting as a type (1,1) tensor on a pair 
-            # (1-form, vector), returning a scalar:
-            return TensorField.__call__(self, *arg) 
-        # the endomorphism acting as such, on a vector, returning a vector:
-        vector = arg[0]
-        if not isinstance(vector, VectorField):
-            raise TypeError("The argument must be a vector field.")
-        frame = self.common_frame(vector)
-        t = self.components[frame]
-        v = vector.components[frame]
-        manif = self.manifold
-        result = VectorField(self.domain)
-        n = manif.dim
-        si = manif.sindex
-        for i in range(si, si+n):
-            res = 0
-            for j in range(si, si+n):
-                res += t[[i,j]]*v[[j]]
-            result.set_comp(frame)[i] = res
-        # Name of the output:
-        result.name = None
-        if self.name is not None and vector.name is not None:
-            result.name = self.name + "(" + vector.name + ")"
-        # LaTeX symbol for the output:
-        result.latex_name = None
-        if self.latex_name is not None and vector.latex_name is not None:
-            result.latex_name = self.latex_name + r"\left(" + \
-                              vector.latex_name + r"\right)"
-        return result
+        return EndomorphismFieldParal(self.fmodule)
 
 
 #******************************************************************************
 
-class AutomorphismField(EndomorphismField):
+class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
     r"""
-    Class for fields of linear automorphisms (i.e. invertible linear operators 
-    in each tangent space) on a differentiable manifold.
+    Field of tangent-space automorphisms with values on a parallelizable open 
+    subset of a differentiable manifold. 
+    
+    An instance of this class is a field of linear automorphisms (i.e. linear 
+    operators in each tangent space) along an open subset `U` of some immersed 
+    submanifold `S` of a manifold `M` with values in a parallelizable open 
+    subset `V` of `M`. 
+    The standard case of fields of automorphisms *on* a manifold corresponds 
+    to `U=V` (and hence `S=M`).
     
     INPUT:
     
-    - ``domain`` -- the manifold domain on which the field of automorphisms is 
-      defined (must be an instance of class :class:`Domain`)
+    - ``vector_field_module`` -- free module `X(U,V)` of vector fields along
+      `U` with values on `V`
     - ``name`` -- (default: None) name given to the field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
       if none is provided, the LaTeX symbol is set to ``name``
@@ -335,74 +312,72 @@ class AutomorphismField(EndomorphismField):
         [0 1]
 
     """
-    def __init__(self, domain, name=None, latex_name=None):
-        EndomorphismField.__init__(self, domain, name, latex_name)
+    def __init__(self, vector_field_module, name=None, latex_name=None):
+        EndomorphismFieldParal.__init__(self, vector_field_module, name=name, 
+                                        latex_name=latex_name)
         self._inverse = None    # inverse automorphism not set yet
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
-        description = "field of tangent-space automorphisms"
+        description = "field of tangent-space automorphisms "
         if self.name is not None:
-            description += " '%s'" % self.name
-        description += " on the " + str(self.domain)
-        return description
+            description += "'%s' " % self.name
+        return self._final_repr(description)
         
     def _del_derived(self):
         r"""
-        Delete the derived quantities
-        
+        Delete the derived quantities.
         """
         # First delete the derived quantities pertaining to the mother class:
-        EndomorphismField._del_derived(self)
-        # Then deletes the inverse automorphism:
+        EndomorphismFieldParal._del_derived(self)
+        # then deletes the inverse automorphism:
         self._inverse = None
         
     def _new_instance(self):
         r"""
-        Create a :class:`AutomorphismField` instance. 
-        
+        Create a :class:`AutomorphismFieldParal` instance on the same domain.
         """
-        return AutomorphismField(self.domain)
+        return AutomorphismFieldParal(self.fmodule)
 
     def inverse(self):
         r"""
         Return the inverse automorphism.
-        
-        """
+        """        
         from sage.matrix.constructor import matrix
-        from component import Components
+        from sage.tensor.modules.comp import Components
         from vectorframe import CoordFrame
         from utilities import simplify_chain
         if self._inverse is None:
             if self.name is None:
                 inv_name = None
             else:
-                inv_name = 'inv-' + self.name
+                inv_name = self.name  + '^(-1)'
             if self.latex_name is None:
                 inv_latex_name = None
             else:
                 inv_latex_name = self.latex_name + r'^{-1}'
-            manif = self.manifold
-            dom = self.domain
-            si = manif.sindex ; nsi = manif.dim + si
-            self._inverse = AutomorphismField(dom, inv_name, inv_latex_name)
+            fmodule = self.fmodule
+            si = fmodule.sindex ; nsi = fmodule._rank + si
+            self._inverse = AutomorphismFieldParal(fmodule, name=inv_name, 
+                                                   latex_name=inv_latex_name)
             for frame in self.components:
                 if isinstance(frame, CoordFrame):
                     chart = frame.chart
                 else:
-                    chart = dom.def_chart  #!# to be improved
-                try:    
+                    chart = self.domain.def_chart #!# to be improved
+                try:
                     mat_self = matrix(
-                              [[self.comp(frame)[i, j, chart].express 
+                              [[self.comp(frame)[i, j, chart].express
                               for j in range(si, nsi)] for i in range(si, nsi)])
                 except (KeyError, ValueError):
                     continue
                 mat_inv = mat_self.inverse()
-                cinv = Components(frame, 2)
+                cinv = Components(fmodule.ring, frame, 2, start_index=si,
+                                  output_formatter=fmodule.output_formatter)
                 for i in range(si, nsi):
-                    for j in range(si, nsi):   
+                    for j in range(si, nsi):
                         cinv[i, j, chart] = simplify_chain(mat_inv[i-si,j-si])
                 self._inverse.components[frame] = cinv
         return self._inverse
@@ -410,14 +385,22 @@ class AutomorphismField(EndomorphismField):
 
 #******************************************************************************
 
-class IdentityMap(AutomorphismField):
+class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
     r"""
-    Identity map in the tangent spaces of a differentiable manifold.
+    Field of tangent-space identity maps with values on a parallelizable open 
+    subset of a differentiable manifold. 
+    
+    An instance of this class is a field of identity maps (i.e. identity 
+    operator in each tangent space) along an open subset `U` of some immersed 
+    submanifold `S` of a manifold `M` with values in a parallelizable open 
+    subset `V` of `M`. 
+    The standard case of fields of identity map *on* a manifold corresponds 
+    to `U=V` (and hence `S=M`).
     
     INPUT:
     
-    - ``domain`` -- the manifold domain on which the identity map is 
-      defined (must be an instance of class :class:`Domain`)
+    - ``vector_field_module`` -- free module `X(U,V)` of vector fields along
+      `U` with values on `V`
     - ``name`` -- (default: None) name given to the identity map; if none
       is provided, the value 'Id' is set. 
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity
@@ -487,124 +470,25 @@ class IdentityMap(AutomorphismField):
         True
         
     """
-    def __init__(self, domain, name=None, latex_name=None):
-        AutomorphismField.__init__(self, domain)
-        if name is None:
-            self.name = 'Id'
-        else:    
-            self.name = name
-        if latex_name is None:
-            self.latex_name = r'\mathrm{Id}'
-        else:
-            self.latex_name = latex_name
+    def __init__(self, vector_field_module, name='Id', latex_name=None):
+        if latex_name is None and name == 'Id':
+            latex_name = r'\mathrm{Id}'
+        AutomorphismFieldParal.__init__(self, vector_field_module, name=name, 
+                                        latex_name=latex_name)
         self._inverse = self    # the identity is its own inverse
-        self.comp() # Initializing the components in the domain's default frame
+        #!# self.comp() # Initializing the components in the domain's default frame
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
-        description = "Identity map"
+        description = "Identity map "
         if self.name is not None:
-            description += " '%s'" % self.name
-        description += " in the tangent spaces of the " + str(self.domain)
-        return description
+            description += " '%s' " % self.name
+        return self._final_repr(description)
         
     def _del_derived(self):
         r"""
         Delete the derived quantities
-        
         """
-        EndomorphismField._del_derived(self)
-        
-    def _new_comp(self, frame): 
-        r"""
-        Create some components in the given frame. 
-                
-        """
-        from component import KroneckerDelta
-        return KroneckerDelta(frame)
-
-    def comp(self, frame=None):
-        r"""
-        Return the components in a given frame, as a Kronecker delta.
-        
-        INPUT:
-        
-        - ``frame`` -- (default: None) vector frame in which the components are
-          required; if none is provided, the components are assumed to refer to
-          the manifold's default frame
- 
-        OUTPUT: 
-        
-        - components in the frame ``frame``, as an instance of the 
-          class :class:`KroneckerDelta` 
-        
-        EXAMPLES:
-
-        Components of the identity map on a 3-dimensional manifold::
-    
-            sage: m = Manifold(3, 'M', start_index=1)
-            sage: c_xyz = m.chart('x y z')
-            sage: a = IdentityMap(m)
-            sage: a.comp()
-            Kronecker delta of size 3x3
-        
-        The components are automatically defined in any frame::
-    
-            sage: e = VectorFrame(m, 'e')
-            sage: a.comp(e) 
-            Kronecker delta of size 3x3
-            sage: a.comp(e)[:]
-            [1 0 0]
-            [0 1 0]
-            [0 0 1]
-
-        """
-        from component import KroneckerDelta
-        if frame is None: 
-            frame = self.domain.def_frame
-        if frame not in self.components:
-            self.components[frame] = KroneckerDelta(frame)
-        return self.components[frame]
-
-    def set_comp(self, frame=None):
-        r"""
-        Redefinition of the TensorField method :meth:`TensorField.set_comp`: 
-        should not be called. 
-        """
-        raise NotImplementedError("The components of the identity map " + 
-                                  "cannot be changed.")
-
-    def add_comp(self, frame=None):
-        r"""
-        Redefinition of the TensorField method :meth:`TensorField.add_comp`: 
-        should not be called. 
-        """
-        raise NotImplementedError("The components of the identity map " + 
-                                  "cannot be changed.")
-
-    def __call__(self, *arg):
-        r"""
-        Redefinition of :meth:`EndomorphismField.__call__`.
-        """
-        from diffform import OneForm
-        if len(arg) == 1:
-            # the identity map acting as such, on a vector, returning a vector:
-            vector = arg[0]
-            if not isinstance(vector, VectorField):
-                raise TypeError("The argument must be a vector field.")
-            return vector
-            #!# should it be return vector.copy() instead ? 
-        elif len(arg) == 2:
-            # the identity map acting as a type (1,1) tensor on a pair 
-            # (1-form, vector), returning a scalar:
-            oneform = arg[0]
-            if not isinstance(oneform, OneForm):
-                raise TypeError("The first argument must be a 1-form.")
-            vector = arg[1]
-            if not isinstance(vector, VectorField):
-                raise TypeError("The second argument must be a vector field.")
-            return oneform(vector)
-        else:
-            raise TypeError("Bad number of arguments.")
+        EndomorphismFieldParal._del_derived(self)

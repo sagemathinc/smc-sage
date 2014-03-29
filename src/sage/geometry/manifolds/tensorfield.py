@@ -570,17 +570,23 @@ class TensorFieldParal(FreeModuleTensor):
             description += " '%s'" % self.name
         description += " of type (%s,%s) " % (str(self.tensor_type[0]), 
                                              str(self.tensor_type[1]))
+        return self._final_repr(description)
+
+    def _final_repr(self, description):
+        r"""
+        Part of string representation common to all tensor fields.
+        """
         if self.domain == self.ambient_domain:
             description += "on the " + str(self.domain)
         else:
-            description += "along the " + str(self.domain) + " within the " + \
-                           str(self.ambient_domain)
+            description += "along the " + str(self.domain) + \
+                           " with values on the " + str(self.ambient_domain)
         return description
-
+        
     def _new_instance(self):
         r"""
-        Create a :class:`TensorFieldParal` instance of the same tensor type and 
-        with the same symmetries.
+        Create a :class:`TensorFieldParal` instance of the same tensor type, 
+        with the same symmetries and on the same domain.
 
         This method must be redefined by derived classes of 
         :class:`TensorFieldParal`.

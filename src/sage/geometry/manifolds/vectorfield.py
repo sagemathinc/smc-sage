@@ -143,15 +143,10 @@ class VectorFieldParal(TensorFieldParal, FiniteFreeModuleElement) :
         r"""
         String representation of the object.
         """
-        description = "vector field"
+        description = "vector field "
         if self.name is not None:
-            description += " '%s'" % self.name
-        if self.domain == self.ambient_domain:
-            description += " on the " + str(self.domain)
-        else:
-            description += " along the " + str(self.domain) + " within the " + \
-                           str(self.ambient_domain)
-        return description
+            description += "'%s' " % self.name
+        return self._final_repr(description)
 
     def _new_instance(self):
         r"""

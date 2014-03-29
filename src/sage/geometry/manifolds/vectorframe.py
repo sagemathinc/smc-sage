@@ -456,6 +456,7 @@ class CoordFrame(VectorFrame):
                           r" ,\left(" + \
                 ",".join([self.vec[i].latex_name for i in range(n)])+ \
                           r"\right)\right)"
+        self.symbol = self.name
 
 
     ###### Methods that must be redefined by derived classes of FreeModuleBasis ######

@@ -221,5 +221,3 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
         LaTeX representation of the object.
         """
         return r"C^\infty("  + self.domain.latex_name + ")"
-        
-    
