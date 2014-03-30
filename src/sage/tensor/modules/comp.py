@@ -693,6 +693,11 @@ class Components(SageObject):
                                                        for i in range(si, nsi)]
         if self.nid == 2:
             try:
+                for i in range(self.dim):
+                    for j in range(self.dim):
+                        a = resu[i][j]
+                        if hasattr(a, 'express'):
+                            resu[i][j] = a.express
                 resu = matrix(resu)  # for a nicer output
             except TypeError:
                 pass

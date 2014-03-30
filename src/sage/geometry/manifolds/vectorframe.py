@@ -194,6 +194,10 @@ class VectorFrame(FreeModuleBasis):
         self.manifold = domain.manifold
         FreeModuleBasis.__init__(self, domain.vector_field_module(), symbol, 
                                  latex_symbol=latex_symbol)
+        # Redefinition of the name and the LaTeX name:
+        self.name = "(" + self.domain.name + ", " + self.name + ")"
+        self.latex_name = r"\left(" + self.domain.latex_name + ", " + \
+                          self.latex_name + r"\right)"
         # The frame is added to the domain's set of frames, as well as to all 
         # the superdomains' sets of frames; moreover the first defined frame 
         # is considered as the default one
@@ -207,10 +211,10 @@ class VectorFrame(FreeModuleBasis):
                 sd.def_frame = self
         # The frame is added to the list of the domain's covering frames:
         self.domain.covering_frames.append(self)
-
+        #
         # Dual coframe 
         self.coframe = self.dual_basis()  # self.coframe = a shortcut for self._dual_basis
-
+        #
         # Derived quantities:
         self._structure_coef = None
         # Initialization of the set of frames that are restrictions of the

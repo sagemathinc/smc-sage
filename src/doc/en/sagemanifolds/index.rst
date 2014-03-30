@@ -11,9 +11,11 @@ SageManifolds implements differential geometry and tensor calculus in Sage,
 via a set of new Python classes. 
 
 This reference manual contains many examples that illustrate the
-usage of SageManifolds. The examples are all tested with each release of 
+usage of SageManifolds. All examples are tested with each release of 
 SageManifolds, and should produce exactly the same output as in this manual, 
-except for line breaks.
+except for line breaks. More documentation (including some tutorial and example 
+worksheets) can be found at 
+`http://sagemanifolds.obspm.fr <http://sagemanifolds.obspm.fr/documentation.html>`_
 
 This work is licensed under a `Creative Commons Attribution-Share Alike
 3.0 License`__.
@@ -51,8 +53,6 @@ __ http://creativecommons.org/licenses/by-sa/3.0/
    metric
 
    connection
-   
-   comp
 
 Indices and Tables
 ------------------

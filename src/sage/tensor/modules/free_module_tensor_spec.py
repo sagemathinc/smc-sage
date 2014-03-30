@@ -138,7 +138,7 @@ class FreeModuleEndomorphism(FreeModuleTensor):
         t = self.components[basis]
         v = vector.components[basis]
         fmodule = self.fmodule
-        result = FiniteFreeModuleElement(fmodule)
+        result = vector._new_instance()
         for i in fmodule.irange():
             res = 0
             for j in fmodule.irange():

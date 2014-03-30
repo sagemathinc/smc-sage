@@ -25,7 +25,6 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from tensorfield import TensorField
 from rank2field import SymBilinFormField
 from connection import LeviCivitaConnection
 from diffform import DiffForm

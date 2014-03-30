@@ -150,8 +150,11 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
         
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
-        TensorFieldParal.__init__(self, vector_field_module, (0,2), name=name, 
-                                  latex_name=latex_name, sym=(0,1))
+        FreeModuleSymBilinForm.__init__(self, vector_field_module, name=name, 
+                                        latex_name=latex_name)
+        # TensorFieldParal attributes:
+        self.domain = vector_field_module.domain
+        self.ambient_domain = vector_field_module.ambient_domain
 
     def _repr_(self):
         r"""
@@ -244,8 +247,11 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
 
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
-        TensorFieldParal.__init__(self, vector_field_module, (1,1), name=name, 
-                                  latex_name=latex_name)
+        FreeModuleEndomorphism.__init__(self, vector_field_module, name=name, 
+                                        latex_name=latex_name)
+        # TensorFieldParal attributes:
+        self.domain = vector_field_module.domain
+        self.ambient_domain = vector_field_module.ambient_domain
 
     def _repr_(self):
         r"""
@@ -313,9 +319,11 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
 
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
-        EndomorphismFieldParal.__init__(self, vector_field_module, name=name, 
+        FreeModuleAutomorphism.__init__(self, vector_field_module, name=name, 
                                         latex_name=latex_name)
-        self._inverse = None    # inverse automorphism not set yet
+        # TensorFieldParal attributes:
+        self.domain = vector_field_module.domain
+        self.ambient_domain = vector_field_module.ambient_domain
 
     def _repr_(self):
         r"""
@@ -473,22 +481,23 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
     def __init__(self, vector_field_module, name='Id', latex_name=None):
         if latex_name is None and name == 'Id':
             latex_name = r'\mathrm{Id}'
-        AutomorphismFieldParal.__init__(self, vector_field_module, name=name, 
-                                        latex_name=latex_name)
-        self._inverse = self    # the identity is its own inverse
-        #!# self.comp() # Initializing the components in the domain's default frame
+        FreeModuleIdentityMap.__init__(self, vector_field_module, name=name, 
+                                       latex_name=latex_name)
+        # TensorFieldParal attributes:
+        self.domain = vector_field_module.domain
+        self.ambient_domain = vector_field_module.ambient_domain
 
     def _repr_(self):
         r"""
         String representation of the object.
         """
-        description = "Identity map "
+        description = "field of tangent-space identity maps "
         if self.name is not None:
-            description += " '%s' " % self.name
+            description += "'%s' " % self.name
         return self._final_repr(description)
         
     def _del_derived(self):
         r"""
         Delete the derived quantities
         """
-        EndomorphismFieldParal._del_derived(self)
+        AutomorphismFieldParal._del_derived(self)

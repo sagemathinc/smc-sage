@@ -6,11 +6,13 @@ The class :class:`Manifold` implements differentiable manifolds over `\RR`.
 Ideally this class should inherit from a class describing topological 
 manifolds or at least topological spaces. Since such classes do not
 exist in Sage yet, the class :class:`Manifold` inherits from the 
-class :class:`OpenDomain`. Via the latter, the class :class:`Manifold` inherits 
-from the generic Sage class :class:`Parent` 
-and is declared to belong to the category of sets (Sage category :class:`Sets`).
-The corresponding Sage :class:`Element`'s are implemented via the class
-:class:`Point`. 
+class :class:`~sage.geometry.manifolds.domain.OpenDomain`. 
+Via the latter, the class :class:`Manifold` inherits 
+from the generic Sage class :class:`~sage.structure.parent.Parent` 
+and is declared to belong to the category of sets (Sage category 
+:class:`~sage.categories.sets_cat.Sets`).
+The corresponding Sage :class:`~sage.structure.element.Element`'s are 
+implemented via the class :class:`~sage.geometry.manifolds.point.Point`. 
 
 The derived class :class:`RealLineManifold`  implements the real line `\RR` 
 as a manifold of dimension one. The unique instance of it is :data:`RealLine`.
@@ -127,16 +129,17 @@ EXAMPLES:
          
     The first defined chart is considered as the default chart on the 
     manifold (unless it is changed by the method 
-    :meth:`Domain.set_default_chart`)::
+    :meth:`~sage.geometry.manifolds.domain.Domain.set_default_chart`)::
     
         sage: M.default_chart()
         chart (U, (x, y))
 
-    This means that the chart can be omitted when specifying some point coordinates::
+    Being the *default chart* means that its mention can be omitted when 
+    specifying some point coordinates::
     
         sage: p = M.point((1,2))  # a point is created with coordinates (1,2)
         sage: p.coordinates # these coordinates refer to the default chart (and its subcharts if relevant):
-        {chart (U, (x, y)): (1, 2), chart (W, (x, y)): (1, 2)}
+        {chart (W, (x, y)): (1, 2), chart (U, (x, y)): (1, 2)}
         sage: p.coord() # if the chart is not specified, the default chart coordinates are returned:
         (1, 2)
         sage: p.coord(stereoS_W) # the coordinates in the chart stereoS_W are computed by means of the transition map:
@@ -160,7 +163,8 @@ EXAMPLES:
         \left(U ,\left(\frac{\partial}{\partial x },\frac{\partial}{\partial y }\right)\right)
         
     A manifold has a predefined zero scalar field, mapping all the points to 0; 
-    it is an instance of :class:`ZeroScalarField`::
+    it is an instance of 
+    :class:`~sage.geometry.manifolds.scalarfield.ZeroScalarField`::
     
         sage: M.zero_scalar_field
         zero scalar field on the 2-dimensional manifold 'S^2'
@@ -419,6 +423,7 @@ class RealLineManifold(Manifold, UniqueRepresentation):
 
     The instance is unique (singleton pattern)::
     
+        sage: from sage.geometry.manifolds.manifold import RealLineManifold
         sage: myRealLine = RealLineManifold()
         sage: myRealLine == RealLine
         True

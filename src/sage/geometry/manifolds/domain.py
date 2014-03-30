@@ -107,6 +107,7 @@ class Domain(Parent):
     A domain on a manifold::
     
         sage: M = Manifold(2, 'M')
+        sage: from sage.geometry.manifolds.domain import Domain
         sage: A = Domain(M, 'A', latex_name=r'\mathcal{A}') ; A
         domain 'A' on the 2-dimensional manifold 'M'
         sage: latex(A)
@@ -114,7 +115,8 @@ class Domain(Parent):
         sage: A.is_subdomain(M)
         True
     
-    A domain can also be created via the method :meth:`domain`::
+    Instead of importing Domain in the global namespace, it is recommended to
+    use the method :meth:`domain` to create a new domain::
         
         sage: B = M.domain('B', latex_name=r'\mathcal{B}') ; B
         domain 'B' on the 2-dimensional manifold 'M'
@@ -128,14 +130,16 @@ class Domain(Parent):
         sage: isinstance(M, Domain)
         True
         
-    Actually, it is an instance of the subclass :class:`OpenDomain`, for it is
+    Actually, it is an instance of the subclass 
+    :class:`~sage.geometry.manifolds.domain.OpenDomain`, for it is 
     (by definition) open::
     
-        sage: isinstance(M, OpenDomain)
+        sage: isinstance(M, sage.geometry.manifolds.domain.OpenDomain)
         True
     
     Instances of :class:`Domain` are Sage parents (in the category of sets), 
-    the elements of which are points on the manifold (class :class:`Point`)::
+    the elements of which are points on the manifold 
+    (class :class:`~sage.geometry.manifolds.point.Point`)::
     
         sage: isinstance(A, Parent)
         True
@@ -750,9 +754,9 @@ class Domain(Parent):
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart('x y')
             sage: c_uv.<u,v> = M.chart('u v')
-            sage: CoordChange(c_xy, c_uv, x+y, x-y)
+            sage: c_xy.transition_map(c_uv, (x+y, x-y)) # defines the coordinate change
             coordinate change from chart (M, (x, y)) to chart (M, (u, v))
-            sage: M.coord_change(c_xy, c_uv)
+            sage: M.coord_change(c_xy, c_uv) # returns the coordinate change defined above
             coordinate change from chart (M, (x, y)) to chart (M, (u, v))
 
         """
@@ -805,7 +809,7 @@ class Domain(Parent):
         
             sage: M = Manifold(2, 'M')
             sage: c_xy = M.chart('x y')
-            sage: e = VectorFrame(M, 'e')
+            sage: e = M.vector_frame('e')
             sage: M.default_frame()
             coordinate frame (M, (d/dx,d/dy))                 
             sage: M.set_default_frame(e)
@@ -913,12 +917,14 @@ class OpenDomain(Domain):
     A open domain on a manifold::
     
         sage: M = Manifold(2, 'M')
+        sage: from sage.geometry.manifolds.domain import OpenDomain
         sage: A = OpenDomain(M, 'A', latex_name=r'\mathcal{A}') ; A
         open domain 'A' on the 2-dimensional manifold 'M'
         sage: latex(A)
         \mathcal{A}
         
-    An open domain can also be created via the method :meth:`open_domain`::
+    Instead of importing OpenDomain in the global namespace, it is recommended
+    to use the method :meth:`open_domain` to create a new open domain::
         
         sage: B = M.open_domain('B', latex_name=r'\mathcal{B}') ; B
         open domain 'B' on the 2-dimensional manifold 'M'
@@ -1288,7 +1294,7 @@ class OpenDomain(Domain):
         - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
           among the arguments, with the same convention as for ``sym``. 
         - ``ambient_domain`` -- (default: None) manifold open subset on which 
-          the vector field takes its values; if None, ``ambient_domain`` 
+          the tensor field takes its values; if None, ``ambient_domain`` 
           is set to ``self``.
 
         OUTPUT:
@@ -1318,7 +1324,8 @@ class OpenDomain(Domain):
             raise NotImplementedError("TensorField not implemented yet")
 
 
-    def sym_bilin_form_field(self, name=None, latex_name=None):  
+    def sym_bilin_form_field(self, name=None, latex_name=None, 
+                             ambient_domain=None):  
         r"""
         Define a field of symmetric bilinear forms on the domain.
 
@@ -1329,6 +1336,9 @@ class OpenDomain(Domain):
         - ``name`` -- (default: None) name given to the field
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
           if none is provided, the LaTeX symbol is set to ``name``
+        - ``ambient_domain`` -- (default: None) manifold open subset on which 
+          the field takes its values; if None, ``ambient_domain`` is set to 
+          ``self``.
 
         OUTPUT:
         
@@ -1357,7 +1367,8 @@ class OpenDomain(Domain):
             raise NotImplementedError("SymBilinFormField not implemented yet")
 
 
-    def endomorphism_field(self, name=None, latex_name=None):  
+    def endomorphism_field(self, name=None, latex_name=None, 
+                           ambient_domain=None):  
         r"""
         Define a field of endomorphisms (i.e. linear operators in the tangent 
         spaces = tensors of type (1,1)) on the domain.
@@ -1369,6 +1380,9 @@ class OpenDomain(Domain):
         - ``name`` -- (default: None) name given to the field
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
           if none is provided, the LaTeX symbol is set to ``name``
+        - ``ambient_domain`` -- (default: None) manifold open subset on which 
+          the field takes its values; if None, ``ambient_domain`` is set to 
+          ``self``.
 
         OUTPUT:
         
@@ -1397,7 +1411,8 @@ class OpenDomain(Domain):
             raise NotImplementedError("EndomorphismField not implemented yet")
 
 
-    def automorphism_field(self, name=None, latex_name=None):  
+    def automorphism_field(self, name=None, latex_name=None, 
+                           ambient_domain=None):  
         r"""
         Define a field of automorphisms (invertible endomorphisms in each 
         tangent space) on the domain.
@@ -1409,6 +1424,9 @@ class OpenDomain(Domain):
         - ``name`` -- (default: None) name given to the field
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
           if none is provided, the LaTeX symbol is set to ``name``
+        - ``ambient_domain`` -- (default: None) manifold open subset on which 
+          the field takes its values; if None, ``ambient_domain`` is set to 
+          ``self``.
 
         OUTPUT:
         
@@ -1437,7 +1455,7 @@ class OpenDomain(Domain):
             raise NotImplementedError("AutomorphismField not implemented yet")
             
 
-    def identity_map(self, name=None, latex_name=None):  
+    def identity_map(self, name=None, latex_name=None, ambient_domain=None):  
         r"""
         Define the identity map in the tangent spaces on the domain.
 
@@ -1449,6 +1467,9 @@ class OpenDomain(Domain):
           is provided, the value 'Id' is set. 
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity
           map; if none is provided, the LaTeX symbol is set to `\mathrm{Id}`
+        - ``ambient_domain`` -- (default: None) manifold open subset on which 
+          the field takes its values; if None, ``ambient_domain`` is set to 
+          ``self``.
 
         OUTPUT:
         
@@ -1462,7 +1483,7 @@ class OpenDomain(Domain):
             sage: M = Manifold(3, 'M', start_index=1)
             sage: c_xyz.<x,y,z> = M.chart('x y z')
             sage: a = M.identity_map(); a
-            Identity map 'Id' in the tangent spaces of the 3-dimensional manifold 'M'
+            field of tangent-space identity maps 'Id' on the 3-dimensional manifold 'M'
             sage: a.comp()
             Kronecker delta of size 3x3            
 
@@ -1470,6 +1491,8 @@ class OpenDomain(Domain):
 
         """
         from rank2field import IdentityMapParal
+        if name is None:
+            name = 'Id'
         if self.is_manifestly_parallelizable():
             return IdentityMapParal(self.vector_field_module(ambient_domain), 
                                     name=name, latex_name=latex_name)
@@ -1543,7 +1566,7 @@ class OpenDomain(Domain):
     
             sage: M = Manifold(3, 'M', start_index=1)
             sage: c_xyz.<x,y,z> = M.chart('x y z')
-            sage: g = M.metric('g'); g
+            sage: #!# g = M.metric('g'); g 
             pseudo-Riemannian metric 'g' on the 3-dimensional manifold 'M'
         
         See the documentation of class :class:`Metric` for more examples.
@@ -1579,12 +1602,12 @@ class OpenDomain(Domain):
     
             sage: M = Manifold(2, 'S^2', start_index=1)
             sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = M.riemann_metric('g'); g
+            sage: #!# g = M.riemann_metric('g'); g
             Riemannian metric 'g' on the 2-dimensional manifold 'S^2'
-            sage: g[1,1], g[2,2] = 1, sin(th)^2
-            sage: g.view()
+            sage: #!# g[1,1], g[2,2] = 1, sin(th)^2
+            sage: #!# g.view()
             g = dth*dth + sin(th)^2 dph*dph
-            sage: g.signature() 
+            sage: #!# g.signature() 
             2
 
         See the documentation of class :class:`RiemannMetric` for more examples.
@@ -1624,12 +1647,12 @@ class OpenDomain(Domain):
     
             sage: M = Manifold(4, 'M')
             sage: c_cart = M.chart('t x y z')
-            sage: g = M.lorentz_metric('g'); g
+            sage: #!# g = M.lorentz_metric('g'); g
             Lorentzian metric 'g' on the 4-dimensional manifold 'M'
-            sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
-            sage: g.view()
+            sage: #!# g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
+            sage: #!# g.view()
             g = -dt*dt + dx*dx + dy*dy + dz*dz
-            sage: g.signature()
+            sage: #!# g.signature()
             2 
 
         See the documentation of class :class:`LorentzMetric` for more examples.

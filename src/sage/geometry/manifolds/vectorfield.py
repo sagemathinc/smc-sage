@@ -24,7 +24,7 @@ AUTHORS:
 from sage.tensor.modules.free_module_tensor import FiniteFreeModuleElement
 from tensorfield import TensorFieldParal
 
-class VectorFieldParal(TensorFieldParal, FiniteFreeModuleElement) :
+class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal) :
     r"""
     Vector field on an open set of a differentiable manifold, 
     with values on parallelizable open subset of a differentiable manifold. 
@@ -135,8 +135,12 @@ class VectorFieldParal(TensorFieldParal, FiniteFreeModuleElement) :
 
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
-        TensorFieldParal.__init__(self, vector_field_module, (1,0), name=name, 
-                                  latex_name=latex_name)
+        FiniteFreeModuleElement.__init__(self, vector_field_module, name=name, 
+                                         latex_name=latex_name)
+        # TensorFieldParal attributes:
+        self.domain = vector_field_module.domain
+        self.ambient_domain = vector_field_module.ambient_domain
+        # Initialization of list of quantities depending on self:
         self._init_dependencies()
         
     def _repr_(self) :
