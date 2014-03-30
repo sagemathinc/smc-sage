@@ -331,6 +331,8 @@ class ScalarField(DiffMapping, CommutativeRingElement):
     def __init__(self, domain, coord_expression=None, chart=None, name=None, 
                  latex_name=None):
         from manifold import RealLine
+        if isinstance(coord_expression, FunctionChart):
+            coord_expression = coord_expression.express
         DiffMapping.__init__(self, domain, RealLine, coord_expression, chart)
         CommutativeRingElement.__init__(self, domain.scalar_field_ring())
         self.manifold = domain.manifold

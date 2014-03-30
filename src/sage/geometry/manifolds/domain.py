@@ -1318,7 +1318,6 @@ class OpenDomain(Domain):
             raise NotImplementedError("TensorField not implemented yet")
 
 
-
     def sym_bilin_form_field(self, name=None, latex_name=None):  
         r"""
         Define a field of symmetric bilinear forms on the domain.
@@ -1349,8 +1348,13 @@ class OpenDomain(Domain):
         examples.
 
         """
-        from rank2field import SymBilinFormField
-        return SymBilinFormField(self, name, latex_name)
+        from rank2field import SymBilinFormFieldParal
+        if self.is_manifestly_parallelizable():
+            return SymBilinFormFieldParal(
+                                      self.vector_field_module(ambient_domain), 
+                                      name=name, latex_name=latex_name)
+        else:
+            raise NotImplementedError("SymBilinFormField not implemented yet")
 
 
     def endomorphism_field(self, name=None, latex_name=None):  
@@ -1384,8 +1388,13 @@ class OpenDomain(Domain):
         examples.
 
         """
-        from rank2field import EndomorphismField
-        return EndomorphismField(self, name, latex_name)
+        from rank2field import EndomorphismFieldParal
+        if self.is_manifestly_parallelizable():
+            return EndomorphismFieldParal(
+                                      self.vector_field_module(ambient_domain), 
+                                      name=name, latex_name=latex_name)
+        else:
+            raise NotImplementedError("EndomorphismField not implemented yet")
 
 
     def automorphism_field(self, name=None, latex_name=None):  
@@ -1419,9 +1428,14 @@ class OpenDomain(Domain):
         examples.
 
         """
-        from rank2field import AutomorphismField
-        return AutomorphismField(self, name, latex_name)
-
+        from rank2field import AutomorphismFieldParal
+        if self.is_manifestly_parallelizable():
+            return AutomorphismFieldParal(
+                                      self.vector_field_module(ambient_domain), 
+                                      name=name, latex_name=latex_name)
+        else:
+            raise NotImplementedError("AutomorphismField not implemented yet")
+            
 
     def identity_map(self, name=None, latex_name=None):  
         r"""
@@ -1455,8 +1469,12 @@ class OpenDomain(Domain):
         See the documentation of class :class:`IdentityMap` for more examples.
 
         """
-        from rank2field import IdentityMap
-        return IdentityMap(self, name, latex_name)
+        from rank2field import IdentityMapParal
+        if self.is_manifestly_parallelizable():
+            return IdentityMapParal(self.vector_field_module(ambient_domain), 
+                                    name=name, latex_name=latex_name)
+        else:
+            raise NotImplementedError("IdentityMap not implemented yet")
 
 
     def vector_frame(self, symbol, latex_symbol=None): 
@@ -1743,7 +1761,6 @@ class OpenDomain(Domain):
     def diffeomorphism(self, domain, coord_functions=None, chart_from=None, 
                        chart_to=None, name=None, latex_name=None):
         r"""
-
         Define a diffeomorphism between the current domain and another
         domain (possibly on another manifold). 
         
