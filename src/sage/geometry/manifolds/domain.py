@@ -4,17 +4,19 @@ Domains on a manifold
 The class :class:`Domain` implements subsets on a differentiable manifold 
 over `\RR`. 
 
-The class :class:`Domain` inherits from the generic Sage class :class:`Parent` 
-and is declared to belong to the category of sets (Sage category :class:`Sets`).
-The corresponding Sage :class:`Element`'s are implemented via the class
-:class:`Point`. 
+The class :class:`Domain` inherits from the generic Sage class
+:class:`~sage.structure.parent.Parent`  
+and is declared to belong to the category of sets (Sage category 
+:class:`~sage.categories.sets_cat.Sets`).
+The corresponding Sage :class:`~sage.structure.element.Element`'s are 
+implemented via the class :class:`~sage.geometry.manifolds.point.Point`. 
 
 The subclass :class:`OpenDomain` is devoted to open subsets, with respect to
 the manifold topology. 
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013): initial version
+- Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
 
 EXAMPLES:
 
@@ -74,8 +76,8 @@ State of various data members after the above operations::
 
 """
 #*****************************************************************************
-#       Copyright (C) 2013 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -625,7 +627,8 @@ class Domain(Parent):
         r"""
         Define a point in the domain. 
         
-        See :class:`Point` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.point.Point` for a complete 
+        documentation. 
 
         INPUT:
         
@@ -640,7 +643,8 @@ class Domain(Parent):
           
         OUTPUT:
         
-        - the declared point, as an instance of :class:`Point`. 
+        - the declared point, as an instance of 
+          :class:`~sage.geometry.manifolds.point.Point`. 
         
         EXAMPLES:
         
@@ -676,7 +680,8 @@ class Domain(Parent):
         
         OUTPUT:
         
-        - instance of :class:`Chart` representing the default chart.
+        - instance of :class:`~sage.geometry.manifolds.chart.Chart` 
+          representing the default chart.
         
         EXAMPLES:
                     
@@ -744,8 +749,8 @@ class Domain(Parent):
         
         OUTPUT:
         
-        - instance of :class:`CoordChange` representing the transition map from 
-          chart 1 to chart 2 
+        - instance of :class:`~sage.geometry.manifolds.chart.CoordChange` 
+          representing the transition map from chart 1 to chart 2 
         
         EXAMPLES:
         
@@ -780,8 +785,8 @@ class Domain(Parent):
         
         OUTPUT:
         
-        - instance of :class:`VectorFrame`  representing the default vector 
-          frame.
+        - instance of :class:`~sage.geometry.manifolds.vectorframe.VectorFrame`
+          representing the default vector frame.
         
         EXAMPLES:
                     
@@ -802,7 +807,8 @@ class Domain(Parent):
         
         INPUT:
     
-        - ``frame`` -- a vector frame (instance of :class:`VectorFrame`) defined 
+        - ``frame`` -- a vector frame (instance of 
+          :class:`~sage.geometry.manifolds.vectorframe.VectorFrame`) defined 
           on the current domain
           
         EXAMPLE::
@@ -835,9 +841,11 @@ class Domain(Parent):
         
         OUTPUT:
         
-        - instance of :class:`AutomorphismField` representing, at each point,
-          the vector space automorphism `P` that relates frame 1, `(e_i)` say, 
-          to frame 2, `(n_i)` say, according to `n_i = P(e_i)`
+        - instance of 
+          :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` 
+          representing, at each point, the vector space automorphism `P` 
+          that relates frame 1, `(e_i)` say, to frame 2, `(n_i)` say, 
+          according to `n_i = P(e_i)`
         
         EXAMPLES:
         
@@ -901,9 +909,10 @@ class OpenDomain(Domain):
     
     The class :class:`OpenDomain` inherits from the class :class:`Domain`.
     Via the latter, it inherits also from the generic Sage class 
-    :class:`Parent` and is declared to belong to the category of sets (Sage 
-    category :class:`Sets`). The corresponding Sage :class:`Element`'s are 
-    implemented via the class :class:`Point`. 
+    :class:`~sage.structure.parent.Parent`  and is declared to belong to the 
+    category of sets (Sage category :class:`~sage.categories.sets_cat.Sets`).
+    The corresponding Sage :class:`~sage.structure.element.Element`'s are 
+    implemented via the class :class:`~sage.geometry.manifolds.point.Point`. 
     
     INPUT:
     
@@ -938,8 +947,9 @@ class OpenDomain(Domain):
         sage: isinstance(M, OpenDomain)
         True
     
-    Open domains are Sage :class:`Parent`, the :class:`Element` of which are
-    the points (class :class:`Point`)::
+    Open domains are Sage :class:`~sage.structure.parent.Parent`, the 
+    :class:`~sage.structure.element.Element` of which are the manifold points 
+    (class :class:`~sage.geometry.manifolds.point.Point`)::
     
         sage: p = A.an_element() ; p
         point on 2-dimensional manifold 'M'
@@ -1043,7 +1053,8 @@ class OpenDomain(Domain):
         `\varphi(p) = (x^1(p),\ldots,x^n(p))`, are called the *coordinates* 
         of the chart `(U,\varphi)`.
 
-        See :class:`Chart` for a complete documentation.  
+        See :class:`~sage.geometry.manifolds.chart.Chart` for a complete 
+        documentation.  
     
         INPUT:
         
@@ -1073,7 +1084,8 @@ class OpenDomain(Domain):
         
         OUTPUT:
         
-        - the created chart, as an instance of :class:`Chart`.
+        - the created chart, as an instance of 
+          :class:`~sage.geometry.manifolds.chart.Chart`.
         
         EXAMPLES: 
         
@@ -1124,7 +1136,8 @@ class OpenDomain(Domain):
         equivalent to the two instructions ``X = U.chart('x y')`` 
         and ``(x,y) = X[:]``. 
             
-        See the documentation of class :class:`Chart` for more examples, 
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.chart.Chart` for more examples, 
         especially regarding the coordinates ranges and restrictions. 
         
         """
@@ -1144,8 +1157,59 @@ class OpenDomain(Domain):
           ``self`` is part of an immersed submanifold of `M`; if None, 
           ``ambient_domain`` is set to ``self``.
         
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldFreeModule`
+          representing the module `\mathcal{X}(U,V)` of vectors fields on the open domain
+          `U` (``self``) taking values on the open set `V`. 
+        
+        EXAMPLES:
+        
+        Vector field module `\mathcal{X}(U)` of the complement `U` of the two 
+        poles on the sphere `\mathbb{S}^2`::
+        
+            sage: S2 = Manifold(2, 'S^2')
+            sage: U = S2.open_domain('U')  # the complement of the two poles
+            sage: spher_coord.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coordinates
+            sage: XU = U.vector_field_module() ; XU
+            free module X(U) of vector fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            sage: XU.category()
+            Category of modules over ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            sage: XU.base_ring()
+            ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+
+        `\mathcal{X}(U)` is a free module because `U` is parallelizable (being
+        a chart domain)::
+        
+            sage: U.is_manifestly_parallelizable()
+            True
+            
+        Its rank is the manifold's dimension::
+        
+            sage: XU.rank()
+            2
+        
+        Vector field module `\mathcal{X}(U,\mathbb{R}^3)` of the 
+        `\mathbb{R}^3`-valued vector fields along `U`, associated with the 
+        embedding of `\mathbb{S}^2` into `\mathbb{R}^3`::
+        
+            sage: R3 = Manifold(3, 'R^3')
+            sage: cart_coord.<x, y, z> = R3.chart('x y z')
+            sage: Phi = U.diff_mapping(R3, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)])
+            sage: XU_R3 = U.vector_field_module(ambient_domain=R3) ; XU_R3
+            free module X(U,R^3) of vector fields along the open domain 'U' on the 2-dimensional manifold 'S^2' within the 3-dimensional manifold 'R^3'
+            sage: XU_R3.base_ring()
+            ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            
+        `\mathcal{X}(U,\mathbb{R}^3)` is a free module because `\mathbb{R}^3`
+        is parallelizable and its rank is 3::
+        
+            sage: XU_R3.rank()
+            3
+
         """
-        from tensorfield_module import VectorFieldFreeModule
+        from vectorfield_module import VectorFieldFreeModule
         if ambient_domain is None:
             ambient_domain = self
         if ambient_domain.name not in self._vector_field_modules:
@@ -1192,7 +1256,8 @@ class OpenDomain(Domain):
         r"""
         Define a scalar field on the domain.
 
-        See :class:`ScalarField` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.scalarfield.ScalarField` for a 
+        complete documentation. 
 
         INPUT:
     
@@ -1207,8 +1272,8 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - instance of :class:`ScalarField` representing the defined scalar
-          field. 
+        - instance of :class:`~sage.geometry.manifolds.scalarfield.ScalarField` 
+          representing the defined scalar field. 
           
         EXAMPLES:
 
@@ -1221,7 +1286,9 @@ class OpenDomain(Domain):
             sage: f = A.scalar_field(sin(x)*cos(y) + z, name='F'); f
             scalar field 'F' on the open domain 'A' on the 3-dimensional manifold 'M'
 
-        See the documentation of class :class:`ScalarField` for more examples.
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.scalarfield.ScalarField` for more 
+        examples.
         
         """
         from scalarfield import ScalarField
@@ -1232,7 +1299,8 @@ class OpenDomain(Domain):
         r"""
         Define a vector field on the domain.
 
-        See :class:`VectorFieldParal` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.vectorfield.VectorField` for a 
+        complete documentation. 
 
         INPUT:
     
@@ -1245,8 +1313,8 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - instance of :class:`VectorField` representing the defined vector
-          field. 
+        - instance of :class:`~sage.geometry.manifolds.vectorfield.VectorField` 
+          representing the defined vector field. 
 
         EXAMPLES:
 
@@ -1259,7 +1327,9 @@ class OpenDomain(Domain):
             sage: v = A.vector_field('V'); v
             vector field 'V' on the open domain 'A' on the 3-dimensional manifold 'M'
 
-        See the documentation of class :class:`VectorField` for more examples.
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.vectorfield.VectorField` for more 
+        examples.
     
         """
         from vectorfield import VectorFieldParal
@@ -1275,7 +1345,8 @@ class OpenDomain(Domain):
         r"""
         Define a tensor field on the domain.
         
-        See :class:`TensorField` for a complete documentation.
+        See :class:`~sage.geometry.manifolds.tensorfield.TensorField` for a 
+        complete documentation.
 
         INPUT:
     
@@ -1299,8 +1370,8 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - instance of :class:`TensorField` representing the defined tensor
-          field. 
+        - instance of :class:`~sage.geometry.manifolds.tensorfield.TensorField` 
+          representing the defined tensor field. 
 
         EXAMPLES:
 
@@ -1313,7 +1384,9 @@ class OpenDomain(Domain):
             sage: t = A.tensor_field(2, 0, 'T'); t
             tensor field 'T' of type (2,0) on the open domain 'A' on the 3-dimensional manifold 'M'
 
-        See the documentation of class :class:`TensorField` for more examples.
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.tensorfield.TensorField` for more 
+        examples.
 
         """
         from tensorfield import TensorFieldParal
@@ -1329,7 +1402,8 @@ class OpenDomain(Domain):
         r"""
         Define a field of symmetric bilinear forms on the domain.
 
-        See :class:`SymBilinFormField` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.rank2field.SymBilinFormField` for 
+        a complete documentation. 
 
         INPUT:
     
@@ -1342,8 +1416,9 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - instance of :class:`SymBilinFormField` representing the defined 
-          symmetric bilinear form field. 
+        - instance of 
+          :class:`~sage.geometry.manifolds.rank2field.SymBilinFormField` 
+          representing the defined symmetric bilinear form field. 
 
         EXAMPLE:
 
@@ -1354,7 +1429,8 @@ class OpenDomain(Domain):
             sage: t = M.sym_bilin_form_field('T'); t
             field of symmetric bilinear forms 'T' on the 3-dimensional manifold 'M'
 
-        See the documentation of class :class:`SymBilinFormField` for more 
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.rank2field.SymBilinFormField` for more 
         examples.
 
         """
@@ -1373,7 +1449,8 @@ class OpenDomain(Domain):
         Define a field of endomorphisms (i.e. linear operators in the tangent 
         spaces = tensors of type (1,1)) on the domain.
 
-        See :class:`EndomorphismField` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.rank2field.EndomorphismField` for 
+        a complete documentation. 
 
         INPUT:
     
@@ -1386,8 +1463,9 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - instance of :class:`EndomorphismField` representing the defined field
-          of endomorphisms.
+        - instance of 
+          :class:`~sage.geometry.manifolds.rank2field.EndomorphismField` 
+          representing the defined field of endomorphisms.
 
         EXAMPLE:
 
@@ -1398,7 +1476,8 @@ class OpenDomain(Domain):
             sage: t = M.endomorphism_field('T'); t
             field of endomorphisms 'T' on the 3-dimensional manifold 'M'
 
-        See the documentation of class :class:`EndomorphismField` for more 
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.rank2field.EndomorphismField` for more 
         examples.
 
         """
@@ -1417,7 +1496,8 @@ class OpenDomain(Domain):
         Define a field of automorphisms (invertible endomorphisms in each 
         tangent space) on the domain.
 
-        See :class:`AutomorphismField` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` for 
+        a complete documentation. 
 
         INPUT:
     
@@ -1430,8 +1510,9 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - instance of :class:`AutomorphismField` representing the defined field
-          of automorphisms. 
+        - instance of 
+          :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` 
+          representing the defined field of automorphisms. 
 
         EXAMPLE:
 
@@ -1442,7 +1523,8 @@ class OpenDomain(Domain):
             sage: au = M.automorphism_field('AU') ; au 
             field of tangent-space automorphisms 'AU' on the 3-dimensional manifold 'M'
 
-        See the documentation of class :class:`AutomorphismField` for more 
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` for more 
         examples.
 
         """
@@ -1459,7 +1541,8 @@ class OpenDomain(Domain):
         r"""
         Define the identity map in the tangent spaces on the domain.
 
-        See :class:`IdentityMap` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.rank2field.IdentityMap` for a 
+        complete documentation. 
 
         INPUT:
     
@@ -1473,8 +1556,8 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - instance of :class:`IdentityMap` representing the field of identity
-          maps. 
+        - instance of :class:`~sage.geometry.manifolds.rank2field.IdentityMap`
+          representing the field of identity maps. 
 
         EXAMPLE:
 
@@ -1487,7 +1570,9 @@ class OpenDomain(Domain):
             sage: a.comp()
             Kronecker delta of size 3x3            
 
-        See the documentation of class :class:`IdentityMap` for more examples.
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.rank2field.IdentityMap` for more 
+        examples.
 
         """
         from rank2field import IdentityMapParal
@@ -1507,7 +1592,8 @@ class OpenDomain(Domain):
         A *vector frame* is a field on the domain that provides, at each point 
         p of the domain, a vector basis of the tangent space at p. 
 
-        See :class:`VectorFrame` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.vectorframe.VectorFrame` for a 
+        complete documentation. 
 
         INPUT:
     
@@ -1518,8 +1604,8 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - instance of :class:`VectorFrame` representing the defined vector 
-          frame. 
+        - instance of :class:`~sage.geometry.manifolds.vectorframe.VectorFrame`
+          representing the defined vector frame. 
 
         EXAMPLES:
 
@@ -1532,7 +1618,9 @@ class OpenDomain(Domain):
             sage: e = A.vector_frame('e'); e 
             vector frame (A, (e_0,e_1,e_2))
 
-        See the documentation of class :class:`VectorFrame` for more examples.
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.vectorframe.VectorFrame` for more 
+        examples.
 
         """
         from vectorframe import VectorFrame 
@@ -1542,7 +1630,8 @@ class OpenDomain(Domain):
         r"""
         Define a pseudo-Riemannian metric on the domain.
 
-        See :class:`Metric` for a complete documentation.
+        See :class:`~sage.geometry.manifolds.metric.Metric` for a complete 
+        documentation.
 
         INPUT:
     
@@ -1557,8 +1646,8 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - instance of :class:`Metric` representing the defined 
-          pseudo-Riemannian metric. 
+        - instance of :class:`~sage.geometry.manifolds.metric.Metric` 
+          representing the defined pseudo-Riemannian metric. 
 
         EXAMPLE:
     
@@ -1569,7 +1658,8 @@ class OpenDomain(Domain):
             sage: #!# g = M.metric('g'); g 
             pseudo-Riemannian metric 'g' on the 3-dimensional manifold 'M'
         
-        See the documentation of class :class:`Metric` for more examples.
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.metric.Metric` for more examples.
 
         """
         from metric import Metric
@@ -1583,7 +1673,8 @@ class OpenDomain(Domain):
         A Riemannian metric is a field of positive-definite symmetric bilinear 
         forms on the domain. 
 
-        See :class:`RiemannMetric` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.metric.RiemannMetric` for a 
+        complete documentation. 
     
         INPUT:
     
@@ -1593,15 +1684,15 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - instance of :class:`RiemannMetric` representing the defined 
-          Riemannian metric.
+        - instance of :class:`~sage.geometry.manifolds.metric.RiemannMetric` 
+          representing the defined Riemannian metric.
 
         EXAMPLE:
     
         Standard metric on the 2-sphere `S^2`::
     
             sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: c_spher.<th,ph> = M.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: #!# g = M.riemann_metric('g'); g
             Riemannian metric 'g' on the 2-dimensional manifold 'S^2'
             sage: #!# g[1,1], g[2,2] = 1, sin(th)^2
@@ -1610,7 +1701,8 @@ class OpenDomain(Domain):
             sage: #!# g.signature() 
             2
 
-        See the documentation of class :class:`RiemannMetric` for more examples.
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.metric.RiemannMetric` for more examples.
 
         """  
         from metric import RiemannMetric
@@ -1624,7 +1716,8 @@ class OpenDomain(Domain):
         A Lorentzian metric is a field of nondegenerate symmetric bilinear 
         forms with signature `(-,+,\cdots,+)` or `(+,-,\cdots,-)`. 
 
-        See :class:`LorentzMetric` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.metric.LorentzMetric` for a 
+        complete documentation. 
     
         INPUT:
     
@@ -1638,8 +1731,8 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - instance of :class:`LorentzMetric` representing the defined 
-          Lorentzian metric.
+        - instance of :class:`~sage.geometry.manifolds.metric.LorentzMetric` 
+          representing the defined Lorentzian metric.
 
         EXAMPLE:
     
@@ -1655,7 +1748,9 @@ class OpenDomain(Domain):
             sage: #!# g.signature()
             2 
 
-        See the documentation of class :class:`LorentzMetric` for more examples.
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.metric.LorentzMetric` for more 
+        examples.
 
         """
         from metric import LorentzMetric
@@ -1668,7 +1763,8 @@ class OpenDomain(Domain):
 
         Define a differential form on the domain.
 
-        See :class:`DiffForm` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.diffform.DiffForm` for a complete 
+        documentation. 
     
         INPUT:
     
@@ -1683,7 +1779,8 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - the `p`-form, as an instance of :class:`DiffForm`
+        - the `p`-form, as an instance of 
+          :class:`~sage.geometry.manifolds.diffform.DiffForm`
 
         EXAMPLE:
     
@@ -1696,7 +1793,8 @@ class OpenDomain(Domain):
             sage: f = A.diff_form(2, 'F'); f
             2-form 'F' on the open domain 'A' on the 4-dimensional manifold 'M'
 
-        See the documentation of class :class:`DiffForm` for more examples.
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.diffform.DiffForm` for more examples.
 
         """
         from diffform import DiffFormParal
@@ -1707,37 +1805,47 @@ class OpenDomain(Domain):
             raise NotImplementedError("DiffForm not implemented yet")
 
 
-    def one_form(self, name=None, latex_name=None):
+    def one_form(self, name=None, latex_name=None, ambient_domain=None):
         r"""    
         Define a 1-form on the domain.
 
-        See :class:`OneForm` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.diffform.OneForm` for a complete 
+        documentation. 
 
         INPUT:
     
         - ``name`` -- (default: None) name given to the 1-form
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 1-form; 
           if none is provided, the LaTeX symbol is set to ``name``
+        - ``ambient_domain`` -- (default: None) manifold open subset on which 
+          the field takes its values; if None, ``ambient_domain`` is set to 
+          ``self``.
 
         OUTPUT:
         
-        - the 1-form, as an instance of :class:`OneForm`
+        - the 1-form, as an instance of 
+          :class:`~sage.geometry.manifolds.diffform.OneForm`
 
         EXAMPLE:
     
         A 1-form on a 3-dimensional open domain::
     
-            sage: M = Manifold(3, 'M')                      
-            sage: A = M.open_domain('A', latex_name=r'\mathcal{A}'); A 
-            open domain 'A' on the 3-dimensional manifold 'M'
+            sage: M = Manifold(3, 'M')
+            sage: A = M.open_domain('A', latex_name=r'\mathcal{A}')
+            sage: X.<x,y,z> = A.chart('x y z')                      
             sage: om = A.one_form('omega', r'\omega') ; om  
             1-form 'omega' on the open domain 'A' on the 3-dimensional manifold 'M'
 
-        See the documentation of class :class:`OneForm` for more examples.
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.diffform.OneForm` for more examples.
 
         """
-        from diffform import OneForm
-        return OneForm(self, name, latex_name)
+        from diffform import OneFormParal
+        if self.is_manifestly_parallelizable():
+            return OneFormParal(self.vector_field_module(ambient_domain), 
+                                name=name, latex_name=latex_name)
+        else:
+            raise NotImplementedError("OneForm not implemented yet")
 
 
     def diff_mapping(self, domain, coord_functions=None, chart_from=None, 
@@ -1746,7 +1854,8 @@ class OpenDomain(Domain):
         Define a differentiable mapping between the current domain and another
         domain (possibly on another manifold). 
         
-        See :class:`DiffMapping` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.diffmapping.DiffMapping` for a 
+        complete documentation. 
         
         INPUT:
 
@@ -1769,7 +1878,8 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - the differentiable mapping, as an instance of :class:`DiffMapping`
+        - the differentiable mapping, as an instance of 
+          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
     
         EXAMPLE:
     
@@ -1782,7 +1892,9 @@ class OpenDomain(Domain):
             sage: c_cart.<x,y,z> = N.chart('x y z')  # Cartesian coord. on R^3
             sage: Phi = U.diff_mapping(N, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
 
-        See the documentation of class :class:`DiffMapping` for more examples.
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.diffmapping.DiffMapping` for more 
+        examples.
 
         """
         from diffmapping import DiffMapping
@@ -1796,7 +1908,8 @@ class OpenDomain(Domain):
         Define a diffeomorphism between the current domain and another
         domain (possibly on another manifold). 
         
-        See :class:`Diffeomorphism` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.diffmapping.Diffeomorphism` for a 
+        complete documentation. 
 
         INPUT:
 
@@ -1817,7 +1930,8 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - the diffeomorphism, as an instance of :class:`Diffeomorphism`
+        - the diffeomorphism, as an instance of 
+          :class:`~sage.geometry.manifolds.diffmapping.Diffeomorphism`
 
         EXAMPLE:
     
@@ -1831,7 +1945,9 @@ class OpenDomain(Domain):
             sage: c_zt.<z,t> = V.chart(r'z t')
             sage: Phi = U.diffeomorphism(V, (arctan(x), arctan(y)), name='Phi', latex_name=r'\Phi')
 
-        See the documentation of class :class:`Diffeomorphism` for more examples.
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.diffmapping.Diffeomorphism` for more 
+        examples.
 
         """
         from diffmapping import Diffeomorphism
@@ -1843,7 +1959,8 @@ class OpenDomain(Domain):
         r"""
         Define an affine connection on the domain. 
         
-        See :class:`AffConnection` for a complete documentation. 
+        See :class:`~sage.geometry.manifolds.connection.AffConnection` for a 
+        complete documentation. 
 
         INPUT:
     
@@ -1853,19 +1970,21 @@ class OpenDomain(Domain):
           
         OUTPUT:
         
-        - the affine connection, as an instance of :class:`AffConnection`
+        - the affine connection, as an instance of 
+          :class:`~sage.geometry.manifolds.connection.AffConnection`
 
         EXAMPLE:
     
         Affine connection on a 3-dimensional domain::
     
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: A = M.domain('A', latex_name=r'\mathcal{A}'); A 
-            domain 'A' on the 3-dimensional manifold 'M'
-            sage: nab = A.aff_connection('nabla', r'\nabla') ; nab
+            sage: A = M.open_domain('A', latex_name=r'\mathcal{A}')
+            sage: #!# nab = A.aff_connection('nabla', r'\nabla') ; nab
             affine connection 'nabla' on the domain 'A' on the 3-dimensional manifold 'M'
 
-        See the documentation of class :class:`AffConnection` for more examples.
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.connection.AffConnection` for more 
+        examples.
 
         """
         from connection import AffConnection

@@ -333,7 +333,7 @@ class VectorFrame(FreeModuleBasis):
         
         OUTPUT:
         
-        - the subframe, as an instance of :class:`VectoFrame`. 
+        - the subframe, as an instance of :class:`VectorFrame`. 
 
         """
         if not domain.is_subdomain(self.domain):
@@ -577,6 +577,10 @@ class CoFrame(FreeModuleCoBasis):
         self.manifold = self.domain.manifold
         FreeModuleCoBasis.__init__(self, frame, symbol, 
                                    latex_symbol=latex_symbol)
+        # Redefinition of the name and the LaTeX name:
+        self.name = "(" + self.domain.name + ", " + self.name + ")"
+        self.latex_name = r"\left(" + self.domain.latex_name + ", " + \
+                          self.latex_name + r"\right)"
         # The coframe is added to the domain's set of coframes, as well as to 
         # all the superdomains' sets of coframes
         for sd in self.domain.superdomains:

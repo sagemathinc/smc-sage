@@ -40,16 +40,12 @@ __ http://creativecommons.org/licenses/by-sa/3.0/
 
    scalarfield
 
-   tensorfield
-      
    vectorfield
-   
-   rank2field
 
+   tensorfield
+         
    diffform
 
-   vectorframe
-   
    metric
 
    connection
