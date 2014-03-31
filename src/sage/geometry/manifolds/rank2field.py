@@ -158,7 +158,7 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
         description = "field of symmetric bilinear forms "
         if self.name is not None:
@@ -183,7 +183,7 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
     operators in each tangent space) along an open subset `U` of some immersed 
     submanifold `S` of a manifold `M` with values in a parallelizable open 
     subset `V` of `M`. 
-    The standard case of fields of endomorphisms *on* a manifold corresponds 
+    The standard case of a field of endomorphisms *on* a manifold corresponds 
     to `U=V` (and hence `S=M`).
     
     INPUT:
@@ -280,7 +280,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
     operators in each tangent space) along an open subset `U` of some immersed 
     submanifold `S` of a manifold `M` with values in a parallelizable open 
     subset `V` of `M`. 
-    The standard case of fields of automorphisms *on* a manifold corresponds 
+    The standard case of a field of automorphisms *on* a manifold corresponds 
     to `U=V` (and hence `S=M`).
     
     INPUT:
@@ -402,7 +402,7 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
     operator in each tangent space) along an open subset `U` of some immersed 
     submanifold `S` of a manifold `M` with values in a parallelizable open 
     subset `V` of `M`. 
-    The standard case of fields of identity map *on* a manifold corresponds 
+    The standard case of a field of identity maps *on* a manifold corresponds 
     to `U=V` (and hence `S=M`).
     
     INPUT:
@@ -495,9 +495,9 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         if self.name is not None:
             description += "'%s' " % self.name
         return self._final_repr(description)
-        
-    def _del_derived(self):
+
+    def _new_instance(self):
         r"""
-        Delete the derived quantities
+        Create a :class:`IdentityMapParal` instance on the same domain.
         """
-        AutomorphismFieldParal._del_derived(self)
+        return IdentityMapParal(self.fmodule)

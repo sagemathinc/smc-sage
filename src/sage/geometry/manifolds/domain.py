@@ -1662,7 +1662,8 @@ class OpenDomain(Domain):
         return LorentzMetric(self, name, signature, latex_name)
 
 
-    def diff_form(self, p, name=None, latex_name=None):
+    def diff_form(self, degree, name=None, latex_name=None, 
+                  ambient_domain=None):
         r"""
 
         Define a differential form on the domain.
@@ -1671,14 +1672,18 @@ class OpenDomain(Domain):
     
         INPUT:
     
-        - ``p`` -- the degree of the differential form (i.e. its tensor rank)
+        - ``degree`` -- the degree `p` of the differential form (i.e. its 
+          tensor rank)
         - ``name`` -- (default: None) name given to the differential form
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
           differential form; if none is provided, the LaTeX symbol is set to ``name``
+        - ``ambient_domain`` -- (default: None) manifold open subset on which 
+          the field takes its values; if None, ``ambient_domain`` is set to 
+          ``self``.
 
         OUTPUT:
         
-        - the p-form, as an instance of :class:`DiffForm`
+        - the `p`-form, as an instance of :class:`DiffForm`
 
         EXAMPLE:
     
@@ -1694,8 +1699,12 @@ class OpenDomain(Domain):
         See the documentation of class :class:`DiffForm` for more examples.
 
         """
-        from diffform import DiffForm
-        return DiffForm(self, p, name, latex_name)
+        from diffform import DiffFormParal
+        if self.is_manifestly_parallelizable():
+            return DiffFormParal(self.vector_field_module(ambient_domain), 
+                                 degree, name=name, latex_name=latex_name)
+        else:
+            raise NotImplementedError("DiffForm not implemented yet")
 
 
     def one_form(self, name=None, latex_name=None):

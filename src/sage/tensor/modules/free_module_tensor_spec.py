@@ -229,14 +229,13 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
     def _new_instance(self):
         r"""
         Create a :class:`FreeModuleAutomorphism` instance. 
-        
         """
         return FreeModuleAutomorphism(self.fmodule)
         
     def _del_derived(self):
         r"""
         Delete the derived quantities
-        
+
         """
         # First delete the derived quantities pertaining to the mother class:
         FreeModuleEndomorphism._del_derived(self)

@@ -43,19 +43,26 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from tensorfield import TensorField
-from component import CompFullyAntiSym
+from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm, \
+                                                              FreeModuleLinForm
+from tensorfield import TensorFieldParal
 
-
-class DiffForm(TensorField):
+class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     r"""
-    Class for differential forms on a differentiable manifold.
-    
+    Differential form with values in a parallelizable open subset of a 
+    differentiable manifold. 
+
+    An instance of this class is a field of alternating multilinear forms along 
+    an open subset `U` of some immersed  submanifold `S` of a manifold `M` with 
+    values in a parallelizable open subset `V` of `M`. 
+    The standard case of a differential form *on* a manifold corresponds 
+    to `U=V` (and hence `S=M`).
+
     INPUT:
     
-    - ``domain`` -- the manifold domain on which the differential form is 
-      defined (must be an instance of class :class:`Domain`)
-    - ``p`` -- the degree of the differential form (i.e. its tensor rank)
+    - ``vector_field_module`` -- free module `X(U,V)` of vector fields along
+      `U` with values on `V`
+    - ``degree`` -- the degree of the differential form (i.e. its tensor rank)
     - ``name`` -- (default: None) name given to the differential form
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the differential 
       form; if none is provided, the LaTeX symbol is set to ``name``
@@ -226,169 +233,45 @@ class DiffForm(TensorField):
         True
     
     """
-    def __init__(self, domain, p, name=None, latex_name=None):
-        TensorField.__init__(self, domain, 0, p, name, latex_name, 
-                             antisym=range(p))
-        DiffForm._init_derived(self) # initialization of derived quantities
+    def __init__(self, vector_field_module, degree, name=None, latex_name=None):
+        FreeModuleAltForm.__init__(self, vector_field_module, degree, 
+                                   name=name, latex_name=latex_name)
+        # TensorFieldParal attributes:
+        self.domain = vector_field_module.domain
+        self.ambient_domain = vector_field_module.ambient_domain
+        # initialization of derived quantities:
+        DiffFormParal._init_derived(self) 
 
     def _repr_(self):
         r"""
         Special Sage function for the string representation of the object.
         """
-        description = str(self.rank) + "-form"
+        description = str(self.tensor_rank) + "-form "
         if self.name is not None:
-            description += " '%s'" % self.name
-        description += " on the " + str(self.domain)
-        return description
-
-    def view(self, frame=None, chart=None):
-        r"""
-        Displays the differential form in terms of its expansion onto a given 
-        coframe.
-
-        The output is either text-formatted (console mode) or LaTeX-formatted
-        (notebook mode). 
-        
-        INPUT:        
-        
-        - ``frame`` -- (default: None) vector frame with respect to which the 
-          differential form is expanded; if none is provided, the domain's 
-          default frame is assumed
-        - ``chart`` -- (default: None) chart with respect to which the 
-          components of the differential form in the selected frame are 
-          expressed; if none is provided, the domain's default chart is assumed
-          
-        EXAMPLES:
-        
-        Display of a 2-form on `\RR^3`::
-        
-            sage: m = Manifold(3, 'R3', '\RR^3', start_index=1)
-            sage: c_cart.<x,y,z> = m.chart('x y z')
-            sage: a = DiffForm(m, 2, 'A')
-            sage: a[1,2], a[2,3] = x*z, x^2+y^2
-            sage: a.view() # expansion on the manifold's default coframe (dx, dy, dz)
-            A = x*z dx/\dy + (x^2 + y^2) dy/\dz
-            sage: latex(a.view()) # output for the notebook
-            A = x z \mathrm{d} x\wedge \mathrm{d} y + \left( x^{2} + y^{2} \right) \mathrm{d} y\wedge \mathrm{d} z
-
-        Display in a coframe different from the default one::
-        
-            sage: c_spher.<r,th,ph> = m.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi') # new coordinates 
-            sage: spher_to_cart = CoordChange(c_spher, c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))  # the standard spherical coordinates
-            sage: cart_to_spher = spher_to_cart.set_inverse(sqrt(x^2+y^2+z^2), atan2(sqrt(x^2+y^2),z), atan2(y, x), check=False)
-            sage: a.view(c_spher.frame) # expansion on the coframe (dr, dth, dph) with the coefficients expressed in terms of the default coordinates (x,y,z)
-            A = -sqrt(x^2 + y^2 + z^2)*sqrt(x^2 + y^2)*y dr/\dth + (x^3 + x*y^2 + x*z^2)*sqrt(x^2 + y^2) dth/\dph
-            sage: a.view(c_spher.frame, c_spher) # expansion on the coframe (dr, dth, dph) with the coefficients expressed in terms of the spherical coordinates
-            A = -r^3*sin(ph)*sin(th)^2 dr/\dth + r^4*cos(ph)*sin(th)^2 dth/\dph
-            
-        """
-        from sage.misc.latex import latex
-        from utilities import is_atomic, FormattedExpansion
-        if frame is None:
-            frame = self.domain.def_frame
-        if chart is None:
-            chart = self.domain.def_chart
-        coframe = frame.coframe
-        comp = self.comp(frame)
-        terms_txt = []
-        terms_latex = []
-        for ind in comp.non_redundant_index_generator():
-            coef = comp[[ind]].expr(chart)
-            if coef != 0:
-                bases_txt = []
-                bases_latex = []
-                for k in range(self.rank):
-                    bases_txt.append(coframe[ind[k]].name)
-                    bases_latex.append(latex(coframe[ind[k]]))
-                basis_term_txt = "/\\".join(bases_txt)    
-                basis_term_latex = r"\wedge ".join(bases_latex)    
-                if coef == 1:
-                    terms_txt.append(basis_term_txt)
-                    terms_latex.append(basis_term_latex)
-                elif coef == -1:
-                    terms_txt.append("-" + basis_term_txt)
-                    terms_latex.append("-" + basis_term_latex)
-                else:
-                    coef_txt = repr(coef)
-                    coef_latex = latex(coef)
-                    if is_atomic(coef_txt):
-                        terms_txt.append(coef_txt + " " + basis_term_txt)
-                    else:
-                        terms_txt.append("(" + coef_txt + ") " + 
-                                         basis_term_txt)
-                    if is_atomic(coef_latex):
-                        terms_latex.append(coef_latex + basis_term_latex)
-                    else:
-                        terms_latex.append(r"\left(" + coef_latex + r"\right)" + 
-                                           basis_term_latex)
-
-        if terms_txt == []:
-            expansion_txt = "0"
-        else:
-            expansion_txt = terms_txt[0]
-            for term in terms_txt[1:]:
-                if term[0] == "-":
-                    expansion_txt += " - " + term[1:]
-                else:
-                    expansion_txt += " + " + term
-        if terms_latex == []:
-            expansion_latex = "0"
-        else:
-            expansion_latex = terms_latex[0]
-            for term in terms_latex[1:]:
-                if term[0] == "-":
-                    expansion_latex += term
-                else:
-                    expansion_latex += "+" + term
-        result = FormattedExpansion(self)            
-        if self.name is None:
-            result.txt = expansion_txt
-        else:
-            result.txt = self.name + " = " + expansion_txt
-        if self.latex_name is None:
-            result.latex = expansion_latex
-        else:
-            result.latex = latex(self) + " = " + expansion_latex
-        return result
-
-
-    def _new_comp(self, frame): 
-        r"""
-        Create some components in the given frame. 
-                
-        """
-        from component import Components, CompFullyAntiSym
-        if self.rank == 1: 
-            return Components(frame, 1)
-        else:
-            return CompFullyAntiSym(frame, self.rank)
+            description += "'%s' " % self.name
+        return self._final_repr(description)
 
     def _new_instance(self):
         r"""
-        Create a :class:`DiffForm` instance of the same degree. 
-        
+        Create a :class:`DiffFormParal` instance of the same degree and on the
+        same domain. 
         """
-        return DiffForm(self.domain, self.rank)
+        return DiffFormParal(self.fmodule, self.tensor_rank)
 
     def _init_derived(self):
         r"""
         Initialize the derived quantities
         """
-        TensorField._init_derived(self)  
+        TensorFieldParal._init_derived(self)  
         self._exterior_derivative = None
 
     def _del_derived(self):
         r"""
         Delete the derived quantities
         """
-        TensorField._del_derived(self)
+        TensorFieldParal._del_derived(self)
         self._exterior_derivative = None
 
-    def degree(self):
-        r"""
-        Return the degree of the differential form. 
-        """
-        return self.rank
 
     def exterior_der(self, chart=None):
         r"""
@@ -448,7 +331,7 @@ class DiffForm(TensorField):
             n = self.manifold.dim
             si = self.manifold.sindex
             sc = self.components[frame]
-            dc = CompFullyAntiSym(frame, self.rank+1)
+            dc = CompFullyAntiSym(frame, self.tensor_rank+1)
             for ind, val in sc._comp.items():
                 for i in range(n):
                     ind_d = (i+si,) + ind
@@ -460,117 +343,11 @@ class DiffForm(TensorField):
             rname = format_unop_txt('d', self.name)
             rlname = format_unop_latex(r'\mathrm{d}', self.latex_name)
             # Final result
-            self._exterior_derivative = DiffForm(self.domain, self.rank+1, 
+            self._exterior_derivative = DiffForm(self.domain, self.tensor_rank+1, 
                                                  rname, rlname)
             self._exterior_derivative.components[frame] = dc
         return self._exterior_derivative
  
- 
-    def wedge(self, other):
-        r"""
-        Compute the exterior product with another differential form. 
-        
-        INPUT:
-        
-        - ``other``: another differential form
-        
-        OUTPUT:
-        
-        - the exterior product self/\\other. 
-        
-        EXAMPLES:
-        
-        Exterior product of two 1-forms on a 3-dimensional manifold::
-        
-            sage: m = Manifold(3, 'M')
-            sage: c_xyz.<x,y,z> = m.chart('x y z')
-            sage: a = OneForm(m, 'A')
-            sage: a[:] = (x, y, z)
-            sage: b = OneForm(m, 'B')
-            sage: b[2] = z^2
-            sage: a.view() ; b.view()
-            A = x dx + y dy + z dz
-            B = z^2 dz
-            sage: h = a.wedge(b) ; h
-            2-form 'A/\B' on the 3-dimensional manifold 'M'
-            sage: h.view()
-            A/\B = x*z^2 dx/\dz + y*z^2 dy/\dz
-            sage: latex(h)
-            A\wedge B
-            sage: latex(h.view())
-            A\wedge B = x z^{2} \mathrm{d} x\wedge \mathrm{d} z + y z^{2} \mathrm{d} y\wedge \mathrm{d} z
-
-        The exterior product of two 1-forms is antisymmetric::
-        
-            sage: (b.wedge(a)).view()
-            B/\A = -x*z^2 dx/\dz - y*z^2 dy/\dz
-            sage: a.wedge(b) == - b.wedge(a)  
-            True
-            sage: (a.wedge(b) + b.wedge(a))[:]  # for the skeptical mind
-            [0 0 0]
-            [0 0 0]
-            [0 0 0]
-            sage: a.wedge(a) == 0
-            True
-
-        The exterior product of a 2-form by a 1-form::
-        
-            sage: c = OneForm(m, 'C')
-            sage: c[1] = y^3 ; c.view()
-            C = y^3 dy
-            sage: g = h.wedge(c) ; g
-            3-form 'A/\B/\C' on the 3-dimensional manifold 'M'
-            sage: g.view()
-            A/\B/\C = -x*y^3*z^2 dx/\dy/\dz
-            sage: g[:]
-            [[[0, 0, 0], [0, 0, -x*y^3*z^2], [0, x*y^3*z^2, 0]], [[0, 0, x*y^3*z^2], [0, 0, 0], [-x*y^3*z^2, 0, 0]], [[0, -x*y^3*z^2, 0], [x*y^3*z^2, 0, 0], [0, 0, 0]]]
-
-        The exterior product of a 2-form by a 1-form is symmetric::
-        
-            sage: h.wedge(c) == c.wedge(h)
-            True
-
-        """
-        from utilities import is_atomic
-        if not isinstance(other, DiffForm):
-            raise TypeError("The second argument for the exterior product " + 
-                            "must be a differential form.")
-        if other.rank == 0:
-            return other*self
-        if self.rank == 0:
-            return self*other
-        frame = self.common_frame(other)
-        if frame is None:
-            raise ValueError("No common frame for the exterior product.")
-        rank_r = self.rank + other.rank
-        cmp_s = self.components[frame]
-        cmp_o = other.components[frame]
-        cmp_r = CompFullyAntiSym(frame, rank_r)
-        for ind_s, val_s in cmp_s._comp.items():
-            for ind_o, val_o in cmp_o._comp.items():
-                ind_r = ind_s + ind_o
-                if len(ind_r) == len(set(ind_r)): # all indices are different
-                    cmp_r[ind_r] += val_s * val_o
-        result = DiffForm(self.domain, rank_r)
-        result.components[frame] = cmp_r
-        if self.name is not None and other.name is not None:
-            sname = self.name
-            oname = other.name
-            if not is_atomic(sname):
-                sname = '(' + sname + ')'
-            if not is_atomic(oname):
-                oname = '(' + oname + ')'
-            result.name = sname + '/\\' + oname
-        if self.latex_name is not None and other.latex_name is not None:
-            slname = self.latex_name
-            olname = other.latex_name
-            if not is_atomic(slname):
-                slname = '(' + slname + ')'
-            if not is_atomic(olname):
-                olname = '(' + olname + ')'
-            result.latex_name = slname + r'\wedge ' + olname
-        return result
-
     def hodge_star(self, metric):
         r"""
         Compute the Hodge dual of the differential form. 
@@ -728,7 +505,7 @@ class DiffForm(TensorField):
         """
         from sage.functions.other import factorial
         from utilities import format_unop_txt, format_unop_latex
-        p = self.rank
+        p = self.tensor_rank
         eps = metric.volume_form(p)
         if p == 0:
             resu = self * eps
@@ -746,13 +523,21 @@ class DiffForm(TensorField):
         
 #******************************************************************************
 
-class OneForm(DiffForm):
+class OneFormParal(FreeModuleLinForm, DiffFormParal):
     r"""
-    Class for 1-forms on a differentiable manifold.
-    
+    1-form with values in a parallelizable open subset of a differentiable 
+    manifold. 
+
+    An instance of this class is a field of linear forms along an open subset 
+    `U` of some immersed  submanifold `S` of a manifold `M` with values in a 
+    parallelizable open subset `V` of `M`. 
+    The standard case of a 1-form *on* a manifold corresponds to `U=V` 
+    (and hence `S=M`).
+   
     INPUT:
     
-    - ``domain`` -- the manifold domain on which the 1-form is defined
+    - ``vector_field_module`` -- free module `X(U,V)` of vector fields along
+      `U` with values on `V`
     - ``name`` -- (default: None) name given to the 1-form
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the 1-form; 
       if none is provided, the LaTeX symbol is set to ``name``
@@ -825,83 +610,27 @@ class OneForm(DiffForm):
         True
 
     """
-    def __init__(self, domain, name=None, latex_name=None):
-        DiffForm.__init__(self, domain, 1, name, latex_name)
+    def __init__(self, vector_field_module, name=None, latex_name=None):
+        FreeModuleLinForm.__init__(self, vector_field_module, name=name, 
+                                   latex_name=latex_name)
+        # TensorFieldParal attributes:
+        self.domain = vector_field_module.domain
+        self.ambient_domain = vector_field_module.ambient_domain
+        # initialization of derived quantities:
+        DiffFormParal._init_derived(self) 
         
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
-        description = "1-form"
+        description = "1-form "
         if self.name is not None:
-            description += " '%s'" % self.name
-        description += " on the " + str(self.domain)
-        return description
-
-    def _new_comp(self, frame): 
-        r"""
-        Create some components in the given frame. 
-                
-        """
-        from component import Components
-        return Components(frame, 1)
+            description += "'%s' " % self.name
+        return self._final_repr(description)
 
     def _new_instance(self):
         r"""
-        Create a :class:`OneForm` instance.
-        
+        Create a :class:`OneForm` instance on the same domain. 
         """
-        return OneForm(self.domain)
+        return OneFormParal(self.fmodule)
 
-    def __call__(self, vector):
-        r"""
-        The 1-form acting on a vector field.
-        
-        INPUT:
-        
-        - ``vector`` -- a vector field `v` (instance of :class:`VectorField`)
-        
-        OUTPUT:
-        
-        - the scalar field `\langle \omega, v \rangle`, as an instance of 
-          :class:`ScalarField`
-          
-        """
-        from vectorfield import VectorField
-        if not isinstance(vector, VectorField):
-            raise TypeError("The argument must be a vector field.")
-        frame = self.common_frame(vector)
-        if frame is None:
-            raise ValueError("No common frame for the components.")
-        omega = self.components[frame]
-        vv = vector.components[frame]
-        si = self.manifold.sindex
-        resu = omega[[si]]*vv[[si]]
-        for i in self.manifold.irange(si+1):
-            resu += omega[[i]]*vv[[i]]
-        # Name of the output:
-        resu.name = None
-        if self.name is not None and vector.name is not None:
-            resu.name = self.name + "(" + vector.name + ")"
-        # LaTeX symbol for the output:
-        resu.latex_name = None
-        if self.latex_name is not None and vector.latex_name is not None:
-            resu.latex_name = self.latex_name + r"\left(" + \
-                              vector.latex_name + r"\right)"
-        return resu
-
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
