@@ -82,8 +82,10 @@ class Chart(UniqueRepresentation, SageObject):
     Cartesian coordinates on `\RR^3`::
     
         sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
-        sage: c_cart = Chart(M, 'x y z') ; c_cart
+        sage: c_cart = M.chart('x y z') ; c_cart
         chart (R^3, (x, y, z))
+        sage: type(c_cart)
+        <class 'sage.geometry.manifolds.chart.Chart'>
 
     To have the coordinates accessible as global variables, one shall set::
     
@@ -93,7 +95,7 @@ class Chart(UniqueRepresentation, SageObject):
     construction::
     
         sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
-        sage: c_cart.<x,y,z> = Chart(M, 'x y z') ; c_cart
+        sage: c_cart.<x,y,z> = M.chart('x y z') ; c_cart
         chart (R^3, (x, y, z))
     
     The coordinates are then immediately accessible::
@@ -108,7 +110,7 @@ class Chart(UniqueRepresentation, SageObject):
     one may write::
     
         sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
-        sage: c_cart.<x1,y1,z1> = Chart(M, 'x y z') ; c_cart
+        sage: c_cart.<x1,y1,z1> = M.chart('x y z') ; c_cart
         chart (R^3, (x, y, z))
     
     Then y is not known as a global variable and the corresponding coordinate
@@ -123,7 +125,7 @@ class Chart(UniqueRepresentation, SageObject):
     coordinate symbol is quite convenient; so it is recommended to declare::
     
         sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
-        sage: c_cart.<x,y,z> = Chart(M, 'x y z')
+        sage: c_cart.<x,y,z> = M.chart('x y z')
     
     Moreover, the method :meth:`OpenDomain.chart` can be invoked instead
     of the direct call to the Chart constructor::
@@ -135,7 +137,7 @@ class Chart(UniqueRepresentation, SageObject):
     complement of the half-plane `\{y=0, x\geq 0\}`::
     
         sage: U = M.open_domain('U')
-        sage: c_spher.<r,th,ph> = Chart(U, r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi') ; c_spher 
+        sage: c_spher.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi') ; c_spher 
         chart (U, (r, th, ph))
 
     Note the prefix 'r' for the string defining the coordinates in the arguments of ``Chart``. 
@@ -229,7 +231,7 @@ class Chart(UniqueRepresentation, SageObject):
     `\{y=0, x\geq 0\}`, we must have `y\not=0` or `x<0` on U. Accordingly, 
     we set::
     
-        sage: c_cartU.<x,y,z> = Chart(U, 'x y z') 
+        sage: c_cartU.<x,y,z> = U.chart('x y z') 
         sage: c_cartU.add_restrictions((y!=0, x<0)) # the tuple (y!=0, x<0) means y!=0 or x<0
         sage: # c_cartU.add_restrictions([y!=0, x<0]) would have meant y!=0 AND x<0
         sage: U.atlas
@@ -455,8 +457,8 @@ class Chart(UniqueRepresentation, SageObject):
         
         Some coordinate bounds on a 2-dimensional manifold::
         
-            sage: m = Manifold(2, 'M')
-            sage: c_xy.<x,y> = Chart(m, 'x y:[0,1)')
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y:[0,1)')
             sage: c_xy.coord_bounds(0)  # x in (-oo,+oo) (the default)
             ((-Infinity, False), (+Infinity, False))
             sage: c_xy.coord_bounds(1)  # y in [0,1)
@@ -504,7 +506,7 @@ class Chart(UniqueRepresentation, SageObject):
         Cartesian coordinates on the open unit disc in $\RR^2$::
         
             sage: M = Manifold(2, 'M') # the open unit disc
-            sage: X.<x,y> = Chart(M, 'x y')
+            sage: X.<x,y> = M.chart('x y')
             sage: X.add_restrictions(x^2+y^2<1)
             sage: X.valid_coordinates(0,2)
             False
@@ -564,7 +566,7 @@ class Chart(UniqueRepresentation, SageObject):
         of the global Cartesian coordinates::
         
             sage: M = Manifold(2, 'R^2')
-            sage: c_cart.<x,y> = Chart(M, 'x y') # Cartesian coordinates on R^2
+            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
             sage: D = M.open_domain('D') # the unit open disc
             sage: c_cart_D = c_cart.subchart(D, x^2+y^2<1) 
             sage: p = M.point((1/2, 0))
@@ -713,9 +715,9 @@ class Chart(UniqueRepresentation, SageObject):
         
             sage: M = Manifold(1, 'S^1')
             sage: U = M.open_domain('U') # Complement of the North pole
-            sage: cU.<x> = Chart(U, 'x') # Stereographic chart from the North pole
+            sage: cU.<x> = U.chart('x') # Stereographic chart from the North pole
             sage: V = M.open_domain('V') # Complement of the South pole
-            sage: cV.<y> = Chart(V, 'y') # Stereographic chart from the South pole
+            sage: cV.<y> = V.chart('y') # Stereographic chart from the South pole
             sage: trans = cU.transition_map(cV, 1/x, 'W', x!=0, y!=0)
             sage: trans
             coordinate change from chart (W, (x,)) to chart (W, (y,))
@@ -733,9 +735,9 @@ class Chart(UniqueRepresentation, SageObject):
         Transition map between spherical chart and Cartesian chart on `\RR^2`::
         
             sage: M = Manifold(2, 'R^2')
-            sage: c_cart.<x,y> = Chart(M, 'x y')
-            sage: U = M.open_domain('U') # the complement of the segment {y=0, x >= 0}
-            sage: c_spher.<r,phi> = Chart(U, r'r:(0,+oo) phi:(0,2*pi):\phi')
+            sage: c_cart.<x,y> = M.chart('x y')
+            sage: U = M.open_domain('U') # the complement of the half line {y=0, x >= 0}
+            sage: c_spher.<r,phi> = U.chart(r'r:(0,+oo) phi:(0,2*pi):\phi')
             sage: trans = c_spher.transition_map(c_cart, (r*cos(phi), r*sin(phi)), \
                                                  restrictions2=(y!=0, x<0))
             sage: trans
@@ -761,7 +763,143 @@ class Chart(UniqueRepresentation, SageObject):
         if not isinstance(transformations, (tuple, list)):
                 transformations = [transformations]
         return CoordChange(chart1, chart2, *transformations)
-            
+
+
+    def coord_change(self, other, *transformations):   
+        r"""
+        Relate the coordinates of ``self`` to those of another chart. 
+        
+        The two charts may belong to different manifolds. 
+        
+        .. NOTE::
+
+            For defining the transition map between two charts on overlapping 
+            domains, use the method :meth:`transition_map` instead. 
+        
+        See class :class:`CoordChange` for a complete documentation. 
+        
+        INPUT:
+        
+        - ``other`` -- another chart 
+        - ``transformations`` -- the coordinate transformations expressed as 
+          a list of the expressions of the coordinates of ``other`` in terms 
+          of the coordinates of ``self``
+          
+        OUTPUT:
+        
+        - instance of class :class:`CoordChange` representing the relation 
+          between the two sets of coordinates. 
+        
+        EXAMPLE:
+        
+        Connecting spherical (polar) coordinates to Cartesian ones in the 
+        plane::
+        
+            sage: M = Manifold(2, 'R^2')
+            sage: c_cart.<x, y> = M.chart('x y') # Cartesian coordinates on the plane
+            sage: U = M.open_domain('U') # the complement of the half line {y=0, x>= 0}
+            sage: c_spher.<r, ph> = U.chart(r'r:(0,+oo) ph:(0,2*pi):\phi')
+            sage: spher_to_cart = c_spher.coord_change(c_cart, r*cos(ph), r*sin(ph))
+            sage: spher_to_cart
+            coordinate change from chart (U, (r, ph)) to chart (R^2, (x, y))
+            sage: type(spher_to_cart)
+            <class 'sage.geometry.manifolds.chart.CoordChange'>
+            sage: spher_to_cart(1, pi/2)
+            (0, 1)
+
+        """
+        return CoordChange(self, other, *transformations) 
+        
+    def function(self, expression):
+        r"""
+        Return a real-valued function of the coordinates. 
+        
+        If ``self`` is a chart on a `n`-dimensional manifold, a real-valued 
+        function of the coordinates is a is a function
+
+        .. MATH::
+    
+            \begin{array}{llcl}
+            f:& U \subset\RR^n & \longrightarrow & \RR \\
+              & (x^1,\ldots,x^n) & \longmapsto & f(x^1,\ldots,x^n)
+            \end{array}
+        
+        where `U` is the domain of `\RR^n` covered by the chart ``self``. 
+
+        See class :class:`FunctionChart` for a complete documentation. 
+        
+        INPUT:
+        
+        - ``expression`` -- the coordinate expression of the function
+
+        OUTPUT:
+        
+        - instance of class :class:`FunctionChart` representing the function 
+          `f`
+
+        EXAMPLE:
+        
+        Function of two coordinates::
+        
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y')
+            sage: f = c_xy.function(sin(x*y))
+            sage: type(f)
+            <class 'sage.geometry.manifolds.chart.FunctionChart'>
+            sage: f.view()
+            (x, y) |--> sin(x*y)
+            sage: f(2,3)
+            sin(6)
+        
+        """
+        return FunctionChart(self, expression)
+
+    def multifunction(self, *expressions):
+        r"""
+        Return a `\RR^m`-valued function of the coordinates. 
+        
+        If ``self`` is a chart on a `n`-dimensional manifold and `m` is 
+        an integer strictly greater than 0, the returned function is of the
+        type 
+  
+        .. MATH::
+    
+            \begin{array}{llcl}
+            f:& U \subset\RR^n & \longrightarrow & \RR^m \\
+              & (x^1,\ldots,x^n) & \longmapsto & (f_1(x^1,\ldots,x^n),\ldots, 
+                f_m(x^1,\ldots,x^n))
+            \end{array}
+        
+        where `U` is the domain of `\RR^n` covered by the chart ``self``. 
+
+        See class :class:`MultiFunctionChart` for a complete documentation. 
+        
+        INPUT:
+        
+        - ``*expressions`` -- the list of the coordinate expressions of the `m` 
+          functions (`m\geq 1`)
+
+        OUTPUT:
+        
+        - instance of class :class:`MultiFunctionChart` representing the 
+          function `f`
+
+        EXAMPLE:
+        
+        Function of two coordinates with values in `\RR^3`::
+        
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y')
+            sage: f = c_xy.multifunction(x+cos(y), sin(y)/x^2, x*y) ; f
+            functions (x + cos(y), sin(y)/x^2, x*y) on the chart (M, (x, y))
+            sage: type(f)
+            <class 'sage.geometry.manifolds.chart.MultiFunctionChart'>
+            sage: f(2,3,4)
+            (cos(3) + 2, 1/4*sin(3), 6)            
+        
+        """
+        return MultiFunctionChart(self, *expressions)
+
 
 #*****************************************************************************
 
@@ -792,7 +930,9 @@ class FunctionChart(SageObject):
     
         sage: m = Manifold(2, 'M')
         sage: c_xy.<x,y> = m.chart('x y')
-        sage: f = FunctionChart(c_xy, x^2+3*y+1)
+        sage: f = c_xy.function(x^2+3*y+1)
+        sage: type(f)
+        <class 'sage.geometry.manifolds.chart.FunctionChart'>
         sage: f.chart
         chart (M, (x, y))
         sage: f.view()
@@ -825,7 +965,7 @@ class FunctionChart(SageObject):
 
     An unspecified function on a chart::
     
-        sage: g = FunctionChart(c_xy, function('G', x, y))
+        sage: g = c_xy.function(function('G', x, y))
         sage: g
         G(x, y)
         sage: g.view()
@@ -837,15 +977,15 @@ class FunctionChart(SageObject):
 
     Chart functions can be compared to other values::
     
-        sage: f = FunctionChart(c_xy, x^2+3*y+1)
+        sage: f = c_xy.function(x^2+3*y+1)
         sage: f == 2
         False
         sage: f == x^2 + 3*y + 1
         True
-        sage: g = FunctionChart(c_xy, x*y) 
+        sage: g = c_xy.function(x*y) 
         sage: f == g
         False
-        sage: h = FunctionChart(c_xy, x^2+3*y+1) 
+        sage: h = c_xy.function(x^2+3*y+1) 
         sage: f == h
         True
 
@@ -890,7 +1030,7 @@ class FunctionChart(SageObject):
         
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = FunctionChart(c_xy, x^2+3*y+1)
+            sage: f = c_xy.function(x^2+3*y+1)
             sage: f
             x^2 + 3*y + 1
             sage: f.expr()
@@ -904,7 +1044,7 @@ class FunctionChart(SageObject):
         symbolic expression functionalities in Sage; for instance::
         
             sage: a = var('a')
-            sage: f = FunctionChart(c_xy, a*x*y)
+            sage: f = c_xy.function(a*x*y)
             sage: f.expr()
             a*x*y
             sage: f.expr().subs(a=2)
@@ -934,7 +1074,7 @@ class FunctionChart(SageObject):
         
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = FunctionChart(c_xy, x^2+3*y+1)
+            sage: f = c_xy.function(x^2+3*y+1)
             sage: f.view()
             (x, y) |--> x^2 + 3*y + 1
             sage: latex(f.view())
@@ -967,7 +1107,7 @@ class FunctionChart(SageObject):
         
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = FunctionChart(c_xy, x^2+3*y+1)
+            sage: f = c_xy.function(x^2+3*y+1)
             sage: g = f.copy()
             sage: print type(g)
             <class 'sage.geometry.manifolds.chart.FunctionChart'>
@@ -1025,7 +1165,7 @@ class FunctionChart(SageObject):
 
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = FunctionChart(c_xy, x^2+3*y+1) ; f
+            sage: f = c_xy.function(x^2+3*y+1) ; f
             x^2 + 3*y + 1
             sage: f.diff(x)
             2*x
@@ -1049,7 +1189,7 @@ class FunctionChart(SageObject):
         
             sage: m = Manifold(2, 'M', start_index=1)
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = FunctionChart(c_xy, x^2+3*y+1)
+            sage: f = c_xy.function(x^2+3*y+1)
             sage: f.diff(1)
             2*x
             sage: f.diff(1) is f.diff(x)
@@ -1077,10 +1217,10 @@ class FunctionChart(SageObject):
         
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = FunctionChart(c_xy, x^2+3*y+1)
+            sage: f = c_xy.function(x^2+3*y+1)
             sage: f.is_zero()
             False
-            sage: g = FunctionChart(c_xy, 0)
+            sage: g = c_xy.function(0)
             sage: g.is_zero()
             True
 
@@ -1358,7 +1498,7 @@ class FunctionChart(SageObject):
         
             sage: m = Manifold(2, 'M')
             sage: X.<x,y> = m.chart('x y')
-            sage: f = FunctionChart(X, x^2 + 2*x*y + y^2)
+            sage: f = X.function(x^2 + 2*x*y + y^2)
             sage: f
             x^2 + 2*x*y + y^2
             sage: f.factor()
@@ -1386,19 +1526,22 @@ class FunctionChart(SageObject):
         
         OUTPUT:
         
-        - instance of :class:`ScalarField`
-        
+        - instance of class 
+          :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
+                
         EXAMPLES:
 
         Construction of a scalar field on a 2-dimensional manifold::
         
             sage: M = Manifold(2, 'M')                  
             sage: c_xy.<x,y> = M.chart('x y')
-            sage: fc = FunctionChart(c_xy, x+2*y^3)
+            sage: fc = c_xy.function(x+2*y^3)
             sage: f = fc.scalar_field() ; f
             scalar field on the 2-dimensional manifold 'M'
-            sage: f.expr()
-            2*y^3 + x
+            sage: f.view()
+            (x, y) |--> 2*y^3 + x
+            sage: f.function_chart(c_xy) is fc
+            True
 
         """
         from scalarfield import ScalarField
@@ -1426,6 +1569,7 @@ class ZeroFunctionChart(FunctionChart):
     
         sage: m = Manifold(2, 'M')
         sage: c_xy.<x,y> = m.chart('x y')
+        sage: from sage.geometry.manifolds.chart import ZeroFunctionChart
         sage: f = ZeroFunctionChart(c_xy) ; f
         0
         sage: f.view()
@@ -1465,7 +1609,7 @@ class ZeroFunctionChart(FunctionChart):
 
     Arithmetics with a nonzero instance of :class:`FunctionChart`::
 
-        sage: g = FunctionChart(c_xy, x+y)
+        sage: g = c_xy.function(x+y)
         sage: s = f+g ; print type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         x + y
@@ -1560,9 +1704,7 @@ class ZeroFunctionChart(FunctionChart):
         
         - the partial derivative `\frac{\partial f}{\partial x^i}`, as an
           instance of :class:`ZeroFunctionChart`
-          
-        EXAMPLES:
-        
+                  
         """
         if self._der is None:
             self._der = [self.chart.zero_function for j in range(self.nc)]
@@ -1726,7 +1868,8 @@ class ZeroFunctionChart(FunctionChart):
         
         OUTPUT:
         
-        - instance of :class:`ZeroScalarField`
+        - instance of class 
+          :class:`~sage.geometry.manifolds.scalarfield.ZeroScalarField`
         
         EXAMPLES:
 
@@ -1734,7 +1877,7 @@ class ZeroFunctionChart(FunctionChart):
 
             sage: M = Manifold(2, 'M')                  
             sage: c_xy.<x,y> = M.chart('x y')
-            sage: fc = ZeroFunctionChart(c_xy)
+            sage: fc = c_xy.zero_function
             sage: f = fc.scalar_field() ; f
             zero scalar field on the 2-dimensional manifold 'M'
             sage: f.expr()
@@ -1777,9 +1920,10 @@ class MultiFunctionChart(SageObject):
     
         sage: m = Manifold(2, 'M')
         sage: c_xy.<x,y>  = m.chart('x y') 
-        sage: f = MultiFunctionChart(c_xy, x-y, x*y, cos(x)*exp(y))
-        sage: f
+        sage: f = c_xy.multifunction(x-y, x*y, cos(x)*exp(y)) ; f 
         functions (x - y, x*y, cos(x)*e^y) on the chart (M, (x, y))
+        sage: type(f)
+        <class 'sage.geometry.manifolds.chart.MultiFunctionChart'>
         sage: f.functions
         (x - y, x*y, cos(x)*e^y)
         sage: f(x,y)
@@ -1808,7 +1952,7 @@ class MultiFunctionChart(SageObject):
     A MultiFunctionChart can contain a single function, although one should 
     rather employ the class :class:`FunctionChart` for this purpose::
     
-        sage: g = MultiFunctionChart(c_xy, x*y^2)
+        sage: g = c_xy.multifunction(x*y^2)
         sage: g.functions
         (x*y^2,)
     
@@ -1832,7 +1976,7 @@ class MultiFunctionChart(SageObject):
     If the number of functions equals the number of coordinates, the Jacobian
     determinant can be evaluated::
     
-        sage: h = MultiFunctionChart(c_xy, x-y, x*y)
+        sage: h = c_xy.multifunction(x-y, x*y)
         sage: h.jacobian_det()
         x + y
         
@@ -1881,7 +2025,7 @@ class MultiFunctionChart(SageObject):
         
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y') 
-            sage: f = MultiFunctionChart(c_xy, x-y, x*y, cos(x)*exp(y))
+            sage: f = c_xy.multifunction(x-y, x*y, cos(x)*exp(y))
             sage: f.expr()
             (x - y, x*y, cos(x)*e^y)
             sage: type(f.expr()[0]) 
@@ -1905,7 +2049,7 @@ class MultiFunctionChart(SageObject):
         
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y') 
-            sage: f = MultiFunctionChart(c_xy, x-y, x*y, cos(x)*exp(y))
+            sage: f = c_xy.multifunction(x-y, x*y, cos(x)*exp(y))
             sage: g = f.copy() ; g
             functions (x - y, x*y, cos(x)*e^y) on the chart (M, (x, y))
 
@@ -1966,7 +2110,7 @@ class MultiFunctionChart(SageObject):
         
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = MultiFunctionChart(c_xy, x-y, x*y, cos(x)*exp(y))
+            sage: f = c_xy.multifunction(x-y, x*y, cos(x)*exp(y))
             sage: f.jacobian()
             [[1, -1], [y, x], [-e^y*sin(x), cos(x)*e^y]]
             sage: f.jacobian()[0][1]
@@ -2005,7 +2149,7 @@ class MultiFunctionChart(SageObject):
         
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = MultiFunctionChart(c_xy, x-y, x*y)
+            sage: f = c_xy.multifunction(x-y, x*y)
             sage: f.jacobian_det()
             x + y
             
@@ -2054,21 +2198,25 @@ class CoordChange(SageObject):
         sage: m = Manifold(3, 'R3', r'\mathcal{M}')
         sage: c_spher.<r,th,ph> = m.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
         sage: c_cart.<x,y,z> = m.chart('x y z')        
-        sage: ch = CoordChange(c_spher, c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
+        sage: ch = c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
         sage: ch
         coordinate change from chart (R3, (r, th, ph)) to chart (R3, (x, y, z))
         sage: latex(ch)
         (r, \theta, \phi) \mapsto (x, y, z)
+        sage: type(ch)
+        <class 'sage.geometry.manifolds.chart.CoordChange'>
 
     Each created coordinate change is automatically added to the manifold's 
-    dictionary :attr:`coord_changes`; this dictionary is accessed via the method :meth:`Domain.coord_change`::    
+    dictionary :attr:`coord_changes`; this dictionary is accessed via the 
+    method :meth:`~sage.geometry.manifolds.domain.Domain.coord_change`::    
 
         sage: m.coord_change(c_spher, c_cart)
         coordinate change from chart (R3, (r, th, ph)) to chart (R3, (x, y, z))
     
     It also generates a new entry in the manifold's dictionary 
     :attr:`frame_changes`, containing the relevant change-of-basis matrix; 
-    this dictionary is accessed via the method :meth:`Manifold.frame_change`::
+    this dictionary is accessed via the method 
+    :meth:`~sage.geometry.manifolds.domain.Domain.frame_change`::
 
         sage: m.frame_change(c_cart.frame, c_spher.frame)
         field of tangent-space automorphisms on the 3-dimensional manifold 'R3'
@@ -2169,7 +2317,7 @@ class CoordChange(SageObject):
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
             sage: c_uv.<u,v> = m.chart('u v')
-            sage: ch_to_uv = CoordChange(c_xy, c_uv, (x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2)
+            sage: ch_to_uv = c_xy.coord_change(c_uv, (x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2)
             sage: m.coord_changes 
             {(chart (M, (x, y)), chart (M, (u, v))): coordinate change from chart (M, (x, y)) to chart (M, (u, v))}
             sage: ch_to_xy = ch_to_uv.inverse() ; ch_to_xy
@@ -2262,10 +2410,11 @@ class CoordChange(SageObject):
          
         From Cartesian to spherical coordinates in the plane::
           
-            sage: m = Manifold(2, 'M')
-            sage: c_cart.<x,y> = m.chart('x y')
-            sage: c_spher.<r,ph> = m.chart(r'r:(0,+oo) ph:(0,2*pi):\phi')
-            sage: spher_to_cart = CoordChange(c_spher, c_cart, r*cos(ph), r*sin(ph))
+            sage: M = Manifold(2, 'R^2')
+            sage: U = M.open_domain('U') # the complement of the half line {y=0, x>= 0}
+            sage: c_cart.<x,y> = U.chart('x y')
+            sage: c_spher.<r,ph> = U.chart(r'r:(0,+oo) ph:(0,2*pi):\phi')
+            sage: spher_to_cart = c_spher.coord_change(c_cart, r*cos(ph), r*sin(ph))
             sage: spher_to_cart.set_inverse(sqrt(x^2+y^2), atan2(y,x))              
             Check of the inverse coordinate transformation:
                r == r
@@ -2273,9 +2422,12 @@ class CoordChange(SageObject):
                x == x
                y == y
             sage: spher_to_cart.inverse()
-            coordinate change from chart (M, (x, y)) to chart (M, (r, ph))
-            sage: m.coord_changes  # random output order
-            {(chart (M, (x, y)), chart (M, (r, ph))): coordinate change from chart (M, (x, y)) to chart (M, (r, ph)), (chart (M, (r, ph)), chart (M, (x, y))): coordinate change from chart (M, (r, ph)) to chart (M, (x, y))}
+            coordinate change from chart (U, (x, y)) to chart (U, (r, ph))
+            sage: M.coord_changes # random output order
+            {(chart (U, (x, y)),
+              chart (U, (r, ph))): coordinate change from chart (U, (x, y)) to chart (U, (r, ph)),
+             (chart (U, (r, ph)),
+              chart (U, (x, y))): coordinate change from chart (U, (r, ph)) to chart (U, (x, y))}
               
         Introducing a wrong inverse transformation is revealed by the check::
                 

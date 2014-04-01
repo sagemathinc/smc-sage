@@ -164,7 +164,6 @@ class Domain(Parent):
     
     def __init__(self, manifold, name, latex_name=None):
         Parent.__init__(self, category=Sets())
-        from scalarfield import ZeroScalarField
         self.manifold = manifold
         if self != manifold:
             if name not in manifold.domains:
@@ -193,12 +192,6 @@ class Domain(Parent):
         self.def_frame = None  # default frame
         self.frame_changes = {} # dictionary of changes of frames
         self.coframes = []  # list of coframes defined on subdomains of self
-        self._scalar_field_ring = None # ring of scalar fields defined on self
-                                       # (not contructed yet)
-        # The zero scalar field is constructed:
-        if self.name != 'field R':  
-            #!# to avoid circular import of RealLine
-            self.zero_scalar_field = ZeroScalarField(self)
 
     #### Methods required for any Parent in the category of sets:
     def _element_constructor_(self, coords=None, chart=None, name=None, 
@@ -246,15 +239,6 @@ class Domain(Parent):
         Special Sage function for the LaTeX representation of the object.
         """
         return self.latex_name
-
-    def scalar_field_ring(self):
-        r"""
-        Returns the ring of scalar fields defined on ``self``.
-        """
-        from scalarfield_ring import ScalarFieldRing
-        if self._scalar_field_ring is None:
-            self._scalar_field_ring = ScalarFieldRing(self)
-        return self._scalar_field_ring
 
     def domain(self, name, latex_name=None, is_open=False):
         r"""
@@ -979,6 +963,7 @@ class OpenDomain(Domain):
 
     """
     def __init__(self, manifold, name, latex_name=None):
+        from scalarfield import ZeroScalarField
         Domain.__init__(self, manifold, name, latex_name)
         # list of charts that individually cover the domain, i.e. whose 
         # domains are self (if non-empty, self is coordinate domain):
@@ -986,12 +971,17 @@ class OpenDomain(Domain):
         # list of vector frames that individually cover the domain, i.e. whose 
         # domains are self (if non-empty, self is parallelizable):
         self.covering_frames = [] 
+        # ring of scalar fields defined on self (not contructed yet) 
+        self._scalar_field_ring = None 
+        # The zero scalar field is constructed:
+        if self.name != 'field R':  
+            #!# to avoid circular import of RealLine
+            self.zero_scalar_field = ZeroScalarField(self)
         # dict. of vector field modules along self:
         self._vector_field_modules = {}
         # dict. of tensor field modules along self: 
-        self._tensor_field_modules = {} 
+        self._tensor_field_modules = {}
     
-
     def _repr_(self):
         r"""
         Special Sage function for the string representation of the object.
@@ -1144,11 +1134,47 @@ class OpenDomain(Domain):
         from chart import Chart
         return Chart(self, coordinates)
 
+    def scalar_field_ring(self):
+        r"""
+        Returns the ring of scalar fields defined on ``self``.
+        
+        See :class:`~sage.geometry.manifolds.scalarfield_ring.ScalarFieldRing` 
+        for a complete documentation.  
+        
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.geometry.manifolds.scalarfield_ring.ScalarFieldRing`
+          representing the algebra `C^\infty(U)` of all scalar fields defined
+          on `U` = ``self``.
+          
+        EXAMPLE:
+        
+        Scalar ring of a 3-dimensional open domain::
+        
+            sage: M = Manifold(3, 'M')
+            sage: U = M.open_domain('U')
+            sage: CU = U.scalar_field_ring() ; CU
+            ring of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            sage: CU.category()
+            Category of commutative rings
+            sage: CU.zero()
+            zero scalar field on the open domain 'U' on the 3-dimensional manifold 'M'
+          
+        """
+        from scalarfield_ring import ScalarFieldRing
+        if self._scalar_field_ring is None:
+            self._scalar_field_ring = ScalarFieldRing(self)
+        return self._scalar_field_ring
+
     def vector_field_module(self, ambient_domain=None):
         r"""
         Returns the set of vector fields defined on ``self``, possibly 
         within some ambient manifold, as a module over the ring of scalar
         fields defined on ``self``.
+
+        See :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule` 
+        for a complete documentation.  
         
         INPUT:
         
@@ -1160,9 +1186,9 @@ class OpenDomain(Domain):
         OUTPUT:
         
         - instance of 
-          :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldFreeModule`
-          representing the module `\mathcal{X}(U,V)` of vectors fields on the open domain
-          `U` (``self``) taking values on the open set `V`. 
+          :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`
+          representing the module `\mathcal{X}(U,V)` of vector fields on the 
+          open domain `U`=``self`` taking values on the open set `V`. 
         
         EXAMPLES:
         
@@ -1178,6 +1204,8 @@ class OpenDomain(Domain):
             Category of modules over ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
             sage: XU.base_ring()
             ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            sage: XU.base_ring() is U.scalar_field_ring()
+            True
 
         `\mathcal{X}(U)` is a free module because `U` is parallelizable (being
         a chart domain)::
@@ -1189,7 +1217,14 @@ class OpenDomain(Domain):
         
             sage: XU.rank()
             2
+
+        The elements of `\mathcal{X}(U)` are vector fields on `U`::
         
+            sage: XU.an_element()
+            vector field on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            sage: XU.an_element().view()
+            2 d/dth + 2 d/dph
+
         Vector field module `\mathcal{X}(U,\mathbb{R}^3)` of the 
         `\mathbb{R}^3`-valued vector fields along `U`, associated with the 
         embedding of `\mathbb{S}^2` into `\mathbb{R}^3`::
@@ -1224,6 +1259,9 @@ class OpenDomain(Domain):
         Returns the set of tensor fields of a given type defined on ``self``, 
         possibly within some ambient manifold, as a module over the ring of 
         scalar fields defined on ``self``.
+
+        See :class:`~sage.geometry.manifolds.tensorfield_module.TensorFieldModule` 
+        for a complete documentation.  
         
         INPUT:
         
@@ -1233,7 +1271,35 @@ class OpenDomain(Domain):
           ambient manifold `M` containing the image of ``self`` in case
           ``self`` is part of an immersed submanifold of `M`; if None, 
           ``ambient_domain`` is set to ``self``.
+
+        OUTPUT:
         
+        - instance of 
+          :class:`~sage.geometry.manifolds.tensorfield_module.TensorFieldModule`
+          representing the module `\mathcal{T}^{(k,l)}(U,V)` of type-`(k,l)` 
+          tensor fields on the open domain `U` = ``self`` taking values on 
+          the open set `V`. 
+        
+        EXAMPLE:
+        
+        Module of type-(2,1) tensor fields on a 3-dimensional open domain::
+        
+            sage: M = Manifold(3, 'M')
+            sage: U = M.open_domain('U')
+            sage: c_xyz.<x,y,z> = U.chart('x y z')
+            sage: TU = U.tensor_field_module((2,1)) ; TU
+            free module TF^(2,1)(U) of type-(2,1) tensors fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            sage: TU.category()
+            Category of modules over ring of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'            
+            sage: TU.base_ring()
+            ring of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            sage: TU.base_ring() is U.scalar_field_ring()
+            True
+            sage: TU.an_element()
+            tensor field of type (2,1) on the open domain 'U' on the 3-dimensional manifold 'M'
+            sage: TU.an_element().view()
+            2 d/dx*d/dx*dx
+
         """
         from tensorfield_module import TensorFieldFreeModule
         if tensor_type == (1,0):
@@ -1252,7 +1318,6 @@ class OpenDomain(Domain):
 
     def scalar_field(self, coord_expression=None, chart=None, name=None, 
                      latex_name=None):
-
         r"""
         Define a scalar field on the domain.
 
@@ -1275,16 +1340,21 @@ class OpenDomain(Domain):
         - instance of :class:`~sage.geometry.manifolds.scalarfield.ScalarField` 
           representing the defined scalar field. 
           
-        EXAMPLES:
+        EXAMPLE:
 
         A scalar field defined by its coordinate expression::
     
             sage: M = Manifold(3, 'M')
-            sage: A = M.open_domain('A', latex_name=r'\mathcal{A}'); A 
-            open domain 'A' on the 3-dimensional manifold 'M'
-            sage: c_xyz.<x,y,z> = A.chart('x y z')
-            sage: f = A.scalar_field(sin(x)*cos(y) + z, name='F'); f
-            scalar field 'F' on the open domain 'A' on the 3-dimensional manifold 'M'
+            sage: U = M.open_domain('U')
+            sage: c_xyz.<x,y,z> = U.chart('x y z')
+            sage: f = U.scalar_field(sin(x)*cos(y) + z, name='F'); f
+            scalar field 'F' on the open domain 'U' on the 3-dimensional manifold 'M'
+            sage: f.view()
+            F: (x, y, z) |--> cos(y)*sin(x) + z
+            sage: f.parent()
+            ring of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            sage: f in U.scalar_field_ring()
+            True
 
         See the documentation of class 
         :class:`~sage.geometry.manifolds.scalarfield.ScalarField` for more 
@@ -1321,11 +1391,19 @@ class OpenDomain(Domain):
         A vector field on a 3-dimensional open domain::
     
             sage: M = Manifold(3, 'M')
-            sage: A = M.open_domain('A', latex_name=r'\mathcal{A}'); A 
-            open domain 'A' on the 3-dimensional manifold 'M'
-            sage: c_xyz.<x,y,z> = A.chart('x y z')
-            sage: v = A.vector_field('V'); v
-            vector field 'V' on the open domain 'A' on the 3-dimensional manifold 'M'
+            sage: U = M.open_domain('U')
+            sage: c_xyz.<x,y,z> = U.chart('x y z')
+            sage: v = U.vector_field('v'); v
+            vector field 'v' on the open domain 'U' on the 3-dimensional manifold 'M'
+            
+        Vector fields on `U` form the set `\mathcal{X}(U)`, which is a module 
+        over the algebra `C^\infty(U)` of smooth scalar fields on `U`::
+         
+            sage: v.parent()
+            free module X(U) of vector fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            sage: v in U.vector_field_module()
+            True
+
 
         See the documentation of class 
         :class:`~sage.geometry.manifolds.vectorfield.VectorField` for more 
@@ -1378,12 +1456,20 @@ class OpenDomain(Domain):
         A tensor field of type (2,0) on a 3-dimensional open domain::
     
             sage: M = Manifold(3, 'M')
-            sage: A = M.open_domain('A', latex_name=r'\mathcal{A}'); A 
-            open domain 'A' on the 3-dimensional manifold 'M'
-            sage: c_xyz.<x,y,z> = A.chart('x y z')
-            sage: t = A.tensor_field(2, 0, 'T'); t
-            tensor field 'T' of type (2,0) on the open domain 'A' on the 3-dimensional manifold 'M'
+            sage: U = M.open_domain('U')
+            sage: c_xyz.<x,y,z> = U.chart('x y z')
+            sage: t = U.tensor_field(2, 0, 'T'); t
+            tensor field 'T' of type (2,0) on the open domain 'U' on the 3-dimensional manifold 'M'
 
+        Type-(2,0) tensor fields on `U` form the set `\mathcal{T}^{(2,0)}(U)`, 
+        which is a module over the algebra `C^\infty(U)` of smooth scalar 
+        fields on `U`::
+
+            sage: t.parent()
+            free module TF^(2,0)(U) of type-(2,0) tensors fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            sage: t in U.tensor_field_module((2,0))
+            True
+            
         See the documentation of class 
         :class:`~sage.geometry.manifolds.tensorfield.TensorField` for more 
         examples.
@@ -1475,6 +1561,8 @@ class OpenDomain(Domain):
             sage: c_xyz.<x,y,z> = M.chart('x y z')
             sage: t = M.endomorphism_field('T'); t
             field of endomorphisms 'T' on the 3-dimensional manifold 'M'
+            sage: t.parent()
+            free module TF^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
 
         See the documentation of class 
         :class:`~sage.geometry.manifolds.rank2field.EndomorphismField` for more 
@@ -1520,8 +1608,10 @@ class OpenDomain(Domain):
     
             sage: M = Manifold(3,'M')
             sage: c_xyz.<x,y,z> = M.chart('x y z')
-            sage: au = M.automorphism_field('AU') ; au 
-            field of tangent-space automorphisms 'AU' on the 3-dimensional manifold 'M'
+            sage: a = M.automorphism_field('A') ; a
+            field of tangent-space automorphisms 'A' on the 3-dimensional manifold 'M'
+            sage: a.parent()
+            free module TF^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
 
         See the documentation of class 
         :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` for more 
@@ -1617,6 +1707,8 @@ class OpenDomain(Domain):
             sage: c_xyz.<x,y,z> = A.chart('x y z')
             sage: e = A.vector_frame('e'); e 
             vector frame (A, (e_0,e_1,e_2))
+            sage: e[0]
+            vector field 'e_0' on the open domain 'A' on the 3-dimensional manifold 'M'
 
         See the documentation of class 
         :class:`~sage.geometry.manifolds.vectorframe.VectorFrame` for more 
@@ -1835,6 +1927,8 @@ class OpenDomain(Domain):
             sage: X.<x,y,z> = A.chart('x y z')                      
             sage: om = A.one_form('omega', r'\omega') ; om  
             1-form 'omega' on the open domain 'A' on the 3-dimensional manifold 'M'
+            sage: om.parent()
+            free module TF^(0,1)(A) of type-(0,1) tensors fields on the open domain 'A' on the 3-dimensional manifold 'M'
 
         See the documentation of class 
         :class:`~sage.geometry.manifolds.diffform.OneForm` for more examples.

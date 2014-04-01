@@ -25,7 +25,7 @@ EXAMPLES:
     Computing the coordinates of the point in a new chart::
     
         sage: c_cart.<x,y,z> = M.chart('x y z')        
-        sage: ch = CoordChange(c_spher, c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
+        sage: ch = c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
         sage: p.coord(c_cart) # evaluate P's Cartesian coordinates
         (1, 0, 0)
     
@@ -92,7 +92,7 @@ class Point(Element):
         sage: p = M((a, b), name='P') ; p
         point 'P' on 2-dimensional manifold 'M'
     
-    A point is an element of the manifold on which it has been defined::
+    A point is an element of the manifold domain on which it has been defined::
     
         sage: p in M
         True
@@ -195,7 +195,7 @@ class Point(Element):
         Computing the Cartesian coordinates from the spherical ones::
 
             sage: c_cart.<x,y,z> = M.chart('x y z')  # Cartesian coordinates   
-            sage: CoordChange(c_spher, c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
+            sage: c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
             coordinate change from chart (R3, (r, th, ph)) to chart (R3, (x, y, z))
             sage: p.coord(c_cart)  # the computation is performed by means of the above change of coordinates
             (1, 0, 0)
@@ -212,14 +212,14 @@ class Point(Element):
         Coordinates of P in a new chart::
         
             sage: c_uv.<u,v> = M.chart('u v')
-            sage: ch_xy_uv = CoordChange(c_xy, c_uv, x-y, x+y)
+            sage: ch_xy_uv = c_xy.coord_change(c_uv, x-y, x+y)
             sage: p.coord(c_uv)
             (a - b, a + b)
 
         Coordinates of P in a third chart::
         
             sage: c_wz.<w,z> = M.chart('w z')
-            sage: ch_uv_wz = CoordChange(c_uv, c_wz, u^3, v^3)   
+            sage: ch_uv_wz = c_uv.coord_change(c_wz, u^3, v^3)   
             sage: p.coord(c_wz, old_chart=c_uv)
             (a^3 - 3*a^2*b + 3*a*b^2 - b^3, a^3 + 3*a^2*b + 3*a*b^2 + b^3)
 
@@ -313,7 +313,7 @@ class Point(Element):
             sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: q = M.point()
             sage: q.set_coord((1,2,3), c_spher)
-            sage: cart_from_spher = CoordChange(c_spher, c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
+            sage: cart_from_spher = c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
             
         If we set the coordinates of q in the chart c_cart, those in the chart c_spher
         are lost::
@@ -363,7 +363,7 @@ class Point(Element):
             sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: q = M.point()
             sage: q.add_coord((1,2,3), c_spher)
-            sage: cart_from_spher = CoordChange(c_spher, c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
+            sage: cart_from_spher = c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
             sage: q.add_coord( cart_from_spher(*q.coord(c_spher)), c_cart)
             sage: q.coordinates
             {chart (R3, (r, th, ph)): (1, 2, 3), chart (R3, (x, y, z)): (cos(3)*sin(2), sin(3)*sin(2), cos(2))}

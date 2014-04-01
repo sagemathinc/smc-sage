@@ -28,12 +28,6 @@ __ http://creativecommons.org/licenses/by-sa/3.0/
 
    manifold
 
-   domain
-
-   chart
-
-   point
-
    diffmapping
 
    submanifold
