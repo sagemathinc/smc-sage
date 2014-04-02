@@ -18,7 +18,7 @@ class :class:`Diffeomorphism`, which inherits from :class:`DiffMapping`.
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013): initial version
+- Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
 
 EXAMPLES: 
 
@@ -74,8 +74,8 @@ EXAMPLES:
 """
 
 #*****************************************************************************
-#       Copyright (C) 2013 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -87,8 +87,6 @@ from sage.structure.sage_object import SageObject
 from domain import Domain
 from chart import Chart, FunctionChart, MultiFunctionChart, CoordChange
 from point import Point
-from component import Components, CompWithSym, CompFullySym, CompFullyAntiSym
-
      
 class DiffMapping(SageObject):
     r"""
@@ -316,8 +314,9 @@ class DiffMapping(SageObject):
 
         OUTPUT:
         
-        - instance of :class:`MultiFunctionChart` representing the 
-          differentiable mapping in the above two charts
+        - instance of class 
+          :class:`~sage.geometry.manifolds.chart.MultiFunctionChart` 
+          representing the differentiable mapping in the above two charts
 
         EXAMPLES:
 
@@ -731,7 +730,8 @@ class DiffMapping(SageObject):
 
         INPUT:
     
-        - ``p`` -- point on the start domain (type: :class:`Point`)
+        - ``p`` -- point on the start domain (type: 
+          :class:`~sage.geometry.manifolds.point.Point`)
         - ``chart1`` -- (default: None) chart in which the coordinates of p 
           are to be considered; if none is provided, a chart in which both p's 
           coordinates and the expression of ``self`` are known is searched, 
@@ -742,7 +742,8 @@ class DiffMapping(SageObject):
         
         OUTPUT:
 
-        - image of the point by the mapping (type: :class:`Point`)
+        - image of the point by the mapping (type: 
+          :class:`~sage.geometry.manifolds.point.Point`)
 
         EXAMPLES:
         
@@ -819,16 +820,18 @@ class DiffMapping(SageObject):
         
         INPUT:
         
-        - ``tensor`` -- instance of :class:`TensorField` representing a fully 
-          covariant tensor field `T` on the *arrival* domain, i.e. a tensor 
-          field of type (0,p), with p a positive or zero integer. The case p=0 
-          corresponds to a scalar field.
+        - ``tensor`` -- instance of class 
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField` 
+          representing a fully covariant tensor field `T` on the *arrival* 
+          domain, i.e. a tensor field of type (0,p), with p a positive or 
+          zero integer. The case p=0 corresponds to a scalar field.
           
         OUTPUT:
         
-        - instance of :class:`TensorField` representing a fully 
-          covariant tensor field on the *start* domain that is the 
-          pullback of `T` given by ``self``. 
+        - instance of class
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField` 
+          representing a fully covariant tensor field on the *start* domain 
+          that is the pullback of `T` given by ``self``. 
           
         EXAMPLES:
         
@@ -850,7 +853,7 @@ class DiffMapping(SageObject):
             
         Pullback on `S^2` of the standard Euclidean metric on `R^3`::
                 
-            sage: g = SymBilinFormField(n, 'g')
+            sage: g = n.sym_bilin_form_field('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, 1, 1
             sage: g.view()
             g = dx*dx + dy*dy + dz*dz
@@ -861,7 +864,7 @@ class DiffMapping(SageObject):
 
         Pullback on `S^2` of a 3-form on `R^3`::
                 
-            sage: a = DiffForm(n, 3, 'A')
+            sage: a = n.diff_form(3, 'A')
             sage: a[1,2,3] = f 
             sage: a.view()
             A = x*y*z dx/\dy/\dz
@@ -873,8 +876,11 @@ class DiffMapping(SageObject):
         """
         from scalarfield import ScalarField
         from vectorframe import CoordFrame
-        from rank2field import SymBilinFormField
-        from diffform import DiffForm, OneForm
+        from diffform import OneFormParal, DiffFormParal
+        from rank2field import SymBilinFormFieldParal
+        from tensorfield import TensorFieldParal
+        from sage.tensor.modules.comp import Components, CompWithSym, \
+                                                 CompFullySym, CompFullyAntiSym
 
         #!# if not isinstance(tensor, TensorField):
         #    raise TypeError("The argument 'tensor' must be a tensor field.")
@@ -908,19 +914,25 @@ class DiffMapping(SageObject):
         else:
             # Case of tensor field of rank >= 1
             # ---------------------------------
-            if isinstance(tensor, OneForm):
-                resu = OneForm(dom1, name=resu_name, 
-                               latex_name=resu_latex_name)
-            elif isinstance(tensor, DiffForm):
-                resu = DiffForm(dom1, ncov, name=resu_name, 
-                                latex_name=resu_latex_name)
-            elif isinstance(tensor, SymBilinFormField):
-                resu = SymBilinFormField(dom1, name=resu_name, 
-                                         latex_name=resu_latex_name)                
+            #!# What follows is valid only if dom2 and dom1 are parallelizable:
+            fmodule1 = dom1.vector_field_module()
+            ring1 = fmodule1.ring
+            si1 = fmodule1.sindex
+            of1 = fmodule1.output_formatter
+            si2 = dom2.manifold.sindex
+            if isinstance(tensor, OneFormParal):
+                resu = OneFormParal(fmodule1, name=resu_name, 
+                                                    latex_name=resu_latex_name)
+            elif isinstance(tensor, DiffFormParal):
+                resu = DiffFormParal(fmodule1, ncov, name=resu_name, 
+                                                    latex_name=resu_latex_name)
+            elif isinstance(tensor, SymBilinFormFieldParal):
+                resu = SymBilinFormFieldParal(fmodule1, name=resu_name, 
+                                                    latex_name=resu_latex_name)                
             else:
-                resu = TensorField(dom1, 0, ncov, name=resu_name, 
-                                   latex_name=resu_latex_name, sym=tensor.sym,
-                                   antisym=tensor.antisym)
+                resu = TensorFieldParal(fmodule1, (0,ncov), name=resu_name, 
+                                    latex_name=resu_latex_name, sym=tensor.sym,
+                                    antisym=tensor.antisym)
             for frame2 in tensor.components:
                 if isinstance(frame2, CoordFrame):
                     chart2 = frame2.chart
@@ -930,20 +942,27 @@ class DiffMapping(SageObject):
                             frame1 = chart1.frame
                             tcomp = tensor.components[frame2]
                             if isinstance(tcomp, CompFullySym):
-                                ptcomp = CompFullySym(frame1, ncov)
+                                ptcomp = CompFullySym(ring1, frame1, ncov, 
+                                                      start_index=si1, 
+                                                      output_formatter=of1)
                             elif isinstance(tcomp, CompFullyAntiSym):
-                                ptcomp = CompFullyAntiSym(frame1, ncov)
+                                ptcomp = CompFullyAntiSym(ring1, frame1, ncov,
+                                                          start_index=si1, 
+                                                          output_formatter=of1)
                             elif isinstance(tcomp, CompWithSym):
-                                ptcomp = CompWithSym(frame1, ncov, sym=tcomp.sym, 
+                                ptcomp = CompWithSym(ring1, frame1, ncov, 
+                                                     start_index=si1, 
+                                                     output_formatter=of1,
+                                                     sym=tcomp.sym, 
                                                      antisym=tcomp.antisym)
                             else:
-                                ptcomp = Components(frame1, ncov)
+                                ptcomp = Components(ring1, frame1, ncov,
+                                                    start_index=si1, 
+                                                    output_formatter=of1)
                             phi = self.coord_expression[(chart1, chart2)]
                             jacob = phi.jacobian()
                             # X2 coordinates expressed in terms of X1 ones via the mapping:
                             coord2_1 = phi(*(chart1.xx)) 
-                            si1 = dom1.manifold.sindex
-                            si2 = dom2.manifold.sindex
                             for ind_new in ptcomp.non_redundant_index_generator(): 
                                 res = 0 
                                 for ind_old in dom2.manifold.index_generator(ncov): 
@@ -1041,26 +1060,26 @@ class Diffeomorphism(DiffMapping):
         
         EXAMPLES:
         
-            The inverse of a rotation in the Euclidean plane::
-            
-                sage: m = Manifold(2, 'R^2', r'\RR^2')
-                sage: c_cart.<x,y> = m.chart('x y')
-                sage: # A pi/3 rotation around the origin:
-                sage: rot = m.diffeomorphism(m, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
-                sage: rot.inverse() 
-                diffeomorphism 'R^(-1)' on the 2-dimensional manifold 'R^2'
-                sage: rot.inverse().view()
-                R^(-1): R^2 --> R^2, (x, y) |--> (1/2*sqrt(3)*y + 1/2*x, -1/2*sqrt(3)*x + 1/2*y)
+        The inverse of a rotation in the Euclidean plane::
+        
+            sage: m = Manifold(2, 'R^2', r'\RR^2')
+            sage: c_cart.<x,y> = m.chart('x y')
+            sage: # A pi/3 rotation around the origin:
+            sage: rot = m.diffeomorphism(m, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
+            sage: rot.inverse() 
+            diffeomorphism 'R^(-1)' on the 2-dimensional manifold 'R^2'
+            sage: rot.inverse().view()
+            R^(-1): R^2 --> R^2, (x, y) |--> (1/2*sqrt(3)*y + 1/2*x, -1/2*sqrt(3)*x + 1/2*y)
 
-            Checking that applying successively the diffeomorphism and its 
-            inverse results in the identity::
-            
-                sage: (a, b) = var('a b')
-                sage: p = m.point((a,b)) # a generic point on M
-                sage: q = rot(p)
-                sage: p1 = rot.inverse()(q)
-                sage: p1 == p 
-                True
+        Checking that applying successively the diffeomorphism and its 
+        inverse results in the identity::
+        
+            sage: (a, b) = var('a b')
+            sage: p = m.point((a,b)) # a generic point on M
+            sage: q = rot(p)
+            sage: p1 = rot.inverse()(q)
+            sage: p1 == p 
+            True
 
         """
         from sage.symbolic.ring import SR

@@ -388,6 +388,31 @@ class Manifold(OpenDomain):
                         ind[pos] = si
                         ret = 1
 
+    def submanifold(self, dim, name, latex_name=None, start_index=0):
+        r""" 
+        Construct a submanifold of ``self``
+        
+        See class :class:`~sage.geometry.manifolds.submanifolds.Submanifold`
+        for a complete documentation. 
+        
+        INPUT:
+    
+        - ``dim`` -- dimension of the submanifold
+        - ``name`` -- name given to the submanifold 
+        - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
+          submanifold
+        - ``start_index`` -- (default: 0) lower bound of the range of indices 
+          on the submanifold
+          
+        OUTPUT:
+        
+        - instance of class 
+          :class:`~sage.geometry.manifolds.submanifolds.Submanifold`
+        
+        """
+        from submanifold import Submanifold
+        return Submanifold(self, dim, name, latex_name=latex_name, 
+                           start_index=start_index)
        
 #******************************************************************************
 

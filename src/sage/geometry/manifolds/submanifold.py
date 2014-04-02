@@ -17,13 +17,13 @@ into a differentiable manifold `M` is a differentiable mapping
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013): initial version
+- Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
         
 """
 
 #******************************************************************************
-#       Copyright (C) 2013 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -56,10 +56,10 @@ class Submanifold(Manifold):
     
         sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
         sage: c_cart.<x,y,z> = M.chart('x y z')   # Cartesian coordinates on R^3
-        sage: S = Submanifold(M, 2, 'S^2', start_index=1) 
+        sage: S = M.submanifold(2, 'S^2', start_index=1) 
         sage: U = S.open_domain('U') # U = S minus two poles
         sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coordinates on U
-        sage: emb = DiffMapping(S, M, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='i', latex_name=r'\iota') # the inclusion as an embedding S --> M
+        sage: emb = S.diff_mapping(M, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='i', latex_name=r'\iota') # the inclusion as an embedding S --> M
         sage: S.def_embedding(emb)
         sage: S
         2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
@@ -68,9 +68,9 @@ class Submanifold(Manifold):
 
     A helix as a submanifold of `\RR^3`::
     
-        sage: H = Submanifold(M, 1, 'H')
+        sage: H = M.submanifold(1, 'H')
         sage: c_param.<t> = H.chart('t')
-        sage: emb = DiffMapping(H, M, [cos(t), sin(t), t], name='i', latex_name=r'\iota')
+        sage: emb = H.diff_mapping(M, [cos(t), sin(t), t], name='i', latex_name=r'\iota')
         sage: H.def_embedding(emb)
         sage: H
         1-dimensional submanifold 'H' of the 3-dimensional manifold 'R^3'
@@ -177,26 +177,26 @@ class Submanifold(Manifold):
             
             sage: M = Manifold(3, 'R^3', r'\RR^3')
             sage: c_cart.<x,y,z> = M.chart('x y z')  # Cartesian coordinates on R^3
-            sage: T = Submanifold(M, 2, 'T')
+            sage: T = M.submanifold(2, 'T')
             sage: W = T.open_domain('W') # Domain of the torus covered by the cyclic coordinates (u,v)
             sage: c_uv.<u,v> = W.chart(r'u:(0,2*pi) v:(0,2*pi)') # cyclic coordinates on T
-            sage: T.def_embedding(DiffMapping(T, M, [(2+cos(u))*cos(v),(2+cos(u))*sin(v),sin(u)]))
+            sage: T.def_embedding(T.diff_mapping(M, [(2+cos(u))*cos(v),(2+cos(u))*sin(v),sin(u)]))
             sage: T.plot([(0,2*pi), (0,2*pi)], aspect_ratio=1)
 
         Plot of a helix embedded in `\RR^3`::
             
-            sage: H = Submanifold(M, 1, 'H')
+            sage: H = M.submanifold(1, 'H')
             sage: c_param.<t> = H.chart('t')
-            sage: H.def_embedding(DiffMapping(H, M, [cos(t), sin(t), t]))
+            sage: H.def_embedding(H.diff_mapping(M, [cos(t), sin(t), t]))
             sage: H.plot([0,20])
            
         Plot of an Archimedean spiral embedded in `\RR^2`::
         
             sage: M = Manifold(2, 'R^2', r'\RR^2')
             sage: c_cart.<x,y> = M.chart('x y')
-            sage: S = Submanifold(M, 1, 'S')
+            sage: S = M.submanifold(1, 'S')
             sage: c_param.<t> = S.chart('t')
-            sage: S.def_embedding(DiffMapping(S, M, [t*cos(t), t*sin(t)]))
+            sage: S.def_embedding(S.diff_mapping(M, [t*cos(t), t*sin(t)]))
             sage: S.plot([0,40])
 
         """
@@ -244,10 +244,10 @@ class Submanifold(Manifold):
         
             sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
             sage: c_cart.<x,y,z> = M.chart('x y z') # Cartesian coordinates on R^3
-            sage: S = Submanifold(M, 2, 'S^2', start_index=1)
+            sage: S = M.submanifold(2, 'S^2', start_index=1)
             sage: U = S.open_domain('U') # U = S minus two poles
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coordinates on U
-            sage: S.def_embedding( DiffMapping(S, M, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='i', latex_name=r'\iota') )
+            sage: S.def_embedding( S.diff_mapping(M, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='i', latex_name=r'\iota') )
             sage: v = VectorField(S, 'v') 
             sage: v[2] = 1 ; v.view()  # azimuthal vector field on S^2
             v = d/dph
@@ -263,9 +263,9 @@ class Submanifold(Manifold):
 
         Pushforward of a tangent vector to a helix, submanifold of `\RR^3`::
         
-            sage: H = Submanifold(M, 1, 'H')
+            sage: H = M.submanifold(1, 'H')
             sage: c_t.<t> = H.chart('t')
-            sage: H.def_embedding( DiffMapping(H, M, [cos(t), sin(t), t], name='iH') )
+            sage: H.def_embedding( H.diff_mapping(M, [cos(t), sin(t), t], name='iH') )
             sage: u = VectorField(H, 'u')
             sage: u[0] = 1 ; u.view() # tangent vector to the helix
             u = d/dt

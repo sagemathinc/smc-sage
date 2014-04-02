@@ -351,6 +351,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
                 self.express = {chart: FunctionChart(chart, coord_expression)}
         else:
             self.express = {}
+        self.tensor_type = (0,0)
         self._init_derived()   # initialization of derived quantities
 
 
