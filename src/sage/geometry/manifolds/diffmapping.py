@@ -915,6 +915,9 @@ class DiffMapping(SageObject):
             # Case of tensor field of rank >= 1
             # ---------------------------------
             #!# What follows is valid only if dom2 and dom1 are parallelizable:
+            if not dom1.is_manifestly_parallelizable():
+                raise NotImplementedError("Pullback to non-parallelizable " + 
+                                          "domains not implemented yet")
             fmodule1 = dom1.vector_field_module()
             ring1 = fmodule1.ring
             si1 = fmodule1.sindex

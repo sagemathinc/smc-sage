@@ -59,12 +59,12 @@ class Submanifold(Manifold):
         sage: S = M.submanifold(2, 'S^2', start_index=1) 
         sage: U = S.open_domain('U') # U = S minus two poles
         sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coordinates on U
-        sage: emb = S.diff_mapping(M, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='i', latex_name=r'\iota') # the inclusion as an embedding S --> M
+        sage: emb = U.diff_mapping(M, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='i', latex_name=r'\iota') # the inclusion as an embedding S --> M
         sage: S.def_embedding(emb)
         sage: S
         2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
         sage: S.embedding.view()
-        i: S^2 --> R^3, (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
+        i: U --> R^3, (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
 
     A helix as a submanifold of `\RR^3`::
     
@@ -92,7 +92,7 @@ class Submanifold(Manifold):
         sage: dX[1]
         1-form 'dx' on the 3-dimensional manifold 'R^3'
         sage: S.embedding.pullback(dX[1])
-        1-form 'i_*(dx)' on the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
+        1-form 'i_*(dx)' on the open domain 'U' on the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
         sage: S.embedding.pullback(dX[1]).view()
         i_*(dx) = cos(ph)*cos(th) dth - sin(ph)*sin(th) dph
         sage: S.embedding.pullback(dX[2]).view()
@@ -275,16 +275,15 @@ class Submanifold(Manifold):
             iH_*(u) = -sin(t) d/dx + cos(t) d/dy + d/dz
 
         """
-        from component import Components, CompWithSym, CompFullySym, \
-                              CompFullyAntiSym
-        if tensor.manifold != self:
-            raise TypeError("The tensor field is not defined on the " + 
-                            "submanifold.")
+        from sage.tensor.modules.comp import Components, CompWithSym, \
+                                                 CompFullySym, CompFullyAntiSym
+        dom1 = tensor.domain
+        if not dom1.is_subdomain(self):
+            raise TypeError("The tensor field is not defined on " + str(self))
         (ncon, ncov) = tensor.tensor_type
         if ncov != 0:
             raise TypeError("The pushforward cannot be taken on a tensor " + 
                             "with some covariant part.")
-        dom1 = tensor.domain
         embed = self.embedding
         resu_name = None ; resu_latex_name = None
         if embed.name is not None and tensor.name is not None:
@@ -324,18 +323,28 @@ class Submanifold(Manifold):
                 "the pushforward of the tensor field.")
         frame1 = chart1.frame
         frame2 = chart2.frame
+        dom2 = frame2.domain
+        fmodule2 = dom1.vector_field_module(dom2)
+        ring2 = fmodule2.ring
+        si1 = dom1.manifold.sindex
+        si2 = fmodule2.sindex
+        of2 = fmodule2.output_formatter
         # Computation at the component level:
         tcomp = tensor.components[frame1]
         # Construction of the pushforward components (ptcomp):
         if isinstance(tcomp, CompFullySym):
-            ptcomp = CompFullySym(frame2, ncon)
+            ptcomp = CompFullySym(ring2, frame2, ncon, start_index=si2, 
+                                  output_formatter=of2)
         elif isinstance(tcomp, CompFullyAntiSym):
-            ptcomp = CompFullyAntiSym(frame2, ncon)
+            ptcomp = CompFullyAntiSym(ring2, frame2, ncon, start_index=si2, 
+                                      output_formatter=of2)
         elif isinstance(tcomp, CompWithSym):
-            ptcomp = CompWithSym(frame2, ncon, sym=tcomp.sym, 
+            ptcomp = CompWithSym(ring2, frame2, ncon, start_index=si2, 
+                                 output_formatter=of2, sym=tcomp.sym, 
                                  antisym=tcomp.antisym)
         else:
-            ptcomp = Components(frame2, ncon)
+            ptcomp = Components(ring2, frame2, ncon, start_index=si2, 
+                                output_formatter=of2)
         phi = embed.coord_expression[(chart1, chart2)]
         jacob = phi.jacobian()
         # X2 coordinates expressed in terms of X1 ones via the mapping:
@@ -350,7 +359,6 @@ class Submanifold(Manifold):
                     t *= jacob[ind_new[i]-si2][ind_old[i]-si1]
                 res += t
             ptcomp[ind_new] = res
-        resu = ptcomp.tensor_field((ncon, 0), name=resu_name, 
-                                                    latex_name=resu_latex_name)
-        resu.domain = self.domain_amb # the domain is resctrited to the submanifold
+        resu = fmodule2.tensor_from_comp((ncon, 0), ptcomp, name=resu_name, 
+                                         latex_name=resu_latex_name)
         return resu

@@ -1248,7 +1248,7 @@ class OpenDomain(Domain):
         if ambient_domain is None:
             ambient_domain = self
         if ambient_domain.name not in self._vector_field_modules:
-            #!# if self.is_manifestly_parallelizable():
+            #!# if ambient_domain.is_manifestly_parallelizable():
             self._vector_field_modules[ambient_domain.name] = \
                      VectorFieldFreeModule(self, ambient_domain=ambient_domain)
             # else:
@@ -1675,7 +1675,7 @@ class OpenDomain(Domain):
             raise NotImplementedError("IdentityMap not implemented yet")
 
 
-    def vector_frame(self, symbol, latex_symbol=None): 
+    def vector_frame(self, symbol, latex_symbol=None, ambient_domain=None): 
         r"""
         Define a vector frame on the domain.
         
@@ -1691,6 +1691,9 @@ class OpenDomain(Domain):
           of the frame
         - ``latex_symbol`` -- (default: None) symbol to denote a generic vector 
           of the frame; if None, the value of ``symbol`` is used. 
+        - ``ambient_domain`` -- (default: None) manifold open subset on which 
+          the vectors of the frame take their values; if none is provided, 
+          ``ambient_domain`` is set to ``self``.
 
         OUTPUT:
         
@@ -1716,7 +1719,8 @@ class OpenDomain(Domain):
 
         """
         from vectorframe import VectorFrame 
-        return VectorFrame(self, symbol, latex_symbol)
+        return VectorFrame(self, symbol, latex_symbol=latex_symbol,
+                           ambient_domain=ambient_domain)
 
     def metric(self, name, signature=None, latex_name=None): 
         r"""

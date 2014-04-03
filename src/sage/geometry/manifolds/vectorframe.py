@@ -168,6 +168,9 @@ class VectorFrame(FreeModuleBasis):
       the frame
     - ``latex_symbol`` -- (default: None) symbol to denote a generic vector of
       the frame; if None, the value of ``symbol`` is used. 
+    - ``ambient_domain`` -- (default: None) manifold open subset on which 
+      the vectors of the frame take their values; if none is provided, 
+      ``ambient_domain`` is set to ``domain``.
 
     EXAMPLES:
 
@@ -189,11 +192,15 @@ class VectorFrame(FreeModuleBasis):
 
     
     """
-    def __init__(self, domain, symbol, latex_symbol=None):
+    def __init__(self, domain, symbol, latex_symbol=None, ambient_domain=None):
+        if ambient_domain is None:
+            ambient_domain = domain
         self.domain = domain
+        self.ambient_domain = ambient_domain
         self.manifold = domain.manifold
-        FreeModuleBasis.__init__(self, domain.vector_field_module(), symbol, 
-                                 latex_symbol=latex_symbol)
+        FreeModuleBasis.__init__(self, 
+                                 domain.vector_field_module(ambient_domain), 
+                                 symbol, latex_symbol=latex_symbol)
         # Redefinition of the name and the LaTeX name:
         self.name = "(" + self.domain.name + ", " + self.name + ")"
         self.latex_name = r"\left(" + self.domain.latex_name + ", " + \
@@ -231,7 +238,11 @@ class VectorFrame(FreeModuleBasis):
         r"""
         String representation of the object.
         """
-        return "vector frame " + self.name
+        description = "vector frame " + self.name
+        if self.ambient_domain != self.domain:
+            description += " with values on the " + str(self.ambient_domain)
+        return description
+        
 
     def _init_dual_basis(self):
         r""" 
@@ -257,7 +268,8 @@ class VectorFrame(FreeModuleBasis):
         
         INPUT:
         
-        - ``change_of_frame`` -- instance of :class:`AutomorphismField`
+        - ``change_of_frame`` -- instance of 
+          :class:`~sage.geometry.rank2field.AutomorphismField`
           describing the automorphism `P` that relates the current frame 
           `(e_i)` (described by ``self``) to the new frame `(n_i)` according
           to `n_i = P(e_i)`
@@ -339,7 +351,8 @@ class VectorFrame(FreeModuleBasis):
         if not domain.is_subdomain(self.domain):
             raise TypeError("The argument 'domain' must be a subdomain of " + 
                             " the frame domain.")
-        res = VectorFrame(domain, symbol, latex_symbol)
+        res = VectorFrame(domain, symbol, latex_symbol=latex_symbol, 
+                          ambient_domain=self.ambient_domain)
         # Update of superframes and subframes:
         res.superframes.update(self.superframes)
         for sframe in self.superframes:
