@@ -1548,7 +1548,7 @@ class FunctionChart(SageObject):
         result = ScalarField(self.chart.domain, name=name, 
                              latex_name=latex_name)
         result.express = {self.chart: self}
-        result.coord_expression = {(self.chart, result.domain2.def_chart):
+        result.coord_expression = {(self.chart, result.codomain.def_chart):
                                 MultiFunctionChart(self.chart, self.express)}
         return result
 

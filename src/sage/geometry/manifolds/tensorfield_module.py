@@ -23,8 +23,8 @@ from tensorfield import TensorFieldParal
 class TensorFieldFreeModule(TensorFreeModule):
     r"""
     Module of tensor fields of a given type `(k,l)` along an open subset `U` 
-    of some immersed  submanifold `S` of a manifold `M` with values in 
-    a parallelizable open subset `V` of `M`. 
+    of some manifold `S` with values in a parallelizable open subset `V` of 
+    a manifold `M`.
     
     Since `V` is parallelizable, the module is a free module over `C^\infty(U)`,
     the ring of differentiable scalar fields on `U`. 
@@ -34,8 +34,8 @@ class TensorFieldFreeModule(TensorFreeModule):
 
     INPUT:
     
-    - ``vector_field_module`` -- free module `X(U,V)` of vector fields along
-      `U` with values on `V`
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector 
+      fields along `U` associated with the mapping `Phi:\; U \rightarrow V`. 
     - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank and 
       `l` the covariant rank
     
@@ -46,23 +46,23 @@ class TensorFieldFreeModule(TensorFreeModule):
 
     def __init__(self, vector_field_module, tensor_type):
         domain = vector_field_module.domain
-        ambient_domain = vector_field_module.ambient_domain
+        mapping = vector_field_module.mapping
         kcon = tensor_type[0]
         lcov = tensor_type[1]
         name = "TF^(" + str(kcon) + "," + str(lcov) + ")(" + domain.name
         latex_name = "TF^(" + str(kcon) + "," + str(lcov) + r")\left(" + \
                      domain.latex_name
-        if ambient_domain is domain:
-            ambient_domain = domain
+        if mapping is None:
             name += ")" 
             latex_name += r"\right)" 
         else:
-            name += "," + ambient_domain.name + ")" 
-            latex_name += "," + ambient_domain.latex_name + r"\right)" 
+            name += "," + mapping.name + ")" 
+            latex_name += "," + mapping.latex_name + r"\right)" 
         TensorFreeModule.__init__(self, vector_field_module, tensor_type, 
                                   name=name, latex_name=latex_name)
         self.domain = domain
-        self.ambient_domain = ambient_domain
+        self.mapping = mapping
+        self.ambient_domain = vector_field_module.ambient_domain
 
     def _repr_(self):
         r"""
@@ -74,10 +74,10 @@ class TensorFieldFreeModule(TensorFreeModule):
         description += "of type-(%s,%s)" % \
                            (str(self.tensor_type[0]), str(self.tensor_type[1]))
         description += " tensors fields "
-        if self.domain == self.ambient_domain:
+        if self.mapping is None:
             description += "on the " + str(self.domain)
         else:
-            description += "along the " + str(self.domain) + " within the " + \
-                           str(self.ambient_domain)
+            description += "along the " + str(self.domain) + \
+                           " mapped into the " + str(self.ambient_domain)
         return description
 

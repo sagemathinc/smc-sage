@@ -23,39 +23,66 @@ from vectorfield import VectorFieldParal
 
 class VectorFieldFreeModule(FiniteFreeModule):
     r"""
-    Module of vector fields along an open subset `U` of some immersed 
-    submanifold `S` of a manifold `M` with values in a parallelizable
-    open subset `V` of `M`. 
+    Module of vector fields along an open subset `U` of some manifold `S`
+    with values in a parallelizable open subset `V` of a manifold `M`.
     
-    Since `V` is parallelizable, the module is a free module over `C^\infty(U)`,
-    the ring of differentiable scalar fields on `U`. 
-    
-    The standard case of vector fields *on* a manifold corresponds to 
-    `U=V` (and hence `S=M`).
+    Given a differential mapping
 
+    .. MATH::
+
+        \Phi:\ U\subset \mathcal{S} \longrightarrow V\subset \mathcal{M}
+    
+    the module `\mathcal{X}(U,\Phi)` is the set of all vector fields of 
+    the type
+
+    .. MATH::
+
+        v:\ U  \longrightarrow TM
+        
+    such that 
+
+    .. MATH::
+
+        \forall p in U,\ v(p) \in T_{\Phi(p)}M
+        
+    
+    Since `V` is parallelizable, the `\mathcal{X}(U,\Phi)` is a free module 
+    over `C^\infty(U)`, the ring of differentiable scalar fields on `U`.
+    Its rank is the dimension of `M`. 
+    
+    The standard case of vector fields *on* a manifold corresponds to `S=M`, 
+    `U=V` and `\Phi = \mathrm{Id}`. 
+
+    Another common case is when `Phi` is an immersion.
+    
     INPUT:
     
     - ``domain`` -- open subset `U` on which the vector fields are defined
-    - ``ambient_domain`` -- (default: None) parallelizable open subset `V` 
-      of the ambient manifold `M`; if None, it is set to ``domain``.
+    - ``mapping`` -- (default: None) differential mapping 
+      `Phi:\ U \rightarrow V` 
+      (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`); 
+      if none is provided, the identity is assumed (case of vector fields *on* 
+      `U`)
     
     """
     
     Element = VectorFieldParal
 
-    def __init__(self, domain, ambient_domain=None):
+    def __init__(self, domain, mapping=None):
+        self.domain = domain
         name = "X(" + domain.name
         latex_name = r"\mathcal{X}\left(" + domain.latex_name
-        if ambient_domain is None or ambient_domain is domain:
-            ambient_domain = domain
+        if mapping is None:
+            self.mapping = None
+            self.ambient_domain = domain
             name += ")" 
-            latex_name += r"\right)" 
+            latex_name += r"\right)"
         else:
-            name += "," + ambient_domain.name + ")" 
-            latex_name += "," + ambient_domain.latex_name + r"\right)" 
-        self.domain = domain
-        self.ambient_domain = ambient_domain
-        manif = ambient_domain.manifold
+            self.mapping = mapping
+            self.ambient_domain = mapping.codomain
+            name += "," + self.mapping.name + ")" 
+            latex_name += "," + self.mapping.latex_name + r"\right)" 
+        manif = self.ambient_domain.manifold
         FiniteFreeModule.__init__(self, domain.scalar_field_ring(), 
                                   manif.dim, name=name, latex_name=latex_name, 
                                   start_index=manif.sindex,
@@ -71,11 +98,11 @@ class VectorFieldFreeModule(FiniteFreeModule):
         if self.name is not None:
             description += self.name + " "
         description += "of vector fields "
-        if self.domain == self.ambient_domain:
+        if self.mapping is None:
             description += "on the " + str(self.domain)
         else:
-            description += "along the " + str(self.domain) + " within the " + \
-                           str(self.ambient_domain)
+            description += "along the " + str(self.domain) + \
+                           " mapped into the " + str(self.ambient_domain)
         return description
 
     def tensor_module(self, k, l):
@@ -138,7 +165,8 @@ class VectorFieldFreeModule(FiniteFreeModule):
             for other in self.known_bases:
                 if symbol == other.symbol:
                     return other
-            return VectorFrame(self.domain, symbol, latex_symbol=latex_symbol)
+            return VectorFrame(self.domain, symbol, latex_symbol=latex_symbol,
+                               mapping=self.mapping)
 
     def tensor(self, tensor_type, name=None, latex_name=None, sym=None, 
                antisym=None):

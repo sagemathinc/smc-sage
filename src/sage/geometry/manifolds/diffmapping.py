@@ -92,25 +92,45 @@ class DiffMapping(SageObject):
     r"""
     Class for differentiable mappings between manifolds.
 
+    This class implements differentiable mappings of the type
+    
+    .. MATH::
+    
+        \Phi: U\subset \mathcal{M} \longrightarrow \mathcal{N}
+    
+    where  `U` is a open subset of some differentiable manifold `\mathcal{M}` 
+    and `\mathcal{N}` is a differentiable manifold.
+    In what follows, `\mathcal{M}` is called the *start manifold* and 
+    `\mathcal{N}`the *arrival manifold*. 
+
     INPUT:
     
-    - ``domain1`` -- domain on the start manifold 
-    - ``domain2`` -- domain on the arrival manifold 
+    - ``domain`` -- mapping's domain `U` (open subset of the start 
+      manifold)
+    - ``codomain`` -- mapping's codomain (the arrival manifold or some subset
+      of it)
     - ``coord_functions`` -- (default: None) the coordinate symbolic expression 
-      of the mapping: list (or tuple) of the coordinates of the image expressed 
-      in terms of the coordinates of the considered point; if the dimension of 
-      the arrival manifold is 1, a single expression is expected 
-      (not a list with a single element)
-    - ``chart1`` -- (default: None) hart in which the 
-      coordinates are given on domain1; if none is provided, the coordinates 
-      are assumed to refer to domain's default chart
-    - ``chart2`` -- (default: None) chart in which the 
-      coordinates are given on domain2; if none is provided, the coordinates 
-      are assumed to refer to the domain's default chart
+      of the mapping in some pair of charts: list (or tuple) of the 
+      coordinates of the image expressed in terms of the coordinates of 
+      the considered point; if the dimension of the arrival manifold is 1, 
+      a single expression is expected (not a list with a single element)
+    - ``chart1`` -- (default: None) chart on domain `U` in which the 
+      coordinates are given for ``coord_functions``; if none is provided, the 
+      coordinates are assumed to refer to domain's default chart
+    - ``chart2`` -- (default: None) chart on the codomain for the coordinates
+      on the arrival manifold for ``coord_functions``; if none is provided, the 
+      coordinates are assumed to refer to the codomain's default chart
     - ``name`` -- (default: None) name given to the differentiable mapping
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
       differentiable mapping; if none is provided, the LaTeX symbol is set to 
       ``name``
+    
+    .. NOTE:
+    
+        If ``chart1`` does not cover the entire domain `U`, the argument
+        ``coord_functions` is not not sufficient to fully specify the 
+        differential mapping; further coordinate expressions, in other charts,
+        can be subsequently added by means of the method :meth:`add_expr`
     
     EXAMPLES:
     
@@ -158,26 +178,26 @@ class DiffMapping(SageObject):
         -1
 
     """
-    def __init__(self, domain1, domain2, coord_functions=None, chart1=None, 
+    def __init__(self, domain, codomain, coord_functions=None, chart1=None, 
                  chart2=None, name=None, latex_name=None): 
-        if not isinstance(domain1, Domain):
-            raise TypeError("The argument domain1 must be a domain.")
-        if not isinstance(domain2, Domain):
-            raise TypeError("The argument domain2 must be a domain.")
-        self.domain1 = domain1
-        self.domain2 = domain2
+        if not isinstance(domain, Domain):
+            raise TypeError("The argument domain must be a domain.")
+        if not isinstance(codomain, Domain):
+            raise TypeError("The argument codomain must be a domain.")
+        self.domain = domain
+        self.codomain = codomain
         if coord_functions is not None:
-            if chart1 is None: chart1 = domain1.def_chart
-            if chart2 is None: chart2 = domain2.def_chart
-            if chart1 not in self.domain1.atlas:
+            if chart1 is None: chart1 = domain.def_chart
+            if chart2 is None: chart2 = codomain.def_chart
+            if chart1 not in self.domain.atlas:
                 raise ValueError("The " + str(chart1) +
                                     " has not been defined on the " + 
-                                    str(self.domain1))
-            if chart2 not in self.domain2.atlas:
+                                    str(self.domain))
+            if chart2 not in self.codomain.atlas:
                 raise ValueError("The " + str(chart2) +
                                     " has not been defined on the " + 
-                                    str(self.domain2))
-            n2 = self.domain2.manifold.dim
+                                    str(self.codomain))
+            n2 = self.codomain.manifold.dim
             if n2 > 1:
                 if len(coord_functions) != n2:
                     raise ValueError(str(n2) + 
@@ -204,8 +224,8 @@ class DiffMapping(SageObject):
         description = "differentiable mapping"
         if self.name is not None:
             description += " '%s'" % self.name
-        description += " from " + str(self.domain1) + " to " + \
-                       str(self.domain2)
+        description += " from " + str(self.domain) + " to " + \
+                       str(self.codomain)
         return description
         
     def _latex_(self):
@@ -240,10 +260,10 @@ class DiffMapping(SageObject):
         
         INPUT:
         
-        - ``chart1`` -- (default: None) chart on the start domain; if None, 
-          the start domain's default chart will be used
-        - ``chart2`` -- (default: None) chart on the arrival domain; if None,
-          the arrival domain's default chart will be used
+        - ``chart1`` -- (default: None) chart on the mapping's domain; if None, 
+          the domain's default chart will be used
+        - ``chart2`` -- (default: None) chart on the mapping's codomain; if 
+          None, the codomain's default chart will be used
           
         The output is either text-formatted (console mode) or LaTeX-formatted
         (notebook mode). 
@@ -267,16 +287,16 @@ class DiffMapping(SageObject):
         from utilities import FormattedExpansion
         result = FormattedExpansion(self)
         if chart1 is None:
-            chart1 = self.domain1.def_chart
+            chart1 = self.domain.def_chart
         if chart2 is None:
-            chart2 = self.domain2.def_chart
+            chart2 = self.codomain.def_chart
         expression = self.expr(chart1, chart2)
         if self.name is None:
             symbol = ""
         else:
             symbol = self.name + ": "
-        result.txt = symbol + self.domain1.name + " --> " + \
-                     self.domain2.name + ", " + repr(chart1[:]) + " |--> " 
+        result.txt = symbol + self.domain.name + " --> " + \
+                     self.codomain.name + ", " + repr(chart1[:]) + " |--> " 
         if chart2 == chart1:
             result.txt += repr(expression)
         else:
@@ -286,8 +306,8 @@ class DiffMapping(SageObject):
         else:
             symbol = self.latex_name + ":"
         result.latex = r"\begin{array}{llcl} " + symbol + r"&" + \
-                       latex(self.domain1) + r"& \longrightarrow & " + \
-                       latex(self.domain2) + r"\\ &" + latex(chart1[:]) + \
+                       latex(self.domain) + r"& \longrightarrow & " + \
+                       latex(self.codomain) + r"\\ &" + latex(chart1[:]) + \
                        r"& \longmapsto & " 
         if chart2 == chart1:
             result.latex += latex(expression) + r"\end{array}"
@@ -307,10 +327,10 @@ class DiffMapping(SageObject):
         
         INPUT:
         
-        - ``chart1`` -- (default: None) chart on the start domain; if None, 
-          the start domain's default chart is assumed
-        - ``chart2`` -- (default: None) chart on the arrival domain; if None, 
-          the arrival domain's default chart is assumed
+        - ``chart1`` -- (default: None) chart on the mapping's domain; if None, 
+          the domain's default chart is assumed
+        - ``chart2`` -- (default: None) chart on the mapping's codomain; if 
+          None,  the codomain's default chart is assumed
 
         OUTPUT:
         
@@ -355,7 +375,7 @@ class DiffMapping(SageObject):
             functions (-1/2*(U^3 - (U - 2)*V^2 + V^3 - (U^2 + 2*U + 6)*V - 6*U)/(U - V), 1/4*(U^3 - (U + 4)*V^2 + V^3 - (U^2 - 4*U + 4)*V - 4*U)/(U - V), 1/4*(U^3 - (U - 4)*V^2 + V^3 - (U^2 + 4*U + 8)*V - 8*U)/(U - V)) on the chart (M, (U, V))
 
         """
-        dom1 = self.domain1; dom2 = self.domain2
+        dom1 = self.domain; dom2 = self.codomain
         def_chart1 = dom1.def_chart; def_chart2 = dom2.def_chart
         if chart1 is None:
             chart1 = def_chart1
@@ -449,10 +469,10 @@ class DiffMapping(SageObject):
         
         INPUT:
         
-        - ``chart1`` -- (default: None) chart on the start domain; if None, 
-          the start domain's default chart is assumed
-        - ``chart2`` -- (default: None) chart on the arrival domain; if None, 
-          the arrival domain's default chart is assumed
+        - ``chart1`` -- (default: None) chart on the mapping's domain; if None, 
+          the domain's default chart is assumed
+        - ``chart2`` -- (default: None) chart on the mapping's codomain; if 
+          None, the codomain's default chart is assumed
 
         OUTPUT:
         
@@ -530,8 +550,8 @@ class DiffMapping(SageObject):
 
         INPUT:
     
-        - ``chart1`` -- chart for the coordinates on the start domain
-        - ``chart2`` -- chart for the coordinates on the arrival domain
+        - ``chart1`` -- chart for the coordinates on the mapping's domain
+        - ``chart2`` -- chart for the coordinates on the mapping's codomain
         - ``coord_functions`` -- the coordinate symbolic expression of the 
           mapping in the above charts: list (or tuple) of the coordinates of
           the image expressed in terms of the coordinates of the considered
@@ -593,15 +613,15 @@ class DiffMapping(SageObject):
             True
                 
         """
-        if chart1 not in self.domain1.atlas:
+        if chart1 not in self.domain.atlas:
             raise ValueError("The " + str(chart1) +
-               " has not been defined on the " + str(self.domain1))
-        if chart2 not in self.domain2.atlas:
+               " has not been defined on the " + str(self.domain))
+        if chart2 not in self.codomain.atlas:
             raise ValueError("The " + str(chart2) +
-              " has not been defined on the " + str(self.domain2))
+              " has not been defined on the " + str(self.codomain))
         self.coord_expression.clear()
         self._del_derived()
-        n2 = self.domain2.manifold.dim
+        n2 = self.codomain.manifold.dim
         if n2 > 1:
             if len(coord_functions) != n2:
                 raise ValueError(str(n2) + 
@@ -621,8 +641,8 @@ class DiffMapping(SageObject):
 
         INPUT:
     
-        - ``chart1`` -- chart for the coordinates on the start domain
-        - ``chart2`` -- chart for the coordinates on the arrival domain
+        - ``chart1`` -- chart for the coordinates on the mapping's domain
+        - ``chart2`` -- chart for the coordinates on the mapping's codomain
         - ``coord_functions`` -- the coordinate symbolic expression of the 
           mapping in the above charts: list (or tuple) of the coordinates of
           the image expressed in terms of the coordinates of the considered
@@ -706,13 +726,13 @@ class DiffMapping(SageObject):
             True
                 
         """
-        if chart1 not in self.domain1.atlas:
+        if chart1 not in self.domain.atlas:
             raise ValueError("The " + str(chart1) +
-               " has not been defined on the " + str(self.domain1))
-        if chart2 not in self.domain2.atlas:
+               " has not been defined on the " + str(self.domain))
+        if chart2 not in self.codomain.atlas:
             raise ValueError("The " + str(chart2) +
-              " has not been defined on the " + str(self.domain2))
-        n2 = self.domain2.manifold.dim
+              " has not been defined on the " + str(self.codomain))
+        n2 = self.codomain.manifold.dim
         if n2 > 1:
             if len(coord_functions) != n2:
                 raise ValueError(str(n2) + 
@@ -730,15 +750,15 @@ class DiffMapping(SageObject):
 
         INPUT:
     
-        - ``p`` -- point on the start domain (type: 
+        - ``p`` -- point on the mapping's domain (type: 
           :class:`~sage.geometry.manifolds.point.Point`)
         - ``chart1`` -- (default: None) chart in which the coordinates of p 
           are to be considered; if none is provided, a chart in which both p's 
           coordinates and the expression of ``self`` are known is searched, 
-          starting from the default chart of self.domain1 will be used
+          starting from the default chart of self.domain will be used
         - ``chart2`` -- (default: None) chart in which the coordinates of the 
           image of p will be computed; if none is provided, the default chart 
-          of self.domain2 is assumed.
+          of self.codomain is assumed.
         
         OUTPUT:
 
@@ -776,13 +796,13 @@ class DiffMapping(SageObject):
     
         """
         from manifold import RealLine
-        if p not in self.domain1.manifold: 
+        if p not in self.domain.manifold: 
             raise ValueError("The point " + str(p) +
-                  " does not belong to the " + str(self.domain1.manifold))
+                  " does not belong to the " + str(self.domain.manifold))
         if chart2 is None: 
-            chart2 = self.domain2.def_chart
+            chart2 = self.codomain.def_chart
         if chart1 is None: 
-            def_chart1 = self.domain1.def_chart
+            def_chart1 = self.domain.def_chart
             if def_chart1 in p.coordinates and \
                         (def_chart1, chart2) in self.coord_expression:
                 chart1 = def_chart1
@@ -798,7 +818,7 @@ class DiffMapping(SageObject):
         coord_map = self.coord_expression[(chart1, chart2)]
         y = coord_map(*(p.coordinates[chart1])) 
         
-        if self.domain2.manifold is RealLine:   # special case of a mapping to R
+        if self.codomain.manifold is RealLine:   # special case of a mapping to R
             return y[0]
         else:
             if p.name is None or self.name is None:
@@ -811,7 +831,7 @@ class DiffMapping(SageObject):
                 res_latex_name = self.latex_name + r'\left(' + p.latex_name + \
                                  r'\right)'
             
-            return Point(self.domain2.manifold, y, chart2, name=res_name, 
+            return Point(self.codomain.manifold, y, chart2, name=res_name, 
                          latex_name=res_latex_name)  #!# check
         
     def pullback(self, tensor):
@@ -822,15 +842,15 @@ class DiffMapping(SageObject):
         
         - ``tensor`` -- instance of class 
           :class:`~sage.geometry.manifolds.tensorfield.TensorField` 
-          representing a fully covariant tensor field `T` on the *arrival* 
-          domain, i.e. a tensor field of type (0,p), with p a positive or 
+          representing a fully covariant tensor field `T` on the mapping's
+          codomain, i.e. a tensor field of type (0,p), with p a positive or 
           zero integer. The case p=0 corresponds to a scalar field.
           
         OUTPUT:
         
         - instance of class
           :class:`~sage.geometry.manifolds.tensorfield.TensorField` 
-          representing a fully covariant tensor field on the *start* domain 
+          representing a fully covariant tensor field on the mapping's domain 
           that is the pullback of `T` given by ``self``. 
           
         EXAMPLES:
@@ -884,8 +904,8 @@ class DiffMapping(SageObject):
 
         #!# if not isinstance(tensor, TensorField):
         #    raise TypeError("The argument 'tensor' must be a tensor field.")
-        dom1 = self.domain1
-        dom2 = self.domain2
+        dom1 = self.domain
+        dom2 = self.codomain
         if not tensor.domain.is_subdomain(dom2):
             raise TypeError("The tensor field is not defined on the mapping " +
                             "arrival domain.")
@@ -985,32 +1005,54 @@ class Diffeomorphism(DiffMapping):
     r"""
     Class for manifold diffeomorphisms.
 
+    A *diffeomorphism* is a differential mapping 
+    
+    .. MATH::
+    
+        \Phi: U\subset \mathcal{M} \longrightarrow \Phi(U)\subset\mathcal{N}
+        
+    where  `U` is a open subset of some differentiable manifold `\mathcal{M}` 
+    and `\mathcal{N}` is a differentiable manifold, such that $\Phi(U) is 
+    an open subset of `\mathcal{N}`, $\Phi$ is invertible on its image and
+    both `\Phi` and `\Phi^{-1}` are differentiable.
+
     INPUT:
     
-    - ``domain1`` -- domain on the start manifold 
-    - ``domain2`` -- domain on the arrival manifold 
-    - ``coord_functions`` -- the coordinate symbolic expression of the mapping: 
-      list (or tuple) of the coordinates of the image expressed in terms of the
-      coordinates of the considered point
-    - ``chart1`` -- (default: None) chart in which the coordinates are given on
-      domain1; if none is provided, the coordinates are assumed to refer to the
-      domain's default chart
-    - ``chart2`` -- (default: None) chart in which the coordinates are given on
-      domain2; if none is provided, the coordinates are assumed to refer to the
-      domain's default chart
-    - ``name`` -- (default: None) name given to the differentiable mapping
+    - ``domain`` -- domain `U` of the diffeomorphism (open subset of the start 
+      manifold)
+    - ``codomain`` -- codomain of the diffeomorphism (the arrival manifold or 
+      some subset of it)
+    - ``coord_functions`` -- (default: None) the coordinate symbolic expression 
+      of the mapping in some pair of charts: list (or tuple) of the 
+      coordinates of the image expressed in terms of the coordinates of 
+      the considered point; if the dimension of the arrival manifold is 1, 
+      a single expression is expected (not a list with a single element)
+    - ``chart1`` -- (default: None) chart on domain `U` in which the 
+      coordinates are given for ``coord_functions``; if none is provided, the 
+      coordinates are assumed to refer to domain's default chart
+    - ``chart2`` -- (default: None) chart on the codomain for the coordinates
+      on the arrival manifold for ``coord_functions``; if none is provided, the 
+      coordinates are assumed to refer to the codomain's default chart
+    - ``name`` -- (default: None) name given to the diffeomorphism
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
-      differentiable mapping; if none is provided, the LaTeX symbol is set to 
+      diffeomorphism; if none is provided, the LaTeX symbol is set to 
       ``name``
     
+    .. NOTE:
+    
+        If ``chart1`` does not cover the entire domain `U`, the argument
+        ``coord_functions` is not not sufficient to fully specify the 
+        diffeomorphism; further coordinate expressions, in other charts,
+        can be subsequently added by means of the method :meth:`add_expr`
+    
     """
-    def __init__(self, domain1, domain2, coord_functions=None, 
+    def __init__(self, domain, codomain, coord_functions=None, 
                  chart1=None, chart2=None, name=None, latex_name=None): 
-        DiffMapping.__init__(self, domain1, domain2, coord_functions, chart1, 
+        DiffMapping.__init__(self, domain, codomain, coord_functions, chart1, 
                              chart2, name, latex_name)
-        if self.domain1.manifold.dim != self.domain2.manifold.dim:
-            raise ValueError("The manifolds " + str(self.domain1.manifold) + 
-                             " and " + str(self.domain2.manifold) + 
+        if self.domain.manifold.dim != self.codomain.manifold.dim:
+            raise ValueError("The manifolds " + str(self.domain.manifold) + 
+                             " and " + str(self.codomain.manifold) + 
                              " do not have the same dimension.")
         # Initialization of derived quantities:
         Diffeomorphism._init_derived(self)
@@ -1022,11 +1064,11 @@ class Diffeomorphism(DiffMapping):
         description = "diffeomorphism"
         if self.name is not None:
             description += " '%s'" % self.name
-        if self.domain1 == self.domain2:
-            description += " on the " + str(self.domain1)
+        if self.domain == self.codomain:
+            description += " on the " + str(self.domain)
         else:
-            description += " between the " + str(self.domain1) + \
-                           " and the " + str(self.domain2)
+            description += " between the " + str(self.domain) + \
+                           " and the " + str(self.codomain)
         return description
 
     def _init_derived(self):
@@ -1091,8 +1133,8 @@ class Diffeomorphism(DiffMapping):
         if self._inverse is not None:
             return self._inverse
             
-        if chart1 is None: chart1 = self.domain1.def_chart
-        if chart2 is None: chart2 = self.domain2.def_chart
+        if chart1 is None: chart1 = self.domain.def_chart
+        if chart2 is None: chart2 = self.codomain.def_chart
         coord_map = self.coord_expression[(chart1, chart2)]
         n1 = len(chart1.xx)
         n2 = len(chart2.xx)
@@ -1131,7 +1173,7 @@ class Diffeomorphism(DiffMapping):
             latex_name = None
         else:
             latex_name = self.latex_name + r'^{-1}'
-        self._inverse = Diffeomorphism(self.domain2, self.domain1, 
+        self._inverse = Diffeomorphism(self.codomain, self.domain, 
                                        inv_functions, chart2, chart1,
                                        name=name, latex_name=latex_name)
         return self._inverse

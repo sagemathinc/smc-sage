@@ -140,13 +140,13 @@ class ScalarField(DiffMapping, CommutativeRingElement):
     
         sage: isinstance(f, DiffMapping)
         True
-        sage: f.domain1 # the domain on the start manifold
+        sage: f.domain # the domain on the start manifold
         2-dimensional manifold 'S^2'
-        sage: f.domain2 # the target domain
+        sage: f.codomain # the target domain
         field R of real numbers
-        sage: print type(f.domain2)
+        sage: print type(f.codomain)
         <class 'sage.geometry.manifolds.manifold.RealLineManifold_with_category'>
-        sage: f.domain2 is RealLine
+        sage: f.codomain is RealLine
         True
         sage: f.coord_expression
         {(chart (S^2, (th, ph)), chart (field R, (x_realline,))): functions (cos(ph)*sin(th),) on the chart (S^2, (th, ph))}
@@ -336,7 +336,6 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         DiffMapping.__init__(self, domain, RealLine, coord_expression, chart)
         CommutativeRingElement.__init__(self, domain.scalar_field_ring())
         self.manifold = domain.manifold
-        self.domain = domain
         self.name = name
         if latex_name is None:
             self.latex_name = self.name
@@ -561,7 +560,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
                 if chart in known_chart.subcharts:
                     new_expr = self.express[known_chart].expr()
                     self.express[chart] = FunctionChart(chart, new_expr)
-                    self.coord_expression[(chart, self.domain2.def_chart)] = \
+                    self.coord_expression[(chart, self.codomain.def_chart)] = \
                                             MultiFunctionChart(chart, new_expr)
                     self._del_derived()
                     return self.express[chart]
@@ -582,7 +581,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
                        for i in range(self.manifold.dim) ]
             new_expr = self.express[from_chart](*coords)
             self.express[chart] = FunctionChart(chart, new_expr)
-            self.coord_expression[(chart, self.domain2.def_chart)] = \
+            self.coord_expression[(chart, self.codomain.def_chart)] = \
                                         MultiFunctionChart(chart, new_expr)
             self._del_derived()
         return self.express[chart]
@@ -677,7 +676,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         self.express.clear()
         self.coord_expression.clear()
         self.express[chart] = FunctionChart(chart, coord_expression)
-        self.coord_expression[(chart, self.domain2.def_chart)] = \
+        self.coord_expression[(chart, self.codomain.def_chart)] = \
                                     MultiFunctionChart(chart, coord_expression)
         self._del_derived()
 
@@ -721,7 +720,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         if chart is None:
             chart = self.domain.def_chart
         self.express[chart] = FunctionChart(chart, coord_expression)
-        self.coord_expression[(chart, self.domain2.def_chart)] = \
+        self.coord_expression[(chart, self.codomain.def_chart)] = \
                                     MultiFunctionChart(chart, coord_expression)
         self._del_derived()
 
@@ -953,7 +952,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         for chart in self.express:
             res = + self.express[chart]
             result.express[chart] = res
-            result.coord_expression[(chart, self.domain2.def_chart)] = \
+            result.coord_expression[(chart, self.codomain.def_chart)] = \
                                     MultiFunctionChart(res.chart, res.express)
         if self.name is not None:
             result.name = '+' + self.name 
@@ -974,7 +973,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         for chart in self.express:
             res = - self.express[chart]
             result.express[chart] = res
-            result.coord_expression[(chart, self.domain2.def_chart)] = \
+            result.coord_expression[(chart, self.codomain.def_chart)] = \
                                     MultiFunctionChart(res.chart, res.express)
         if self.name is not None:
             result.name = '-' + self.name 
@@ -1007,7 +1006,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             # FunctionChart addition:
             res = self.express[chart] + other.express[chart]
             result.express[chart] = res
-            result.coord_expression[(chart, self.domain2.def_chart)] = \
+            result.coord_expression[(chart, self.codomain.def_chart)] = \
                                 MultiFunctionChart(res.chart, res.express)
         if result.is_zero():
             return dom_result.zero_scalar_field
@@ -1042,7 +1041,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             # FunctionChart subtraction:
             res = self.express[chart] - other.express[chart]
             result.express[chart] = res
-            result.coord_expression[(chart, self.domain2.def_chart)] = \
+            result.coord_expression[(chart, self.codomain.def_chart)] = \
                                 MultiFunctionChart(res.chart, res.express)
         if result.is_zero():
             return dom_result.zero_scalar_field
@@ -1079,7 +1078,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             # FunctionChart multiplication:
             res = self.express[chart] * other.express[chart]
             result.express[chart] = res
-            result.coord_expression[(chart, self.domain2.def_chart)] = \
+            result.coord_expression[(chart, self.codomain.def_chart)] = \
                                 MultiFunctionChart(res.chart, res.express)
         if result.is_zero():
             return dom_result.zero_scalar_field
@@ -1114,7 +1113,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             # FunctionChart division:
             res = self.express[chart] / other.express[chart]
             result.express[chart] = res
-            result.coord_expression[(chart, self.domain2.def_chart)] = \
+            result.coord_expression[(chart, self.codomain.def_chart)] = \
                                 MultiFunctionChart(res.chart, res.express)
         #!# the following 2 lines could be skipped:
         if result.is_zero():

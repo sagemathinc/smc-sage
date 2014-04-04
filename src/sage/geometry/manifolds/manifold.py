@@ -138,7 +138,7 @@ EXAMPLES:
     specifying some point coordinates::
     
         sage: p = M.point((1,2))  # a point is created with coordinates (1,2)
-        sage: p.coordinates # these coordinates refer to the default chart (and its subcharts if relevant):
+        sage: p.coordinates # random (dictionary output):
         {chart (W, (x, y)): (1, 2), chart (U, (x, y)): (1, 2)}
         sage: p.coord() # if the chart is not specified, the default chart coordinates are returned:
         (1, 2)

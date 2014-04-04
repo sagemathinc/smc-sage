@@ -8,12 +8,12 @@ A tensor field of type `(k,\ell)` is a field of multilinear maps:
 
 .. MATH::
 
-    \underbrace{T_p^*(M)\times\cdots\times T_p^*(M)}_{k\ \; \mbox{times}}
-    \times \underbrace{T_p(M)\times\cdots\times T_p(M)}_{\ell\ \; \mbox{times}}
+    \underbrace{T_p^*M\times\cdots\times T_p^*M}_{k\ \; \mbox{times}}
+    \times \underbrace{T_p M\times\cdots\times T_p M}_{\ell\ \; \mbox{times}}
     \longrightarrow \RR
     
-where `T_p(M)` stands for the tangent space at the point `p` on the
-manifold `M` and `T_p^*(M)` for its dual vector space. The integer `k+\ell`
+where `T_p M` stands for the tangent space at the point `p` on the
+manifold `M` and `T_p^*M` for its dual vector space. The integer `k+\ell`
 is called the tensor rank. 
 
 Various derived classes of :class:`TensorField` are devoted to specific tensor
@@ -247,9 +247,9 @@ EXAMPLES:
     
         sage: isinstance(f, DiffMapping)
         True
-        sage: f.domain1 # the start domain
+        sage: f.domain # the domain
         2-dimensional manifold 'M'
-        sage: f.domain2 # the target domain
+        sage: f.codomain # the codomain
         field R of real numbers
 
     They act on points on the manifold (as any instance of 
@@ -342,12 +342,12 @@ class TensorFieldParal(FreeModuleTensor):
 
     .. MATH::
 
-        \underbrace{T_p^*(M)\times\cdots\times T_p^*(M)}_{k\ \; \mbox{times}}
-        \times \underbrace{T_p(M)\times\cdots\times T_p(M)}_{\ell\ \; \mbox{times}}
+        \underbrace{T_p^*M\times\cdots\times T_p^*M}_{k\ \; \mbox{times}}
+        \times \underbrace{T_p M\times\cdots\times T_p M}_{\ell\ \; \mbox{times}}
         \longrightarrow \RR
     
-    where `T_p(M)` stands for the tangent space at the point `p` on the
-    manifold `M` and `T_p^*(M)` for its dual vector space. The integer `k+\ell`
+    where `T_p M ` stands for the tangent space at the point `p` on the
+    manifold `M` and `T_p^* M` for its dual vector space. The integer `k+\ell`
     is called the tensor rank. 
     
     INPUT:
