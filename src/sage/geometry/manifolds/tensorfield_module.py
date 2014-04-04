@@ -30,7 +30,8 @@ class TensorFieldFreeModule(TensorFreeModule):
     the ring of differentiable scalar fields on `U`. 
     
     The standard case of tensor fields *on* a manifold corresponds to 
-    `U=V` (and hence `S=M`).
+    `U=V` (and hence `S=M`). Another common case is `\Phi` being an 
+    immersion.
 
     INPUT:
     
@@ -46,22 +47,22 @@ class TensorFieldFreeModule(TensorFreeModule):
 
     def __init__(self, vector_field_module, tensor_type):
         domain = vector_field_module.domain
-        mapping = vector_field_module.mapping
+        dest_map = vector_field_module.dest_map
         kcon = tensor_type[0]
         lcov = tensor_type[1]
         name = "TF^(" + str(kcon) + "," + str(lcov) + ")(" + domain.name
         latex_name = "TF^(" + str(kcon) + "," + str(lcov) + r")\left(" + \
                      domain.latex_name
-        if mapping is None:
+        if dest_map is None:
             name += ")" 
             latex_name += r"\right)" 
         else:
-            name += "," + mapping.name + ")" 
-            latex_name += "," + mapping.latex_name + r"\right)" 
+            name += "," + dest_map.name + ")" 
+            latex_name += "," + dest_map.latex_name + r"\right)" 
         TensorFreeModule.__init__(self, vector_field_module, tensor_type, 
                                   name=name, latex_name=latex_name)
         self.domain = domain
-        self.mapping = mapping
+        self.dest_map = dest_map
         self.ambient_domain = vector_field_module.ambient_domain
 
     def _repr_(self):
@@ -74,7 +75,7 @@ class TensorFieldFreeModule(TensorFreeModule):
         description += "of type-(%s,%s)" % \
                            (str(self.tensor_type[0]), str(self.tensor_type[1]))
         description += " tensors fields "
-        if self.mapping is None:
+        if self.dest_map is None:
             description += "on the " + str(self.domain)
         else:
             description += "along the " + str(self.domain) + \

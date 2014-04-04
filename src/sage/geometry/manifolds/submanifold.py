@@ -107,10 +107,10 @@ class Submanifold(Manifold):
         sage: e[1]
         vector field 'd/dth' on the open domain 'U' on the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
         sage: S.pushforward(e[1])
-        vector field 'i_*(d/dth)' on the domain 'S^2' on the 3-dimensional manifold 'R^3'
-        sage: S.pushforward(e[1]).view(c_cart.frame, c_spher)
+        vector field 'i_*(d/dth)' along the open domain 'U' on the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3' with values on the 3-dimensional manifold 'R^3'
+        sage: S.pushforward(e[1]).view()
         i_*(d/dth) = cos(ph)*cos(th) d/dx + cos(th)*sin(ph) d/dy - sin(th) d/dz
-        sage: S.pushforward(e[2]).view(c_cart.frame, c_spher)
+        sage: S.pushforward(e[2]).view()
         i_*(d/dph) = -sin(ph)*sin(th) d/dx + cos(ph)*sin(th) d/dy
 
     """
@@ -248,17 +248,17 @@ class Submanifold(Manifold):
             sage: U = S.open_domain('U') # U = S minus two poles
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coordinates on U
             sage: S.def_embedding( S.diff_mapping(M, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='i', latex_name=r'\iota') )
-            sage: v = VectorField(S, 'v') 
+            sage: v = U.vector_field(name='v') 
             sage: v[2] = 1 ; v.view()  # azimuthal vector field on S^2
             v = d/dph
             sage: iv = S.pushforward(v) ; iv
-            vector field 'i_*(v)' on the domain 'S^2' on the 3-dimensional manifold 'R^3'
-            sage: iv.view(c_cart.frame, c_spher) # the pushforward expanded on the Cartesian frame, with components expressed in terms of (th,ph) coordinates
+            vector field 'i_*(v)' along the open domain 'U' on the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3' with values on the 3-dimensional manifold 'R^3'
+            sage: iv.view() 
             i_*(v) = -sin(ph)*sin(th) d/dx + cos(ph)*sin(th) d/dy
             
         The components of the pushforward vector are scalar fields on the submanifold::
         
-            sage: iv.comp(c_cart.frame)[[1]]
+            sage: iv.comp()[[1]]
             scalar field on the open domain 'U' on the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
 
         Pushforward of a tangent vector to a helix, submanifold of `\RR^3`::
@@ -266,12 +266,12 @@ class Submanifold(Manifold):
             sage: H = M.submanifold(1, 'H')
             sage: c_t.<t> = H.chart('t')
             sage: H.def_embedding( H.diff_mapping(M, [cos(t), sin(t), t], name='iH') )
-            sage: u = VectorField(H, 'u')
+            sage: u = H.vector_field(name='u')
             sage: u[0] = 1 ; u.view() # tangent vector to the helix
             u = d/dt
             sage: iu = H.pushforward(u) ; iu
-            vector field 'iH_*(u)' on the domain 'H' on the 3-dimensional manifold 'R^3'
-            sage: iu.view(c_cart.frame, c_t)
+            vector field 'iH_*(u)' along the 1-dimensional submanifold 'H' of the 3-dimensional manifold 'R^3' with values on the 3-dimensional manifold 'R^3'
+            sage: iu.view()
             iH_*(u) = -sin(t) d/dx + cos(t) d/dy + d/dz
 
         """
@@ -298,7 +298,7 @@ class Submanifold(Manifold):
         # start domain for chart1
         chart1 = None; chart2 = None
         def_chart1 = dom1.def_chart
-        def_chart2 = self.ambient_manifold.def_chart 
+        def_chart2 = embed.codomain.def_chart 
         if def_chart1.frame in tensor.components and \
                (def_chart1, def_chart2) in embed.coord_expression:
             chart1 = def_chart1
@@ -320,17 +320,15 @@ class Submanifold(Manifold):
                     break
         if chart1 is None:
             raise ValueError("No common chart could be find to compute " +
-                "the pushforward of the tensor field.")
-        frame1 = chart1.frame
-        frame2 = chart2.frame
-        dom2 = frame2.domain
-        fmodule2 = dom1.vector_field_module(dom2)
-        ring2 = fmodule2.ring
+                             "the pushforward of the tensor field.")
+        fmodule2 = dom1.vector_field_module(dest_map=embed)
+        frame2 = dom1.vector_frame(dest_map=embed, from_frame=chart2.frame)
         si1 = dom1.manifold.sindex
         si2 = fmodule2.sindex
+        ring2 = fmodule2.ring
         of2 = fmodule2.output_formatter
         # Computation at the component level:
-        tcomp = tensor.components[frame1]
+        tcomp = tensor.components[chart1.frame]
         # Construction of the pushforward components (ptcomp):
         if isinstance(tcomp, CompFullySym):
             ptcomp = CompFullySym(ring2, frame2, ncon, start_index=si2, 

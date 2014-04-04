@@ -155,8 +155,13 @@ class VectorFrame(FreeModuleBasis):
     r"""
     Class for vector frames on a differentiable manifold over `\RR`. 
     
-    By 'vector frame', it is meant a field on a manifold M that provides, at 
-    each point p in M, a vector basis of the tangent space at p. 
+    By *vector frame*, it is meant a field `e` on some open domain `U` of a 
+    manifold `S` endowed with a mapping `\Phi: U\rightarrow V` to a 
+    parallelizable domain `V` of a manifold `M` such that for each `p\in U`, 
+    `e(p)` is a vector basis of the tangent space `T_{\Phi(p)}M`
+    
+    The standard case of a vector frame *on* `U` corresponds to `S=M`, `U=V`
+    and `\Phi = \mathrm{Id}`. 
     
     For each instanciation of a vector frame, a coframe is automatically 
     created, as an instance of the class :class:`CoFrame`. 
@@ -164,13 +169,19 @@ class VectorFrame(FreeModuleBasis):
     INPUT:
     
     - ``domain`` -- manifold domain on which the vector frame is defined
-    - ``symbol`` -- a letter (of a few letters) to denote a generic vector of
-      the frame
+    - ``symbol`` -- (default: None) a letter (of a few letters) to denote a 
+      generic vector of the frame; can be set to None if the parameter
+      ``from_frame`` is filled.
     - ``latex_symbol`` -- (default: None) symbol to denote a generic vector of
       the frame; if None, the value of ``symbol`` is used. 
-    - ``ambient_domain`` -- (default: None) manifold open subset on which 
-      the vectors of the frame take their values; if none is provided, 
-      ``ambient_domain`` is set to ``domain``.
+    - ``dest_map`` -- (default: None) destination map `\Phi:\ U \rightarrow V` 
+      (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`); 
+      if none is provided, the identity is assumed (case of a vector frame *on* 
+      `U`)
+    - ``from_frame`` -- (default: None) vector frame `\tilde e` on the codomain 
+      `V` of the destination map `\Phi`; the frame `e` = ``self`` is then 
+      constructed so that `\forall p \in U, e(p) = \tilde e(\Phi(p))`
+
 
     EXAMPLES:
 
@@ -192,19 +203,40 @@ class VectorFrame(FreeModuleBasis):
 
     
     """
-    def __init__(self, domain, symbol, latex_symbol=None, ambient_domain=None):
-        if ambient_domain is None:
-            ambient_domain = domain
+    def __init__(self, domain, symbol=None, latex_symbol=None, dest_map=None,
+                 from_frame=None):
         self.domain = domain
-        self.ambient_domain = ambient_domain
+        self.dest_map = dest_map
+        self.from_frame = from_frame
         self.manifold = domain.manifold
-        FreeModuleBasis.__init__(self, 
-                                 domain.vector_field_module(ambient_domain), 
+        if symbol is None:
+            if from_frame is None:
+                raise TypeError("Some frame symbol must be provided.") 
+            symbol = 'X'  # provisory symbol
+        FreeModuleBasis.__init__(self, domain.vector_field_module(dest_map), 
                                  symbol, latex_symbol=latex_symbol)
         # Redefinition of the name and the LaTeX name:
-        self.name = "(" + self.domain.name + ", " + self.name + ")"
-        self.latex_name = r"\left(" + self.domain.latex_name + ", " + \
+        if from_frame is None:
+            self.name = "(" + self.domain.name + ", " + self.name + ")"
+            self.latex_name = r"\left(" + self.domain.latex_name + ", " + \
                           self.latex_name + r"\right)"
+        else:
+            if not from_frame.domain.is_subdomain(dest_map.codomain):
+                raise ValueError("The domain of the frame 'from_frame' is " + 
+                                 "not included in the codomain of the " + 
+                                 "destination map.")
+            n = self.fmodule.rank()
+            for i in range(n):
+                self.vec[i].name = from_frame.vec[i].name
+                self.vec[i].latex_name = from_frame.vec[i].latex_name
+            self.name = "(" + self.domain.name + ", (" + \
+                        ",".join([self.vec[i].name for i in range(n)]) + "))"
+            self.latex_name = r"\left(" + self.domain.latex_name + \
+                        r" ,\left(" + \
+                        ",".join([self.vec[i].latex_name for i in range(n)])+ \
+                        r"\right)\right)"
+            self.symbol = from_frame.symbol
+            self.latex_symbol = from_frame.latex_symbol
         # The frame is added to the domain's set of frames, as well as to all 
         # the superdomains' sets of frames; moreover the first defined frame 
         # is considered as the default one
@@ -216,8 +248,9 @@ class VectorFrame(FreeModuleBasis):
             sd.frames.append(self)
             if sd.def_frame is None: 
                 sd.def_frame = self
-        # The frame is added to the list of the domain's covering frames:
-        self.domain.covering_frames.append(self)
+        if dest_map is None:
+            # The frame is added to the list of the domain's covering frames:
+            self.domain.covering_frames.append(self)
         #
         # Dual coframe 
         self.coframe = self.dual_basis()  # self.coframe = a shortcut for self._dual_basis
@@ -239,8 +272,8 @@ class VectorFrame(FreeModuleBasis):
         String representation of the object.
         """
         description = "vector frame " + self.name
-        if self.ambient_domain != self.domain:
-            description += " with values on the " + str(self.ambient_domain)
+        if self.dest_map is not None:
+            description += " with values on the " + str(self.dest_map.codomain)
         return description
         
 
@@ -351,8 +384,10 @@ class VectorFrame(FreeModuleBasis):
         if not domain.is_subdomain(self.domain):
             raise TypeError("The argument 'domain' must be a subdomain of " + 
                             " the frame domain.")
+        #!# to be changed: des_map should be the restriction of self.dest_map 
+        # to V:
         res = VectorFrame(domain, symbol, latex_symbol=latex_symbol, 
-                          ambient_domain=self.ambient_domain)
+                          dest_map=self.dest_map)
         # Update of superframes and subframes:
         res.superframes.update(self.superframes)
         for sframe in self.superframes:
@@ -461,7 +496,7 @@ class CoordFrame(VectorFrame):
         if not isinstance(chart, Chart):
             raise TypeError("The first argument must be a chart.")
         self.chart = chart
-        VectorFrame.__init__(self, chart.domain, 'X') # 'X' = provisory symbol
+        VectorFrame.__init__(self, chart.domain, symbol='X') # 'X' = provisory symbol
         n = self.manifold.dim
         for i in range(n):
             self.vec[i].name = "d/d" + str(self.chart.xx[i])
@@ -469,11 +504,11 @@ class CoordFrame(VectorFrame):
                                      latex(self.chart.xx[i]) + r"}"
         self.name = "(" + self.domain.name + ", (" + \
                     ",".join([self.vec[i].name for i in range(n)]) + "))"
-        self.latex_name = r"\left(" + self.domain.latex_name + \
-                          r" ,\left(" + \
-                ",".join([self.vec[i].latex_name for i in range(n)])+ \
-                          r"\right)\right)"
+        self.latex_name = r"\left(" + self.domain.latex_name + r" ,\left(" + \
+                       ",".join([self.vec[i].latex_name for i in range(n)])+ \
+                       r"\right)\right)"
         self.symbol = self.name
+        self.latex_symbol = self.latex_name
 
 
     ###### Methods that must be redefined by derived classes of FreeModuleBasis ######

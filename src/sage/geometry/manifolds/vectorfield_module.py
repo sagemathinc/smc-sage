@@ -24,13 +24,13 @@ from vectorfield import VectorFieldParal
 class VectorFieldFreeModule(FiniteFreeModule):
     r"""
     Module of vector fields along an open subset `U` of some manifold `S`
-    with values in a parallelizable open subset `V` of a manifold `M`.
+    with values in a parallelizable open subset `V` of a manifold `M`. 
     
     Given a differential mapping
 
     .. MATH::
 
-        \Phi:\ U\subset \mathcal{S} \longrightarrow V\subset \mathcal{M}
+        \Phi:\ U\subset S \longrightarrow V\subset \mathcal{M}
     
     the module `\mathcal{X}(U,\Phi)` is the set of all vector fields of 
     the type
@@ -43,7 +43,7 @@ class VectorFieldFreeModule(FiniteFreeModule):
 
     .. MATH::
 
-        \forall p in U,\ v(p) \in T_{\Phi(p)}M
+        \forall p \in U,\ v(p) \in T_{\Phi(p)}M
         
     
     Since `V` is parallelizable, the `\mathcal{X}(U,\Phi)` is a free module 
@@ -53,13 +53,12 @@ class VectorFieldFreeModule(FiniteFreeModule):
     The standard case of vector fields *on* a manifold corresponds to `S=M`, 
     `U=V` and `\Phi = \mathrm{Id}`. 
 
-    Another common case is when `Phi` is an immersion.
+    Another common case is `\Phi` being an immersion.
     
     INPUT:
     
     - ``domain`` -- open subset `U` on which the vector fields are defined
-    - ``mapping`` -- (default: None) differential mapping 
-      `Phi:\ U \rightarrow V` 
+    - ``dest_map`` -- (default: None) destination map `\Phi:\ U \rightarrow V` 
       (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`); 
       if none is provided, the identity is assumed (case of vector fields *on* 
       `U`)
@@ -68,20 +67,20 @@ class VectorFieldFreeModule(FiniteFreeModule):
     
     Element = VectorFieldParal
 
-    def __init__(self, domain, mapping=None):
+    def __init__(self, domain, dest_map=None):
         self.domain = domain
         name = "X(" + domain.name
         latex_name = r"\mathcal{X}\left(" + domain.latex_name
-        if mapping is None:
-            self.mapping = None
+        if dest_map is None:
+            self.dest_map = None
             self.ambient_domain = domain
             name += ")" 
             latex_name += r"\right)"
         else:
-            self.mapping = mapping
-            self.ambient_domain = mapping.codomain
-            name += "," + self.mapping.name + ")" 
-            latex_name += "," + self.mapping.latex_name + r"\right)" 
+            self.dest_map = dest_map
+            self.ambient_domain = dest_map.codomain
+            name += "," + self.dest_map.name + ")" 
+            latex_name += "," + self.dest_map.latex_name + r"\right)" 
         manif = self.ambient_domain.manifold
         FiniteFreeModule.__init__(self, domain.scalar_field_ring(), 
                                   manif.dim, name=name, latex_name=latex_name, 
@@ -98,7 +97,7 @@ class VectorFieldFreeModule(FiniteFreeModule):
         if self.name is not None:
             description += self.name + " "
         description += "of vector fields "
-        if self.mapping is None:
+        if self.dest_map is None:
             description += "on the " + str(self.domain)
         else:
             description += "along the " + str(self.domain) + \
@@ -133,21 +132,26 @@ class VectorFieldFreeModule(FiniteFreeModule):
             self._tensor_modules[(k,l)] = TensorFieldFreeModule(self, (k,l))
         return self._tensor_modules[(k,l)]
 
-    def basis(self, symbol=None, latex_symbol=None):
+    def basis(self, symbol=None, latex_symbol=None, from_frame=None):
         r""" 
         Define a basis (vector frame) of the free module.
         
         If the basis specified by the given symbol already exists, it is
         simply returned.
+        If no argument is provided the module's default basis is returned. 
         
         INPUT:
         
         - ``symbol`` -- (string; default: None) a letter (of a few letters) to 
-          denote a generic element of the basis; if None, the module's default
-          basis is returned.
+          denote a generic element of the basis; if None and ``from_frame=None`` 
+          the module's default basis is returned.
         - ``latex_symbol`` -- (string; default: None) symbol to denote a 
           generic element of the basis; if None, the value of ``symbol`` is 
           used. 
+        - ``from_frame`` -- (default: None) vector frame `\tilde e` on the 
+          codomain `V` of the destination map `\Phi` of ``self``; the returned
+          basis `e` is then such that 
+          `\forall p \in U, e(p) = \tilde e(\Phi(p))`
 
         OUTPUT:
         
@@ -165,8 +169,8 @@ class VectorFieldFreeModule(FiniteFreeModule):
             for other in self.known_bases:
                 if symbol == other.symbol:
                     return other
-            return VectorFrame(self.domain, symbol, latex_symbol=latex_symbol,
-                               mapping=self.mapping)
+            return VectorFrame(self.domain, symbol=symbol, 
+                               latex_symbol=latex_symbol, dest_map=self.dest_map)
 
     def tensor(self, tensor_type, name=None, latex_name=None, sym=None, 
                antisym=None):

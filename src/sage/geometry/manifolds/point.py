@@ -40,7 +40,7 @@ EXAMPLES:
 
     Listing all the coordinates of a point in different charts::
     
-        sage: p.coordinates
+        sage: p.coordinates # random (dictionary output)
         {chart (R3, (r, th, ph)): (1, 1/2*pi, 0), chart (R3, (x, y, z)): (1, 0, 0)}
         sage: q.coordinates
         {chart (R3, (x, y, z)): (1, 2, 3)}
@@ -231,7 +231,7 @@ class Point(Element):
             {chart (M, (u, v)): (a - b, a + b)}              
             sage: p.coord(c_wz)                
             (a^3 - 3*a^2*b + 3*a*b^2 - b^3, a^3 + 3*a^2*b + 3*a*b^2 + b^3)
-            sage: p.coordinates
+            sage: p.coordinates # random (dictionary output)
             {chart (M, (u, v)): (a - b, a + b), chart (M, (w, z)): (a^3 - 3*a^2*b + 3*a*b^2 - b^3, a^3 + 3*a^2*b + 3*a*b^2 + b^3)}
         """
         atlas = self.manifold.atlas

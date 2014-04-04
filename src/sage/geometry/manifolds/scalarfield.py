@@ -60,19 +60,19 @@ class ScalarField(DiffMapping, CommutativeRingElement):
     A scalar field on the 2-sphere::
     
         sage: m = Manifold(2, 'S^2')
-        sage: f = ScalarField(m) ; f
+        sage: f = m.scalar_field() ; f
         scalar field on the 2-dimensional manifold 'S^2'
         
     Named scalar field::
     
-        sage: f = ScalarField(m, name='f') ; f
+        sage: f = m.scalar_field(name='f') ; f
         scalar field 'f' on the 2-dimensional manifold 'S^2'
         sage: latex(f)
         f
 
     Named scalar field with LaTeX symbol specified::
     
-        sage: f = ScalarField(m, name='f', latex_name=r'\mathcal{F}') ; f
+        sage: f = m.scalar_field(name='f', latex_name=r'\mathcal{F}') ; f
         scalar field 'f' on the 2-dimensional manifold 'S^2'
         sage: latex(f)
         \mathcal{F}
@@ -80,7 +80,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
     Scalar field defined by its coordinate expression::
     
         sage: c_spher.<th,ph> = m.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
-        sage: f = ScalarField(m, sin(th)*cos(ph), name='f') ; f
+        sage: f = m.scalar_field(sin(th)*cos(ph), name='f') ; f
         scalar field 'f' on the 2-dimensional manifold 'S^2'
 
     The coordinate expression of a scalar field can be read by means of 
@@ -110,7 +110,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
     A scalar field can also be defined by an unspecified function of the 
     coordinates::
     
-        sage: g = ScalarField(m, function('G', th, ph), name='g') ; g
+        sage: g = m.scalar_field(function('G', th, ph), name='g') ; g
         scalar field 'g' on the 2-dimensional manifold 'S^2'
         sage: g.expr()
         G(th, ph)
@@ -138,7 +138,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
     real numbers (modeled by the unique instance :data:`RealLine` of the class
     :class:`RealLineManifold`)::
     
-        sage: isinstance(f, DiffMapping)
+        sage: isinstance(f, sage.geometry.manifolds.diffmapping.DiffMapping)
         True
         sage: f.domain # the domain on the start manifold
         2-dimensional manifold 'S^2'
@@ -155,13 +155,13 @@ class ScalarField(DiffMapping, CommutativeRingElement):
 
     As such, it acts on the manifold's points::
     
-        sage: p = Point(m, (pi/2, pi))
+        sage: p = m.point((pi/2, pi))
         sage: f(p)
         -1
 
     A scalar field can be compared to another scalar field::
     
-        sage: g = ScalarField(m, sin(th)*cos(ph), name='g')
+        sage: g = m.scalar_field(sin(th)*cos(ph), name='g')
         sage: f == g
         True
         sage: g.set_expr(cos(th))
@@ -291,9 +291,9 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         sage: c_xy.<x,y> = U.chart('x y')
         sage: V = M.open_domain('V')
         sage: c_uv.<u,v> = V.chart('u v')
-        sage: f = ScalarField(M, x^2)
+        sage: f = M.scalar_field(x^2)
         sage: f.add_expr(u, c_uv)
-        sage: g = ScalarField(M, 2*v, c_uv)
+        sage: g = M.scalar_field(2*v, c_uv)
         sage: g.add_expr(y, c_xy)
         sage: f.express  # random (dictionary output)
         {chart (U, (x, y)): x^2, chart (V, (u, v)): u}
@@ -310,7 +310,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         scalar field on the 2-dimensional manifold 'M'
         sage: s.express
         {chart (U, (x, y)): x^2 + 3*x}
-        sage: g = ScalarField(U, 3*x)
+        sage: g = U.scalar_field(3*x)
         sage: g.express
         {chart (U, (x, y)): 3*x}
         sage: s = f + g ; s
@@ -320,7 +320,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
     
     Vanishing result::
     
-        sage: g = ScalarField(M, -x^2)
+        sage: g = M.scalar_field(-x^2)
         sage: g.add_expr(-u, c_uv)
         sage: s = f + g ; s
         zero scalar field on the 2-dimensional manifold 'M'
@@ -368,13 +368,13 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = ScalarField(m, x*y)
+            sage: f = m.scalar_field(x*y)
             sage: f.is_zero()
             False
             sage: f.set_expr(0)
             sage: f.is_zero()
             True
-            sage: g = ScalarField(m, 0)
+            sage: g = m.scalar_field(0)
             sage: g.is_zero()
             True
 
@@ -461,7 +461,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
             sage: m = Manifold(2, 'M')  
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = ScalarField(m, x*y^2)
+            sage: f = m.scalar_field(x*y^2)
             sage: g = f.copy()
             sage: print type(g)
             <class 'sage.geometry.manifolds.scalarfield.ScalarField'>
@@ -505,7 +505,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
             sage: m = Manifold(2, 'M')            
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = ScalarField(m, x*y^2)
+            sage: f = m.scalar_field(x*y^2)
             sage: f.function_chart()
             x*y^2
             sage: f.function_chart(c_xy)  # equivalent form (since c_xy is the default chart)
@@ -516,7 +516,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         Expression via a change of coordinates::
         
             sage: c_uv.<u,v> = m.chart('u v')
-            sage: CoordChange(c_uv, c_xy, u+v, u-v)
+            sage: c_uv.coord_change(c_xy, u+v, u-v)
             coordinate change from chart (M, (u, v)) to chart (M, (x, y))
             sage: f.express # at this stage, f is expressed only in terms of (x,y) coordinates
             {chart (M, (x, y)): x*y^2}
@@ -524,7 +524,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             u^3 - u^2*v - u*v^2 + v^3
             sage: f.function_chart(c_uv) == (u+v)*(u-v)^2  # check
             True
-            sage: f.express  # f has now 2 coordinate expressions:
+            sage: f.express  # random (dict. output); f has now 2 coordinate expressions:
             {chart (M, (x, y)): x*y^2, chart (M, (u, v)): u^3 - u^2*v - u*v^2 + v^3}
 
         Usage in a physical context (simple Lorentz transformation - boost in 
@@ -533,11 +533,11 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             sage: m = Manifold(2, 'M')
             sage: o1.<t,x> = m.chart('t x')
             sage: o2.<T,X> = m.chart('T X')
-            sage: f = ScalarField(m, x^2 - t^2)
+            sage: f = m.scalar_field(x^2 - t^2)
             sage: f.function_chart(o1)
             -t^2 + x^2
             sage: v = var('v'); gam = 1/sqrt(1-v^2)
-            sage: CoordChange(o2, o1, gam*(T - v*X), gam*(X - v*T))
+            sage: o2.coord_change(o1, gam*(T - v*X), gam*(X - v*T))
             coordinate change from chart (M, (T, X)) to chart (M, (t, x))
             sage: f.function_chart(o2)
             -T^2 + X^2
@@ -612,7 +612,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
             sage: m = Manifold(2, 'M')            
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = ScalarField(m, x*y^2)
+            sage: f = m.scalar_field(x*y^2)
             sage: f.expr()
             x*y^2
             sage: f.expr(c_xy)  # equivalent form (since c_xy is the default chart)
@@ -623,7 +623,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         Expression via a change of coordinates::
         
             sage: c_uv.<u,v> = m.chart('u v')
-            sage: CoordChange(c_uv, c_xy, u+v, u-v)
+            sage: c_uv.coord_change(c_xy, u+v, u-v)
             coordinate change from chart (M, (u, v)) to chart (M, (x, y))
             sage: f.express # at this stage, f is expressed only in terms of (x,y) coordinates
             {chart (M, (x, y)): x*y^2}
@@ -631,7 +631,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             u^3 - u^2*v - u*v^2 + v^3
             sage: bool( f.expr(c_uv) == (u+v)*(u-v)^2 ) # check
             True
-            sage: f.express  # f has now 2 coordinate expressions:
+            sage: f.express  # random (dict. output); f has now 2 coordinate expressions:
             {chart (M, (x, y)): x*y^2, chart (M, (u, v)): u^3 - u^2*v - u*v^2 + v^3}
 
         """
@@ -656,7 +656,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = ScalarField(m, x^2 + 2*x*y +1)
+            sage: f = m.scalar_field(x^2 + 2*x*y +1)
             sage: f.express                         
             {chart (M, (x, y)): x^2 + 2*x*y + 1}
             sage: f.set_expr(3*y)
@@ -705,7 +705,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = ScalarField(m, x^2 + 2*x*y +1)
+            sage: f = m.scalar_field(x^2 + 2*x*y +1)
             sage: f.express
             {chart (M, (x, y)): x^2 + 2*x*y + 1}             
             sage: f.add_expr(3*y)
@@ -713,7 +713,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             {chart (M, (x, y)): 3*y}
             sage: c_uv.<u,v> = m.chart('u v')
             sage: f.add_expr(cos(u)-sin(v), c_uv)  
-            sage: f.express # f has now 2 expressions:
+            sage: f.express # random (dict. output); f has now 2 expressions:
             {chart (M, (x, y)): 3*y, chart (M, (u, v)): cos(u) - sin(v)}
 
         """
@@ -744,12 +744,12 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = ScalarField(m, sqrt(x+1), name='f')
+            sage: f = m.scalar_field(sqrt(x+1), name='f')
             sage: f.view()
             f: (x, y) |--> sqrt(x + 1)
             sage: latex(f.view())
             f :\ \left(x, y\right) \mapsto \sqrt{x + 1}
-            sage: g = ScalarField(m, function('G', x, y), name='g')
+            sage: g = m.scalar_field(function('G', x, y), name='g')
             sage: g.view() 
             g: (x, y) |--> G(x, y)
             sage: latex(g.view())
@@ -792,15 +792,15 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
             sage: c_uv.<u,v> = m.chart('u v')
-            sage: f =  ScalarField(m, x*y^2)
+            sage: f =  m.scalar_field(x*y^2)
             sage: f.add_expr(u-v, c_uv)
-            sage: f.express # f has expressions on two charts:
+            sage: f.express # random (dict. output); f has expressions on two charts:
             {chart (M, (x, y)): x*y^2, chart (M, (u, v)): u - v}
             sage: m.default_chart()
             chart (M, (x, y))
             sage: f.pick_a_chart()  # the domain's default chart (xy-coord) is privileged:
             chart (M, (x, y))
-            sage: g = ScalarField(m, u+v, c_uv)
+            sage: g = m.scalar_field(u+v, c_uv)
             sage: g.express  # g has no expression on the domain's default chart:
             {chart (M, (u, v)): u + v}
             sage: g.pick_a_chart()
@@ -835,8 +835,8 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             sage: c_xy.<x,y> = U.chart('x y')
             sage: V = M.open_domain('V')
             sage: c_uv.<u,v> = V.chart('u v')
-            sage: f = ScalarField(U, x^2)
-            sage: g = ScalarField(M, x+y)
+            sage: f = U.scalar_field(x^2)
+            sage: g = M.scalar_field(x+y)
             sage: f.common_charts(g)
             [chart (U, (x, y))]
             sage: g.add_expr(u, c_uv)
@@ -881,8 +881,8 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         Common charts found by computing some coordinate changes::
         
             sage: W = M.domains['W']
-            sage: f = ScalarField(W, x^2, c_xy_W)
-            sage: g = ScalarField(W, u+1, c_uv_W)
+            sage: f = W.scalar_field(x^2, c_xy_W)
+            sage: g = W.scalar_field(u+1, c_uv_W)
             sage: f.express
             {chart (W, (x, y)): x^2}
             sage: g.express
@@ -1123,16 +1123,10 @@ class ScalarField(DiffMapping, CommutativeRingElement):
                                              other.latex_name)
         return result
 
-    def exterior_der(self, chart=None):
+    def exterior_der(self):
         r"""
         Return the exterior derivative of the scalar field. 
-        
-        INPUT:
-        
-        - ``chart`` -- (default: None) chart used for the computation; if none 
-          is provided, a chart on which the scalar field is expressed is 
-          picked, privileging the domain's defaut chart. 
-        
+                
         OUTPUT:
         
         - the 1-form exterior derivative of ``self``. 
@@ -1143,7 +1137,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
             sage: m = Manifold(3, 'M')
             sage: c_xyz.<x,y,z> = m.chart('x y z')
-            sage: f = ScalarField(m, cos(x)*z^3 + exp(y)*z^2, name='f')
+            sage: f = m.scalar_field(cos(x)*z^3 + exp(y)*z^2, name='f')
             sage: df = f.exterior_der() ; df
             1-form 'df' on the 3-dimensional manifold 'M'
             sage: df.view()
@@ -1154,11 +1148,11 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         Exterior derivative computed on a chart that is not the default one::
         
             sage: c_uvw.<u,v,w> = m.chart('u v w')
-            sage: g = ScalarField(m, u*v^2*w^3, c_uvw, name='g')
+            sage: g = m.scalar_field(u*v^2*w^3, c_uvw, name='g')
             sage: dg = g.exterior_der() ; dg
             1-form 'dg' on the 3-dimensional manifold 'M'
             sage: dg.components
-            {coordinate frame (M, (d/du,d/dv,d/dw)): 1-index components w.r.t. the coordinate frame (M, (d/du,d/dv,d/dw))}
+            {coordinate frame (M, (d/du,d/dv,d/dw)): 1-index components w.r.t. coordinate frame (M, (d/du,d/dv,d/dw))}
             sage: dg.comp(c_uvw.frame)[:, c_uvw]
             [v^2*w^3, 2*u*v*w^3, 3*u*v^2*w^2]
             sage: dg.view(c_uvw.frame, c_uvw)
@@ -1180,38 +1174,42 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             True
 
         """
-        from component import Components
-        from diffform import OneForm
         from utilities import format_unop_txt, format_unop_latex
         if self._exterior_derivative is None:
-           # A new computation is necessary:
-            if chart is None:
-                chart = self.pick_a_chart()
-            n = self.manifold.dim
-            si = self.manifold.sindex
-            f = self.express[chart]
-            dc = Components(chart.frame, 1)
-            for i in range(n):
-                df = f.diff(chart.xx[i])
-                dc[i+si] = df
-            dc._del_zeros()
-            # Name and LaTeX name of the result (rname and rlname):
+            # A new computation is necessary:
             rname = format_unop_txt('d', self.name)
             rlname = format_unop_latex(r'\mathrm{d}', self.latex_name)
-            self._exterior_derivative = OneForm(self.domain, rname, rlname)
-            self._exterior_derivative.components[chart.frame] = dc
+            self._exterior_derivative = self.domain.one_form(name=rname, 
+                                                             latex_name=rlname)
+            n = self.manifold.dim
+            si = self.manifold.sindex
+            for chart in self.express:
+                f = self.express[chart]
+                for i in range(n):
+                    self._exterior_derivative.add_comp(chart.frame)[i+si, chart] \
+                        = f.diff(chart.xx[i])
+#@@
+            #if chart is None:
+                #chart = self.pick_a_chart()
+            #f = self.express[chart]
+            #dc = Components(self.parent(), chart.frame, 1, start_index=si, 
+                            #output_formatter=ScalarField.function_chart)
+            #for i in range(n):
+                #dc[i+si, chart] = 
+            #dc._del_zeros() #!# not necessary ?
+            ## Name and LaTeX name of the result (rname and rlname):
+            #rname = format_unop_txt('d', self.name)
+            #rlname = format_unop_latex(r'\mathrm{d}', self.latex_name)
+            #self._exterior_derivative = self.domain.one_form(name=rname, 
+                                                             #latex_name=rlname)
+            #self._exterior_derivative.components[chart.frame] = dc
         return self._exterior_derivative
 
-    def differential(self, chart=None):
+    def differential(self):
         r"""
         Return the differential of the scalar field. 
         
         This method simply calls the method :meth:`exterior_der`.  
-        
-        INPUT:
-        
-        - ``chart`` -- (default: None) chart used for the computation; if none 
-          is provided, the domain's default chart is used.
         
         OUTPUT:
         
@@ -1223,7 +1221,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
             sage: m = Manifold(3, 'M')
             sage: c_xyz.<x,y,z> = m.chart('x y z')
-            sage: f = ScalarField(m, cos(x)*z**3 + exp(y)*z**2, name='f')
+            sage: f = m.scalar_field(cos(x)*z**3 + exp(y)*z**2, name='f')
             sage: df = f.differential() ; df
             1-form 'df' on the 3-dimensional manifold 'M'
             sage: df.view()
@@ -1232,7 +1230,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             \mathrm{d}f
             
         """
-        return self.exterior_der(chart)
+        return self.exterior_der()
 
     def lie_der(self, vector):
         r"""
@@ -1263,7 +1261,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
 
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: f = ScalarField(m, x^2*cos(y))
+            sage: f = m.scalar_field(x^2*cos(y))
             sage: v = VectorField(m, 'v')
             sage: v[:] = (-y, x)
             sage: f.lie_der(v)
@@ -1314,6 +1312,7 @@ class ZeroScalarField(ScalarField):
     
         sage: m = Manifold(2, 'M')                  
         sage: c_xy.<x,y> = m.chart('x y')
+        sage: from sage.geometry.manifolds.scalarfield import ZeroScalarField
         sage: f = ZeroScalarField(m) ; f
         zero scalar field on the 2-dimensional manifold 'M'
         sage: f.expr()
@@ -1352,7 +1351,7 @@ class ZeroScalarField(ScalarField):
         
     Arithmetics with a non-zero instance of :class:`ScalarField`::
     
-        sage: g = ScalarField(m, x+y)
+        sage: g = m.scalar_field(x+y)
         sage: s = f+g ; s ; s.expr()
         scalar field on the 2-dimensional manifold 'M'
         x + y

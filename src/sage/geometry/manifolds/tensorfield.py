@@ -332,17 +332,18 @@ class TensorFieldParal(FreeModuleTensor):
     with values on parallelizable open subset of a differentiable manifold. 
     
     An instance of this class is a tensor field along an open subset `U` 
-    of some immersed  submanifold `S` of a manifold `M` with values in 
-    a parallelizable open subset `V` of `M`. 
-    The standard case of tensor fields *on* a manifold corresponds to 
-    `U=V` (and hence `S=M`).
+    of some manifold `S` with values in a parallelizable open subset `V` 
+    of a manifold `M`, via a differentiable mapping `Phi: U \rightarrow V`. 
+    The standard case of a tensor field *on* a manifold corresponds to `S=M`, 
+    `U=V` and `\Phi = \mathrm{Id}`. Another common case is `\Phi` being an
+    immersion.
 
-    A tensor field of type `(k,\ell)` is a field on `U` of multilinear maps 
-    of the type:
+    A tensor field of type `(k,\ell)` is a field `t` on `U`, so that at each 
+    point `p\in U`, `t(p)` is a multilinear map of the type:
 
     .. MATH::
 
-        \underbrace{T_p^*M\times\cdots\times T_p^*M}_{k\ \; \mbox{times}}
+        t(p):\ \underbrace{T_p^*M\times\cdots\times T_p^*M}_{k\ \; \mbox{times}}
         \times \underbrace{T_p M\times\cdots\times T_p M}_{\ell\ \; \mbox{times}}
         \longrightarrow \RR
     
@@ -352,8 +353,8 @@ class TensorFieldParal(FreeModuleTensor):
     
     INPUT:
     
-    - ``vector_field_module`` -- free module `X(U,V)` of vector fields along
-      `U` with values on `V`
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector 
+      fields along `U` with values on `\Phi(U)\subset V \subset M`
     - ``tensor_type`` -- pair (k,l) with k being the contravariant rank and l 
       the covariant rank
     - ``name`` -- (default: None) name given to the tensor field

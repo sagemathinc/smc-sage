@@ -1167,7 +1167,7 @@ class OpenDomain(Domain):
             self._scalar_field_ring = ScalarFieldRing(self)
         return self._scalar_field_ring
 
-    def vector_field_module(self, ambient_domain=None):
+    def vector_field_module(self, dest_map=None):
         r"""
         Returns the set of vector fields defined on ``self``, possibly 
         within some ambient manifold, as a module over the ring of scalar
@@ -1178,17 +1178,19 @@ class OpenDomain(Domain):
         
         INPUT:
         
-        - ``ambient_domain`` -- (default: None) open subset `V` of the 
-          ambient manifold `M` containing the image of ``self`` in case
-          ``self`` is part of an immersed submanifold of `M`; if None, 
-          ``ambient_domain`` is set to ``self``.
+        - ``dest_map`` -- (default: None) destination map 
+          `\Phi:\ U \rightarrow V`, where `U` is ``self`` 
+          (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`); 
+          if none is provided, the identity is assumed (case of vector fields 
+          *on* `U`)
         
         OUTPUT:
         
         - instance of 
           :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`
-          representing the module `\mathcal{X}(U,V)` of vector fields on the 
-          open domain `U`=``self`` taking values on the open set `V`. 
+          representing the module `\mathcal{X}(U,\Phi)` of vector fields on the 
+          open domain `U`=``self`` taking values on 
+          `\Phi(U)\subset V\subset M`. 
         
         EXAMPLES:
         
@@ -1225,15 +1227,15 @@ class OpenDomain(Domain):
             sage: XU.an_element().view()
             2 d/dth + 2 d/dph
 
-        Vector field module `\mathcal{X}(U,\mathbb{R}^3)` of the 
+        Vector field module `\mathcal{X}(U,\Phi)` of the 
         `\mathbb{R}^3`-valued vector fields along `U`, associated with the 
-        embedding of `\mathbb{S}^2` into `\mathbb{R}^3`::
+        embedding `\Phi` of `\mathbb{S}^2` into `\mathbb{R}^3`::
         
             sage: R3 = Manifold(3, 'R^3')
             sage: cart_coord.<x, y, z> = R3.chart('x y z')
-            sage: Phi = U.diff_mapping(R3, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)])
-            sage: XU_R3 = U.vector_field_module(ambient_domain=R3) ; XU_R3
-            free module X(U,R^3) of vector fields along the open domain 'U' on the 2-dimensional manifold 'S^2' within the 3-dimensional manifold 'R^3'
+            sage: Phi = U.diff_mapping(R3, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='Phi')
+            sage: XU_R3 = U.vector_field_module(dest_map=Phi) ; XU_R3
+            free module X(U,Phi) of vector fields along the open domain 'U' on the 2-dimensional manifold 'S^2' mapped into the 3-dimensional manifold 'R^3'
             sage: XU_R3.base_ring()
             ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
             
@@ -1245,16 +1247,18 @@ class OpenDomain(Domain):
 
         """
         from vectorfield_module import VectorFieldFreeModule
-        if ambient_domain is None:
-            ambient_domain = self
-        if ambient_domain.name not in self._vector_field_modules:
-            #!# if ambient_domain.is_manifestly_parallelizable():
-            self._vector_field_modules[ambient_domain.name] = \
-                     VectorFieldFreeModule(self, ambient_domain=ambient_domain)
+        if dest_map is None:
+            dest_map_name = 'Id'
+        else:
+            dest_map_name = dest_map.name
+        if dest_map_name not in self._vector_field_modules:
+            #!# if dest_map.codomain.is_manifestly_parallelizable():
+            self._vector_field_modules[dest_map_name] = \
+                     VectorFieldFreeModule(self, dest_map=dest_map)
             # else:
-        return self._vector_field_modules[ambient_domain.name]
+        return self._vector_field_modules[dest_map_name]
 
-    def tensor_field_module(self, tensor_type, ambient_domain=None):
+    def tensor_field_module(self, tensor_type, dest_map=None):
         r"""
         Returns the set of tensor fields of a given type defined on ``self``, 
         possibly within some ambient manifold, as a module over the ring of 
@@ -1267,18 +1271,19 @@ class OpenDomain(Domain):
         
         - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant 
           rank and `l` the covariant rank
-        - ``ambient_domain`` -- (default: None) open subset `V` of the 
-          ambient manifold `M` containing the image of ``self`` in case
-          ``self`` is part of an immersed submanifold of `M`; if None, 
-          ``ambient_domain`` is set to ``self``.
+        - ``dest_map`` -- (default: None) destination map 
+          `\Phi:\ U \rightarrow V`, where `U` is ``self`` 
+          (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`); 
+          if none is provided, the identity is assumed (case of tensor fields 
+          *on* `U`)
 
         OUTPUT:
         
         - instance of 
           :class:`~sage.geometry.manifolds.tensorfield_module.TensorFieldModule`
-          representing the module `\mathcal{T}^{(k,l)}(U,V)` of type-`(k,l)` 
+          representing the module `\mathcal{T}^{(k,l)}(U,\Phi)` of type-`(k,l)` 
           tensor fields on the open domain `U` = ``self`` taking values on 
-          the open set `V`. 
+          `\Phi(U)\subset V\subset M`. 
         
         EXAMPLE:
         
@@ -1303,17 +1308,19 @@ class OpenDomain(Domain):
         """
         from tensorfield_module import TensorFieldFreeModule
         if tensor_type == (1,0):
-            return self.vector_field_module(ambient_domain=ambient_domain)
-        if ambient_domain is None:
-            ambient_domain = self
+            return self.vector_field_module(dest_map=dest_map)
+        if dest_map is None:
+            dest_map_name = 'Id'
+        else:
+            dest_map_name = dest_map.name
         ttype = tuple(tensor_type)
-        if (ttype, ambient_domain.name) not in self._tensor_field_modules:
+        if (ttype, dest_map_name) not in self._tensor_field_modules:
             #!# if self.is_manifestly_parallelizable():
-            self._tensor_field_modules[(ttype, ambient_domain.name)] = \
-              TensorFieldFreeModule(self.vector_field_module(ambient_domain=ambient_domain),
+            self._tensor_field_modules[(ttype, dest_map_name)] = \
+              TensorFieldFreeModule(self.vector_field_module(dest_map=dest_map),
                                     ttype)
             # else:
-        return self._tensor_field_modules[(ttype, ambient_domain.name)]
+        return self._tensor_field_modules[(ttype, dest_map_name)]
 
 
     def scalar_field(self, coord_expression=None, chart=None, name=None, 
@@ -1365,7 +1372,7 @@ class OpenDomain(Domain):
         return ScalarField(self, coord_expression, chart, name, latex_name) 
 
 
-    def vector_field(self, name=None, latex_name=None, ambient_domain=None):
+    def vector_field(self, name=None, latex_name=None, dest_map=None):
         r"""
         Define a vector field on the domain.
 
@@ -1377,9 +1384,11 @@ class OpenDomain(Domain):
         - ``name`` -- (default: None) name given to the vector field
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the vector 
           field; if none is provided, the LaTeX symbol is set to ``name``
-        - ``ambient_domain`` -- (default: None) manifold open subset on which 
-          the vector field takes its values; if None, ``ambient_domain`` 
-          is set to ``self``.
+        - ``dest_map`` -- (default: None) instance of 
+          class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+          representing the destination map `\Phi:\ U \rightarrow V`, where `U` 
+          is ``self``; if none is provided, the identity map is assumed (case 
+          of a vector field *on* ``self``)
 
         OUTPUT:
         
@@ -1412,14 +1421,14 @@ class OpenDomain(Domain):
         """
         from vectorfield import VectorFieldParal
         if self.is_manifestly_parallelizable():
-            return VectorFieldParal(self.vector_field_module(ambient_domain), 
+            return VectorFieldParal(self.vector_field_module(dest_map), 
                                     name=name, latex_name=latex_name)
         else:
             raise NotImplementedError("VectorField not implemented yet")
 
 
     def tensor_field(self, k, l, name=None, latex_name=None, sym=None, 
-        antisym=None, ambient_domain=None):
+        antisym=None, dest_map=None):
         r"""
         Define a tensor field on the domain.
         
@@ -1442,9 +1451,11 @@ class OpenDomain(Domain):
               arguments and a symmetry between the 2nd, 4th and 5th arguments.
         - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
           among the arguments, with the same convention as for ``sym``. 
-        - ``ambient_domain`` -- (default: None) manifold open subset on which 
-          the tensor field takes its values; if None, ``ambient_domain`` 
-          is set to ``self``.
+        - ``dest_map`` -- (default: None) instance of 
+          class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+          representing the destination map `\Phi:\ U \rightarrow V`, where `U` 
+          is ``self``; if none is provided, the identity map is assumed (case 
+          of a tensor field *on* ``self``)
 
         OUTPUT:
         
@@ -1477,14 +1488,14 @@ class OpenDomain(Domain):
         """
         from tensorfield import TensorFieldParal
         if self.is_manifestly_parallelizable():
-            return TensorFieldParal(self.vector_field_module(ambient_domain), 
+            return TensorFieldParal(self.vector_field_module(dest_map), 
                                     (k,l), name, latex_name, sym, antisym)
         else:
             raise NotImplementedError("TensorField not implemented yet")
 
 
     def sym_bilin_form_field(self, name=None, latex_name=None, 
-                             ambient_domain=None):  
+                             dest_map=None):  
         r"""
         Define a field of symmetric bilinear forms on the domain.
 
@@ -1496,9 +1507,11 @@ class OpenDomain(Domain):
         - ``name`` -- (default: None) name given to the field
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
           if none is provided, the LaTeX symbol is set to ``name``
-        - ``ambient_domain`` -- (default: None) manifold open subset on which 
-          the field takes its values; if None, ``ambient_domain`` is set to 
-          ``self``.
+        - ``dest_map`` -- (default: None) instance of 
+          class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+          representing the destination map `\Phi:\ U \rightarrow V`, where `U` 
+          is ``self``; if none is provided, the identity map is assumed (case 
+          of a field of symmetric bilinear forms *on* ``self``)
 
         OUTPUT:
         
@@ -1523,14 +1536,14 @@ class OpenDomain(Domain):
         from rank2field import SymBilinFormFieldParal
         if self.is_manifestly_parallelizable():
             return SymBilinFormFieldParal(
-                                      self.vector_field_module(ambient_domain), 
+                                      self.vector_field_module(dest_map), 
                                       name=name, latex_name=latex_name)
         else:
             raise NotImplementedError("SymBilinFormField not implemented yet")
 
 
     def endomorphism_field(self, name=None, latex_name=None, 
-                           ambient_domain=None):  
+                           dest_map=None):  
         r"""
         Define a field of endomorphisms (i.e. linear operators in the tangent 
         spaces = tensors of type (1,1)) on the domain.
@@ -1543,9 +1556,11 @@ class OpenDomain(Domain):
         - ``name`` -- (default: None) name given to the field
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
           if none is provided, the LaTeX symbol is set to ``name``
-        - ``ambient_domain`` -- (default: None) manifold open subset on which 
-          the field takes its values; if None, ``ambient_domain`` is set to 
-          ``self``.
+        - ``dest_map`` -- (default: None) instance of 
+          class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+          representing the destination map `\Phi:\ U \rightarrow V`, where `U` 
+          is ``self``; if none is provided, the identity map is assumed (case 
+          of an endomorphism field *on* ``self``)
 
         OUTPUT:
         
@@ -1572,14 +1587,14 @@ class OpenDomain(Domain):
         from rank2field import EndomorphismFieldParal
         if self.is_manifestly_parallelizable():
             return EndomorphismFieldParal(
-                                      self.vector_field_module(ambient_domain), 
+                                      self.vector_field_module(dest_map), 
                                       name=name, latex_name=latex_name)
         else:
             raise NotImplementedError("EndomorphismField not implemented yet")
 
 
     def automorphism_field(self, name=None, latex_name=None, 
-                           ambient_domain=None):  
+                           dest_map=None):  
         r"""
         Define a field of automorphisms (invertible endomorphisms in each 
         tangent space) on the domain.
@@ -1592,9 +1607,11 @@ class OpenDomain(Domain):
         - ``name`` -- (default: None) name given to the field
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
           if none is provided, the LaTeX symbol is set to ``name``
-        - ``ambient_domain`` -- (default: None) manifold open subset on which 
-          the field takes its values; if None, ``ambient_domain`` is set to 
-          ``self``.
+        - ``dest_map`` -- (default: None) instance of 
+          class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+          representing the destination map `\Phi:\ U \rightarrow V`, where `U` 
+          is ``self``; if none is provided, the identity map is assumed (case 
+          of an automorphism field *on* ``self``)
 
         OUTPUT:
         
@@ -1621,13 +1638,13 @@ class OpenDomain(Domain):
         from rank2field import AutomorphismFieldParal
         if self.is_manifestly_parallelizable():
             return AutomorphismFieldParal(
-                                      self.vector_field_module(ambient_domain), 
+                                      self.vector_field_module(dest_map), 
                                       name=name, latex_name=latex_name)
         else:
             raise NotImplementedError("AutomorphismField not implemented yet")
             
 
-    def identity_map(self, name=None, latex_name=None, ambient_domain=None):  
+    def identity_map(self, name=None, latex_name=None, dest_map=None):  
         r"""
         Define the identity map in the tangent spaces on the domain.
 
@@ -1640,9 +1657,11 @@ class OpenDomain(Domain):
           is provided, the value 'Id' is set. 
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity
           map; if none is provided, the LaTeX symbol is set to `\mathrm{Id}`
-        - ``ambient_domain`` -- (default: None) manifold open subset on which 
-          the field takes its values; if None, ``ambient_domain`` is set to 
-          ``self``.
+        - ``dest_map`` -- (default: None) instance of 
+          class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+          representing the destination map `\Phi:\ U \rightarrow V`, where `U` 
+          is ``self``; if none is provided, the identity map is assumed (case 
+          of a tangent-space identity map field *on* ``self``)
 
         OUTPUT:
         
@@ -1669,13 +1688,14 @@ class OpenDomain(Domain):
         if name is None:
             name = 'Id'
         if self.is_manifestly_parallelizable():
-            return IdentityMapParal(self.vector_field_module(ambient_domain), 
+            return IdentityMapParal(self.vector_field_module(dest_map), 
                                     name=name, latex_name=latex_name)
         else:
             raise NotImplementedError("IdentityMap not implemented yet")
 
 
-    def vector_frame(self, symbol, latex_symbol=None, ambient_domain=None): 
+    def vector_frame(self, symbol=None, latex_symbol=None, dest_map=None,
+                     from_frame=None): 
         r"""
         Define a vector frame on the domain.
         
@@ -1687,14 +1707,22 @@ class OpenDomain(Domain):
 
         INPUT:
     
-        - ``symbol`` -- a letter (of a few letters) to denote a generic vector
-          of the frame
+        - ``symbol`` -- (default: None) a letter (of a few letters) to denote a 
+          generic vector of the frame; can be set to None if the parameter
+          ``from_frame`` is filled.
         - ``latex_symbol`` -- (default: None) symbol to denote a generic vector 
           of the frame; if None, the value of ``symbol`` is used. 
-        - ``ambient_domain`` -- (default: None) manifold open subset on which 
-          the vectors of the frame take their values; if none is provided, 
-          ``ambient_domain`` is set to ``self``.
-
+        - ``dest_map`` -- (default: None) destination map 
+          `\Phi:\ U \rightarrow V` 
+          (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`); 
+          if none is provided, the identity is assumed (case of a vector frame 
+          *on* `U`)
+        - ``from_frame`` -- (default: None) vector frame `\tilde e` on the 
+          codomain `V` of the destination map `\Phi`; 
+        - ``from_frame`` -- (default: None) vector frame `\tilde e` on the 
+          codomain `V` of the destination map `\Phi`; the returned frame `e` is 
+          then such that `\forall p \in U, e(p) = \tilde e(\Phi(p))`
+    
         OUTPUT:
         
         - instance of :class:`~sage.geometry.manifolds.vectorframe.VectorFrame`
@@ -1719,8 +1747,8 @@ class OpenDomain(Domain):
 
         """
         from vectorframe import VectorFrame 
-        return VectorFrame(self, symbol, latex_symbol=latex_symbol,
-                           ambient_domain=ambient_domain)
+        return VectorFrame(self, symbol=symbol, latex_symbol=latex_symbol,
+                           dest_map=dest_map, from_frame=from_frame)
 
     def metric(self, name, signature=None, latex_name=None): 
         r"""
@@ -1854,7 +1882,7 @@ class OpenDomain(Domain):
 
 
     def diff_form(self, degree, name=None, latex_name=None, 
-                  ambient_domain=None):
+                  dest_map=None):
         r"""
 
         Define a differential form on the domain.
@@ -1869,9 +1897,11 @@ class OpenDomain(Domain):
         - ``name`` -- (default: None) name given to the differential form
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
           differential form; if none is provided, the LaTeX symbol is set to ``name``
-        - ``ambient_domain`` -- (default: None) manifold open subset on which 
-          the field takes its values; if None, ``ambient_domain`` is set to 
-          ``self``.
+        - ``dest_map`` -- (default: None) instance of 
+          class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+          representing the destination map `\Phi:\ U \rightarrow V`, where `U` 
+          is ``self``; if none is provided, the identity map is assumed (case 
+          of a differential form *on* ``self``)
 
         OUTPUT:
         
@@ -1895,13 +1925,13 @@ class OpenDomain(Domain):
         """
         from diffform import DiffFormParal
         if self.is_manifestly_parallelizable():
-            return DiffFormParal(self.vector_field_module(ambient_domain), 
+            return DiffFormParal(self.vector_field_module(dest_map), 
                                  degree, name=name, latex_name=latex_name)
         else:
             raise NotImplementedError("DiffForm not implemented yet")
 
 
-    def one_form(self, name=None, latex_name=None, ambient_domain=None):
+    def one_form(self, name=None, latex_name=None, dest_map=None):
         r"""    
         Define a 1-form on the domain.
 
@@ -1913,9 +1943,11 @@ class OpenDomain(Domain):
         - ``name`` -- (default: None) name given to the 1-form
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 1-form; 
           if none is provided, the LaTeX symbol is set to ``name``
-        - ``ambient_domain`` -- (default: None) manifold open subset on which 
-          the field takes its values; if None, ``ambient_domain`` is set to 
-          ``self``.
+        - ``dest_map`` -- (default: None) instance of 
+          class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+          representing the destination map `\Phi:\ U \rightarrow V`, where `U` 
+          is ``self``; if none is provided, the identity map is assumed (case 
+          of a 1-form *on* ``self``)
 
         OUTPUT:
         
@@ -1940,7 +1972,7 @@ class OpenDomain(Domain):
         """
         from diffform import OneFormParal
         if self.is_manifestly_parallelizable():
-            return OneFormParal(self.vector_field_module(ambient_domain), 
+            return OneFormParal(self.vector_field_module(dest_map), 
                                 name=name, latex_name=latex_name)
         else:
             raise NotImplementedError("OneForm not implemented yet")
