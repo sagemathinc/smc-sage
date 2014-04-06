@@ -181,3 +181,73 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal) :
             for idtens, tens in self._lie_der_along_self.items():
                 del tens._lie_derivatives[id(self)]
             self._lie_der_along_self.clear()
+
+    def __call__(self, scalar):
+        r"""
+        Action on a scalar field.
+            
+        INPUT:
+            
+        - ``scalar`` -- scalar field `f`
+            
+        OUTPUT:
+            
+        - scalar field representing the derivative of `f` along the vector 
+          field, i.e. `v^i \frac{\partial f}{\partial x^i}`
+          
+        EXAMPLES:
+        
+        Action of a vector field on a scalar field on a 2-dimensional manifold::
+        
+            sage: M = Manifold(2, 'M')            
+            sage: c_cart.<x,y> = M.chart('x y')
+            sage: f = M.scalar_field(x*y^2)  
+            sage: v = M.vector_field()         
+            sage: v[:] = (-y, x)
+            sage: v(f)
+            scalar field on the 2-dimensional manifold 'M'
+            sage: v(f).expr()
+            2*x^2*y - y^3
+          
+        """
+        from diffform import OneFormParal
+        from scalarfield import ScalarField, ZeroScalarField
+        if isinstance(scalar, OneFormParal):  #!# it should be OneForm
+            # This is actually the action of the vector field on a 1-form, 
+            # as a tensor field of type (1,0):
+            return scalar(self)
+        if not isinstance(scalar, ScalarField):
+            raise TypeError("The argument must be a scalar field")
+        if not scalar.domain.is_subdomain(self.domain):
+            raise ValueError("The scalar field and the vector are defined " +
+                             "on different domains.")
+        if isinstance(scalar, ZeroScalarField):
+            return scalar
+        # search for a commont chart: 
+        chart = None
+        def_chart = self.domain.def_chart
+        if def_chart in scalar.express:
+            if def_chart.frame in self.components:
+                chart = def_chart
+        else:
+            for kchart in scalar.express:
+                if kchart.frame in self.components: 
+                    chart = kchart
+                    break
+        if chart is None:
+            raise ValueError("No common chart found.")
+        v = self.comp(chart.frame)
+        f = scalar.function_chart(chart) 
+        res = 0 
+        for i in scalar.manifold.irange():
+            res += v[i, chart] * f.diff(i)
+        # Name of the output:
+        res_name = None
+        if self.name is not None and scalar.name is not None:
+            res_name = self.name + "(" + scalar.name + ")"
+        # LaTeX symbol for the output:
+        res_latex = None
+        if self.latex_name is not None and scalar.latex_name is not None:
+            res_latex = self.latex_name + r"\left(" + scalar.latex_name + \
+                        r"\right)"
+        return res.scalar_field(name=res_name, latex_name=res_latex)

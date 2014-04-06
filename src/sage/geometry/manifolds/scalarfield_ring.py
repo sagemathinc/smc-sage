@@ -45,12 +45,14 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
     The class :class:`ScalarFieldRing` inherits from 
     :class:`~sage.structure.parent.Parent`, with the category set to
     :class:`~sage.categories.commutative_rings.CommutativeRings`. 
-    The corresponding Element class is :class:`ScalarField`. 
+    The corresponding Element class is 
+    :class:`~sage.geometry.manifolds.scalarfield.ScalarField`. 
 
     INPUT:
     
     - ``domain`` -- the manifold open subset `U` on which the scalar fields are 
-      defined (must be an instance of class :class:`OpenDomain`)
+      defined (must be an instance of class 
+      :class:`~sage.geometry.manifolds.domain.OpenDomain`)
     
     EXAMPLES:
     

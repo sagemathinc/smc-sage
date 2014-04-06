@@ -101,7 +101,7 @@ class DiffMapping(SageObject):
     where  `U` is a open subset of some differentiable manifold `\mathcal{M}` 
     and `\mathcal{N}` is a differentiable manifold.
     In what follows, `\mathcal{M}` is called the *start manifold* and 
-    `\mathcal{N}`the *arrival manifold*. 
+    `\mathcal{N}` the *arrival manifold*. 
 
     INPUT:
     

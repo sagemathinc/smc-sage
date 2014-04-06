@@ -6,13 +6,16 @@ manifolds over `\RR`, i.e. differentiable mappings of the form
 
 .. MATH::
 
-    f: U\subset \mathcal{M} \longrightarrow \RR
+    f: U\subset M \longrightarrow \RR
     
-where `U` is a domain of the differentiable manifold `\mathcal{M}`.
+where `U` is an open subset of the differentiable manifold `M`.
 
 The class :class:`ScalarField`  inherits from the classes 
-:class:`DiffMapping` (a scalar field being a differentiable mapping to `\RR`) 
-and :class:`DiffForm` (a scalar field being a differential form of degree 0). 
+:class:`~sage.geometry.manifolds.diffmapping.DiffMapping` (a scalar field being 
+a differentiable mapping to `\RR`) 
+and :class:`~sage.structure.element.CommutativeRingElement` (a scalar field on
+`U` being an element of the commutative ring (actually a commutative 
+algebra) `C^\infty(U)`).
 
 The subclass :class:`ZeroScalarField` deals with null scalar fields. 
 
@@ -44,8 +47,9 @@ class ScalarField(DiffMapping, CommutativeRingElement):
     
     INPUT:
     
-    - ``domain`` -- the manifold domain `U` on which the scalar field is 
-      defined (must be an instance of class :class:`Domain`)
+    - ``domain`` -- the manifold open subset `U` on which the scalar field is 
+      defined (must be an instance of class 
+      :class:`~sage.geometry.manifolds.domain.OpenDomain`)
     - ``coord_expression`` -- (default: None) coordinate expression of the 
       scalar field
     - ``chart`` -- (default:None) chart defining the coordinates used in 
@@ -118,7 +122,8 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         cos(ph)*sin(th) + G(th, ph)
         
     In each chart, the scalar field is represented by a function of the 
-    coordinates, which is a an instance of the class :class:`FunctionChart` 
+    coordinates, which is a an instance of the class 
+    :class:`~sage.geometry.manifolds.chart.FunctionChart` 
     and can be accessed by the method :meth:`function_chart`::
     
         sage: f.function_chart(c_spher)
@@ -136,7 +141,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
     A scalar field is a differential mapping from the manifold to the field of
     real numbers (modeled by the unique instance :data:`RealLine` of the class
-    :class:`RealLineManifold`)::
+    :class:`~sage.geometry.manifolds.manifold.RealLineManifold`)::
     
         sage: isinstance(f, sage.geometry.manifolds.diffmapping.DiffMapping)
         True
@@ -496,8 +501,9 @@ class ScalarField(DiffMapping, CommutativeRingElement):
 
         OUTPUT:
         
-        - instance of :class:`FunctionChart` representing the coordinate 
-          function of the scalar field in the given chart.
+        - instance of :class:`~sage.geometry.manifolds.chart.FunctionChart` 
+          representing the coordinate function of the scalar field in the 
+          given chart.
 
         EXAMPLES:
         
@@ -1181,13 +1187,11 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             rlname = format_unop_latex(r'\mathrm{d}', self.latex_name)
             self._exterior_derivative = self.domain.one_form(name=rname, 
                                                              latex_name=rlname)
-            n = self.manifold.dim
-            si = self.manifold.sindex
             for chart in self.express:
                 f = self.express[chart]
-                for i in range(n):
-                    self._exterior_derivative.add_comp(chart.frame)[i+si, chart] \
-                        = f.diff(chart.xx[i])
+                for i in self.manifold.irange():
+                    self._exterior_derivative.add_comp(chart.frame)[i, chart] \
+                        = f.diff(i)
 #@@
             #if chart is None:
                 #chart = self.pick_a_chart()
@@ -1262,7 +1266,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             sage: m = Manifold(2, 'M')
             sage: c_xy.<x,y> = m.chart('x y')
             sage: f = m.scalar_field(x^2*cos(y))
-            sage: v = VectorField(m, 'v')
+            sage: v = m.vector_field(name='v')
             sage: v[:] = (-y, x)
             sage: f.lie_der(v)
             scalar field on the 2-dimensional manifold 'M'
@@ -1283,9 +1287,9 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             zero scalar field on the 2-dimensional manifold 'M'
 
         """
-        from vectorfield import VectorField
-        if not isinstance(vector, VectorField):
-            raise TypeError("The argument must be a vector field.")
+#        from vectorfield import VectorField
+#!#        if not isinstance(vector, VectorField):
+#            raise TypeError("The argument must be a vector field.")
         if id(vector) not in self._lie_derivatives:
             # A new computation must be performed
             res = vector(self)
@@ -1319,7 +1323,7 @@ class ZeroScalarField(ScalarField):
         0
         sage: f.is_zero()
         True
-        sage: p = Point(m, (1,2))
+        sage: p = m.point((1,2))
         sage: f(p)
         0
 
@@ -1464,7 +1468,9 @@ class ZeroScalarField(ScalarField):
           
         OUTPUT:
         
-        - instance of :class:`ZeroFunctionChart` defined in the specified chart.
+        - instance of 
+          :class:`~sage.geometry.manifolds.chart.ZeroFunctionChart` defined in 
+          the specified chart.
         
         """
         if chart is None:
@@ -1538,7 +1544,8 @@ class ZeroScalarField(ScalarField):
 
         INPUT:
     
-        - ``p`` -- point on the manifold (type: :class:`Point`)
+        - ``p`` -- point on the manifold (type: 
+          :class:`~sage.geometry.manifolds.point.Point`)
         
         OUTPUT:
 

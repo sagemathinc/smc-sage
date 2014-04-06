@@ -315,37 +315,34 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         """
         from sage.calculus.functional import diff
         from utilities import format_unop_txt, format_unop_latex
+        from sage.tensor.modules.comp import CompFullyAntiSym
+        from vectorframe import CoordFrame
         if self._exterior_derivative is None:
             # A new computation is necessary:
-            if chart is None:
-                frame = self.pick_a_coord_frame()
-                if frame is None:
-                    raise ValueError("No coordinate frame could be found for " +
-                                     "the differential form components.")
-                chart = frame.chart
-            else:
-                frame = chart.frame
-                if frame not in self.components:
-                    raise ValueError("Components in the frame " + frame + 
-                                     " have not been defined.")
-            n = self.manifold.dim
-            si = self.manifold.sindex
-            sc = self.components[frame]
-            dc = CompFullyAntiSym(frame, self.tensor_rank+1)
-            for ind, val in sc._comp.items():
-                for i in range(n):
-                    ind_d = (i+si,) + ind
-                    if len(ind_d) == len(set(ind_d)): # all indices are different
-                          dc[[ind_d]] += \
-                            val.function_chart(chart).diff(chart.xx[i]).scalar_field()
-            dc._del_zeros()
-            # Name and LaTeX name of the result (rname and rlname):
+            fmodule = self.fmodule # shortcut
             rname = format_unop_txt('d', self.name)
             rlname = format_unop_latex(r'\mathrm{d}', self.latex_name)
-            # Final result
-            self._exterior_derivative = DiffForm(self.domain, self.tensor_rank+1, 
-                                                 rname, rlname)
-            self._exterior_derivative.components[frame] = dc
+            self._exterior_derivative = DiffFormParal(fmodule, 
+                                                      self.tensor_rank+1, 
+                                                      name=rname, 
+                                                      latex_name=rlname)
+            for frame in self.components:
+                # the computation is performed only in a coordinate frame:
+                if isinstance(frame, CoordFrame):
+                    chart = frame.chart
+                    sc = self.components[frame]
+                    dc = CompFullyAntiSym(fmodule.ring, frame, 
+                                          self.tensor_rank+1, 
+                                          start_index=fmodule.sindex,
+                                     output_formatter=fmodule.output_formatter)
+                    for ind, val in sc._comp.items():
+                        for i in fmodule.irange():
+                            ind_d = (i,) + ind
+                            if len(ind_d) == len(set(ind_d)): 
+                                # all indices are different
+                                dc[[ind_d]] += \
+                                    val.function_chart(chart).diff(i).scalar_field()
+                    self._exterior_derivative.components[frame] = dc
         return self._exterior_derivative
  
     def hodge_star(self, metric):
