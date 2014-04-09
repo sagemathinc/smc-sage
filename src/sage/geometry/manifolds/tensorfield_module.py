@@ -36,7 +36,7 @@ class TensorFieldFreeModule(TensorFreeModule):
     INPUT:
     
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector 
-      fields along `U` associated with the mapping `Phi:\; U \rightarrow V`. 
+      fields along `U` associated with the mapping `\Phi:\; U \rightarrow V`. 
     - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank and 
       `l` the covariant rank
     

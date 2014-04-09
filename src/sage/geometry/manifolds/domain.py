@@ -813,6 +813,7 @@ class Domain(Parent):
         if not frame.domain.is_subdomain(self):
             raise TypeError("The frame must be defined on the domain.")
         self.def_frame = frame
+        frame.fmodule.set_default_basis(frame)
 
     def frame_change(self, frame1, frame2):
         r"""
