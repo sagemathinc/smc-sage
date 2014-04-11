@@ -48,26 +48,36 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal) :
 
     A vector field on a 3-dimensional manifold::
     
-        sage: m = Manifold(3, 'M')
-        sage: c_xyz.<x,y,z> = m.chart('x y z')
-        sage: v = VectorField(m, 'V') ; v
+        sage: M = Manifold(3, 'M')
+        sage: c_xyz.<x,y,z> = M.chart('x y z')
+        sage: v = M.vector_field('V') ; v
         vector field 'V' on the 3-dimensional manifold 'M'
         sage: latex(v)
         V
+    
+    Vector fields are considered as elements of a module over the ring of
+    scalar fields on `M`::
+    
+        sage: v.parent()
+        free module X(M) of vector fields on the 3-dimensional manifold 'M'
+        sage: v.parent().base_ring()
+        ring of scalar fields on the 3-dimensional manifold 'M'
+        sage: v.parent() is M.vector_field_module()
+        True
 
     A vector field is a tensor field of rank 1 and of type (1,0)::
     
-        sage: v.rank
+        sage: v.tensor_rank
         1
         sage: v.tensor_type
         (1, 0)
 
     Components of a vector field with respect to a given frame::
     
-        sage: e = VectorFrame(m, 'e') ; m.set_default_frame(e)
+        sage: e = M.vector_frame('e') ; M.set_default_frame(e)
         sage: v[0], v[1], v[2] = (1, 4, 9)  # components on M's default frame (e)
         sage: v.comp()
-        1-index components w.r.t. the vector frame (M, (e_0,e_1,e_2))
+        1-index components w.r.t. vector frame (M, (e_0,e_1,e_2))
     
     The totality of the components are accessed via the operator [:]::
     
@@ -90,14 +100,15 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal) :
         sage: v[:2]
         [1, -2]
         
-    The components are instances of the class :class:`Components`::
+    The components are instances of the class 
+    :class:`~sage.tensor.modules.comp.Components`::
     
-        sage: type(v.comp())  
-        <class 'sage.geometry.manifolds.component.Components'>
+        sage: type(v.comp())
+        <class 'sage.tensor.modules.comp.Components'>
 
     Components in another frame::
     
-        sage: f = VectorFrame(m, 'f')
+        sage: f = M.vector_frame('f')
         sage: for i in range(3):
         ...       v.set_comp(f)[i] = (i+1)**3
         ...
@@ -108,10 +119,10 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal) :
 
     The range of the indices depends on the convention set for the manifold::
         
-        sage: m = Manifold(3, 'M', start_index=1)
-        sage: c_xyz.<x,y,z> = m.chart('x y z')
-        sage: e = VectorFrame(m, 'e') ; m.set_default_frame(e)
-        sage: v = VectorField(m, 'V')
+        sage: M = Manifold(3, 'M', start_index=1)
+        sage: c_xyz.<x,y,z> = M.chart('x y z')
+        sage: e = M.vector_frame('e') ; M.set_default_frame(e)
+        sage: v = M.vector_field('V')
         sage: (v[1], v[2], v[3]) = (1, 4, 9)
         sage: v[0]
         Traceback (most recent call last):
@@ -120,10 +131,10 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal) :
 
     A vector field acts on scalar fields (derivation along the vector field)::
     
-        sage: m = Manifold(2, 'M')            
-        sage: c_cart.<x,y> = m.chart('x y')
-        sage: f = ScalarField(m, x*y^2, name='f')  
-        sage: v = VectorField(m, 'v')         
+        sage: M = Manifold(2, 'M')            
+        sage: c_cart.<x,y> = M.chart('x y')
+        sage: f = M.scalar_field(x*y^2, name='f')  
+        sage: v = M.vector_field('v')         
         sage: v[:] = (-y, x)
         sage: v.view()
         v = -y d/dx + x d/dy

@@ -22,7 +22,7 @@ EXAMPLES:
     
         sage: m = Manifold(3, 'M')
         sage: c_xyz = m.chart('x y z')
-        sage: e = VectorFrame(m, 'e') ; e
+        sage: e = m.vector_frame('e') ; e
         vector frame (M, (e_0,e_1,e_2))
         sage: latex(e)
         \left(M ,\left(e_0,e_1,e_2\right)\right)
@@ -54,7 +54,7 @@ EXAMPLES:
 
         sage: m = Manifold(3, 'M', start_index=1)
         sage: c_xyz = m.chart('x y z')
-        sage: e = VectorFrame(m, 'e')              
+        sage: e = m.vector_frame('e')              
         sage: e.vec
         (vector field 'e_1' on the 3-dimensional manifold 'M', vector field 'e_2' on the 3-dimensional manifold 'M', vector field 'e_3' on the 3-dimensional manifold 'M')
         sage: e[1], e[2], e[3]
@@ -189,7 +189,7 @@ class VectorFrame(FreeModuleBasis):
     
         sage: m = Manifold(3, 'M')
         sage: c_xyz = m.chart('x y z')
-        sage: e = VectorFrame(m, 'e')
+        sage: e = m.vector_frame('e')
         sage: e
         vector frame (M, (e_0,e_1,e_2))
         sage: latex(e)
@@ -197,7 +197,7 @@ class VectorFrame(FreeModuleBasis):
 
     The LaTeX symbol can be specified::
     
-        sage: e = VectorFrame(m, 'E', r"\epsilon")
+        sage: e = m.vector_frame('E', r"\epsilon")
         sage: latex(e)
         \left(M ,\left(\epsilon_0,\epsilon_1,\epsilon_2\right)\right)
 
@@ -321,7 +321,7 @@ class VectorFrame(FreeModuleBasis):
         
             sage: m = Manifold(2,'R^2')
             sage: c_xy = m.chart('x y')
-            sage: e = VectorFrame(m, 'e') ; m.set_default_frame(e)
+            sage: e = m.vector_frame('e') ; m.set_default_frame(e)
             sage: m.frame_changes
             {}
             sage: rot = AutomorphismField(m)
@@ -599,7 +599,7 @@ class CoFrame(FreeModuleCoBasis):
     
         sage: m = Manifold(3, 'M', start_index=1)
         sage: c_xyz = m.chart('x y z')
-        sage: v = VectorFrame(m, 'v')
+        sage: v = m.vector_frame('v')
         sage: e = CoFrame(v, 'e') ; e
         coframe (M, (e^1,e^2,e^3))
 
