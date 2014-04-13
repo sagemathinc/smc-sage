@@ -562,7 +562,7 @@ class TensorFieldParal(FreeModuleTensor):
         self.domain = vector_field_module.domain
         self.ambient_domain = vector_field_module.ambient_domain
         # Initialization of derived quantities:
-        #!# TensorFieldParal._init_derived(self) 
+        self._init_derived() 
 
     def _repr_(self):
         r"""
@@ -598,4 +598,238 @@ class TensorFieldParal(FreeModuleTensor):
         return TensorFieldParal(self.fmodule, self.tensor_type, sym=self.sym, 
                                 antisym=self.antisym)
 
+    def _init_derived(self):
+        r"""
+        Initialize the derived quantities
+        """
+        self._lie_derivatives = {} # collection of Lie derivatives of self
 
+    def _del_derived(self):
+        r"""
+        Delete the derived quantities
+        """
+        # First deletes any reference to self in the vectors' dictionary:
+        for vid, val in self._lie_derivatives.items():
+            del val[0]._lie_der_along_self[id(self)]
+        self._lie_derivatives.clear()
+
+
+    def common_coord_frame(self, other):
+        r"""
+        Find a common coordinate frame for the components of ``self`` and 
+        ``other``. 
+        
+        In case of multiple common bases, the domain's default coordinate
+        basis is privileged. 
+        If the current components of ``self`` and ``other`` are all relative to
+        different frames, a common frame is searched by performing a component
+        transformation, via the transformations listed in 
+        ``self.domain.frame_changes``, still privileging transformations to 
+        the domain's default frame.
+        
+        INPUT:
+        
+        - ``other`` -- a tensor field
+        
+        OUPUT:
+        
+        - common coordinate frame; if no common basis is found, None is 
+          returned. 
+        
+        """
+        from vectorframe import CoordFrame
+        # Compatibility checks:
+        if not isinstance(other, TensorFieldParal):
+            raise TypeError("The argument must be of type TensorFieldParal.")
+        dom = self.domain
+        def_frame = dom.def_frame
+        #
+        # 1/ Search for a common frame among the existing components, i.e. 
+        #    without performing any component transformation. 
+        #    -------------------------------------------------------------
+        # 1a/ Direct search
+        if def_frame in self.components and \
+           def_frame in other.components and \
+           isinstance(dom.def_frame, CoordFrame):
+            return def_frame # the domain's default frame is privileged
+        for frame1 in self.components:
+            if frame1 in other.components and \
+               isinstance(frame1, CoordFrame):
+                return frame1
+        # 1b/ Search involving subframes
+        dom2 = other.domain
+        for frame1 in self.components:
+            if not isinstance(frame1, CoordFrame):
+                continue
+            for frame2 in other.components:
+                if not isinstance(frame2, CoordFrame):
+                    continue
+                if frame2 in frame1.subframes:
+                    self.comp(frame2)
+                    return frame2
+                if frame1 in frame2.subframes:
+                    other.comp(frame1)
+                    return frame1
+        #
+        # 2/ Search for a common frame via one component transformation
+        #    ----------------------------------------------------------
+        # If this point is reached, it is indeed necessary to perform at least 
+        # one component transformation to get a common frame
+        if isinstance(dom.def_frame, CoordFrame):
+            if def_frame in self.components:
+                for oframe in other.components:
+                    if (oframe, def_frame) in dom.frame_changes:
+                        other.comp(def_frame, from_frame=oframe)
+                        return def_frame
+            if def_frame in other.components:
+                for sframe in self.components:
+                    if (sframe, def_frame) in dom.frame_changes:
+                        self.comp(def_frame, from_frame=sframe)
+                        return def_frame
+        # If this point is reached, then def_frame cannot be a common frame
+        # via a single component transformation
+        for sframe in self.components:
+            if not instance(sframe, CoordFrame):
+                continue
+            for oframe in other.components:
+                if not instance(oframe, CoordFrame):
+                    continue
+                if (oframe, sframe) in dom.frame_changes:
+                    other.comp(sframe, from_frame=oframe)
+                    return sframe
+                if (sframe, oframe) in dom.frame_changes:
+                    self.comp(oframe, from_frame=sframe)
+                    return oframe
+        #
+        # 3/ Search for a common frame via two component transformations
+        #    -----------------------------------------------------------
+        # If this point is reached, it is indeed necessary to perform at two
+        # component transformation to get a common frame
+        for sframe in self.components:
+            for oframe in other.components:
+                if (sframe, def_frame) in dom.frame_changes and \
+                   (oframe, def_frame) in dom.frame_changes and \
+                   isinstance(def_frame, CoordFrame):
+                    self.comp(def_frame, from_frame=sframe)
+                    other.comp(def_frame, from_frame=oframe)
+                    return def_frame
+                for frame in dom.frames:
+                    if (sframe, frame) in dom.frame_changes and \
+                       (oframe, frame) in dom.frame_changes and \
+                       isinstance(frame, CoordFrame):
+                        self.comp(frame, from_frame=sframe)
+                        other.comp(frame, from_frame=oframe)
+                        return frame
+        #
+        # If this point is reached, no common frame could be found, even at 
+        # the price of component transformations:
+        return None
+    
+
+    def lie_der(self, vector):
+        r"""
+        Computes the Lie derivative with respect to a vector field.
+        
+        The Lie derivative is stored in the dictionary 
+        :attr:`_lie_derivatives`, so that there is no need to 
+        recompute it at the next call if neither ``self`` nor ``vector``
+        have been modified meanwhile. 
+        
+        INPUT:
+        
+        - ``vector`` -- vector field with respect to which the Lie derivative
+          is to be taken
+          
+        OUTPUT:
+        
+        - the tensor field that is the Lie derivative of ``self`` with respect 
+          to ``vector``
+        
+        EXAMPLES:
+        
+        Lie derivative of a vector::
+        
+            sage: M = Manifold(2, 'M', start_index=1)
+            sage: c_xy.<x,y> = M.chart('x y')
+            sage: v = M.vector_field('v')
+            sage: v[:] = (-y, x)
+            sage: w = M.vector_field()
+            sage: w[:] = (2*x+y, x*y)
+            sage: w.lie_der(v)
+            vector field on the 2-dimensional manifold 'M'
+            sage: w.lie_der(v).view()
+            ((x - 2)*y + x) d/dx + (x^2 - y^2 - 2*x - y) d/dy
+
+        The Lie derivative is antisymmetric::
+        
+            sage: w.lie_der(v) == -v.lie_der(w)
+            True
+            
+        For vectors, it coincides with the commutator::
+
+            sage: f = M.scalar_field(x^3 + x*y^2)
+            sage: w.lie_der(v)(f).view()
+            (x, y) |--> -(x + 2)*y^3 + 3*x^3 - x*y^2 + 5*(x^3 - 2*x^2)*y
+            sage: w.lie_der(v)(f) == v(w(f)) - w(v(f))  # rhs = commutator [v,w] acting on f
+            True
+            
+        Lie derivative of a 1-form::
+        
+            sage: om = M.one_form()
+            sage: om[:] = (y^2*sin(x), x^3*cos(y))
+            sage: om.lie_der(v)
+            1-form on the 2-dimensional manifold 'M'
+            sage: om.lie_der(v).view()
+            (-y^3*cos(x) + x^3*cos(y) + 2*x*y*sin(x)) dx + (-x^4*sin(y) - 3*x^2*y*cos(y) - y^2*sin(x)) dy
+            
+        Check of Cartan identity::
+        
+            sage: om.lie_der(v) == v.contract(0,om.exterior_der(),0) + (om(v)).exterior_der()
+            True
+        
+        """
+        from vectorfield import VectorFieldParal
+        if not isinstance(vector, VectorFieldParal):
+            raise TypeError("The argument must be of type VectorFieldParal.")
+        if id(vector) not in self._lie_derivatives:
+            # A new computation must be performed
+            #
+            # 1/ Search for a common coordinate frame:
+            coord_frame = self.common_coord_frame(vector)
+            if coord_frame is None:
+                raise TypeError("No common coordinate frame found.")
+            chart = coord_frame.chart
+            #
+            # 2/ Component computation:
+            tc = self.components[coord_frame]
+            vc = vector.components[coord_frame]
+            # the result has the same tensor type and same symmetries as self:
+            resc = self._new_comp(coord_frame) 
+            n_con = self.tensor_type[0]
+            vf_module = vector.fmodule
+            for ind in resc.non_redundant_index_generator():
+                rsum = 0
+                for i in vf_module.irange():
+                    rsum += vc[[i]].function_chart(chart) * \
+                           tc[[ind]].function_chart(chart).diff(i)
+                # loop on contravariant indices:
+                for k in range(n_con): 
+                    for i in vf_module.irange():
+                        indk = list(ind)
+                        indk[k] = i  
+                        rsum -= tc[[indk]].function_chart(chart) * \
+                                vc[[ind[k]]].function_chart(chart).diff(i)
+                # loop on covariant indices:
+                for k in range(n_con, self.tensor_rank): 
+                    for i in vf_module.irange():
+                        indk = list(ind)
+                        indk[k] = i  
+                        rsum += tc[[indk]].function_chart(chart) * \
+                                vc[[i]].function_chart(chart).diff(ind[k])
+                resc[[ind]] = rsum.scalar_field()
+            #
+            # 3/ Final result (the tensor)
+            res = vf_module.tensor_from_comp(self.tensor_type, resc)
+            self._lie_derivatives[id(vector)] = (vector, res)
+            vector._lie_der_along_self[id(self)] = self
+        return self._lie_derivatives[id(vector)][1]

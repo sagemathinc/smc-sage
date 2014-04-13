@@ -1748,8 +1748,9 @@ class OpenDomain(Domain):
 
         """
         from vectorframe import VectorFrame 
-        return VectorFrame(self, symbol=symbol, latex_symbol=latex_symbol,
-                           dest_map=dest_map, from_frame=from_frame)
+        return VectorFrame(self.vector_field_module(dest_map=dest_map), 
+                           symbol=symbol, latex_symbol=latex_symbol,
+                           from_frame=from_frame)
 
     def metric(self, name, signature=None, latex_name=None): 
         r"""

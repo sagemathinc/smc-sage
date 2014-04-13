@@ -1574,14 +1574,14 @@ class FreeModuleTensor(ModuleElement):
         
             sage: A = M.automorphism()
             sage: A[:] =  [[0,0,1], [1,0,0], [0,-1,0]]
-            sage: f = e.new_basis(A, 'f')
-            sage: b.comp(f)[:]  # forces the computation of b's components w.r.t. basis f
+            sage: h = e.new_basis(A, 'h')
+            sage: b.comp(h)[:]  # forces the computation of b's components w.r.t. basis h
             [-2 -3  0]
             [ 7  6 -4]
             [ 3 -1 -2]
-            sage: b.del_other_comp(f)  # deletes components w.r.t. basis e
+            sage: b.del_other_comp(h)  # deletes components w.r.t. basis e
             sage: b.components.keys()  # indeed:
-            [basis (f_0,f_1,f_2) on the rank-3 free module M over the Integer Ring]
+            [basis (h_0,h_1,h_2) on the rank-3 free module M over the Integer Ring]
             sage: a.components.keys()  # while a is known only in basis e:
             [basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring]
             sage: s1 = a.contract(1, b, 1) ; s1  # yet the computation is possible

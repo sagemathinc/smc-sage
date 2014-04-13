@@ -155,6 +155,8 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
         # TensorFieldParal attributes:
         self.domain = vector_field_module.domain
         self.ambient_domain = vector_field_module.ambient_domain
+        # Initialization of derived quantities:
+        TensorFieldParal._init_derived(self) 
 
     def _repr_(self):
         r"""
@@ -170,6 +172,12 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
         Create a :class:`SymBilinFormFieldParal` instance on the same domain. 
         """
         return SymBilinFormFieldParal(self.fmodule)
+
+    def _del_derived(self):
+        r"""
+        Delete the derived quantities
+        """
+        TensorFieldParal._del_derived(self)
 
 
 #******************************************************************************
@@ -252,6 +260,8 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
         # TensorFieldParal attributes:
         self.domain = vector_field_module.domain
         self.ambient_domain = vector_field_module.ambient_domain
+        # Initialization of derived quantities:
+        TensorFieldParal._init_derived(self) 
 
     def _repr_(self):
         r"""
@@ -268,6 +278,11 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
         """
         return EndomorphismFieldParal(self.fmodule)
 
+    def _del_derived(self):
+        r"""
+        Delete the derived quantities
+        """
+        TensorFieldParal._del_derived(self)
 
 #******************************************************************************
 
@@ -324,6 +339,8 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
         # TensorFieldParal attributes:
         self.domain = vector_field_module.domain
         self.ambient_domain = vector_field_module.ambient_domain
+        # Initialization of derived quantities:
+        TensorFieldParal._init_derived(self) 
 
     def _repr_(self):
         r"""
@@ -486,6 +503,8 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         # TensorFieldParal attributes:
         self.domain = vector_field_module.domain
         self.ambient_domain = vector_field_module.ambient_domain
+        # Initialization of derived quantities:
+        TensorFieldParal._init_derived(self) 
 
     def _repr_(self):
         r"""
@@ -501,3 +520,10 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         Create a :class:`IdentityMapParal` instance on the same domain.
         """
         return IdentityMapParal(self.fmodule)
+
+    def _del_derived(self):
+        r"""
+        Delete the derived quantities
+        """
+        # AutomorphismFieldParal._del_derived is bypassed:
+        EndomorphismFieldParal._del_derived(self)

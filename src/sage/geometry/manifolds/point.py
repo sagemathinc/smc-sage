@@ -365,7 +365,7 @@ class Point(Element):
             sage: q.add_coord((1,2,3), c_spher)
             sage: cart_from_spher = c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
             sage: q.add_coord( cart_from_spher(*q.coord(c_spher)), c_cart)
-            sage: q.coordinates
+            sage: q.coordinates # random (dictionary output)
             {chart (R3, (r, th, ph)): (1, 2, 3), chart (R3, (x, y, z)): (cos(3)*sin(2), sin(3)*sin(2), cos(2))}
             sage: p.coordinates
             {chart (R3, (x, y, z)): (1, 2, 3)}
