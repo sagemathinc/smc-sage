@@ -1,8 +1,9 @@
 r"""
 Rank-2 tensor fields
 
-Three derived classes of :class:`TensorField` devoted to rank-2 tensor
-are implemented:
+Three derived classes of 
+:class:`~sage.geometry.manifolds.tensorfield.TensorField` 
+devoted to rank-2 tensor are implemented:
 
 
 * :class:`EndomorphismField` for fields of endomorphisms 
@@ -46,8 +47,8 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
     
     INPUT:
     
-    - ``vector_field_module`` -- free module `X(U,V)` of vector fields along
-      `U` with values on `V`
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector 
+      fields along `U` with values on `V`
     - ``name`` -- (default: None) name given to the field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
       if none is provided, the LaTeX symbol is set to ``name``
@@ -56,14 +57,16 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
 
     A field of symmetric bilinear forms on a 3-dimensional manifold::
     
-        sage: m = Manifold(3, 'M')
-        sage: c_xyz = m.chart('x y z')
-        sage: t = SymBilinFormField(m, 'T') ; t
+        sage: M = Manifold(3, 'M')
+        sage: c_xyz = M.chart('x y z')
+        sage: t = M.sym_bilin_form_field('T') ; t
         field of symmetric bilinear forms 'T' on the 3-dimensional manifold 'M'
     
     Such a object is a tensor field of rank 2 and type (0,2)::
     
-        sage: t.rank
+        sage: t.parent()
+        free module TF^(0,2)(M) of type-(0,2) tensors fields on the 3-dimensional manifold 'M'
+        sage: t.tensor_rank
         2
         sage: t.tensor_type
         (0, 2)
@@ -73,17 +76,17 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
 
         sage: latex(t)
         T
-        sage: om = SymBilinFormField(m, 'Omega', r'\Omega')
+        sage: om = M.sym_bilin_form_field('Omega', r'\Omega')
         sage: latex(om)
         \Omega
 
     Components with respect to some vector frame::
         
-        sage: e = VectorFrame(m, 'e') ; m.set_default_frame(e)
+        sage: e = M.vector_frame('e') ; M.set_default_frame(e)
         sage: t.set_comp()
-        fully symmetric 2-indices components w.r.t. the vector frame (M, (e_0,e_1,e_2))
+        fully symmetric 2-indices components w.r.t. vector frame (M, (e_0,e_1,e_2))
         sage: type(t.comp())
-        <class 'sage.geometry.manifolds.component.CompFullySym'>
+        <class 'sage.tensor.modules.comp.CompFullySym'>
            
     For the domain's default frame, the components are accessed with the square brackets::
 
@@ -102,13 +105,13 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
        
     A symmetric bilinear form acts on vector pairs::
     
-        sage: m = Manifold(2, 'M')
-        sage: c_xy.<x,y> = m.chart('x y')
-        sage: t = SymBilinFormField(m, 'T')
+        sage: M = Manifold(2, 'M')
+        sage: c_xy.<x,y> = M.chart('x y')
+        sage: t = M.sym_bilin_form_field('T')
         sage: t[0,0], t[0,1], t[1,1] = (-1, x, y*x)
-        sage: v1 = VectorField(m, 'V_1')
+        sage: v1 = M.vector_field('V_1')
         sage: v1[:] = (y,x)  
-        sage: v2 = VectorField(m, 'V_2')
+        sage: v2 = M.vector_field('V_2')
         sage: v2[:] = (x+y,2)
         sage: s = t(v1,v2) ; s
         scalar field 'T(V_1,V_2)' on the 2-dimensional manifold 'M'
@@ -122,9 +125,9 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
     Adding two symmetric bilinear forms results in another symmetric bilinear
     form::
 
-        sage: a = SymBilinFormField(m)          
+        sage: a = M.sym_bilin_form_field()          
         sage: a[0,0], a[0,1], a[1,1] = (1,2,3)  
-        sage: b = SymBilinFormField(m)          
+        sage: b = M.sym_bilin_form_field()          
         sage: b[0,0], b[0,1], b[1,1] = (-1,4,5)
         sage: s = a + b ; s
         field of symmetric bilinear forms on the 2-dimensional manifold 'M'
@@ -135,7 +138,7 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
     But adding a symmetric bilinear from with a non-symmetric bilinear form 
     results in a generic type (0,2) tensor::
     
-        sage: c = TensorField(m,0,2)            
+        sage: c = M.tensor_field(0,2)            
         sage: c[:] = [[-2, -3], [1,7]]            
         sage: s1 = a + c ; s1
         tensor field of type (0,2) on the 2-dimensional manifold 'M'
@@ -196,8 +199,8 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
     
     INPUT:
     
-    - ``vector_field_module`` -- free module `X(U,V)` of vector fields along
-      `U` with values on `V`
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector 
+      fields along `U` with values on `V`
     - ``name`` -- (default: None) name given to the field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
       if none is provided, the LaTeX symbol is set to ``name``
@@ -206,31 +209,33 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
 
     A field of endomorphisms on a 3-dimensional manifold::
     
-        sage: m = Manifold(3, 'M', start_index=1)
-        sage: c_xyz = m.chart('x y z')
-        sage: t = EndomorphismField(m, 'T') ; t
+        sage: M = Manifold(3, 'M', start_index=1)
+        sage: c_xyz = M.chart('x y z')
+        sage: t = M.endomorphism_field('T') ; t
         field of endomorphisms 'T' on the 3-dimensional manifold 'M'
         
     A field of endomorphisms is a tensor field of rank 2 and of type (1,1)::
     
-        sage: t.rank
+        sage: t.parent()
+        free module TF^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
+        sage: t.tensor_rank
         2
         sage: t.tensor_type
         (1, 1)
     
     Components with respect to a given frame::
 
-        sage: e = VectorFrame(m, 'e') ; m.set_default_frame(e)
+        sage: e = M.vector_frame('e') ; M.set_default_frame(e)
         sage: t[:] = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
         sage: t[:]
         [1 2 3]
         [4 5 6]
         [7 8 9]
-        sage: change_basis = AutomorphismField(m)
+        sage: change_basis = M.automorphism_field()
         sage: change_basis[:] = [[-1,0,1], [0,1,2], [-2,1,2]]
         sage: f = e.new_frame(change_basis, 'f')
         sage: t.comp(f) # computation of t components in the frame f, from those in the frame e
-        2-indices components w.r.t. the vector frame (M, (f_1,f_2,f_3))
+        2-indices components w.r.t. vector frame (M, (f_1,f_2,f_3))
         sage: t.comp(f)[:]
         [  9/2    -3 -15/2]
         [  -11     7    19]
@@ -240,7 +245,7 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
 
     An endomorphism maps a vector to a vector::
     
-        sage: v = VectorField(m, 'v')
+        sage: v = M.vector_field('v')
         sage: v[:] = (1,2,3)
         sage: w = t(v) ; w
         vector field 'T(v)' on the 3-dimensional manifold 'M'
@@ -300,8 +305,8 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
     
     INPUT:
     
-    - ``vector_field_module`` -- free module `X(U,V)` of vector fields along
-      `U` with values on `V`
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector 
+      fields along `U` with values on `V`
     - ``name`` -- (default: None) name given to the field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
       if none is provided, the LaTeX symbol is set to ``name``
@@ -310,16 +315,21 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
 
     A pi/3-rotation in the Euclidean 2-plane::
     
-        sage: m = Manifold(2,'R^2')
-        sage: c_xy = m.chart('x y')
-        sage: rot = AutomorphismField(m, 'R') ; rot
+        sage: M = Manifold(2,'R^2')
+        sage: c_xy = M.chart('x y')
+        sage: rot = M.automorphism_field('R') ; rot
         field of tangent-space automorphisms 'R' on the 2-dimensional manifold 'R^2'
         sage: rot[:] = [[sqrt(3)/2, -1/2], [1/2, sqrt(3)/2]]
         
+    An automorphism is a type-(1,1) tensor::
+    
+        sage: rot.parent()
+        free module TF^(1,1)(R^2) of type-(1,1) tensors fields on the 2-dimensional manifold 'R^2'
+    
     The inverse automorphism is obtained via the method :meth:`inverse`::
     
         sage: inv = rot.inverse() ; inv
-        field of tangent-space automorphisms 'inv-R' on the 2-dimensional manifold 'R^2'
+        field of tangent-space automorphisms 'R^(-1)' on the 2-dimensional manifold 'R^2'
         sage: latex(inv)
         R^{-1}
         sage: inv[:]
@@ -424,8 +434,8 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
     
     INPUT:
     
-    - ``vector_field_module`` -- free module `X(U,V)` of vector fields along
-      `U` with values on `V`
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector 
+      fields along `U` with values on `V`
     - ``name`` -- (default: None) name given to the identity map; if none
       is provided, the value 'Id' is set. 
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity
@@ -435,12 +445,17 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
 
     Identity map on a 3-dimensional manifold::
     
-        sage: m = Manifold(3, 'M', start_index=1)
-        sage: c_xyz.<x,y,z> = m.chart('x y z')
-        sage: a = IdentityMap(m) ; a
-        Identity map 'Id' in the tangent spaces of the 3-dimensional manifold 'M'
+        sage: M = Manifold(3, 'M', start_index=1)
+        sage: c_xyz.<x,y,z> = M.chart('x y z')
+        sage: a = M.identity_map(); a
+        field of tangent-space identity maps 'Id' on the 3-dimensional manifold 'M'
         sage: latex(a)
         \mathrm{Id}
+        
+    The identity map is a type-(1,1) tensor::
+    
+        sage: a.parent()
+        free module TF^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
         sage: a[:]
         [1 0 0]
         [0 1 0]
@@ -450,7 +465,7 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         
     The components are automatically defined in any frame::
     
-        sage: e = VectorFrame(m, 'e')
+        sage: e = M.vector_frame('e')
         sage: a.comp(e) 
         Kronecker delta of size 3x3
         sage: a.comp(e)[:]
@@ -469,7 +484,7 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
 
     The identity map applied to a vector field::
     
-        sage: v = VectorField(m)
+        sage: v = M.vector_field()
         sage: v[:] = (2*x, -3, y+z)
         sage: w = a(v) ; w
         vector field on the 3-dimensional manifold 'M'
@@ -480,7 +495,7 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
 
     The identity map acting as a type (1,1) tensor on a pair (1-form, vector)::
     
-        sage: om = OneForm(m)
+        sage: om = M.one_form()
         sage: om[:] = (0, x*y, 2)
         sage: s = a(om, v) ; s
         scalar field on the 3-dimensional manifold 'M'

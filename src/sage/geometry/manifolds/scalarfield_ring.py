@@ -164,6 +164,7 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
         r"""
         Construct a scalarfield
         """
+        #~ from chart import FunctionChart
         if coord_expression == 0:
             return ZeroScalarField(self.domain)
         if isinstance(coord_expression, ScalarField):
@@ -177,6 +178,16 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
             else:
                 raise TypeError("Cannot coerce this scalar field to " 
                                                             + str(self.domain))
+        #~ elif isinstance(coord_expression, FunctionChart):
+            #~ chart = coord_expression.chart
+            #~ if chart.domain is self.domain:
+                #~ resu = self.element_class(self.domain, 
+                                     #~ coord_expression=coord_expression.express, 
+                                     #~ chart=chart, name=name, 
+                                     #~ latex_name=latex_name)
+            #~ else:
+                #~ raise TypeError("Cannot coerce this FunctionChart to " 
+                                                            #~ + str(self))
         else:
             resu = self.element_class(self.domain, 
                                       coord_expression=coord_expression, 
@@ -196,6 +207,7 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
         r"""
         Determine whether coercion to self exists from other parent
         """
+#        from chart import FunctionChart
         if other is SR:
             return True
         elif other is ZZ:
@@ -207,6 +219,9 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
         elif isinstance(other, ScalarFieldRing):
             # print "coerce from ScalarFieldRing"
             return self.domain.is_subdomain(other.domain)
+#        elif other == FunctionChart:
+#            print "coerce from FunctionChart"
+#            return True
         else:
             return False
 
