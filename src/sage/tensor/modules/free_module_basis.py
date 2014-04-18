@@ -221,9 +221,15 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
 
     def __eq__(self, other):
         r"""
-        Comparison operator
+        Equality (comparison) operator
         """
         return other is self
+
+    def __ne__(self, other):
+        r"""
+        Non-equality operator.
+        """
+        return not self.__eq__(other)
         
     def __getitem__(self, index):
         r"""

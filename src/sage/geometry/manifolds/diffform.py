@@ -181,6 +181,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         [                         0  x*y*z*sin(x) + x*z*cos(z)  x*y*z*cos(y) - y*z*cos(z)]
         [-x*y*z*sin(x) - x*z*cos(z)                          0   -(x*cos(y) + y*sin(x))*z]
         [-x*y*z*cos(y) + y*z*cos(z)    (x*cos(y) + y*sin(x))*z                          0]
+        sage: ab.view()
+        A/\B = (x*y*z*sin(x) + x*z*cos(z)) dx/\dy + (x*y*z*cos(y) - y*z*cos(z)) dx/\dz - (x*cos(y) + y*sin(x))*z dy/\dz
 
     The tensor product of a 1-form and a 2-form is not a 3-form but a tensor
     field of type (0,3) with less symmetries::
@@ -376,7 +378,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         
             sage: m = Manifold(3, 'M', start_index=1)
             sage: X.<x,y,z> = m.chart('x y z')
-            sage: g = Metric(m, 'g')
+            sage: g = m.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, 1, 1
             sage: a = m.one_form('A')
             sage: var('Ax Ay Az')
@@ -395,7 +397,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         
         Hodge star of a 0-form (scalar field) in `R^3`::
         
-            sage: f = ScalarField(m, function('F',x,y,z), name='f')
+            sage: f = m.scalar_field(function('F',x,y,z), name='f')
             sage: sf = f.hodge_star(g) ; sf
             3-form '*f' on the 3-dimensional manifold 'M'
             sage: sf.view()
@@ -411,13 +413,13 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         
             sage: m = Manifold(4, 'M')
             sage: X = m.chart('t x y z')
-            sage: g = Metric(m, 'g', signature=2)
+            sage: g = m.metric('g', signature=2)
             sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
             sage: g.view()  # Minkowski metric
             g = -dt*dt + dx*dx + dy*dy + dz*dz
             sage: var('f0')
             f0
-            sage: f = ScalarField(m, f0, name='f')
+            sage: f = m.scalar_field(f0, name='f')
             sage: sf = f.hodge_star(g) ; sf 
             4-form '*f' on the 4-dimensional manifold 'M'
             sage: sf.view()

@@ -967,7 +967,7 @@ class Components(SageObject):
 
     def __ne__(self, other):
         r"""
-        Inequality operator. 
+        Non-equality operator. 
         
         INPUT:
         
@@ -1312,7 +1312,10 @@ class Components(SageObject):
         if pos2 < 0 or pos2 > other.nid - 1:
             raise IndexError("pos2 out of range.")
         return (self*other).self_contract(pos1, 
-                                          pos2+self.nid) #!# correct but not optimal
+                                          pos2+self.nid) 
+        #!# the above is correct (in particular the symmetries are delt by 
+        #   self_contract()), but it is not optimal (unnecessary terms are 
+        #   evaluated when performing the tensor product self*other)
 
     def index_generator(self):
         r"""
@@ -2359,7 +2362,7 @@ class CompWithSym(Components):
 
     def self_contract(self, pos1, pos2):
         r""" 
-        Index contraction, , taking care of the symmetries.
+        Index contraction, taking care of the symmetries.
         
         INPUT:
             
@@ -2556,7 +2559,7 @@ class CompWithSym(Components):
                                      self.sindex, self.output_formatter, 
                                      sym=sym_res, antisym=antisym_res)
             # The contraction itself:
-            for ind_res in result.index_generator():
+            for ind_res in result.non_redundant_index_generator():
                 ind = list(ind_res)
                 ind.insert(pos1, 0)
                 ind.insert(pos2, 0)

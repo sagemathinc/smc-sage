@@ -440,6 +440,12 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         for chart in com_charts:
             resu = resu and (self.express[chart] == other.express[chart])
         return resu
+
+    def __ne__(self, other):
+        r"""
+        Non-equality operator.
+        """
+        return not self.__eq__(other)
         
     ####### End of required methods a ring element (beside arithmetic) #######
 
@@ -1452,6 +1458,12 @@ class ZeroScalarField(ScalarField):
         if other.domain != self.domain:
             return False
         return other.is_zero()
+    
+    def __ne__(self, other):
+        r"""
+        Non-equality operator.
+        """
+        return not self.__eq__(other)
         
     ####### End of required methods a ring element (beside arithmetic) #######
 
