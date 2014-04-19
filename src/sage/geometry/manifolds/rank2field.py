@@ -15,13 +15,13 @@ devoted to rank-2 tensor are implemented:
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013): initial version
+- Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
 
 """
 
 #******************************************************************************
-#       Copyright (C) 2013 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of

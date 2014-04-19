@@ -25,7 +25,7 @@ Subclasses of :class:`DiffForm` are
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013): initial version
+- Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
 - Joris Vankerschaver (2010): developed a previous class, 
   :class:`DifferentialForm` (cf. the above note), which inspired the storage of 
   the non-zero components as a dictionary whose keys are the indices.
@@ -33,8 +33,8 @@ AUTHORS:
 """
 
 #******************************************************************************
-#       Copyright (C) 2013 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
 #       Copyright (C) 2010 Joris Vankerschaver <joris.vankerschaver@gmail.com>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)

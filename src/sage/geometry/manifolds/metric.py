@@ -11,13 +11,13 @@ Derived classes of :class:`Metric` are
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013) : initial version
+- Eric Gourgoulhon, Michal Bejger (2013, 2014) : initial version
 
 
 """
 #******************************************************************************
-#       Copyright (C) 2013 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -25,12 +25,11 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from rank2field import SymBilinFormField
+from rank2field import SymBilinFormFieldParal
 from connection import LeviCivitaConnection
-from diffform import DiffForm
 from sage.rings.integer import Integer
 
-class Metric(SymBilinFormField):
+class Metric(SymBilinFormFieldParal):
     r"""
     Base class for pseudo-Riemannian metrics on a differentiable manifold.
 
@@ -53,7 +52,7 @@ class Metric(SymBilinFormField):
     
         sage: m = Manifold(2, 'M', start_index=1)
         sage: c_xy.<x,y> = m.chart('x y')
-        sage: g = Metric(m, 'g') ; g
+        sage: g = m.metric('g') ; g
         pseudo-Riemannian metric 'g' on the 2-dimensional manifold 'M'
         sage: latex(g)
         g
@@ -114,7 +113,9 @@ class Metric(SymBilinFormField):
 
     """
     def __init__(self, domain, name, signature=None, latex_name=None):
-        SymBilinFormField.__init__(self, domain, name, latex_name)
+        #!# Provisory: must be replaced by SymBilinFormField.__init__ :
+        SymBilinFormFieldParal.__init__(self, domain.vector_field_module(), 
+                                        name=name, latex_name=latex_name)
         # signature:
         ndim = self.manifold.dim
         if signature is None:
@@ -155,12 +156,14 @@ class Metric(SymBilinFormField):
         Initialize the derived quantities
         """
         # Initialization of quantities pertaining to the mother class:
-        SymBilinFormField._init_derived(self) 
+        #!# Provisory: SymBilinFormFieldParal must be replaced by SymBilinFormField:
+        SymBilinFormFieldParal._init_derived(self) 
         # inverse metric:
         inv_name = 'inv_' + self.name
         inv_latex_name = self.latex_name + r'^{-1}'
-        self._inverse = TensorField(self.domain, 2, 0, inv_name, 
-                                    inv_latex_name, sym=(0,1))   
+        self._inverse = self.domain.tensor_field(2, 0, name=inv_name, 
+                                                 latex_name=inv_latex_name, 
+                                                 sym=(0,1))   
         self._connection = None  # Levi-Civita connection (not set yet)
         self._weyl = None # Weyl tensor (not set yet)
         self._determinants = {} # determinants in various frames
@@ -172,7 +175,8 @@ class Metric(SymBilinFormField):
         Delete the derived quantities
         """
         # First the derived quantities from the mother class are deleted:
-        SymBilinFormField._del_derived(self)
+        #!# Provisory: SymBilinFormFieldParal must be replaced by SymBilinFormField:
+        SymBilinFormFieldParal._del_derived(self)
         # The inverse metric is cleared: 
         self._inverse.components.clear()
         self._inverse._del_derived()
@@ -201,10 +205,10 @@ class Metric(SymBilinFormField):
         Signatures on a 2-dimensional manifold::
         
             sage: M = Manifold(2, 'M')
-            sage: g = Metric(M, 'g') # if not specified, the signature is Riemannian
+            sage: g = M.metric('g') # if not specified, the signature is Riemannian
             sage: g.signature() 
             2
-            sage: h = Metric(M, 'h', signature=0)
+            sage: h = M.metric('h', signature=0)
             sage: h.signature()
             0
 
@@ -220,7 +224,8 @@ class Metric(SymBilinFormField):
         - ``symbiform`` -- field of symmetric bilinear forms
 
         """
-        if not isinstance(symbiform, SymBilinFormField):
+        #!# Provisory: SymBilinFormFieldParal must be replaced by SymBilinFormField:
+        if not isinstance(symbiform, SymBilinFormFieldParal):
             raise TypeError("The argument must be a symmetric bilinear form.")
         if symbiform.manifold != self.manifold:
             raise TypeError("The manifold of the symmetric bilinear form " + 
@@ -241,7 +246,7 @@ class Metric(SymBilinFormField):
     
             sage: m = Manifold(2, 'M', start_index=1)
             sage: c_xy.<x,y> = m.chart('x y')
-            sage: g = Metric(m, 'g') 
+            sage: g = m.metric('g') 
             sage: g[1,1], g[1,2], g[2,2] = 1+x, x*y, 1-x 
             sage: g[:]  # components in the manifold's default frame
             [ x + 1    x*y]
@@ -266,6 +271,7 @@ class Metric(SymBilinFormField):
         from component import CompFullySym
         from vectorframe import CoordFrame
         from utilities import simplify_chain
+        raise NotImplementedError("Inverse metric not implemented yet")
         # Is the inverse metric up to date ?
         for frame in self.components:
             if frame not in self._inverse.components:
@@ -321,7 +327,7 @@ class Metric(SymBilinFormField):
             sage: m = Manifold(3, 'R^3', start_index=1)
             sage: # Let us use spherical coordinates on R^3:
             sage: c_spher.<r,th,ph> = m.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = Metric(m, 'g')
+            sage: g = m.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2 , (r*sin(th))^2  # the Euclidean metric
             sage: g.connection()
             Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the 3-dimensional manifold 'R^3'
@@ -373,7 +379,7 @@ class Metric(SymBilinFormField):
         
             sage: m = Manifold(3, 'R3', r'\RR^3', start_index=1)
             sage: X.<r,th,ph> = m.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = Metric(m, 'g')
+            sage: g = m.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, r^2*sin(th)^2
             sage: g.view()  # the standard flat metric expressed in spherical coordinates
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
@@ -444,7 +450,7 @@ class Metric(SymBilinFormField):
             sage: m = Manifold(2, 'S^2', start_index=1)
             sage: c_spher.<th,ph> = m.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: a = var('a') # the sphere radius 
-            sage: g = Metric(m, 'g')
+            sage: g = m.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
             sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
@@ -511,7 +517,7 @@ class Metric(SymBilinFormField):
             sage: m = Manifold(2, 'S^2', start_index=1)
             sage: c_spher.<th,ph> = m.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: a = var('a') # the sphere radius 
-            sage: g = Metric(m, 'g')
+            sage: g = m.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
             sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
@@ -562,7 +568,7 @@ class Metric(SymBilinFormField):
             sage: m = Manifold(2, 'S^2', start_index=1)
             sage: c_spher.<th,ph> = m.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: a = var('a') # the sphere radius 
-            sage: g = Metric(m, 'g')
+            sage: g = m.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
             sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
@@ -601,7 +607,7 @@ class Metric(SymBilinFormField):
         
             sage: m = Manifold(3, 'H^3', start_index=1)
             sage: X.<rh,th,ph> = m.chart(r'rh:[0,+oo):\rho th:[0,pi]:\theta  ph:[0,2*pi):\phi')
-            sage: g = Metric(m, 'g')
+            sage: g = m.metric('g')
             sage: b = var('b')                                                        
             sage: g[1,1], g[2,2], g[3,3] = b^2, (b*sinh(rh))^2, (b*sinh(rh)*sin(th))^2
             sage: g.view()  # standard metric on H^3:
@@ -612,13 +618,12 @@ class Metric(SymBilinFormField):
             True
 
         """
-        from rank2field import IdentityMap
         if self._weyl is None:
             n = self.manifold.dim
             if n < 3:
                 raise ValueError("The Weyl tensor is not defined for a " + 
                                  "manifold of dimension n <= 2.")
-            delta = IdentityMap(self.domain)
+            delta = self.domain.identity_map()
             riem = self.riemann()
             ric = self.ricci()
             rscal = self.ricci_scalar()
@@ -661,7 +666,7 @@ class Metric(SymBilinFormField):
         
             sage: M = Manifold(2, 'M', start_index=1)
             sage: X.<x,y> = M.chart('x y')
-            sage: g = Metric(M, 'g')
+            sage: g = M.metric('g')
             sage: g[1,1], g[1, 2], g[2, 2] = 1+x, x*y , 1-y
             sage: g[:]
             [ x + 1    x*y]
@@ -698,7 +703,6 @@ class Metric(SymBilinFormField):
         
         """
         from sage.matrix.constructor import matrix
-        from scalarfield import ScalarField
         from utilities import simple_determinant, simplify_chain
         manif = self.manifold
         dom = self.domain
@@ -710,7 +714,7 @@ class Metric(SymBilinFormField):
             frame = frame.frame
         if frame not in self._determinants:
             # a new computation is necessary
-            resu = ScalarField(dom)
+            resu = dom.scalar_field()
             gg = self.comp(frame)
             i1 = manif.sindex
             for chart in gg[[i1, i1]].express:
@@ -744,7 +748,7 @@ class Metric(SymBilinFormField):
         
             sage: m = Manifold(3, 'M', start_index=1)
             sage: c_spher.<r,th,ph> = m.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = Metric(m, 'g')
+            sage: g = m.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
             sage: g.view()
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
@@ -755,7 +759,7 @@ class Metric(SymBilinFormField):
         
             sage: M = Manifold(2, 'M', start_index=1)
             sage: X.<x,y> = M.chart('x y')
-            sage: g = Metric(M, 'g')
+            sage: g = M.metric('g')
             sage: g[1,1], g[1, 2], g[2, 2] = 1+x, x*y , 1-y
             sage: g[:]
             [ x + 1    x*y]
@@ -791,7 +795,6 @@ class Metric(SymBilinFormField):
 
         """
         from sage.functions.other import sqrt
-        from scalarfield import ScalarField
         from utilities import simplify_chain
         manif = self.manifold
         dom = self.domain
@@ -804,7 +807,7 @@ class Metric(SymBilinFormField):
         if frame not in self._sqrt_abs_dets:
             # a new computation is necessary
             detg = self.determinant(frame)
-            resu = ScalarField(dom)
+            resu = dom.scalar_field()
             for chart in detg.express:
                 x = self._indic_signat * detg.express[chart].express # |g|
                 x = simplify_chain(sqrt(x))
@@ -851,7 +854,7 @@ class Metric(SymBilinFormField):
         
             sage: m = Manifold(3, 'M', start_index=1)
             sage: c_spher.<r,th,ph> = m.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = Metric(m, 'g')
+            sage: g = m.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
             sage: g.view()
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
@@ -908,8 +911,8 @@ class Metric(SymBilinFormField):
             manif = self.manifold
             dom = self.domain
             ndim = manif.dim
-            eps = DiffForm(dom, ndim, name='eps_'+self.name, 
-                           latex_name=r'\epsilon_{'+self.latex_name+r'}')
+            eps = dom.diff_form(ndim, name='eps_'+self.name, 
+                                latex_name=r'\epsilon_{'+self.latex_name+r'}')
             ind = tuple(range(manif.sindex, manif.sindex+ndim))
             eps[[ind]] = self.sqrt_abs_det(dom.def_frame)
             self._vol_forms.append(eps)  # Levi-Civita tensor constructed
@@ -949,7 +952,7 @@ class RiemannMetric(Metric):
     
         sage: m = Manifold(2, 'S^2', start_index=1)
         sage: c_spher.<th,ph> = m.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
-        sage: g = RiemannMetric(m, 'g') ; g
+        sage: g = m.riemann_metric('g') ; g
         Riemannian metric 'g' on the 2-dimensional manifold 'S^2'
         sage: g[1,1], g[2,2] = 1, sin(th)^2
         sage: g.view()
@@ -1007,7 +1010,7 @@ class LorentzMetric(Metric):
     
         sage: m = Manifold(4, 'M')
         sage: c_cart = m.chart('t x y z')
-        sage: g = LorentzMetric(m, 'g') ; g
+        sage: g = m.lorentz_metric('g') ; g
         Lorentzian metric 'g' on the 4-dimensional manifold 'M'
         sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
         sage: g.view()
@@ -1017,7 +1020,7 @@ class LorentzMetric(Metric):
         
     The negative signature convention can be chosen::
     
-        sage: g = LorentzMetric(m, 'g', signature='negative') 
+        sage: g = m.lorentz_metric('g', signature='negative') 
         sage: g.signature()
         -2
 
