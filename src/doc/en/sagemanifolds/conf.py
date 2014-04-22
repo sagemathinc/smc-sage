@@ -18,12 +18,12 @@ from common.conf import *
 # General information about the project.
 project = u"SageManifolds Reference Manual"
 name = 'sagemanifolds_ref'
-release = "0.4"
+release = "0.5"
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
 html_title = project + " v" + release
-copyright = "2013, Michal Bejger and Eric Gourgoulhon"
+copyright = "2014, Michal Bejger and Eric Gourgoulhon"
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = name

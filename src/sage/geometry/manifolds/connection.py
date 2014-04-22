@@ -32,7 +32,8 @@ class AffConnection(SageObject):
     INPUT:
     
     - ``domain`` -- the manifold domain on which the connection is defined
-      (must be an instance of class :class:`Domain`)
+      (must be an instance of class 
+      :class:`~sage.geometry.manifolds.domain.Domain`)
     - ``name`` -- name given to the affine connection
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the affine 
       connection
@@ -41,9 +42,9 @@ class AffConnection(SageObject):
     
     Affine connection on a 3-dimensional manifold::
     
-        sage: m = Manifold(3, 'M', start_index=1)
-        sage: c_xyz.<x,y,z> = m.chart('x y z')
-        sage: nab = m.aff_connection('nabla', r'\nabla') ; nab
+        sage: M = Manifold(3, 'M', start_index=1)
+        sage: c_xyz.<x,y,z> = M.chart('x y z')
+        sage: nab = M.aff_connection('nabla', r'\nabla') ; nab
         affine connection 'nabla' on the 3-dimensional manifold 'M'
         
     A just-created connection has no connection coefficients::
@@ -68,11 +69,13 @@ class AffConnection(SageObject):
       
     The treatment of connection coefficients in vector frames different 
     from the manifold's default one is similar to that of tensor components; 
-    see therefore the class :class:`TensorField` for the documentation. 
+    see therefore the class 
+    :class:`~sage.geometry.manifolds.tensorfield.TensorField` for the 
+    documentation. 
     
     Action on a scalar field::
     
-        sage: f = m.scalar_field(x^2 - y^2, name='f')
+        sage: f = M.scalar_field(x^2 - y^2, name='f')
         sage: Df = nab(f) ; Df
         1-form 'df' on the 3-dimensional manifold 'M'
         sage: Df[:]
@@ -98,12 +101,12 @@ class AffConnection(SageObject):
     where the `T^k_{\ \, ij}`'s are the components of the connection's 
     torsion tensor::
             
-        sage: 2*DDf.antisymmetrize() == nab.torsion().contract(0,Df,0)
+        sage: 2*DDf.antisymmetrize() == nab.torsion().contract(0,Df)
         True
 
     The connection acting on a vector field::
 
-        sage: v = m.vector_field('v')
+        sage: v = M.vector_field('v')
         sage: v[:] = (y*z, x*z, x*y)
         sage: Dv = nab(v) ; Dv
         field of endomorphisms 'nabla v' on the 3-dimensional manifold 'M'
@@ -174,7 +177,7 @@ class AffConnection(SageObject):
         
         This method, to be called by :meth:`coef`, must be redefined by derived 
         classes to adapt the output to the relevant subclass of 
-        :class:`Components`.
+        :class:`~sage.tensor.modules.comp.Components`.
         
         """
         from sage.tensor.modules.comp import Components
@@ -208,23 +211,23 @@ class AffConnection(SageObject):
         OUTPUT: 
         
         - connection coefficients relative to the frame ``frame``, as an 
-          instance of the class :class:`Components` with 3 indices ordered 
-          as `(k,i,j)`
+          instance of the class :class:`~sage.tensor.modules.comp.Components` 
+          with 3 indices ordered as `(k,i,j)`
         
         EXAMPLES:      
  
         Connection coefficient of an affine connection on a 3-dimensional
         manifold::
     
-            sage: m = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = m.chart('x y z')
-            sage: nab = m.aff_connection('nabla', r'\nabla')
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: nab = M.aff_connection('nabla', r'\nabla')
             sage: nab[1,1,2], nab[3,2,3] = x^2, y*z  # Gamma^1_{12} = x^2, Gamma^3_{23} = yz
             sage: nab.coef()
             3-indices components w.r.t. coordinate frame (M, (d/dx,d/dy,d/dz))
             sage: print type(nab.coef())
             <class 'sage.tensor.modules.comp.Components'>
-            sage: m.default_frame()
+            sage: M.default_frame()
             coordinate frame (M, (d/dx,d/dy,d/dz))
             sage: nab.coef() is nab.coef(c_xyz.frame)
             True
@@ -270,9 +273,10 @@ class AffConnection(SageObject):
         OUTPUT: 
         
         - connection coefficients in the given frame, as an instance of the 
-          class :class:`Components`; if such connection coefficients did not 
-          exist previously, they are created.  See method :meth:`coef` for the
-          storage convention of the connection coefficents. 
+          class :class:`~sage.tensor.modules.comp.Components`; if such 
+          connection coefficients did not exist previously, they are created. 
+          See method :meth:`coef` for the storage convention of the connection 
+          coefficents. 
         
 
         """
@@ -313,9 +317,10 @@ class AffConnection(SageObject):
         OUTPUT: 
         
         - connection coefficients in the given frame, as an instance of the 
-          class :class:`Components`; if such connection coefficients did not 
-          exist previously, they are created.  See method :meth:`coef` for the
-          storage convention of the connection coefficents. 
+          class :class:`~sage.tensor.modules.comp.Components`; if such 
+          connection coefficients did not exist previously, they are created. 
+          See method :meth:`coef` for the storage convention of the connection 
+          coefficents. 
         
 
         """
@@ -490,15 +495,16 @@ class AffConnection(SageObject):
           
         OUTPUT:
         
-        - the torsion tensor `T`, as an instance of :class:`TensorField`
+        - the torsion tensor `T`, as an instance of 
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
         
         EXAMPLES:
         
         Torsion of an affine connection on a 3-dimensional manifold::
     
-            sage: m = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = m.chart('x y z')
-            sage: nab = m.aff_connection('nabla', r'\nabla')
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: nab = M.aff_connection('nabla', r'\nabla')
             sage: nab[1,1,2], nab[3,2,3] = x^2, y*z  # Gamma^1_{12} = x^2, Gamma^3_{23} = yz
             sage: t = nab.torsion() ; t
             tensor field of type (1,2) on the 3-dimensional manifold 'M'
@@ -512,14 +518,14 @@ class AffConnection(SageObject):
         The torsion expresses the lack of commutativity of two successive 
         derivatives of a scalar field::
         
-            sage: f = m.scalar_field(x*z^2 + y^2 - z^2, name='f')
+            sage: f = M.scalar_field(x*z^2 + y^2 - z^2, name='f')
             sage: DDf = nab(nab(f)) ; DDf
             tensor field 'nabla df' of type (0,2) on the 3-dimensional manifold 'M'
             sage: DDf.antisymmetrize()[:]  # two successive derivatives do not commute:
             [             0   -1/2*x^2*z^2              0]
             [   1/2*x^2*z^2              0 -(x - 1)*y*z^2]
             [             0  (x - 1)*y*z^2              0]
-            sage: 2*DDf.antisymmetrize() == nab.torsion().contract(0,nab(f),0)
+            sage: 2*DDf.antisymmetrize() == nab.torsion().contract(0,nab(f))
             True
 
         The above identity is the standard formula
@@ -574,15 +580,15 @@ class AffConnection(SageObject):
         OUTPUT:
         
         - the Riemann curvature tensor `R`, as an instance of 
-          :class:`TensorField`
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
         
         EXAMPLES:
         
         Curvature of an affine connection on a 3-dimensional manifold::
             
-            sage: m = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = m.chart('x y z')
-            sage: nab = m.aff_connection('nabla', r'\nabla') ; nab
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: nab = M.aff_connection('nabla', r'\nabla') ; nab
             affine connection 'nabla' on the 3-dimensional manifold 'M'
             sage: nab[1,1,2], nab[3,2,3] = x^2, y*z  # Gamma^1_{12} = x^2, Gamma^3_{23} = yz 
             sage: r = nab.riemann() ; r
@@ -653,15 +659,16 @@ class AffConnection(SageObject):
           
         OUTPUT:
         
-        - the Ricci  tensor `Ric`, as an instance of :class:`TensorField`
+        - the Ricci  tensor `Ric`, as an instance of 
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
         
         EXAMPLES:
         
         Ricci tensor of an affine connection on a 3-dimensional manifold::
             
-            sage: m = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = m.chart('x y z')
-            sage: nab = m.aff_connection('nabla', r'\nabla') ; nab
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: nab = M.aff_connection('nabla', r'\nabla') ; nab
             affine connection 'nabla' on the 3-dimensional manifold 'M'
             sage: nab[1,1,2], nab[3,2,3] = x^2, y*z  # Gamma^1_{12} = x^2, Gamma^3_{23} = yz 
             sage: r = nab.ricci() ; r
@@ -709,15 +716,16 @@ class AffConnection(SageObject):
           
         OUTPUT:
         
-        - the 1-form `\omega^i_{\ \, j}`, as an instance of :class:`OneForm`
+        - the 1-form `\omega^i_{\ \, j}`, as an instance of 
+          :class:`~sage.geometry.manifolds.diffform.OneForm`
         
         EXAMPLES:
         
         Connection 1-forms on a 3-dimensional manifold::
         
-            sage: m = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = m.chart('x y z')
-            sage: nab = m.aff_connection('nabla', r'\nabla')
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: nab = M.aff_connection('nabla', r'\nabla')
             sage: nab[1,1,1], nab[1,1,2], nab[1,1,3] = x*y*z, x^2, -y*z
             sage: nab[1,2,3], nab[1,3,1], nab[1,3,2] = -x^3, y^2*z, y^2-x^2
             sage: nab[2,1,1], nab[2,1,2], nab[2,2,1] = z^2, x*y*z^2, -x^2
@@ -730,9 +738,9 @@ class AffConnection(SageObject):
             
         Connection 1-forms w.r.t. a non-holonomic frame::
         
-            sage: ch_basis = m.automorphism_field()
+            sage: ch_basis = M.automorphism_field()
             sage: ch_basis[1,1], ch_basis[2,2], ch_basis[3,3] = y, z, x
-            sage: e = m.default_frame().new_frame(ch_basis, 'e')
+            sage: e = M.default_frame().new_frame(ch_basis, 'e')
             sage: e[1][:], e[2][:], e[3][:]
             ([y, 0, 0], [0, z, 0], [0, 0, x])
             sage: nab.connection_form(1,1,e)
@@ -743,12 +751,12 @@ class AffConnection(SageObject):
         Check of the formula `\omega^i_{\ \, j} = \Gamma^i_{\ \, jk} e^k`::
         
             sage: #... on the manifold's default frame (d/dx, d/dy, d:dz)
-            sage: dx = m.default_frame().coframe ; dx
+            sage: dx = M.default_frame().coframe ; dx
             coordinate coframe (M, (dx,dy,dz))
             sage: check = []
-            sage: for i in m.irange():
-            ...       for j in m.irange():
-            ...           check.append( nab.connection_form(i,j) == sum( nab[[i,j,k]]*dx[k] for k in m.irange() ) )
+            sage: for i in M.irange():
+            ...       for j in M.irange():
+            ...           check.append( nab.connection_form(i,j) == sum( nab[[i,j,k]]*dx[k] for k in M.irange() ) )
             ...
             sage: check
             [True, True, True, True, True, True, True, True, True]
@@ -756,26 +764,26 @@ class AffConnection(SageObject):
             sage: ef = e.coframe ; ef
             coframe (M, (e^1,e^2,e^3))
             sage: check = []
-            sage: for i in m.irange():
-            ...       for j in m.irange():
-            ...           s = nab.connection_form(i,j,e).comp(c_xyz.frame, from_frame=e) 
-            ...           check.append( nab.connection_form(i,j,e) == sum( nab.coef(e)[i,j,k]*ef[k] for k in m.irange() ) )
+            sage: for i in M.irange():
+            ...       for j in M.irange():
+            ...           s = nab.connection_form(i,j,e).comp(c_xyz.frame, from_basis=e) 
+            ...           check.append( nab.connection_form(i,j,e) == sum( nab.coef(e)[[i,j,k]]*ef[k] for k in M.irange() ) )
             ...
             sage: check
             [True, True, True, True, True, True, True, True, True]
 
         Check of the formula `\nabla_v e_j = \langle \omega^i_{\ \, j}, v \rangle e_i`::
         
-            sage: v = m.vector_field()
+            sage: v = M.vector_field()
             sage: v[:] = (x*y, z^2-3*x, z+2*y)
-            sage: b = m.default_frame()
-            sage: for j in m.irange():  # check on M's default frame
-            ...       nab(b[j]).contract(1,v,0) == sum( nab.connection_form(i,j)(v)*b[i] for i in m.irange())
+            sage: b = M.default_frame()
+            sage: for j in M.irange():  # check on M's default frame
+            ...       nab(b[j]).contract(v) == sum( nab.connection_form(i,j)(v)*b[i] for i in M.irange())
             True
             True
             True
-            sage: for j in m.irange():  # check on frame e
-            ...       nab(e[j]).contract(1,v,0) == sum( nab.connection_form(i,j,e)(v)*e[i] for i in m.irange())
+            sage: for j in M.irange():  # check on frame e
+            ...       nab(e[j]).contract(v) == sum( nab.connection_form(i,j,e)(v)*e[i] for i in M.irange())
             True
             True
             True
@@ -826,15 +834,16 @@ class AffConnection(SageObject):
           
         OUTPUT:
         
-        - the 2-form `\theta^i`, as an instance of :class:`DiffForm`
+        - the 2-form `\theta^i`, as an instance of 
+          :class:`~sage.geometry.manifolds.diffform.DiffForm`
         
         EXAMPLES:
         
         Torsion 2-forms on a 3-dimensional manifold::
         
-            sage: m = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = m.chart('x y z')
-            sage: nab = m.aff_connection('nabla', r'\nabla')
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: nab = M.aff_connection('nabla', r'\nabla')
             sage: nab[1,1,1], nab[1,1,2], nab[1,1,3] = x*y*z, x^2, -y*z
             sage: nab[1,2,3], nab[1,3,1], nab[1,3,2] = -x^3, y^2*z, y^2-x^2
             sage: nab[2,1,1], nab[2,1,2], nab[2,2,1] = z^2, x*y*z^2, -x^2
@@ -849,9 +858,9 @@ class AffConnection(SageObject):
             
         Torsion 2-forms w.r.t. a non-holonomic frame::
             
-            sage: ch_basis = m.automorphism_field()                      
+            sage: ch_basis = M.automorphism_field()                      
             sage: ch_basis[1,1], ch_basis[2,2], ch_basis[3,3] = y, z, x
-            sage: e = m.default_frame().new_frame(ch_basis, 'e')
+            sage: e = M.default_frame().new_frame(ch_basis, 'e')
             sage: e[1][:], e[2][:], e[3][:]
             ([y, 0, 0], [0, z, 0], [0, 0, x])
             sage: ef = e.coframe 
@@ -873,8 +882,8 @@ class AffConnection(SageObject):
         where the `\omega^i_{\ \, j}`'s are the connection 1-forms (cf. 
         :meth:`connection_form`). Let us check it on the frame e::
         
-            sage: for i in m.irange():
-            ...       nab.torsion_form(i, e) == ef[i].exterior_der() + sum(nab.connection_form(i,k,e).wedge(ef[k]) for k in m.irange())
+            sage: for i in M.irange():
+            ...       nab.torsion_form(i, e) == ef[i].exterior_der() + sum(nab.connection_form(i,k,e).wedge(ef[k]) for k in M.irange())
             ...
             True
             True
@@ -925,15 +934,16 @@ class AffConnection(SageObject):
           
         OUTPUT:
         
-        - the 2-form `\Omega^i_{\ \, j}`, as an instance of :class:`DiffForm`
+        - the 2-form `\Omega^i_{\ \, j}`, as an instance of 
+          :class:`~sage.geometry.manifolds.diffform.DiffForm`
         
         EXAMPLES:
         
         Curvature 2-forms on a 3-dimensional manifold::
         
-            sage: m = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = m.chart('x y z')
-            sage: nab = m.aff_connection('nabla', r'\nabla')
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: nab = M.aff_connection('nabla', r'\nabla')
             sage: nab[1,1,1], nab[1,1,2], nab[1,1,3] = x*y*z, x^2, -y*z
             sage: nab[1,2,3], nab[1,3,1], nab[1,3,2] = -x^3, y^2*z, y^2-x^2
             sage: nab[2,1,1], nab[2,1,2], nab[2,2,1] = z^2, x*y*z^2, -x^2
@@ -941,27 +951,23 @@ class AffConnection(SageObject):
             sage: nab[3,2,1], nab[3,2,2], nab[3,3,3] = x*y+z, z^3 -y^2, x*z^2 - z*y^2
             sage: nab.curvature_form(1,1)
             2-form 'nabla curvature 2-form (1,1)' on the 3-dimensional manifold 'M'
-            sage: nab.curvature_form(1,1)[:]
-            [                             0  y^2*z^3 + (x*y^3 - x)*z + 2*x                  x^3*z^2 - x*y]
-            [-y^2*z^3 - (x*y^3 - x)*z - 2*x                              0                  x^4*y*z^2 - z]
-            [                -x^3*z^2 + x*y                 -x^4*y*z^2 + z                              0]
+            sage: nab.curvature_form(1,1).view()
+            nabla curvature 2-form (1,1) = (y^2*z^3 + (x*y^3 - x)*z + 2*x) dx/\dy + (x^3*z^2 - x*y) dx/\dz + (x^4*y*z^2 - z) dy/\dz
             
         Curvature 2-forms w.r.t. a non-holonomic frame::
             
-            sage: ch_basis = m.automorphism_field()                      
+            sage: ch_basis = M.automorphism_field()                      
             sage: ch_basis[1,1], ch_basis[2,2], ch_basis[3,3] = y, z, x
-            sage: e = m.default_frame().new_frame(ch_basis, 'e')
-            sage: e[1][:], e[2][:], e[3][:]
-            ([y, 0, 0], [0, z, 0], [0, 0, x])
+            sage: e = M.default_frame().new_frame(ch_basis, 'e')
+            sage: e[1].view(), e[2].view(), e[3].view()
+            (e_1 = y d/dx, e_2 = z d/dy, e_3 = x d/dz)
             sage: ef = e.coframe 
-            sage: ef[1][:], ef[2][:], ef[3][:]
-            ([1/y, 0, 0], [0, 1/z, 0], [0, 0, 1/x])
+            sage: ef[1].view(), ef[2].view(), ef[3].view()
+            (e^1 = 1/y dx, e^2 = 1/z dy, e^3 = 1/x dz)
             sage: nab.curvature_form(1,1,e)
             2-form 'nabla curvature 2-form (1,1)' on the 3-dimensional manifold 'M'
-            sage: nab.curvature_form(1,1,e).comp(e)[:]
-            [                                     0  y^3*z^4 + 2*x*y*z + (x*y^4 - x*y)*z^2                    x^4*y*z^2 - x^2*y^2]
-            [-y^3*z^4 - 2*x*y*z - (x*y^4 - x*y)*z^2                                      0                      x^5*y*z^3 - x*z^2]
-            [                  -x^4*y*z^2 + x^2*y^2                     -x^5*y*z^3 + x*z^2                                      0]
+            sage: nab.curvature_form(1,1,e).view(e)
+            nabla curvature 2-form (1,1) = (y^3*z^4 + 2*x*y*z + (x*y^4 - x*y)*z^2) e^1/\e^2 + (x^4*y*z^2 - x^2*y^2) e^1/\e^3 + (x^5*y*z^3 - x*z^2) e^2/\e^3
             
         Cartan's second structure equation is
          
@@ -974,10 +980,10 @@ class AffConnection(SageObject):
        
             sage: omega = nab.connection_form
             sage: check = []
-            sage: for i in m.irange():
-            ...       for j in m.irange():
+            sage: for i in M.irange():
+            ...       for j in M.irange():
             ...           check.append( nab.curvature_form(i,j,e) == omega(i,j,e).exterior_der() + \
-            ...           sum( omega(i,k,e).wedge(omega(k,j,e)) for k in m.irange()) )
+            ...           sum( omega(i,k,e).wedge(omega(k,j,e)) for k in M.irange()) )
             ...
             sage: check
             [True, True, True, True, True, True, True, True, True]
@@ -1015,7 +1021,7 @@ class LeviCivitaConnection(AffConnection):
     INPUT:
     
     - ``metric`` -- the metric defining the Levi-Civita connection, as an
-      instance of :class:`Metric`
+      instance of class :class:`~sage.geometry.manifolds.metric.Metric`
     - ``name`` -- name given to the connection
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the  
       connection
@@ -1025,9 +1031,9 @@ class LeviCivitaConnection(AffConnection):
     Levi-Civita connection associated with the Euclidean metric on `\RR^3`
     expressed in spherical coordinates::
     
-        sage: m = Manifold(3, 'R^3', start_index=1)
-        sage: c_spher.<r,th,ph> = m.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-        sage: g = Metric(m, 'g')
+        sage: M = Manifold(3, 'R^3', start_index=1)
+        sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
+        sage: g = M.metric('g')
         sage: g[1,1], g[2,2], g[3,3] = 1, r^2 , (r*sin(th))^2
         sage: g.view()
         g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
@@ -1046,13 +1052,13 @@ class LeviCivitaConnection(AffConnection):
     
         sage: nab.torsion() == 0
         True
-        sage: AffConnection.torsion(nab) == 0  # forces the computation of the torsion
+        sage: sage.geometry.manifolds.connection.AffConnection.torsion(nab) == 0  # forces the computation of the torsion
         True
  
     The connection coefficients in the manifold's default frame are Christoffel 
     symbols, since the default frame is a coordinate frame::
     
-        sage: m.default_frame()
+        sage: M.default_frame()
         coordinate frame (R^3, (d/dr,d/dth,d/dph))
         sage: nab.coef()
         3-indices components w.r.t. coordinate frame (R^3, (d/dr,d/dth,d/dph)), with symmetry on the index positions (1, 2)
@@ -1121,18 +1127,19 @@ class LeviCivitaConnection(AffConnection):
         OUTPUT: 
         
         - connection coefficients relative to the frame ``frame``, as an 
-          instance of the class :class:`Components` with 3 indices ordered 
-          as `(k,i,j)`; for Christoffel symbols, an instance of the subclass
-          :class:`CompWithSym` is returned. 
+          instance of the class :class:`~sage.tensor.modules.comp.Components` 
+          with 3 indices ordered as `(k,i,j)`; for Christoffel symbols, 
+          an instance of the subclass
+          :class:`~sage.tensor.modules.comp.CompWithSym` is returned. 
         
         EXAMPLES:
         
         Christoffel symbols of the Levi-Civita connection associated to 
         the Euclidean metric on `\RR^3` expressed in spherical coordinates::
         
-            sage: m = Manifold(3, 'R^3', start_index=1)
-            sage: c_spher.<r,th,ph> = m.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = Metric(m, 'g')
+            sage: M = Manifold(3, 'R^3', start_index=1)
+            sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: g = M.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2 , (r*sin(th))^2
             sage: g.view()
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
@@ -1155,7 +1162,7 @@ class LeviCivitaConnection(AffConnection):
         Connection coefficients of the same connection with respect to the 
         orthonormal frame associated to spherical coordinates::
         
-            sage: ch_basis = m.automorphism_field() 
+            sage: ch_basis = M.automorphism_field() 
             sage: ch_basis[1,1], ch_basis[2,2], ch_basis[3,3] = 1, 1/r, 1/(r*sin(th))
             sage: e = c_spher.frame.new_frame(ch_basis, 'e')
             sage: gam_e = nab.coef(e) ; gam_e
@@ -1224,7 +1231,8 @@ class LeviCivitaConnection(AffConnection):
           
         OUTPUT:
         
-        - the torsion tensor `T`, as a vanishing instance of :class:`TensorField`
+        - the torsion tensor `T`, as a vanishing instance of 
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
           
         """
         if self._torsion is None:
@@ -1269,7 +1277,7 @@ class LeviCivitaConnection(AffConnection):
         OUTPUT:
         
         - the Riemann curvature tensor `R`, as an instance of 
-          :class:`TensorField`
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
           
         """
         if self._riemann is None:
@@ -1318,15 +1326,16 @@ class LeviCivitaConnection(AffConnection):
           
         OUTPUT:
         
-        - the Ricci tensor `Ric`, as an instance of :class:`SymBilinFormField`
+        - the Ricci tensor `Ric`, as an instance of 
+          :class:`~sage.geometry.manifolds.rank2field.SymBilinFormField`
         
         EXAMPLES:
         
         Ricci tensor of the standard connection on the 2-dimensional sphere::
         
-            sage: m = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = m.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = Metric(m, 'g')
+            sage: M = Manifold(2, 'S^2', start_index=1)
+            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: g = M.metric('g')
             sage: g[1,1], g[2,2] = 1, sin(th)^2
             sage: g.view() # standard metric on S^2:
             g = dth*dth + sin(th)^2 dph*dph
@@ -1340,15 +1349,14 @@ class LeviCivitaConnection(AffConnection):
         Checking that the Ricci tensor of the Levi-Civita connection associated
         to Schwarzschild metric is identically zero::
         
-            sage: m = Manifold(4, 'M')
-            sage: c_BL.<t,r,th,ph> = m.chart(r't r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi') # Boyer-Linquist coordinates
-            sage: var('M')
-            M
-            sage: g = Metric(m, 'g')
-            sage: g[0,0], g[1,1] = -(1-2*M/r), 1/(1-2*M/r)
+            sage: M = Manifold(4, 'M')
+            sage: c_BL.<t,r,th,ph> = M.chart(r't r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi') # Boyer-Linquist coordinates
+            sage: g = M.metric('g')
+            sage: m = var('m')  # mass in Schwarzschild metric
+            sage: g[0,0], g[1,1] = -(1-2*m/r), 1/(1-2*m/r)
             sage: g[2,2], g[3,3] = r^2, (r*sin(th))^2
             sage: g.view()
-            g = (2*M/r - 1) dt*dt - 1/(2*M/r - 1) dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
+            g = (2*m/r - 1) dt*dt - 1/(2*m/r - 1) dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
             sage: nab = g.connection() ; nab
             Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the 4-dimensional manifold 'M'
             sage: ric = nab.ricci() ; ric
@@ -1358,6 +1366,7 @@ class LeviCivitaConnection(AffConnection):
 
         """
         from scalarfield import ScalarField
+        from sage.tensor.modules.comp import CompFullySym
         if self._ricci is None:
             manif = self.manifold
             dom = self.domain
@@ -1379,7 +1388,8 @@ class LeviCivitaConnection(AffConnection):
                     for k in manif.irange(start=si+1):
                         rsum += criem[[k,i,k,j]]
                     cric[i,j] = rsum
-            self._ricci = dom.vector_field_module.tensor_from_comp((0,2), cric)
+            self._ricci = dom.vector_field_module().tensor_from_comp((0,2), 
+                                                                     cric)
             self._ricci.domain = self.domain
             if name is None:
                 self._ricci.name = "Ric(" + self.metric.name + ")"
@@ -1417,16 +1427,17 @@ class LeviCivitaConnection(AffConnection):
           
         OUTPUT:
         
-        - the Ricci scalar `r`, as an instance of :class:`ScalarField`
+        - the Ricci scalar `r`, as an instance of 
+          :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
         
         EXAMPLES:
         
         Ricci scalar of the standard connection on the 2-dimensional sphere::
         
-            sage: m = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = m.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: M = Manifold(2, 'S^2', start_index=1)
+            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: a = var('a') # the sphere radius
-            sage: g = Metric(m, 'g')
+            sage: g = M.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
             sage: g.view() # standard metric on S^2 with radius a
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
@@ -1442,7 +1453,7 @@ class LeviCivitaConnection(AffConnection):
             manif = self.manifold
             ric = self.ricci(frame)
             ig = self.metric.inverse()
-            frame = ig.common_frame(ric)
+            frame = ig.common_basis(ric)
             cric = ric.components[frame]
             cig = ig.components[frame]
             rsum1 = 0

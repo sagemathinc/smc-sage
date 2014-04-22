@@ -13,7 +13,6 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2013, 2014) : initial version
 
-
 """
 #******************************************************************************
 #       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
@@ -26,9 +25,9 @@ AUTHORS:
 #******************************************************************************
 
 from rank2field import SymBilinFormFieldParal
-from connection import LeviCivitaConnection
 from sage.rings.integer import Integer
 
+#!# Provisory: SymBilinFormFieldParal must be replaced by SymBilinFormField:
 class Metric(SymBilinFormFieldParal):
     r"""
     Base class for pseudo-Riemannian metrics on a differentiable manifold.
@@ -36,7 +35,8 @@ class Metric(SymBilinFormFieldParal):
     INPUT:
     
     - ``domain`` -- the manifold domain on which the metric is defined
-      (must be an instance of class :class:`Domain`)
+      (must be an instance of class 
+      :class:`~sage.geometry.manifolds.domain.Domain`)
     - ``name`` -- name given to the metric
     - ``signature`` -- (default: None) signature `S` of the metric as a single 
       integer: `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of 
@@ -59,15 +59,13 @@ class Metric(SymBilinFormFieldParal):
    
     A metric is a special kind of tensor field and therefore inheritates all the
     properties from class :class:`TensorField`::
-
-        sage: isinstance(g, TensorField)
-        True
+    
+        sage: g.parent()
+        free module TF^(0,2)(M) of type-(0,2) tensors fields on the 2-dimensional manifold 'M'
         sage: g.tensor_type
         (0, 2)
         sage: g.symmetries()  # g is symmetric:
         symmetry: (0, 1);  no antisymmetry
-        sage: isinstance(g, SymBilinFormField)  # a metric is actually a field of symmetric bilinear forms:
-        True
        
     Setting the metric components in the manifold's default frame::
     
@@ -81,7 +79,7 @@ class Metric(SymBilinFormFieldParal):
     Metric components in a frame different from the manifold's default one::
     
         sage: c_uv.<u,v> = m.chart('u v')  # new chart on M
-        sage: xy_to_uv = CoordChange(c_xy, c_uv, x+y, x-y) ; xy_to_uv
+        sage: xy_to_uv = c_xy.coord_change(c_uv, x+y, x-y) ; xy_to_uv
         coordinate change from chart (M, (x, y)) to chart (M, (u, v))
         sage: uv_to_xy = xy_to_uv.inverse() ; uv_to_xy
         coordinate change from chart (M, (u, v)) to chart (M, (x, y))
@@ -117,7 +115,7 @@ class Metric(SymBilinFormFieldParal):
         SymBilinFormFieldParal.__init__(self, domain.vector_field_module(), 
                                         name=name, latex_name=latex_name)
         # signature:
-        ndim = self.manifold.dim
+        ndim = self.ambient_domain.manifold.dim
         if signature is None:
             signature = ndim
         else:
@@ -205,6 +203,7 @@ class Metric(SymBilinFormFieldParal):
         Signatures on a 2-dimensional manifold::
         
             sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart('x y')
             sage: g = M.metric('g') # if not specified, the signature is Riemannian
             sage: g.signature() 
             2
@@ -268,22 +267,20 @@ class Metric(SymBilinFormFieldParal):
 
         """
         from sage.matrix.constructor import matrix
-        from component import CompFullySym
+        from sage.tensor.modules.comp import CompFullySym
         from vectorframe import CoordFrame
         from utilities import simplify_chain
-        raise NotImplementedError("Inverse metric not implemented yet")
         # Is the inverse metric up to date ?
         for frame in self.components:
             if frame not in self._inverse.components:
                 # the computation is necessary
-                manif = self.manifold
+                fmodule = self.fmodule
+                si = fmodule.sindex ; nsi = fmodule._rank + si
                 dom = self.domain
                 if isinstance(frame, CoordFrame):
                     chart = frame.chart
                 else:
                     chart = dom.def_chart
-                si = manif.sindex
-                nsi = manif.dim + si
                 try:    
                     gmat = matrix(
                               [[self.comp(frame)[i, j, chart].express 
@@ -291,11 +288,11 @@ class Metric(SymBilinFormFieldParal):
                 except (KeyError, ValueError):
                     continue
                 gmat_inv = gmat.inverse()
-                cinv = CompFullySym(frame, 2)
+                cinv = CompFullySym(fmodule.ring, frame, 2, start_index=si,
+                                  output_formatter=fmodule.output_formatter)
                 for i in range(si, nsi):
                     for j in range(i, nsi):   # symmetry taken into account
-                        cinv[i, j, chart] = simplify_chain(
-                                                        gmat_inv[i-si,j-si])
+                        cinv[i, j, chart] = simplify_chain(gmat_inv[i-si,j-si])
                 self._inverse.components[frame] = cinv
         return self._inverse
         
@@ -348,6 +345,7 @@ class Metric(SymBilinFormFieldParal):
             True
         
         """
+        from connection import LeviCivitaConnection
         if self._connection is None:
             if name is None:
                 name = 'nabla_' + self.name
@@ -384,9 +382,9 @@ class Metric(SymBilinFormFieldParal):
             sage: g.view()  # the standard flat metric expressed in spherical coordinates
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
             sage: Gam = g.christoffel() ; Gam
-            3-indices components w.r.t. the coordinate frame (R3, (d/dr,d/dth,d/dph)), with symmetry on the index positions (1, 2)
+            3-indices components w.r.t. coordinate frame (R3, (d/dr,d/dth,d/dph)), with symmetry on the index positions (1, 2)
             sage: print type(Gam)
-            <class 'sage.geometry.manifolds.component.CompWithSym'>
+            <class 'sage.tensor.modules.comp.CompWithSym'>
             sage: Gam[:]
             [[[0, 0, 0], [0, -r, 0], [0, 0, -r*sin(th)^2]], 
             [[0, 1/r, 0], [1/r, 0, 0], [0, 0, -cos(th)*sin(th)]], 
@@ -471,7 +469,7 @@ class Metric(SymBilinFormFieldParal):
         This formula can be checked here, with the r.h.s. rewritten as 
         `-r g_{j[k} \delta^i_{\ \, l]}`::
         
-            sage: g.riemann() == -g.ricci_scalar()*(g*IdentityMap(m)).antisymmetrize([2,3])
+            sage: g.riemann() == -g.ricci_scalar()*(g*m.identity_map()).antisymmetrize([2,3])
             True
         
         """
@@ -619,7 +617,7 @@ class Metric(SymBilinFormFieldParal):
 
         """
         if self._weyl is None:
-            n = self.manifold.dim
+            n = self.ambient_domain.dim
             if n < 3:
                 raise ValueError("The Weyl tensor is not defined for a " + 
                                  "manifold of dimension n <= 2.")
@@ -678,7 +676,7 @@ class Metric(SymBilinFormFieldParal):
         Determinant in a frame different from the default's one::
             
             sage: Y.<u,v> = M.chart('u v')
-            sage: ch_X_Y = CoordChange(X, Y, x+y, x-y)   
+            sage: ch_X_Y = X.coord_change(Y, x+y, x-y)   
             sage: ch_X_Y.inverse()
             coordinate change from chart (M, (u, v)) to chart (M, (x, y))                 
             sage: g.comp(Y.frame)[:, Y]
@@ -772,7 +770,7 @@ class Metric(SymBilinFormFieldParal):
         Determinant in a frame different from the default's one::
             
             sage: Y.<u,v> = M.chart('u v')
-            sage: ch_X_Y = CoordChange(X, Y, x+y, x-y)   
+            sage: ch_X_Y = X.coord_change(Y, x+y, x-y)   
             sage: ch_X_Y.inverse()
             coordinate change from chart (M, (u, v)) to chart (M, (x, y))                    
             sage: g.comp(Y.frame)[:, Y]

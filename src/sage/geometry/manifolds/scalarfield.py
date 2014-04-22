@@ -67,7 +67,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         sage: f = M.scalar_field() ; f
         scalar field on the 2-dimensional manifold 'S^2'
     
-    Scalar fields on `M` belong to the ring `C^\inft(M)`::
+    Scalar fields on `M` belong to the ring `C^\infty(M)`::
      
         sage: f.parent()
         ring of scalar fields on the 2-dimensional manifold 'S^2'

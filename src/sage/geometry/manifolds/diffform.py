@@ -275,17 +275,10 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         self._exterior_derivative = None
 
 
-    def exterior_der(self, chart=None):
+    def exterior_der(self):
         r"""
         Compute the exterior derivative of the differential form. 
-        
-        INPUT:
-        
-        - ``chart`` -- (default: None): chart used for the computation; if none
-          is provided, the computation is performed in a coordinate frame where
-          the components are known, or computable by a component 
-          transformation, privileging the domain's default chart.
-        
+                
         OUTPUT:
         
         - the exterior derivative of ``self``. 
@@ -328,23 +321,49 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
                                                       self.tensor_rank+1, 
                                                       name=rname, 
                                                       latex_name=rlname)
+            # 1/ List of all coordinate frames in which the components of self
+            # are known
+            coord_frames = []
             for frame in self.components:
-                # the computation is performed only in a coordinate frame:
                 if isinstance(frame, CoordFrame):
-                    chart = frame.chart
-                    sc = self.components[frame]
-                    dc = CompFullyAntiSym(fmodule.ring, frame, 
-                                          self.tensor_rank+1, 
-                                          start_index=fmodule.sindex,
+                    coord_frames.append(frame)
+            if coord_frames == []:
+                # A coordinate frame is searched, at the price of a change of
+                # frame, priveleging the frame of the domain's default chart
+                dom = self.domain
+                def_coordf = dom.def_chart.frame
+                for frame in self.components:
+                    if (frame, def_coordf) in dom.frame_changes:
+                        self.comp(def_coordf, from_basis=frame)
+                        coord_frames = [def_coordf]
+                        break
+                if coord_frames == []:
+                    for chart in dom.atlas:
+                        if chart != dom.def_chart: # the case def_chart is treated above
+                            coordf = chart.frame
+                            for frame in self.components:
+                                if (frame, coordf) in dom.frame_changes:
+                                    self.comp(coordf, from_basis=frame)
+                                    coord_frames[coordf]
+                                    break
+                            if coord_frames != []:
+                                break   
+            # 2/ The computation:
+            for frame in coord_frames:
+                chart = frame.chart
+                sc = self.components[frame]
+                dc = CompFullyAntiSym(fmodule.ring, frame, 
+                                      self.tensor_rank+1, 
+                                      start_index=fmodule.sindex,
                                      output_formatter=fmodule.output_formatter)
-                    for ind, val in sc._comp.items():
-                        for i in fmodule.irange():
-                            ind_d = (i,) + ind
-                            if len(ind_d) == len(set(ind_d)): 
-                                # all indices are different
-                                dc[[ind_d]] += \
-                                    val.function_chart(chart).diff(i).scalar_field()
-                    self._exterior_derivative.components[frame] = dc
+                for ind, val in sc._comp.items():
+                    for i in fmodule.irange():
+                        ind_d = (i,) + ind
+                        if len(ind_d) == len(set(ind_d)): 
+                            # all indices are different
+                            dc[[ind_d]] += \
+                               val.function_chart(chart).diff(i).scalar_field()
+                self._exterior_derivative.components[frame] = dc
         return self._exterior_derivative
  
     def hodge_star(self, metric):
