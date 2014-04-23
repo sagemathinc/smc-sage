@@ -928,8 +928,8 @@ class FunctionChart(SageObject):
     
     Function defined on a 2-dimensional chart::
     
-        sage: m = Manifold(2, 'M')
-        sage: c_xy.<x,y> = m.chart('x y')
+        sage: M = Manifold(2, 'M')
+        sage: c_xy.<x,y> = M.chart('x y')
         sage: f = c_xy.function(x^2+3*y+1)
         sage: type(f)
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
@@ -1028,8 +1028,8 @@ class FunctionChart(SageObject):
         
         Function on some chart of a 2-dimensional manifold::
         
-            sage: m = Manifold(2, 'M')
-            sage: c_xy.<x,y> = m.chart('x y')
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y')
             sage: f = c_xy.function(x^2+3*y+1)
             sage: f
             x^2 + 3*y + 1
@@ -1072,8 +1072,8 @@ class FunctionChart(SageObject):
         
         Function on a 2-dimensional chart::
         
-            sage: m = Manifold(2, 'M')
-            sage: c_xy.<x,y> = m.chart('x y')
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y')
             sage: f = c_xy.function(x^2+3*y+1)
             sage: f.view()
             (x, y) |--> x^2 + 3*y + 1
@@ -1105,8 +1105,8 @@ class FunctionChart(SageObject):
         
         Copy on a 2-dimensional manifold::
         
-            sage: m = Manifold(2, 'M')
-            sage: c_xy.<x,y> = m.chart('x y')
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y')
             sage: f = c_xy.function(x^2+3*y+1)
             sage: g = f.copy()
             sage: print type(g)
@@ -1163,8 +1163,8 @@ class FunctionChart(SageObject):
         
         Partial derivatives of a function defined on a 2-dimensional chart::
 
-            sage: m = Manifold(2, 'M')
-            sage: c_xy.<x,y> = m.chart('x y')
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y')
             sage: f = c_xy.function(x^2+3*y+1) ; f
             x^2 + 3*y + 1
             sage: f.diff(x)
@@ -1187,8 +1187,8 @@ class FunctionChart(SageObject):
             
         The index range depends on the convention used on the manifold::
         
-            sage: m = Manifold(2, 'M', start_index=1)
-            sage: c_xy.<x,y> = m.chart('x y')
+            sage: M = Manifold(2, 'M', start_index=1)
+            sage: c_xy.<x,y> = M.chart('x y')
             sage: f = c_xy.function(x^2+3*y+1)
             sage: f.diff(1)
             2*x
@@ -1215,8 +1215,8 @@ class FunctionChart(SageObject):
         
         Functions on a 2-dimensional chart::
         
-            sage: m = Manifold(2, 'M')
-            sage: c_xy.<x,y> = m.chart('x y')
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y')
             sage: f = c_xy.function(x^2+3*y+1)
             sage: f.is_zero()
             False
@@ -1496,8 +1496,8 @@ class FunctionChart(SageObject):
         
         Factorization on a 2-dimensional manifold::
         
-            sage: m = Manifold(2, 'M')
-            sage: X.<x,y> = m.chart('x y')
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart('x y')
             sage: f = X.function(x^2 + 2*x*y + y^2)
             sage: f
             x^2 + 2*x*y + y^2
@@ -1567,8 +1567,8 @@ class ZeroFunctionChart(FunctionChart):
     
     Null function defined on a 2-dimensional chart::
     
-        sage: m = Manifold(2, 'M')
-        sage: c_xy.<x,y> = m.chart('x y')
+        sage: M = Manifold(2, 'M')
+        sage: c_xy.<x,y> = M.chart('x y')
         sage: from sage.geometry.manifolds.chart import ZeroFunctionChart
         sage: f = ZeroFunctionChart(c_xy) ; f
         0
@@ -1918,8 +1918,8 @@ class MultiFunctionChart(SageObject):
     
     A set of 3 functions of 2 coordinates::
     
-        sage: m = Manifold(2, 'M')
-        sage: c_xy.<x,y>  = m.chart('x y') 
+        sage: M = Manifold(2, 'M')
+        sage: c_xy.<x,y>  = M.chart('x y') 
         sage: f = c_xy.multifunction(x-y, x*y, cos(x)*exp(y)) ; f 
         functions (x - y, x*y, cos(x)*e^y) on the chart (M, (x, y))
         sage: type(f)
@@ -2023,8 +2023,8 @@ class MultiFunctionChart(SageObject):
         
         A set of 3 functions of 2 coordinates::
         
-            sage: m = Manifold(2, 'M')
-            sage: c_xy.<x,y> = m.chart('x y') 
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y') 
             sage: f = c_xy.multifunction(x-y, x*y, cos(x)*exp(y))
             sage: f.expr()
             (x - y, x*y, cos(x)*e^y)
@@ -2047,8 +2047,8 @@ class MultiFunctionChart(SageObject):
         
         Copy of a set of 3 functions of 2 coordinates::
         
-            sage: m = Manifold(2, 'M')
-            sage: c_xy.<x,y> = m.chart('x y') 
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y') 
             sage: f = c_xy.multifunction(x-y, x*y, cos(x)*exp(y))
             sage: g = f.copy() ; g
             functions (x - y, x*y, cos(x)*e^y) on the chart (M, (x, y))
@@ -2108,8 +2108,8 @@ class MultiFunctionChart(SageObject):
 
         Jacobian of a set of 3 functions of 2 coordinates::
         
-            sage: m = Manifold(2, 'M')
-            sage: c_xy.<x,y> = m.chart('x y')
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y')
             sage: f = c_xy.multifunction(x-y, x*y, cos(x)*exp(y))
             sage: f.jacobian()
             [[1, -1], [y, x], [-e^y*sin(x), cos(x)*e^y]]
@@ -2147,8 +2147,8 @@ class MultiFunctionChart(SageObject):
         
         Jacobian determinant of a set of 2 functions of 2 coordinates::
         
-            sage: m = Manifold(2, 'M')
-            sage: c_xy.<x,y> = m.chart('x y')
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y')
             sage: f = c_xy.multifunction(x-y, x*y)
             sage: f.jacobian_det()
             x + y
@@ -2195,9 +2195,9 @@ class CoordChange(SageObject):
 
     Change from spherical to Cartesian coordinates on `\RR^3`::
     
-        sage: m = Manifold(3, 'R3', r'\mathcal{M}')
-        sage: c_spher.<r,th,ph> = m.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
-        sage: c_cart.<x,y,z> = m.chart('x y z')        
+        sage: M = Manifold(3, 'R3', r'\mathcal{M}')
+        sage: c_spher.<r,th,ph> = M.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
+        sage: c_cart.<x,y,z> = M.chart('x y z')        
         sage: ch = c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
         sage: ch
         coordinate change from chart (R3, (r, th, ph)) to chart (R3, (x, y, z))
@@ -2210,7 +2210,7 @@ class CoordChange(SageObject):
     dictionary :attr:`coord_changes`; this dictionary is accessed via the 
     method :meth:`~sage.geometry.manifolds.domain.Domain.coord_change`::    
 
-        sage: m.coord_change(c_spher, c_cart)
+        sage: M.coord_change(c_spher, c_cart)
         coordinate change from chart (R3, (r, th, ph)) to chart (R3, (x, y, z))
     
     It also generates a new entry in the manifold's dictionary 
@@ -2218,9 +2218,9 @@ class CoordChange(SageObject):
     this dictionary is accessed via the method 
     :meth:`~sage.geometry.manifolds.domain.Domain.frame_change`::
 
-        sage: m.frame_change(c_cart.frame, c_spher.frame)
+        sage: M.frame_change(c_cart.frame, c_spher.frame)
         field of tangent-space automorphisms on the 3-dimensional manifold 'R3'
-        sage: m.frame_change(c_cart.frame, c_spher.frame)[:]
+        sage: M.frame_change(c_cart.frame, c_spher.frame)[:]
         [   cos(ph)*sin(th)  r*cos(ph)*cos(th) -r*sin(ph)*sin(th)]
         [   sin(ph)*sin(th)  r*cos(th)*sin(ph)  r*cos(ph)*sin(th)]
         [           cos(th)         -r*sin(th)                  0]
@@ -2314,17 +2314,17 @@ class CoordChange(SageObject):
         Inverse of a coordinate transformation corresponding to a pi/3-rotation
         in the plane::
         
-            sage: m = Manifold(2, 'M')
-            sage: c_xy.<x,y> = m.chart('x y')
-            sage: c_uv.<u,v> = m.chart('u v')
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y')
+            sage: c_uv.<u,v> = M.chart('u v')
             sage: ch_to_uv = c_xy.coord_change(c_uv, (x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2)
-            sage: m.coord_changes 
+            sage: M.coord_changes 
             {(chart (M, (x, y)), chart (M, (u, v))): coordinate change from chart (M, (x, y)) to chart (M, (u, v))}
             sage: ch_to_xy = ch_to_uv.inverse() ; ch_to_xy
             coordinate change from chart (M, (u, v)) to chart (M, (x, y))
             sage: ch_to_xy.transf                                                         
             functions (1/2*sqrt(3)*v + 1/2*u, -1/2*sqrt(3)*u + 1/2*v) on the chart (M, (u, v))
-            sage: m.coord_changes # optional - dictionary_output
+            sage: M.coord_changes # optional - dictionary_output
             {(chart (M, (u, v)), chart (M, (x, y))): coordinate change from chart (M, (u, v)) to chart (M, (x, y)), 
             (chart (M, (x, y)), chart (M, (u, v))): coordinate change from chart (M, (x, y)) to chart (M, (u, v))}
    

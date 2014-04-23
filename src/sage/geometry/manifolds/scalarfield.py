@@ -1325,6 +1325,60 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             vector._lie_der_along_self[id(self)] = self
         return self._lie_derivatives[id(vector)][1]         
 
+
+    def hodge_star(self, metric):
+        r"""
+        Compute the Hodge dual of the scalar field with respect to some
+        pseudo-Riemannian metric. 
+        
+        If `f` is ``self``, the Hodge dual is the `n`-form
+        `*f` defined by (`n` being the manifold's dimension)
+        
+        .. MATH::
+            
+            *f = f \epsilon
+                
+        where `\epsilon` is the volume form associated with some 
+        pseudo-Riemannian metric `g` on the manifold. 
+        
+        INPUT:
+        
+        - ``metric``: the pseudo-Riemannian metric `g` defining the Hodge dual, 
+          via the volume form `\epsilon`; must be an instance of 
+          :class:`~sage.geometry.manifolds.metric.Metric`
+        
+        OUTPUT:
+        
+        - the `n`-form `*f` 
+        
+        EXAMPLES:
+
+        Hodge star of a scalar field in the Euclidean space `R^3`::
+        
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: X.<x,y,z> = M.chart('x y z')
+            sage: g = M.metric('g')
+            sage: g[1,1], g[2,2], g[3,3] = 1, 1, 1
+            sage: f = M.scalar_field(function('F',x,y,z), name='f')
+            sage: sf = f.hodge_star(g) ; sf
+            3-form '*f' on the 3-dimensional manifold 'M'
+            sage: sf.view()
+            *f = F(x, y, z) dx/\dy/\dz
+            sage: ssf = sf.hodge_star(g) ; ssf
+            scalar field '**f' on the 3-dimensional manifold 'M'
+            sage: ssf.view()
+            **f: (x, y, z) |--> F(x, y, z)
+            sage: ssf == f # must hold for a Riemannian metric
+            True
+        
+        """
+        from utilities import format_unop_txt, format_unop_latex
+        resu = self * metric.volume_form()
+        resu.name = format_unop_txt('*', self.name)
+        resu.latex_name = format_unop_latex(r'\star ', self.latex_name)
+        return resu
+
+
 #******************************************************************************
 
 class ZeroScalarField(ScalarField):

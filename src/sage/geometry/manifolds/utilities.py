@@ -47,13 +47,13 @@ def is_atomic(expression):
         False
         sage: is_atomic("(2+x)")
         True
-        sage: m = Manifold(2, 'M')
-        sage: c_xy.<x,y> = m.chart('x y')
-        sage: f = FunctionChart(c_xy, x^2+3*y+1) ; f
+        sage: M = Manifold(2, 'M')
+        sage: c_xy.<x,y> = M.chart('x y')
+        sage: f = c_xy.function(x^2+3*y+1) ; f
         x^2 + 3*y + 1
         sage: is_atomic(latex(f))
         False
-        sage: g = FunctionChart(c_xy, 3*x*y) ; g
+        sage: g = c_xy.function(3*x*y) ; g
         3*x*y
         sage: is_atomic(latex(g))
         True
@@ -292,7 +292,8 @@ def simplify_sqrt_real(expr):
     
     Simplifications of basic expressions::
     
-        sage: assume(x<0)      
+        sage: from sage.geometry.manifolds.utilities import simplify_sqrt_real
+        sage: assume(x<0)
         sage: simplify_sqrt_real( sqrt(x^2) )
         -x
         sage: simplify_sqrt_real( sqrt(x^2-2*x+1) )

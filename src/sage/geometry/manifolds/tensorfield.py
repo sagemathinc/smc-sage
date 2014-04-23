@@ -833,3 +833,238 @@ class TensorFieldParal(FreeModuleTensor):
             self._lie_derivatives[id(vector)] = (vector, res)
             vector._lie_der_along_self[id(self)] = self
         return self._lie_derivatives[id(vector)][1]
+
+    def up(self, metric, pos=None):
+        r"""
+        Compute a metric dual by raising some index with a given metric.
+        
+        If ``self`` is a tensor field `T` of type `(k,\ell)` and `p` is the 
+        position of a covariant index (i.e. `k\leq p < k+\ell`), 
+        the output with ``pos`` `=p` is the tensor field `T^\sharp` of type 
+        `(k+1,\ell-1)` whose components are
+
+        .. MATH::
+
+            (T^\sharp)^{a_1\ldots a_{k+1}}_{\qquad\quad b_1 \ldots b_{\ell-1}}
+            = g^{a_{k+1} i} \, 
+            T^{a_1\ldots a_k}_{\qquad\ \  b_1 \ldots b_{p-k} \, i \, b_{p-k+1} \ldots b_{\ell-1}},
+            
+        `g^{ab}` being the components of the inverse metric. 
+
+        The reverse operation is :meth:`TensorFieldParal.down`
+
+        INPUT:
+        
+        - ``metric`` -- metric `g`, as an instance of 
+          :class:`~sage.geometry.manifolds.metric.Metric`
+        - ``pos`` -- (default: None) position of the index (with the
+          convention ``pos=0`` for the first index); if none, the raising is 
+          performed over all the covariant indices, starting from the first one
+         
+        OUTPUT:
+        
+        - the tensor field `T^\sharp` resulting from the index raising operation
+
+        EXAMPLES:
+        
+        Raising the index of a 1-form results in a vector field::
+        
+            sage: M = Manifold(2, 'M', start_index=1)
+            sage: c_xy.<x,y> = M.chart('x y')
+            sage: g = M.metric('g')
+            sage: g[1,1], g[1,2], g[2,2] = 1+x, x*y, 1-y
+            sage: w = M.one_form()
+            sage: w[:] = [-1, 2]
+            sage: v = w.up(g) ; v
+            vector field on the 2-dimensional manifold 'M'
+            sage: v.view()
+            ((2*x - 1)*y + 1)/(x^2*y^2 + (x + 1)*y - x - 1) d/dx - (x*y + 2*x + 2)/(x^2*y^2 + (x + 1)*y - x - 1) d/dy
+            sage: g.inverse()[:]
+            [ (y - 1)/(x^2*y^2 + (x + 1)*y - x - 1)      x*y/(x^2*y^2 + (x + 1)*y - x - 1)]
+            [     x*y/(x^2*y^2 + (x + 1)*y - x - 1) -(x + 1)/(x^2*y^2 + (x + 1)*y - x - 1)]
+            sage: w1 = v.down(g) ; w1   # the reverse operation
+            1-form on the 2-dimensional manifold 'M'
+            sage: w1.view()
+            -dx + 2 dy
+            sage: w1 == w
+            True
+
+        Raising the indices of a tensor field of type (0,2)::
+
+            sage: t = M.tensor_field(0, 2)
+            sage: t[:] = [[1,2], [3,4]]
+            sage: tu0 = t.up(g, 0) ; tu0  # raising the first index
+            field of endomorphisms on the 2-dimensional manifold 'M'
+            sage: tu0[:]
+            [  ((3*x + 1)*y - 1)/(x^2*y^2 + (x + 1)*y - x - 1) 2*((2*x + 1)*y - 1)/(x^2*y^2 + (x + 1)*y - x - 1)]
+            [    (x*y - 3*x - 3)/(x^2*y^2 + (x + 1)*y - x - 1)   2*(x*y - 2*x - 2)/(x^2*y^2 + (x + 1)*y - x - 1)]
+            sage: tuu0 = tu0.up(g) ; tuu0 # the two indices have been raised, starting from the first one
+            tensor field of type (2,0) on the 2-dimensional manifold 'M'
+            sage: tu1 = t.up(g, 1) ; tu1 # raising the second index
+            field of endomorphisms on the 2-dimensional manifold 'M'
+            sage: tu1[:]
+            [((2*x + 1)*y - 1)/(x^2*y^2 + (x + 1)*y - x - 1) ((4*x + 3)*y - 3)/(x^2*y^2 + (x + 1)*y - x - 1)]
+            [  (x*y - 2*x - 2)/(x^2*y^2 + (x + 1)*y - x - 1) (3*x*y - 4*x - 4)/(x^2*y^2 + (x + 1)*y - x - 1)]
+            sage: tuu1 = tu1.up(g) ; tuu1 # the two indices have been raised, starting from the second one
+            tensor field of type (2,0) on the 2-dimensional manifold 'M'
+            sage: tuu0 == tuu1 # the order of index raising is important
+            False
+            sage: tuu = t.up(g) ; tuu # both indices are raised, starting from the first one
+            tensor field of type (2,0) on the 2-dimensional manifold 'M'
+            sage: tuu0 == tuu # the same order for index raising has been applied
+            True
+            sage: tuu1 == tuu # to get tuu1, indices have been raised from the last one, contrary to tuu 
+            False
+            sage: d0tuu = tuu.down(g, 0) ; d0tuu # the first index is lowered again
+            field of endomorphisms on the 2-dimensional manifold 'M'
+            sage: dd0tuu = d0tuu.down(g) ; dd0tuu  # the second index is then lowered
+            tensor field of type (0,2) on the 2-dimensional manifold 'M'
+            sage: d1tuu = tuu.down(g, 1) ; d1tuu # lowering operation, starting from the last index
+            field of endomorphisms on the 2-dimensional manifold 'M'
+            sage: dd1tuu = d1tuu.down(g) ; dd1tuu
+            tensor field of type (0,2) on the 2-dimensional manifold 'M'
+            sage: ddtuu = tuu.down(g) ; ddtuu # both indices are lowered, starting from the last one
+            tensor field of type (0,2) on the 2-dimensional manifold 'M'
+            sage: ddtuu == t # should be true
+            True
+            sage: dd0tuu == t # not true, because of the order of index lowering to get dd0tuu
+            False
+            sage: dd1tuu == t # should be true
+            True
+
+        """
+        from sage.rings.integer import Integer
+        n_con = self.tensor_type[0] # number of contravariant indices = k 
+        if pos is None:
+            result = self
+            for p in range(n_con, self.tensor_rank):
+                k = result.tensor_type[0]
+                result = result.up(metric, k)
+            return result
+        if not isinstance(pos, (int, Integer)):
+            raise TypeError("The argument 'pos' must be an integer.")
+        if pos<n_con or pos>self.tensor_rank-1:
+            print "pos = ", pos
+            raise ValueError("Position out of range.")
+        return self.contract(pos, metric.inverse(), 0)
+
+    def down(self, metric, pos=None):
+        r"""
+        Compute a metric dual by lowering some index with a given metric.
+        
+        If ``self`` is a tensor field `T` of type `(k,\ell)` and `p` is the 
+        position of a contravariant index (i.e. `0\leq p < k`), the output with
+        ``pos`` `=p` is the tensor field `T^\flat` of type `(k-1,\ell+1)` whose 
+        components are
+
+        .. MATH::
+
+            (T^\flat)^{a_1\ldots a_{k-1}}_{\qquad\quad b_1 \ldots b_{\ell+1}}
+            = g_{b_1 i} \, 
+            T^{a_1\ldots a_{p} \, i \, a_{p+1}\ldots a_{k-1}}_{\qquad\qquad\qquad\quad b_2 \ldots b_{\ell+1}},
+            
+        `g_{ab}` being the components of the metric tensor. 
+
+        The reverse operation is :meth:`TensorFieldParal.up`
+        
+        INPUT:
+        
+        - ``metric`` -- metric `g`, as an instance of 
+          :class:`~sage.geometry.manifolds.metric.Metric`
+        - ``pos`` -- (default: None) position of the index (with the 
+          convention ``pos=0`` for the first index); if none, the lowering is 
+          performed over all the contravariant indices, starting from the last 
+          one
+         
+        OUTPUT:
+        
+        - the tensor field `T^\flat` resulting from the index lowering operation
+        
+        EXAMPLES:
+        
+        Lowering the index of a vector field results in a 1-form::
+        
+            sage: M = Manifold(2, 'M', start_index=1)
+            sage: c_xy.<x,y> = M.chart('x y')
+            sage: g = M.metric('g')
+            sage: g[1,1], g[1,2], g[2,2] = 1+x, x*y, 1-y
+            sage: v = M.vector_field()
+            sage: v[:] = [-1,2]
+            sage: w = v.down(g) ; w
+            1-form on the 2-dimensional manifold 'M'
+            sage: w.view()
+            (2*x*y - x - 1) dx + (-(x + 2)*y + 2) dy
+            sage: v1 = w.up(g) ; v1  # the reverse operation
+            vector field on the 2-dimensional manifold 'M'
+            sage: v1 == v
+            True
+
+        Lowering the indices of a tensor field of type (2,0)::
+        
+            sage: t = M.tensor_field(2, 0)
+            sage: t[:] = [[1,2], [3,4]]
+            sage: td0 = t.down(g, 0) ; td0  # lowering the first index
+            field of endomorphisms on the 2-dimensional manifold 'M'
+            sage: td0[:]
+            [  3*x*y + x + 1   (x - 3)*y + 3]
+            [4*x*y + 2*x + 2 2*(x - 2)*y + 4]
+            sage: tdd0 = td0.down(g) ; tdd0 # the two indices have been lowered, starting from the first one
+            tensor field of type (0,2) on the 2-dimensional manifold 'M'
+            sage: tdd0[:]
+            [      4*x^2*y^2 + x^2 + 5*(x^2 + x)*y + 2*x + 1 2*(x^2 - 2*x)*y^2 + (x^2 + 2*x - 3)*y + 3*x + 3]
+            [(3*x^2 - 4*x)*y^2 + (x^2 + 3*x - 2)*y + 2*x + 2           (x^2 - 5*x + 4)*y^2 + (5*x - 8)*y + 4]
+            sage: td1 = t.down(g, 1) ; td1  # lowering the second index
+            field of endomorphisms on the 2-dimensional manifold 'M'
+            sage: td1[:]
+            [  2*x*y + x + 1   (x - 2)*y + 2]
+            [4*x*y + 3*x + 3 (3*x - 4)*y + 4]
+            sage: tdd1 = td1.down(g) ; tdd1 # the two indices have been lowered, starting from the second one
+            tensor field of type (0,2) on the 2-dimensional manifold 'M'
+            sage: tdd1[:]
+            [      4*x^2*y^2 + x^2 + 5*(x^2 + x)*y + 2*x + 1 (3*x^2 - 4*x)*y^2 + (x^2 + 3*x - 2)*y + 2*x + 2]
+            [2*(x^2 - 2*x)*y^2 + (x^2 + 2*x - 3)*y + 3*x + 3           (x^2 - 5*x + 4)*y^2 + (5*x - 8)*y + 4]
+            sage: tdd1 == tdd0   # the order of index lowering is important
+            False
+            sage: tdd = t.down(g) ; tdd  # both indices are lowered, starting from the last one
+            tensor field of type (0,2) on the 2-dimensional manifold 'M'
+            sage: tdd[:]
+            [      4*x^2*y^2 + x^2 + 5*(x^2 + x)*y + 2*x + 1 (3*x^2 - 4*x)*y^2 + (x^2 + 3*x - 2)*y + 2*x + 2]
+            [2*(x^2 - 2*x)*y^2 + (x^2 + 2*x - 3)*y + 3*x + 3           (x^2 - 5*x + 4)*y^2 + (5*x - 8)*y + 4]
+            sage: tdd0 == tdd  # to get tdd0, indices have been lowered from the first one, contrary to tdd 
+            False
+            sage: tdd1 == tdd  # the same order for index lowering has been applied
+            True
+            sage: u0tdd = tdd.up(g, 0) ; u0tdd # the first index is raised again
+            field of endomorphisms on the 2-dimensional manifold 'M'
+            sage: uu0tdd = u0tdd.up(g) ; uu0tdd # the second index is then raised
+            tensor field of type (2,0) on the 2-dimensional manifold 'M'
+            sage: u1tdd = tdd.up(g, 1) ; u1tdd  # raising operation, starting from the last index
+            field of endomorphisms on the 2-dimensional manifold 'M'
+            sage: uu1tdd = u1tdd.up(g) ; uu1tdd
+            tensor field of type (2,0) on the 2-dimensional manifold 'M'
+            sage: uutdd = tdd.up(g) ; uutdd  # both indices are raised, starting from the first one
+            tensor field of type (2,0) on the 2-dimensional manifold 'M'
+            sage: uutdd == t  # should be true
+            True
+            sage: uu0tdd == t # should be true
+            True
+            sage: uu1tdd == t # not true, because of the order of index raising to get uu1tdd
+            False
+ 
+        """
+        from sage.rings.integer import Integer
+        n_con = self.tensor_type[0] # number of contravariant indices = k 
+        if pos is None:
+            result = self
+            for p in range(0, n_con):
+                k = result.tensor_type[0]
+                result = result.down(metric, k-1)
+            return result
+        if not isinstance(pos, (int, Integer)):
+            raise TypeError("The argument 'pos' must be an integer.")
+        if pos<0 or pos>=n_con:
+            print "pos = ", pos
+            raise ValueError("Position out of range.")
+        return metric.contract(1, self, pos)
+
+

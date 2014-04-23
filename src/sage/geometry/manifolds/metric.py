@@ -50,15 +50,16 @@ class Metric(SymBilinFormFieldParal):
     
     Metric on a 2-dimensional manifold::
     
-        sage: m = Manifold(2, 'M', start_index=1)
-        sage: c_xy.<x,y> = m.chart('x y')
-        sage: g = m.metric('g') ; g
+        sage: M = Manifold(2, 'M', start_index=1)
+        sage: c_xy.<x,y> = M.chart('x y')
+        sage: g = M.metric('g') ; g
         pseudo-Riemannian metric 'g' on the 2-dimensional manifold 'M'
         sage: latex(g)
         g
    
     A metric is a special kind of tensor field and therefore inheritates all the
-    properties from class :class:`TensorField`::
+    properties from class 
+    :class:`~sage.geometry.manifolds.tensorfield.TensorField`::
     
         sage: g.parent()
         free module TF^(0,2)(M) of type-(0,2) tensors fields on the 2-dimensional manifold 'M'
@@ -78,14 +79,14 @@ class Metric(SymBilinFormFieldParal):
 
     Metric components in a frame different from the manifold's default one::
     
-        sage: c_uv.<u,v> = m.chart('u v')  # new chart on M
+        sage: c_uv.<u,v> = M.chart('u v')  # new chart on M
         sage: xy_to_uv = c_xy.coord_change(c_uv, x+y, x-y) ; xy_to_uv
         coordinate change from chart (M, (x, y)) to chart (M, (u, v))
         sage: uv_to_xy = xy_to_uv.inverse() ; uv_to_xy
         coordinate change from chart (M, (u, v)) to chart (M, (x, y))
-        sage: m.atlas
+        sage: M.atlas
         [chart (M, (x, y)), chart (M, (u, v))]
-        sage: m.frames
+        sage: M.frames
         [coordinate frame (M, (d/dx,d/dy)), coordinate frame (M, (d/du,d/dv))]
         sage: g.comp(c_uv.frame)[:]  # metric components in frame c_uv.frame expressed in M's default chart (x,y)
         [ 1/2*x*y + 1/2          1/2*x]
@@ -226,9 +227,9 @@ class Metric(SymBilinFormFieldParal):
         #!# Provisory: SymBilinFormFieldParal must be replaced by SymBilinFormField:
         if not isinstance(symbiform, SymBilinFormFieldParal):
             raise TypeError("The argument must be a symmetric bilinear form.")
-        if symbiform.manifold != self.manifold:
-            raise TypeError("The manifold of the symmetric bilinear form " + 
-                            "differs from that of the metric.")
+        if symbiform.domain != self.domain:
+            raise TypeError("The symmetric bilinear form and the metric are " + 
+                            "not defined on the same domain.")
         self.domain = symbiform.domain
         self._init_derived()
         self.components.clear()
@@ -243,9 +244,9 @@ class Metric(SymBilinFormFieldParal):
         
         Inverse metric on a 2-dimensional manifold::
     
-            sage: m = Manifold(2, 'M', start_index=1)
-            sage: c_xy.<x,y> = m.chart('x y')
-            sage: g = m.metric('g') 
+            sage: M = Manifold(2, 'M', start_index=1)
+            sage: c_xy.<x,y> = M.chart('x y')
+            sage: g = M.metric('g') 
             sage: g[1,1], g[1,2], g[2,2] = 1+x, x*y, 1-x 
             sage: g[:]  # components in the manifold's default frame
             [ x + 1    x*y]
@@ -314,17 +315,17 @@ class Metric(SymBilinFormFieldParal):
         OUTPUT:
         
         - the Levi-Civita connection, as an instance of 
-          :class:`LeviCivitaConnection`. 
+          :class:`~sage.geometry.manifolds.connection.LeviCivitaConnection`. 
           
         EXAMPLES:
         
         Levi-Civitation connection associated with the Euclidean metric on 
         `\RR^3`::
         
-            sage: m = Manifold(3, 'R^3', start_index=1)
+            sage: M = Manifold(3, 'R^3', start_index=1)
             sage: # Let us use spherical coordinates on R^3:
-            sage: c_spher.<r,th,ph> = m.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = m.metric('g')
+            sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: g = M.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2 , (r*sin(th))^2  # the Euclidean metric
             sage: g.connection()
             Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the 3-dimensional manifold 'R^3'
@@ -368,16 +369,16 @@ class Metric(SymBilinFormFieldParal):
         OUTPUT:
         
         - the set of Christoffel symbols in the given chart, as an instance of
-          :class:`CompWithSym`
+          :class:`~sage.tensor.modules.comp.CompWithSym`
           
         EXAMPLES:
         
         Christoffel symbols of the flat metric on `\RR^3` with respect to 
         spherical coordinates::
         
-            sage: m = Manifold(3, 'R3', r'\RR^3', start_index=1)
-            sage: X.<r,th,ph> = m.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = m.metric('g')
+            sage: M = Manifold(3, 'R3', r'\RR^3', start_index=1)
+            sage: X.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: g = M.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, r^2*sin(th)^2
             sage: g.view()  # the standard flat metric expressed in spherical coordinates
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
@@ -439,16 +440,16 @@ class Metric(SymBilinFormFieldParal):
         OUTPUT:
         
         - the Riemann curvature tensor `R`, as an instance of 
-          :class:`TensorField`
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
         
         EXAMPLES:
 
         Riemann tensor of the standard metric on the 2-sphere::
         
-            sage: m = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = m.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: M = Manifold(2, 'S^2', start_index=1)
+            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: a = var('a') # the sphere radius 
-            sage: g = m.metric('g')
+            sage: g = M.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
             sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
@@ -469,7 +470,7 @@ class Metric(SymBilinFormFieldParal):
         This formula can be checked here, with the r.h.s. rewritten as 
         `-r g_{j[k} \delta^i_{\ \, l]}`::
         
-            sage: g.riemann() == -g.ricci_scalar()*(g*m.identity_map()).antisymmetrize([2,3])
+            sage: g.riemann() == -g.ricci_scalar()*(g*M.identity_map()).antisymmetrize([2,3])
             True
         
         """
@@ -506,16 +507,17 @@ class Metric(SymBilinFormFieldParal):
           
         OUTPUT:
         
-        - the Ricci tensor `Ric`, as an instance of :class:`SymBilinFormField`
+        - the Ricci tensor `Ric`, as an instance of 
+          :class:`~sage.geometry.manifolds.rank2field.SymBilinFormField`
         
         EXAMPLES:
         
         Ricci tensor of the standard metric on the 2-sphere::
         
-            sage: m = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = m.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: M = Manifold(2, 'S^2', start_index=1)
+            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: a = var('a') # the sphere radius 
-            sage: g = m.metric('g')
+            sage: g = M.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
             sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
@@ -557,16 +559,17 @@ class Metric(SymBilinFormFieldParal):
 
         OUTPUT:
         
-        - the Ricci scalar `r`, as an instance of :class:`ScalarField`
+        - the Ricci scalar `r`, as an instance of 
+          :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
 
         EXAMPLES:
         
         Ricci scalar of the standard metric on the 2-sphere::
         
-            sage: m = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = m.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: M = Manifold(2, 'S^2', start_index=1)
+            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: a = var('a') # the sphere radius 
-            sage: g = m.metric('g')
+            sage: g = M.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
             sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
@@ -596,16 +599,17 @@ class Metric(SymBilinFormFieldParal):
 
         OUTPUT:
         
-        - the Weyl conformal tensor `C`, as an instance of :class:`TensorField`
+        - the Weyl conformal tensor `C`, as an instance of 
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
         
         EXAMPLES:
         
         Checking that the Weyl tensor identically vanishes on a 3-dimensional 
         manifold, for instance the hyperbolic space `H^3`::
         
-            sage: m = Manifold(3, 'H^3', start_index=1)
-            sage: X.<rh,th,ph> = m.chart(r'rh:[0,+oo):\rho th:[0,pi]:\theta  ph:[0,2*pi):\phi')
-            sage: g = m.metric('g')
+            sage: M = Manifold(3, 'H^3', start_index=1)
+            sage: X.<rh,th,ph> = M.chart(r'rh:[0,+oo):\rho th:[0,pi]:\theta  ph:[0,2*pi):\phi')
+            sage: g = M.metric('g')
             sage: b = var('b')                                                        
             sage: g[1,1], g[2,2], g[3,3] = b^2, (b*sinh(rh))^2, (b*sinh(rh)*sin(th))^2
             sage: g.view()  # standard metric on H^3:
@@ -629,7 +633,7 @@ class Metric(SymBilinFormFieldParal):
             ricup = ric.up(self, 0) 
             # The identity map is expressed in a frame in which the Riemann 
             # tensor is known
-            delta.comp(riem.pick_a_frame())
+            delta.comp(riem.pick_a_basis())
             aux = self*ricup + ric*delta - rscal/(n-1)* self*delta
             self._weyl = riem + 2/(n-2)* aux.antisymmetrize([2,3]) 
             if name is None:
@@ -656,7 +660,8 @@ class Metric(SymBilinFormFieldParal):
           
         OUTPUT:
         
-        - the determinant `\det (g_{ij})`, as an instance of :class:`ScalarField`
+        - the determinant `\det (g_{ij})`, as an instance of 
+          :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
         
         EXAMPLES:
         
@@ -702,7 +707,7 @@ class Metric(SymBilinFormFieldParal):
         """
         from sage.matrix.constructor import matrix
         from utilities import simple_determinant, simplify_chain
-        manif = self.manifold
+        manif = self.ambient_domain.manifold
         dom = self.domain
         if frame is None:
             frame = dom.def_frame
@@ -737,16 +742,17 @@ class Metric(SymBilinFormFieldParal):
           
         OUTPUT:
         
-        -  `\sqrt{|\det (g_{ij})|}`, as an instance of :class:`ScalarField`
+        -  `\sqrt{|\det (g_{ij})|}`, as an instance of 
+          :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
         
         EXAMPLES:
         
         Standard metric in the Euclidean space `\RR^3` with spherical 
         coordinates::
         
-            sage: m = Manifold(3, 'M', start_index=1)
-            sage: c_spher.<r,th,ph> = m.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = m.metric('g')
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: g = M.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
             sage: g.view()
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
@@ -794,7 +800,6 @@ class Metric(SymBilinFormFieldParal):
         """
         from sage.functions.other import sqrt
         from utilities import simplify_chain
-        manif = self.manifold
         dom = self.domain
         if frame is None:
             frame = dom.def_frame
@@ -840,19 +845,22 @@ class Metric(SymBilinFormFieldParal):
         OUTPUT:
         
         - if ``contra = 0`` (default value): the volume `n`-form `\epsilon`, as 
-          an instance of :class:`DiffForm`
+          an instance of 
+          :class:`~sage.geometry.manifolds.diffform.DiffForm`
         - if ``contra = k``, with `1\leq k \leq n`, the tensor field of type 
           (k,n-k) formed from `\epsilon` by raising the first k indices with the 
           metric (see method :meth:`TensorField.up`); the output is then an
-          instance of :class:`TensorField`, with the appropriate antisymmetries
+          instance of 
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`, with the 
+          appropriate antisymmetries
        
         EXAMPLES:
         
         Volume form on `\RR^3` with spherical coordinates::
         
-            sage: m = Manifold(3, 'M', start_index=1)
-            sage: c_spher.<r,th,ph> = m.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = m.metric('g')
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: g = M.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
             sage: g.view()
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
@@ -906,7 +914,7 @@ class Metric(SymBilinFormFieldParal):
         """
         if self._vol_forms == []:
             # a new computation is necessary
-            manif = self.manifold
+            manif = self.ambient_domain.manifold
             dom = self.domain
             ndim = manif.dim
             eps = dom.diff_form(ndim, name='eps_'+self.name, 
@@ -939,7 +947,8 @@ class RiemannMetric(Metric):
     INPUT:
     
     - ``domain`` -- the manifold domain on which the metric is defined
-      (must be an instance of class :class:`Domain`)
+      (must be an instance of class 
+      :class:`~sage.geometry.manifolds.domain.Domain`)
     - ``name`` -- name given to the metric
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``      
@@ -948,9 +957,9 @@ class RiemannMetric(Metric):
     
     Standard metric on the 2-sphere `S^2`::
     
-        sage: m = Manifold(2, 'S^2', start_index=1)
-        sage: c_spher.<th,ph> = m.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
-        sage: g = m.riemann_metric('g') ; g
+        sage: M = Manifold(2, 'S^2', start_index=1)
+        sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+        sage: g = M.riemann_metric('g') ; g
         Riemannian metric 'g' on the 2-dimensional manifold 'S^2'
         sage: g[1,1], g[2,2] = 1, sin(th)^2
         sage: g.view()
@@ -993,7 +1002,8 @@ class LorentzMetric(Metric):
     INPUT:
     
     - ``domain`` -- the manifold domain on which the metric is defined
-      (must be an instance of class :class:`Domain`)
+      (must be an instance of class 
+      :class:`~sage.geometry.manifolds.domain.Domain`)
     - ``name`` -- name given to the metric
     - ``signature`` -- (default: 'positive') sign of the metric signature: 
         * if set to 'positive', the signature is n-2, where n is the manifold's
@@ -1006,9 +1016,9 @@ class LorentzMetric(Metric):
     
     Metric of Minkowski spacetime::
     
-        sage: m = Manifold(4, 'M')
-        sage: c_cart = m.chart('t x y z')
-        sage: g = m.lorentz_metric('g') ; g
+        sage: M = Manifold(4, 'M')
+        sage: c_cart = M.chart('t x y z')
+        sage: g = M.lorentz_metric('g') ; g
         Lorentzian metric 'g' on the 4-dimensional manifold 'M'
         sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
         sage: g.view()
@@ -1018,7 +1028,7 @@ class LorentzMetric(Metric):
         
     The negative signature convention can be chosen::
     
-        sage: g = m.lorentz_metric('g', signature='negative') 
+        sage: g = M.lorentz_metric('g', signature='negative') 
         sage: g.signature()
         -2
 
@@ -1030,7 +1040,6 @@ class LorentzMetric(Metric):
             signat = 2 - domain.manifold.dim
         Metric.__init__(self, domain, name, signature=signat,
                         latex_name=latex_name)
-
 
     def _repr_(self):
         r"""

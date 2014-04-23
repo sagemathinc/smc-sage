@@ -7,28 +7,30 @@ manifolds over `\RR`.
 It is a subclass of :class:`TensorField`, differential forms being a special 
 type of tensor fields. 
 
-Subclasses of :class:`DiffForm` are
-
-* :class:`ScalarField` for differential forms of degree 0 (i.e. scalar fields)
-* :class:`OneForm` for differential forms of degree 1 (i.e. 1-forms). 
+A subclass of :class:`DiffForm` is :class:`OneForm` for differential forms 
+of degree 1 (i.e. 1-forms). 
 
 .. NOTE::
 
-    A difference with the preceding Sage class :class:`DifferentialForm` 
+    A difference with the preceding Sage class 
+    :class:`~sage.tensor.differential_form_element.DifferentialForm` 
     is that the present class lies at the tensor field level. Accordingly, an
     instance of :class:`DiffForm` can have various sets of components, each in
     a different coordinate system or coframe, while the class 
-    :class:`DifferentialForm` considers differential forms at the component 
-    level in a fixed chart. In this respect, the class 
-    :class:`DifferentialForm` is closer to the class 
-    :class:`CompFullyAntiSym` than to :class:`DiffForm`
+    :class:`~sage.tensor.differential_form_element.DifferentialForm` considers 
+    differential forms at the component level in a fixed chart. In this 
+    respect, the class 
+    :class:`~sage.tensor.differential_form_element.DifferentialForm` is closer 
+    to the class :class:`~sage.tensor.modules.comp.CompFullyAntiSym` than 
+    to :class:`DiffForm`
 
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
 - Joris Vankerschaver (2010): developed a previous class, 
-  :class:`DifferentialForm` (cf. the above note), which inspired the storage of 
-  the non-zero components as a dictionary whose keys are the indices.
+  :class:`~sage.tensor.differential_form_element.DifferentialForm` (cf. the 
+  above note), which inspired the storage of the non-zero components as a 
+  dictionary whose keys are the indices.
 
 """
 
@@ -71,9 +73,9 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     
     A 2-form on a 4-dimensional manifold::
     
-        sage: m = Manifold(4, 'M')
-        sage: c_txyz = m.chart('t x y z')
-        sage: a = m.diff_form(2, 'a') ; a
+        sage: M = Manifold(4, 'M')
+        sage: c_txyz = M.chart('t x y z')
+        sage: a = M.diff_form(2, 'a') ; a
         2-form 'a' on the 4-dimensional manifold 'M'
         
     A differential form is a tensor field of purely covariant type::
@@ -83,8 +85,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         sage: a.tensor_type  
         (0, 2)
 
-    It is antisymmetric, its components being instances of the class 
-    :class:`CompFullyAntiSym`::
+    It is antisymmetric, its components being instances of class 
+    :class:`~sage.tensor.modules.comp.CompFullyAntiSym`::
     
         sage: a.symmetries()
         no symmetry;  antisymmetry: (0, 1)
@@ -116,7 +118,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
 
     Differential forms can be added or subtracted::
     
-        sage: b = m.diff_form(2)
+        sage: b = M.diff_form(2)
         sage: b[0,1], b[0,2], b[0,3] = (1,2,3)
         sage: s = a + b ; s
         2-form on the 4-dimensional manifold 'M'
@@ -138,9 +140,9 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     An example of 3-form is the volume element on `\RR^3` in Cartesian 
     coordinates::
      
-        sage: m = Manifold(3, 'R3', '\RR^3', start_index=1)                                
-        sage: c_cart.<x,y,z> = m.chart('x y z')                                           
-        sage: eps = m.diff_form(3, 'epsilon', r'\epsilon')
+        sage: M = Manifold(3, 'R3', '\RR^3', start_index=1)                                
+        sage: c_cart.<x,y,z> = M.chart('x y z')                                           
+        sage: eps = M.diff_form(3, 'epsilon', r'\epsilon')
         sage: eps[1,2,3] = 1  # the only independent component
         sage: eps[:] # all the components are set from the previous line:
         [[[0, 0, 0], [0, 0, 1], [0, -1, 0]], [[0, 0, -1], [0, 0, 0], [1, 0, 0]], [[0, 1, 0], [-1, 0, 0], [0, 0, 0]]]
@@ -150,7 +152,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     Spherical components of the volume element from the tensorial 
     change-of-frame formula::
 
-        sage: c_spher.<r,th,ph> = m.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
+        sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
         sage: spher_to_cart = c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
         sage: cart_to_spher = spher_to_cart.set_inverse(sqrt(x^2+y^2+z^2), atan2(sqrt(x^2+y^2),z), atan2(y, x))
         Check of the inverse coordinate transformation:
@@ -169,11 +171,12 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         sage: eps.view(c_spher.frame, c_spher)
         epsilon = r^2*sin(th) dr/\dth/\dph
        
-    The exterior product of two differential forms is performed via the method :meth:`wedge`::
+    The exterior product of two differential forms is performed via the method 
+    :meth:`~sage.tensor.modules.free_module_alt_form.wedge`::
     
-        sage: a = m.one_form('A')
+        sage: a = M.one_form('A')
         sage: a[:] = (x*y*z, -z*x, y*z)
-        sage: b = m.one_form('B')
+        sage: b = M.one_form('B')
         sage: b[:] = (cos(z), sin(x), cos(y))
         sage: ab = a.wedge(b) ; ab
         2-form 'A/\B' on the 3-dimensional manifold 'R3'
@@ -223,7 +226,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         
     The Lie derivative of a 2-form is a 2-form::
     
-        sage: v = m.vector_field('v')             
+        sage: v = M.vector_field('v')             
         sage: v[:] = (y*z, -x*z, x*y)             
         sage: ab.lie_der(v)
         2-form on the 3-dimensional manifold 'R3'
@@ -287,9 +290,9 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         
         Exterior derivative of a 1-form on a 4-dimensional manifold::
         
-            sage: m = Manifold(4, 'M')
-            sage: c_txyz.<t,x,y,z> = m.chart('t x y z')           
-            sage: a = m.one_form('A')
+            sage: M = Manifold(4, 'M')
+            sage: c_txyz.<t,x,y,z> = M.chart('t x y z')           
+            sage: a = M.one_form('A')
             sage: a[:] = (t*x*y*z, z*y**2, x*z**2, x**2 + y**2)
             sage: da = a.exterior_der() ; da
             2-form 'dA' on the 4-dimensional manifold 'M'
@@ -378,14 +381,15 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             *A_{i_1\ldots i_{n-p}} = \frac{1}{p!} A_{k_1\ldots k_p}
                 \epsilon^{k_1\ldots k_p}_{\qquad\ i_1\ldots i_{n-p}}
                 
-        where $\epsilon$ is the volume form associated with some 
+        where `\epsilon` is the volume form associated with some 
         pseudo-Riemannian metric `g` on the manifold, and the indices 
         `k_1,\ldots, k_p` are raised with `g`. 
         
         INPUT:
         
         - ``metric``: the pseudo-Riemannian metric `g` defining the Hodge dual, 
-          via the volume form `\epsilon`; must be an instance of :class:`Metric`
+          via the volume form `\epsilon`; must be an instance of
+          :class:`~sage.geometry.manifolds.metric.Metric`
         
         OUTPUT:
         
@@ -395,11 +399,11 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         
         Hodge star of a 1-form in the Euclidean space `R^3`::
         
-            sage: m = Manifold(3, 'M', start_index=1)
-            sage: X.<x,y,z> = m.chart('x y z')
-            sage: g = m.metric('g')
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: X.<x,y,z> = M.chart('x y z')
+            sage: g = M.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, 1, 1
-            sage: a = m.one_form('A')
+            sage: a = M.one_form('A')
             sage: var('Ax Ay Az')
             (Ax, Ay, Az)
             sage: a[:] = (Ax, Ay, Az)
@@ -416,7 +420,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         
         Hodge star of a 0-form (scalar field) in `R^3`::
         
-            sage: f = m.scalar_field(function('F',x,y,z), name='f')
+            sage: f = M.scalar_field(function('F',x,y,z), name='f')
             sage: sf = f.hodge_star(g) ; sf
             3-form '*f' on the 3-dimensional manifold 'M'
             sage: sf.view()
@@ -430,15 +434,15 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             
         Hodge star of a 0-form in Minkowksi spacetime::
         
-            sage: m = Manifold(4, 'M')
-            sage: X = m.chart('t x y z')
-            sage: g = m.metric('g', signature=2)
+            sage: M = Manifold(4, 'M')
+            sage: X = M.chart('t x y z')
+            sage: g = M.metric('g', signature=2)
             sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
             sage: g.view()  # Minkowski metric
             g = -dt*dt + dx*dx + dy*dy + dz*dz
             sage: var('f0')
             f0
-            sage: f = m.scalar_field(f0, name='f')
+            sage: f = M.scalar_field(f0, name='f')
             sage: sf = f.hodge_star(g) ; sf 
             4-form '*f' on the 4-dimensional manifold 'M'
             sage: sf.view()
@@ -452,7 +456,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
 
         Hodge star of a 1-form in Minkowksi spacetime::
         
-            sage: a = m.one_form('A')
+            sage: a = M.one_form('A')
             sage: var('At Ax Ay Az')
             (At, Ax, Ay, Az)
             sage: a[:] = (At, Ax, Ay, Az)
@@ -471,7 +475,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
 
         Hodge star of a 2-form in Minkowksi spacetime::
         
-            sage: F = m.diff_form(2, 'F')    
+            sage: F = M.diff_form(2, 'F')    
             sage: var('Ex Ey Ez Bx By Bz')
             (Ex, Ey, Ez, Bx, By, Bz)
             sage: F[0,1], F[0,2], F[0,3] = -Ex, -Ey, -Ez
@@ -511,7 +515,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         where `A` and `B` are any 1-forms and `A^\sharp` and `B^\sharp` the 
         vectors associated to them by the metric `g` (index raising)::
 
-            sage: b = m.one_form('B')
+            sage: b = M.one_form('B')
             sage: var('Bt Bx By Bz')
             (Bt, Bx, By, Bz)
             sage: b[:] = (Bt, Bx, By, Bz) ; b.view()
@@ -564,15 +568,17 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
     
     A 1-form on a 3-dimensional manifold::
     
-        sage: m = Manifold(3, 'M')                      
-        sage: c_xyz.<x,y,z> = m.chart('x y z')
-        sage: om = m.one_form('omega', r'\omega') ; om  
+        sage: M = Manifold(3, 'M')                      
+        sage: c_xyz.<x,y,z> = M.chart('x y z')
+        sage: om = M.one_form('omega', r'\omega') ; om  
         1-form 'omega' on the 3-dimensional manifold 'M'
 
     A 1-form is of course a differential form::
     
-        sage: isinstance(om, DiffForm)
+        sage: isinstance(om, sage.geometry.manifolds.diffform.DiffFormParal)
         True
+        sage: om.parent()
+        free module TF^(0,1)(M) of type-(0,1) tensors fields on the 3-dimensional manifold 'M'
         sage: om.tensor_type
         (0, 1)
         
@@ -586,7 +592,7 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
         
     A 1-form acts on vector fields::
     
-        sage: v = m.vector_field('V')
+        sage: v = M.vector_field('V')
         sage: v[:] = (x, 2*y, 3*z)
         sage: om(v)
         scalar field 'omega(V)' on the 3-dimensional manifold 'M'
@@ -597,9 +603,9 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
 
     The tensor product of two 1-forms is a tensor field of type (0,2)::
     
-        sage: a = m.one_form('A')                       
+        sage: a = M.one_form('A')                       
         sage: a[:] = (1, 2, 3)                          
-        sage: b = m.one_form('B')
+        sage: b = M.one_form('B')
         sage: b[:] = (6, 5, 4)
         sage: c = a*b ; c       
         tensor field 'A*B' of type (0,2) on the 3-dimensional manifold 'M'

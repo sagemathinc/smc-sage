@@ -211,29 +211,29 @@ class Manifold(OpenDomain):
 
     A 2-dimensional manifold::
     
-        sage: m = Manifold(2, 'M', r'\mathcal{M}')
-        sage: m
+        sage: M = Manifold(2, 'M', r'\mathcal{M}')
+        sage: M
         2-dimensional manifold 'M'
-        sage: latex(m)
+        sage: latex(M)
         \mathcal{M}
                 
     The input parameter ``start_index`` becomes the attribute :attr:`sindex`
     of the manifold::
     
-        sage: m = Manifold(4, 'M')  # default value of start_index is 0
-        sage: m.sindex
+        sage: M = Manifold(4, 'M')  # default value of start_index is 0
+        sage: M.sindex
         0
-        sage: m = Manifold(4, 'M', start_index=1)
-        sage: m.sindex
+        sage: M = Manifold(4, 'M', start_index=1)
+        sage: M.sindex
         1
         
     It defines the range of indices on the manifold::
     
-        sage: m = Manifold(4, 'M')
-        sage: list(m.irange())
+        sage: M = Manifold(4, 'M')
+        sage: list(M.irange())
         [0, 1, 2, 3]
-        sage: m = Manifold(4, 'M', start_index=2)
-        sage: list(m.irange())
+        sage: M = Manifold(4, 'M', start_index=2)
+        sage: list(M.irange())
         [2, 3, 4, 5]
 
     """
@@ -267,8 +267,8 @@ class Manifold(OpenDomain):
         
         EXAMPLE::
         
-            sage: m = Manifold(2, 'M')
-            sage: m.dimension()
+            sage: M = Manifold(2, 'M')
+            sage: M.dimension()
             2
 
         """
@@ -293,26 +293,26 @@ class Manifold(OpenDomain):
         
         Index range on a 4-dimensional manifold::
         
-            sage: m = Manifold(4, 'M')
-            sage: for i in m.irange():
+            sage: M = Manifold(4, 'M')
+            sage: for i in M.irange():
             ...       print i,
             ...     
             0 1 2 3
-            sage: for i in m.irange(2):
+            sage: for i in M.irange(2):
             ...       print i,
             ...     
             2 3
-            sage: list(m.irange())
+            sage: list(M.irange())
             [0, 1, 2, 3]
     
         Index range on a 4-dimensional manifold with starting index=1::
         
-            sage: m = Manifold(4, 'M', start_index=1)
-            sage: for i in m.irange():              
+            sage: M = Manifold(4, 'M', start_index=1)
+            sage: for i in M.irange():              
             ...       print i,
             ...     
             1 2 3 4
-            sage: for i in m.irange(2):             
+            sage: for i in M.irange(2):             
             ...      print i,
             ...    
             2 3 4
@@ -346,8 +346,8 @@ class Manifold(OpenDomain):
         
         Indices on a 2-dimensional manifold::
         
-            sage: m = Manifold(2, 'M', start_index=1)
-            sage: for ind in m.index_generator(2):
+            sage: M = Manifold(2, 'M', start_index=1)
+            sage: for ind in M.index_generator(2):
             ...       print ind
             ...
             (1, 1)
@@ -357,9 +357,9 @@ class Manifold(OpenDomain):
 
         Loops can be nested::
         
-            sage: for ind1 in m.index_generator(2):
+            sage: for ind1 in M.index_generator(2):
             ...       print ind1, " : ",
-            ...       for ind2 in m.index_generator(2):
+            ...       for ind2 in M.index_generator(2):
             ...           print ind2,
             ...       print ""
             ...

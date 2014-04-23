@@ -24,12 +24,12 @@ EXAMPLES:
 
     A mapping between the sphere `S^2` and `\RR^3`::
 
-        sage: m = Manifold(2, 'S^2')
-        sage: U = m.open_domain('U') # the subdomain of S^2 covered by regular spherical coordinates
+        sage: M = Manifold(2, 'S^2')
+        sage: U = M.open_domain('U') # the subdomain of S^2 covered by regular spherical coordinates
         sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
-        sage: n = Manifold(3, 'R^3', r'\RR^3')
-        sage: c_cart.<x,y,z> = n.chart('x y z')  # Cartesian coord. on R^3
-        sage: Phi = U.diff_mapping(n, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
+        sage: N = Manifold(3, 'R^3', r'\RR^3')
+        sage: c_cart.<x,y,z> = N.chart('x y z')  # Cartesian coord. on R^3
+        sage: Phi = U.diff_mapping(N, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
         sage: Phi.view()
         Phi: U --> R^3, (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
         
@@ -49,11 +49,11 @@ EXAMPLES:
         
     An example of diffeomorphism: a rotation in the Euclidean plane::
 
-        sage: m = Manifold(2, 'R^2', r'\RR^2')
-        sage: c_cart.<x,y> = m.chart('x y') # Cartesian coordinates
+        sage: M = Manifold(2, 'R^2', r'\RR^2')
+        sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates
         sage: # A pi/3 rotation around the origin:
-        sage: rot = m.diffeomorphism(m, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
-        sage: p = m.point((1,2), name='p')
+        sage: rot = M.diffeomorphism(M, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
+        sage: p = M.point((1,2), name='p')
         sage: q = rot(p) ; q
         point 'R(p)' on 2-dimensional manifold 'R^2'
         sage: q.coord()
@@ -136,12 +136,12 @@ class DiffMapping(SageObject):
     
     A mapping between the sphere `S^2` and `\RR^3`::
 
-        sage: m = Manifold(2, 'S^2')
-        sage: U = m.open_domain('U') # the subdomain of S^2 covered by regular spherical coordinates
+        sage: M = Manifold(2, 'S^2')
+        sage: U = M.open_domain('U') # the subdomain of S^2 covered by regular spherical coordinates
         sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
-        sage: n = Manifold(3, 'R^3', r'\RR^3')
-        sage: c_cart.<x,y,z> = n.chart('x y z')  # Cartesian coord. on R^3
-        sage: Phi = U.diff_mapping(n, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
+        sage: N = Manifold(3, 'R^3', r'\RR^3')
+        sage: c_cart.<x,y,z> = N.chart('x y z')  # Cartesian coord. on R^3
+        sage: Phi = U.diff_mapping(N, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
         sage: Phi
         differentiable mapping 'Phi' from open domain 'U' on the 2-dimensional manifold 'S^2' to 3-dimensional manifold 'R^3'
         sage: type(Phi)
@@ -164,15 +164,15 @@ class DiffMapping(SageObject):
     If the arrival manifold is 1-dimensional, the mapping is defined by a
     single symbolic expression and not a list with a single element::
 
-        sage: n = Manifold(1, 'N')
-        sage: chart_n = n.chart('x')
-        sage: Phi = m.diff_mapping(n, sin(th)*cos(ph)) # and not ...,(sin(th)*cos(ph),))
+        sage: N = Manifold(1, 'N')
+        sage: chart_n = N.chart('x')
+        sage: Phi = M.diff_mapping(N, sin(th)*cos(ph)) # and not ...,(sin(th)*cos(ph),))
         
     If the arrival manifold is the field of real numbers `\RR` (the Sage object
     :data:`RealLine`), the action on a point returns a real number, i.e. the 
     canonical coordinate of the image point, and not the image point itself::
 
-        sage: Phi = m.diff_mapping(RealLine, sin(th)*cos(ph))
+        sage: Phi = M.diff_mapping(RealLine, sin(th)*cos(ph))
         sage: p = U.point((pi/2,pi))
         sage: Phi(p)      
         -1
@@ -272,11 +272,11 @@ class DiffMapping(SageObject):
         
         Standard embedding of the sphere `S^2` in `\RR^3`::
     
-            sage: m = Manifold(2, 'S^2')
-            sage: c_spher.<th,ph> = m.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
-            sage: n = Manifold(3, 'R^3', r'\RR^3')
-            sage: c_cart.<x,y,z> = n.chart('x y z')
-            sage: Phi = m.diff_mapping(n, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
+            sage: M = Manifold(2, 'S^2')
+            sage: c_spher.<th,ph> = M.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: N = Manifold(3, 'R^3', r'\RR^3')
+            sage: c_cart.<x,y,z> = N.chart('x y z')
+            sage: Phi = M.diff_mapping(N, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
             sage: Phi.view()
             Phi: S^2 --> R^3, (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
             sage: latex(Phi.view())
@@ -343,11 +343,11 @@ class DiffMapping(SageObject):
         Differential mapping from a 2-dimensional manifold to a 3-dimensional 
         one::
         
-            sage: m = Manifold(2, 'M')
-            sage: n = Manifold(3, 'N')
-            sage: c_uv.<u,v> = m.chart('u v')
-            sage: c_xyz.<x,y,z> = n.chart('x y z')
-            sage: Phi = m.diff_mapping(n, (u*v, u/v, u+v), name='Phi', latex_name=r'\Phi')
+            sage: M = Manifold(2, 'M')
+            sage: N = Manifold(3, 'N')
+            sage: c_uv.<u,v> = M.chart('u v')
+            sage: c_xyz.<x,y,z> = N.chart('x y z')
+            sage: Phi = M.diff_mapping(N, (u*v, u/v, u+v), name='Phi', latex_name=r'\Phi')
             sage: Phi.view()
             Phi: M --> N, (u, v) |--> (x, y, z) = (u*v, u/v, u + v)
             sage: Phi.multi_function_chart(c_uv, c_xyz)
@@ -359,11 +359,11 @@ class DiffMapping(SageObject):
 
         Representation in other charts::
         
-            sage: c_UV.<U,V> = m.chart('U V')  # new chart on M
+            sage: c_UV.<U,V> = M.chart('U V')  # new chart on M
             sage: ch_uv_UV = c_uv.coord_change(c_UV, u-v, u+v)
             sage: ch_uv_UV.inverse()(U,V)
             (1/2*U + 1/2*V, -1/2*U + 1/2*V)
-            sage: c_XYZ.<X,Y,Z> = n.chart('X Y Z') # new chart on N
+            sage: c_XYZ.<X,Y,Z> = N.chart('X Y Z') # new chart on N
             sage: ch_xyz_XYZ = c_xyz.coord_change(c_XYZ, 2*x-3*y+z, y+z-x, -x+2*y-z)
             sage: ch_xyz_XYZ.inverse()(X,Y,Z)
             (3*X + Y + 4*Z, 2*X + Y + 3*Z, X + Y + Z)
@@ -484,11 +484,11 @@ class DiffMapping(SageObject):
         Differential mapping from a 2-dimensional manifold to a 3-dimensional 
         one::
         
-            sage: m = Manifold(2, 'M')
-            sage: n = Manifold(3, 'N')
-            sage: c_uv.<u,v> = m.chart('u v')
-            sage: c_xyz.<x,y,z> = n.chart('x y z')
-            sage: Phi = m.diff_mapping(n, (u*v, u/v, u+v), name='Phi', latex_name=r'\Phi')
+            sage: M = Manifold(2, 'M')
+            sage: N = Manifold(3, 'N')
+            sage: c_uv.<u,v> = M.chart('u v')
+            sage: c_xyz.<x,y,z> = N.chart('x y z')
+            sage: Phi = M.diff_mapping(N, (u*v, u/v, u+v), name='Phi', latex_name=r'\Phi')
             sage: Phi.view()
             Phi: M --> N, (u, v) |--> (x, y, z) = (u*v, u/v, u + v)
             sage: Phi.expr(c_uv, c_xyz)
@@ -500,11 +500,11 @@ class DiffMapping(SageObject):
 
         Expressions in other charts::
         
-            sage: c_UV.<U,V> = m.chart('U V')  # new chart on M
+            sage: c_UV.<U,V> = M.chart('U V')  # new chart on M
             sage: ch_uv_UV = c_uv.coord_change(c_UV, u-v, u+v)
             sage: ch_uv_UV.inverse()(U,V)
             (1/2*U + 1/2*V, -1/2*U + 1/2*V)
-            sage: c_XYZ.<X,Y,Z> = n.chart('X Y Z') # new chart on N
+            sage: c_XYZ.<X,Y,Z> = N.chart('X Y Z') # new chart on N
             sage: ch_xyz_XYZ = c_xyz.coord_change(c_XYZ, 2*x-3*y+z, y+z-x, -x+2*y-z)
             sage: ch_xyz_XYZ.inverse()(X,Y,Z)
             (3*X + Y + 4*Z, 2*X + Y + 3*Z, X + Y + Z)
@@ -519,15 +519,15 @@ class DiffMapping(SageObject):
 
         A rotation in some Euclidean plane::
         
-            sage: m = Manifold(2, 'M') # the plane
-            sage: c_spher.<r,ph> = m.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # spherical coordinates on the plane
-            sage: rot = m.diff_mapping(m, (r, ph+pi/3), name='R') # pi/3 rotation around r=0
+            sage: M = Manifold(2, 'M') # the plane
+            sage: c_spher.<r,ph> = M.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # spherical coordinates on the plane
+            sage: rot = M.diff_mapping(M, (r, ph+pi/3), name='R') # pi/3 rotation around r=0
             sage: rot.expr()
             (r, 1/3*pi + ph)
 
         Expression of the rotation in terms of Cartesian coordinates::
         
-            sage: c_cart.<x,y> = m.chart('x y') # Declaration of Cartesian coordinates
+            sage: c_cart.<x,y> = M.chart('x y') # Declaration of Cartesian coordinates
             sage: ch_spher_cart = c_spher.coord_change(c_cart, r*cos(ph), r*sin(ph)) # relation to spherical coordinates
             sage: ch_spher_cart.set_inverse(sqrt(x^2+y^2), atan2(y,x))              
             Check of the inverse coordinate transformation:
@@ -563,9 +563,9 @@ class DiffMapping(SageObject):
         Polar representation of a planar rotation initally defined in 
         Cartesian coordinates::
             
-            sage: m = Manifold(2, 'R^2', r'\RR^2')   # Euclidean plane
-            sage: c_cart.<x,y> = m.chart('x y')  # Cartesian coordinates
-            sage: c_spher.<r,ph> = m.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # spherical coordinates
+            sage: M = Manifold(2, 'R^2', r'\RR^2')   # Euclidean plane
+            sage: c_cart.<x,y> = M.chart('x y')  # Cartesian coordinates
+            sage: c_spher.<r,ph> = M.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # spherical coordinates
             sage: # Links between spherical coordinates and Cartesian ones:
             sage: ch_cart_spher = c_cart.coord_change(c_spher, sqrt(x*x+y*y), atan2(y,x))
             sage: ch_cart_spher.set_inverse(r*cos(ph), r*sin(ph))
@@ -575,7 +575,7 @@ class DiffMapping(SageObject):
                r == r
                ph == arctan2(r*sin(ph), r*cos(ph))
             sage: # A pi/3 rotation around the origin defined in terms of Cartesian coordinates:
-            sage: rot = m.diff_mapping(m, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
+            sage: rot = M.diff_mapping(M, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
             sage: rot.expr()
             (-1/2*sqrt(3)*y + 1/2*x, 1/2*sqrt(3)*x + 1/2*y)
         
@@ -602,7 +602,7 @@ class DiffMapping(SageObject):
         The rotation can be applied to a point by means of either coordinate 
         system::
             
-            sage: p = m.point((1,2))  #  p defined by its Cartesian coord.
+            sage: p = M.point((1,2))  #  p defined by its Cartesian coord.
             sage: q = rot(p)  # q is computed by means of Cartesian coord.
             sage: p.coord(c_spher) # the spherical coord. of p are evaluated
             (sqrt(5), arctan(2))
@@ -660,9 +660,9 @@ class DiffMapping(SageObject):
         Polar representation of a planar rotation initally defined in 
         Cartesian coordinates::
             
-            sage: m = Manifold(2, 'R^2', r'\RR^2')   # Euclidean plane
-            sage: c_cart.<x,y> = m.chart('x y')  # Cartesian coordinates
-            sage: c_spher.<r,ph> = m.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # spherical coordinates
+            sage: M = Manifold(2, 'R^2', r'\RR^2')   # Euclidean plane
+            sage: c_cart.<x,y> = M.chart('x y')  # Cartesian coordinates
+            sage: c_spher.<r,ph> = M.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # spherical coordinates
             sage: # Links between spherical coordinates and Cartesian ones:
             sage: ch_cart_spher = c_cart.coord_change(c_spher, sqrt(x*x+y*y), atan2(y,x))
             sage: ch_cart_spher.set_inverse(r*cos(ph), r*sin(ph))
@@ -672,7 +672,7 @@ class DiffMapping(SageObject):
                r == r
                ph == arctan2(r*sin(ph), r*cos(ph))
             sage: # A pi/3 rotation around the origin defined in terms of Cartesian coordinates:
-            sage: rot = m.diff_mapping(m, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
+            sage: rot = M.diff_mapping(M, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
             sage: rot.expr()
             (-1/2*sqrt(3)*y + 1/2*x, 1/2*sqrt(3)*x + 1/2*y)
 
@@ -715,7 +715,7 @@ class DiffMapping(SageObject):
         The rotation can be applied to a point by means of either coordinate 
         system::
             
-            sage: p = m.point((1,2))  #  p defined by its Cartesian coord.
+            sage: p = M.point((1,2))  #  p defined by its Cartesian coord.
             sage: q = rot(p)  # q is computed by means of Cartesian coord.
             sage: p.coord(c_spher) # the spherical coord. of p are evaluated
             (sqrt(5), arctan(2))
@@ -769,11 +769,11 @@ class DiffMapping(SageObject):
         
             Planar rotation acting on a point::
             
-                sage: m = Manifold(2, 'R^2', r'\RR^2') # Euclidean plane
-                sage: c_cart.<x,y> = m.chart('x y') # Cartesian coordinates
+                sage: M = Manifold(2, 'R^2', r'\RR^2') # Euclidean plane
+                sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates
                 sage: # A pi/3 rotation around the origin defined in Cartesian coordinates:
-                sage: rot = m.diff_mapping(m, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
-                sage: p = m.point((1,2), name='p')
+                sage: rot = M.diff_mapping(M, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
+                sage: p = M.point((1,2), name='p')
                 sage: q = rot(p) ; q
                 point 'R(p)' on 2-dimensional manifold 'R^2'
                 sage: q.coord()
@@ -783,7 +783,7 @@ class DiffMapping(SageObject):
             ones::
             
                 sage: # Spherical coord. on the plane:
-                sage: c_spher.<r,ph> = m.chart(r'r:(0,+oo) ph:(0,2*pi):\phi')
+                sage: c_spher.<r,ph> = M.chart(r'r:(0,+oo) ph:(0,2*pi):\phi')
                 sage: ch = c_cart.coord_change(c_spher, sqrt(x*x+y*y), atan2(y,x))
                 sage: rot.add_expr(c_spher, c_spher, (r, ph+pi/3))
                 sage: p.coord(c_spher) # the spherical coord. of p are evaluated
@@ -857,12 +857,12 @@ class DiffMapping(SageObject):
         
         Pullback on `S^2` of a scalar field defined on `R^3`::
         
-            sage: m = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = m.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coord. on S^2
-            sage: n = Manifold(3, 'R^3', r'\RR^3', start_index=1)
-            sage: c_cart.<x,y,z> = n.chart('x y z') # Cartesian coord. on R^3
-            sage: Phi = m.diff_mapping(n, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
-            sage: f = n.scalar_field(x*y*z, name='f') ; f
+            sage: M = Manifold(2, 'S^2', start_index=1)
+            sage: c_spher.<th,ph> = M.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coord. on S^2
+            sage: N = Manifold(3, 'R^3', r'\RR^3', start_index=1)
+            sage: c_cart.<x,y,z> = N.chart('x y z') # Cartesian coord. on R^3
+            sage: Phi = M.diff_mapping(N, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
+            sage: f = N.scalar_field(x*y*z, name='f') ; f
             scalar field 'f' on the 3-dimensional manifold 'R^3'
             sage: f.view()
             f: (x, y, z) |--> x*y*z
@@ -873,7 +873,7 @@ class DiffMapping(SageObject):
             
         Pullback on `S^2` of the standard Euclidean metric on `R^3`::
                 
-            sage: g = n.sym_bilin_form_field('g')
+            sage: g = N.sym_bilin_form_field('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, 1, 1
             sage: g.view()
             g = dx*dx + dy*dy + dz*dz
@@ -884,7 +884,7 @@ class DiffMapping(SageObject):
 
         Pullback on `S^2` of a 3-form on `R^3`::
                 
-            sage: a = n.diff_form(3, 'A')
+            sage: a = N.diff_form(3, 'A')
             sage: a[1,2,3] = f 
             sage: a.view()
             A = x*y*z dx/\dy/\dz
@@ -1107,10 +1107,10 @@ class Diffeomorphism(DiffMapping):
         
         The inverse of a rotation in the Euclidean plane::
         
-            sage: m = Manifold(2, 'R^2', r'\RR^2')
-            sage: c_cart.<x,y> = m.chart('x y')
+            sage: M = Manifold(2, 'R^2', r'\RR^2')
+            sage: c_cart.<x,y> = M.chart('x y')
             sage: # A pi/3 rotation around the origin:
-            sage: rot = m.diffeomorphism(m, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
+            sage: rot = M.diffeomorphism(M, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
             sage: rot.inverse() 
             diffeomorphism 'R^(-1)' on the 2-dimensional manifold 'R^2'
             sage: rot.inverse().view()
@@ -1120,7 +1120,7 @@ class Diffeomorphism(DiffMapping):
         inverse results in the identity::
         
             sage: (a, b) = var('a b')
-            sage: p = m.point((a,b)) # a generic point on M
+            sage: p = M.point((a,b)) # a generic point on M
             sage: q = rot(p)
             sage: p1 = rot.inverse()(q)
             sage: p1 == p 
