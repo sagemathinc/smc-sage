@@ -50,19 +50,19 @@ State of various data members after the above operations::
      'B': domain 'B' on the 2-dimensional manifold 'M', 
      'M': 2-dimensional manifold 'M', 
      'A_union_B': domain 'A_union_B' on the 2-dimensional manifold 'M'}
-    sage: a.subdomains
-    set([domain 'A_inter_B' on the 2-dimensional manifold 'M', 
-         domain 'A' on the 2-dimensional manifold 'M'])
-    sage: a.superdomains
-    set([domain 'A_union_B' on the 2-dimensional manifold 'M', 
-         2-dimensional manifold 'M', 
-         domain 'A' on the 2-dimensional manifold 'M'])
+    sage: sorted(a.subdomains) # sorted output of the set a.subdomains
+    [domain 'A' on the 2-dimensional manifold 'M',
+     domain 'A_inter_B' on the 2-dimensional manifold 'M']
+    sage: sorted(a.superdomains) # sorted output of the set a.superdomains
+    [domain 'A' on the 2-dimensional manifold 'M',
+     domain 'A_union_B' on the 2-dimensional manifold 'M',
+     2-dimensional manifold 'M']
     sage: c.superdomains
-    set([domain 'A' on the 2-dimensional manifold 'M', 
-         2-dimensional manifold 'M', 
-         domain 'A_inter_B' on the 2-dimensional manifold 'M', 
+    set([domain 'B' on the 2-dimensional manifold 'M', 
          domain 'A_union_B' on the 2-dimensional manifold 'M', 
-         domain 'B' on the 2-dimensional manifold 'M'])
+         2-dimensional manifold 'M', 
+         domain 'A' on the 2-dimensional manifold 'M', 
+         domain 'A_inter_B' on the 2-dimensional manifold 'M'])
     sage: c.subdomains
     set([domain 'A_inter_B' on the 2-dimensional manifold 'M'])
     sage: d.subdomains
@@ -90,8 +90,9 @@ from sage.structure.unique_representation import UniqueRepresentation
 from sage.categories.sets_cat import Sets
 from point import Point
 
-#class Domain(UniqueRepresentation, Parent):
-class Domain(Parent):
+
+class Domain(UniqueRepresentation, Parent):
+#class Domain(Parent):
     r"""
     Subset of a differentiable manifold over `\RR`.
     
@@ -108,6 +109,7 @@ class Domain(Parent):
     
     A domain on a manifold::
     
+        sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(2, 'M')
         sage: from sage.geometry.manifolds.domain import Domain
         sage: A = Domain(M, 'A', latex_name=r'\mathcal{A}') ; A
@@ -192,6 +194,7 @@ class Domain(Parent):
         self.def_frame = None  # default frame
         self.frame_changes = {} # dictionary of changes of frames
         self.coframes = []  # list of coframes defined on subdomains of self
+        self.parallelizable_parts = set() # parallelizable domains contained in self
 
     #### Methods required for any Parent in the category of sets:
     def _element_constructor_(self, coords=None, chart=None, name=None, 
@@ -263,6 +266,7 @@ class Domain(Parent):
         
         Creating a domain on a manifold::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: a = M.domain('A') ; a                   
             domain 'A' on the 2-dimensional manifold 'M'
@@ -322,6 +326,7 @@ class Domain(Parent):
         
         Creating some superdomain of a given domain::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: a = M.domain('A')
             sage: b = a.superdomain('B') ; b
@@ -389,6 +394,7 @@ class Domain(Parent):
         
         Intersection of two domains::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: a = M.domain('A')
             sage: b = M.domain('B')
@@ -634,6 +640,7 @@ class Domain(Parent):
         
         Points on a 2-dimensional manifold::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy = M.chart('x y')
             sage: p = M.point((1,2), name='p') ; p
@@ -670,7 +677,8 @@ class Domain(Parent):
         EXAMPLES:
                     
         Default chart on a 2-dimensional manifold and on some subdomains::
-            
+
+            sage: Manifold._clear_cache_() # for doctests only            
             sage: M = Manifold(2, 'M')
             sage: M.chart('x y')
             chart (M, (x, y))
@@ -703,6 +711,7 @@ class Domain(Parent):
                     
         Charts on a 2-dimensional manifold::
             
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy = M.chart('x y')
             sage: c_uv = M.chart('u v')
@@ -740,6 +749,7 @@ class Domain(Parent):
         
         Change of coordinates on a 2-dimensional manifold::
             
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart('x y')
             sage: c_uv.<u,v> = M.chart('u v')
@@ -777,6 +787,7 @@ class Domain(Parent):
         The default vector frame is often the coordinate frame associated
         with the first chart defined on the domain::
             
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy = M.chart('x y')
             sage: M.default_frame()
@@ -797,6 +808,7 @@ class Domain(Parent):
           
         EXAMPLE::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy = M.chart('x y')
             sage: e = M.vector_frame('e')
@@ -836,6 +848,7 @@ class Domain(Parent):
         
         Change of vector frames induced by a change of coordinates::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart('x y')
             sage: c_uv.<u,v> = M.chart('u v')
@@ -910,6 +923,7 @@ class OpenDomain(Domain):
     
     A open domain on a manifold::
     
+        sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(2, 'M')
         sage: from sage.geometry.manifolds.domain import OpenDomain
         sage: A = OpenDomain(M, 'A', latex_name=r'\mathcal{A}') ; A
@@ -982,6 +996,8 @@ class OpenDomain(Domain):
         self._vector_field_modules = {}
         # dict. of tensor field modules along self: 
         self._tensor_field_modules = {}
+        # the identity mapping on self (not constructed yet)
+        self._identity_mapping = None 
     
     def _repr_(self):
         r"""
@@ -1010,6 +1026,7 @@ class OpenDomain(Domain):
         
         Creating an open domain on a manifold::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: a = M.open_domain('A') ; a                   
             open domain 'A' on the 2-dimensional manifold 'M'
@@ -1082,6 +1099,7 @@ class OpenDomain(Domain):
         
         Chart on a 2-dimensional manifold::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: U = M.open_domain('U')
             sage: X = U.chart('x y') ; X
@@ -1111,6 +1129,7 @@ class OpenDomain(Domain):
         But a shorter way to proceed is to use the operator <,> in the chart
         declaration::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: U = M.open_domain('U')
             sage: X.<x,y> = U.chart('x y') ; X
@@ -1135,6 +1154,76 @@ class OpenDomain(Domain):
         from chart import Chart
         return Chart(self, coordinates)
 
+    def vector_frame(self, symbol=None, latex_symbol=None, dest_map=None,
+                     from_frame=None): 
+        r"""
+        Define a vector frame on the domain.
+        
+        A *vector frame* is a field on the domain that provides, at each point 
+        p of the domain, a vector basis of the tangent space at p. 
+
+        See :class:`~sage.geometry.manifolds.vectorframe.VectorFrame` for a 
+        complete documentation. 
+
+        INPUT:
+    
+        - ``symbol`` -- (default: None) a letter (of a few letters) to denote a 
+          generic vector of the frame; can be set to None if the parameter
+          ``from_frame`` is filled.
+        - ``latex_symbol`` -- (default: None) symbol to denote a generic vector 
+          of the frame; if None, the value of ``symbol`` is used. 
+        - ``dest_map`` -- (default: None) destination map 
+          `\Phi:\ U \rightarrow V` 
+          (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`); 
+          if none is provided, the identity is assumed (case of a vector frame 
+          *on* `U`)
+        - ``from_frame`` -- (default: None) vector frame `\tilde e` on the 
+          codomain `V` of the destination map `\Phi`; 
+        - ``from_frame`` -- (default: None) vector frame `\tilde e` on the 
+          codomain `V` of the destination map `\Phi`; the returned frame `e` is 
+          then such that `\forall p \in U, e(p) = \tilde e(\Phi(p))`
+    
+        OUTPUT:
+        
+        - instance of :class:`~sage.geometry.manifolds.vectorframe.VectorFrame`
+          representing the defined vector frame. 
+
+        EXAMPLES:
+
+        Setting a vector frame on a 3-dimensional open domain::
+    
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(3, 'M')
+            sage: A = M.open_domain('A', latex_name=r'\mathcal{A}'); A 
+            open domain 'A' on the 3-dimensional manifold 'M'
+            sage: c_xyz.<x,y,z> = A.chart('x y z')
+            sage: e = A.vector_frame('e'); e 
+            vector frame (A, (e_0,e_1,e_2))
+            sage: e[0]
+            vector field 'e_0' on the open domain 'A' on the 3-dimensional manifold 'M'
+
+        See the documentation of class 
+        :class:`~sage.geometry.manifolds.vectorframe.VectorFrame` for more 
+        examples.
+
+        """
+        from vectorframe import VectorFrame
+        return VectorFrame(self.vector_field_module(dest_map=dest_map, 
+                                                    force_free=True), 
+                           symbol=symbol, latex_symbol=latex_symbol, 
+                           from_frame=from_frame)
+
+    def _set_covering_frame(self, frame):
+        r"""
+        Declare a frame covering ``self``.
+        """
+        self.covering_frames.append(frame)
+        self.parallelizable_parts = set([self])
+        # if self cotained smaller parallelizable parts, they are forgotten
+        for sd in self.superdomains:
+            if not sd.is_manifestly_parallelizable():
+                sd.parallelizable_parts.add(self)
+            
     def scalar_field_ring(self):
         r"""
         Returns the ring of scalar fields defined on ``self``.
@@ -1153,6 +1242,7 @@ class OpenDomain(Domain):
         
         Scalar ring of a 3-dimensional open domain::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: U = M.open_domain('U')
             sage: CU = U.scalar_field_ring() ; CU
@@ -1168,7 +1258,7 @@ class OpenDomain(Domain):
             self._scalar_field_ring = ScalarFieldRing(self)
         return self._scalar_field_ring
 
-    def vector_field_module(self, dest_map=None):
+    def vector_field_module(self, dest_map=None, force_free=False):
         r"""
         Returns the set of vector fields defined on ``self``, possibly 
         within some ambient manifold, as a module over the ring of scalar
@@ -1184,11 +1274,17 @@ class OpenDomain(Domain):
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`); 
           if none is provided, the identity is assumed (case of vector fields 
           *on* `U`)
+        - ``force_free`` -- (default: False) if set to True, force the 
+          construction of a *free* module (this implies that `V` is 
+          parallelizable)
         
         OUTPUT:
         
         - instance of 
           :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`
+          (or of 
+          :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldFreeModule`
+          if `V` is parallelizable)
           representing the module `\mathcal{X}(U,\Phi)` of vector fields on the 
           open domain `U`=``self`` taking values on 
           `\Phi(U)\subset V\subset M`. 
@@ -1247,16 +1343,20 @@ class OpenDomain(Domain):
             3
 
         """
-        from vectorfield_module import VectorFieldFreeModule
+        from vectorfield_module import VectorFieldModule, VectorFieldFreeModule
         if dest_map is None:
             dest_map_name = 'Id'
+            codomain = self
         else:
             dest_map_name = dest_map.name
+            codomain = dest_map.codomain
         if dest_map_name not in self._vector_field_modules:
-            #!# if dest_map.codomain.is_manifestly_parallelizable():
-            self._vector_field_modules[dest_map_name] = \
+            if codomain.is_manifestly_parallelizable() or force_free:
+                self._vector_field_modules[dest_map_name] = \
                      VectorFieldFreeModule(self, dest_map=dest_map)
-            # else:
+            else:
+                self._vector_field_modules[dest_map_name] = \
+                    VectorFieldModule(self, dest_map=dest_map)
         return self._vector_field_modules[dest_map_name]
 
     def tensor_field_module(self, tensor_type, dest_map=None):
@@ -1290,6 +1390,7 @@ class OpenDomain(Domain):
         
         Module of type-(2,1) tensor fields on a 3-dimensional open domain::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: U = M.open_domain('U')
             sage: c_xyz.<x,y,z> = U.chart('x y z')
@@ -1352,6 +1453,7 @@ class OpenDomain(Domain):
 
         A scalar field defined by its coordinate expression::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: U = M.open_domain('U')
             sage: c_xyz.<x,y,z> = U.chart('x y z')
@@ -1400,6 +1502,7 @@ class OpenDomain(Domain):
 
         A vector field on a 3-dimensional open domain::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: U = M.open_domain('U')
             sage: c_xyz.<x,y,z> = U.chart('x y z')
@@ -1467,6 +1570,7 @@ class OpenDomain(Domain):
 
         A tensor field of type (2,0) on a 3-dimensional open domain::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: U = M.open_domain('U')
             sage: c_xyz.<x,y,z> = U.chart('x y z')
@@ -1524,6 +1628,7 @@ class OpenDomain(Domain):
 
         A field of symmetric bilinear forms on a 3-dimensional manifold::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: c_xyz.<x,y,z> = M.chart('x y z')
             sage: t = M.sym_bilin_form_field('T'); t
@@ -1573,6 +1678,7 @@ class OpenDomain(Domain):
 
         A field of endomorphisms on a 3-dimensional manifold::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M', start_index=1)
             sage: c_xyz.<x,y,z> = M.chart('x y z')
             sage: t = M.endomorphism_field('T'); t
@@ -1624,6 +1730,7 @@ class OpenDomain(Domain):
 
         A field of automorphisms on a 3-dimensional manifold::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3,'M')
             sage: c_xyz.<x,y,z> = M.chart('x y z')
             sage: a = M.automorphism_field('A') ; a
@@ -1673,6 +1780,7 @@ class OpenDomain(Domain):
 
         Identity map on a 3-dimensional manifold::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M', start_index=1)
             sage: c_xyz.<x,y,z> = M.chart('x y z')
             sage: a = M.identity_map(); a
@@ -1694,63 +1802,6 @@ class OpenDomain(Domain):
         else:
             raise NotImplementedError("IdentityMap not implemented yet")
 
-
-    def vector_frame(self, symbol=None, latex_symbol=None, dest_map=None,
-                     from_frame=None): 
-        r"""
-        Define a vector frame on the domain.
-        
-        A *vector frame* is a field on the domain that provides, at each point 
-        p of the domain, a vector basis of the tangent space at p. 
-
-        See :class:`~sage.geometry.manifolds.vectorframe.VectorFrame` for a 
-        complete documentation. 
-
-        INPUT:
-    
-        - ``symbol`` -- (default: None) a letter (of a few letters) to denote a 
-          generic vector of the frame; can be set to None if the parameter
-          ``from_frame`` is filled.
-        - ``latex_symbol`` -- (default: None) symbol to denote a generic vector 
-          of the frame; if None, the value of ``symbol`` is used. 
-        - ``dest_map`` -- (default: None) destination map 
-          `\Phi:\ U \rightarrow V` 
-          (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`); 
-          if none is provided, the identity is assumed (case of a vector frame 
-          *on* `U`)
-        - ``from_frame`` -- (default: None) vector frame `\tilde e` on the 
-          codomain `V` of the destination map `\Phi`; 
-        - ``from_frame`` -- (default: None) vector frame `\tilde e` on the 
-          codomain `V` of the destination map `\Phi`; the returned frame `e` is 
-          then such that `\forall p \in U, e(p) = \tilde e(\Phi(p))`
-    
-        OUTPUT:
-        
-        - instance of :class:`~sage.geometry.manifolds.vectorframe.VectorFrame`
-          representing the defined vector frame. 
-
-        EXAMPLES:
-
-        Setting a vector frame on a 3-dimensional open domain::
-    
-            sage: M = Manifold(3, 'M')
-            sage: A = M.open_domain('A', latex_name=r'\mathcal{A}'); A 
-            open domain 'A' on the 3-dimensional manifold 'M'
-            sage: c_xyz.<x,y,z> = A.chart('x y z')
-            sage: e = A.vector_frame('e'); e 
-            vector frame (A, (e_0,e_1,e_2))
-            sage: e[0]
-            vector field 'e_0' on the open domain 'A' on the 3-dimensional manifold 'M'
-
-        See the documentation of class 
-        :class:`~sage.geometry.manifolds.vectorframe.VectorFrame` for more 
-        examples.
-
-        """
-        from vectorframe import VectorFrame 
-        return VectorFrame(self.vector_field_module(dest_map=dest_map), 
-                           symbol=symbol, latex_symbol=latex_symbol,
-                           from_frame=from_frame)
 
     def metric(self, name, signature=None, latex_name=None): 
         r"""
@@ -1779,6 +1830,7 @@ class OpenDomain(Domain):
     
         Metric on a 3-dimensional manifold::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M', start_index=1)
             sage: c_xyz.<x,y,z> = M.chart('x y z')
             sage: #!# g = M.metric('g'); g 
@@ -1817,6 +1869,7 @@ class OpenDomain(Domain):
     
         Standard metric on the 2-sphere `S^2`::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
             sage: c_spher.<th,ph> = M.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: #!# g = M.riemann_metric('g'); g
@@ -1864,6 +1917,7 @@ class OpenDomain(Domain):
     
         Metric of Minkowski spacetime::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(4, 'M')
             sage: c_cart = M.chart('t x y z')
             sage: #!# g = M.lorentz_metric('g'); g
@@ -1914,6 +1968,7 @@ class OpenDomain(Domain):
     
         A 2-form on a 4-dimensional open domain::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(4, 'M')
             sage: A = M.open_domain('A', latex_name=r'\mathcal{A}'); A 
             open domain 'A' on the 4-dimensional manifold 'M'
@@ -1960,6 +2015,7 @@ class OpenDomain(Domain):
     
         A 1-form on a 3-dimensional open domain::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: A = M.open_domain('A', latex_name=r'\mathcal{A}')
             sage: X.<x,y,z> = A.chart('x y z')                      
@@ -2017,6 +2073,7 @@ class OpenDomain(Domain):
     
         A mapping between the sphere `S^2` and `\RR^3`::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2')
             sage: U = M.open_domain('U') # the subdomain of S^2 covered by regular spherical coordinates
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
@@ -2069,6 +2126,7 @@ class OpenDomain(Domain):
     
         A diffeomorphism between two 2-dimensional domains::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M', r'{\cal M}')
             sage: U = M.open_domain('U')
             sage: c_xv.<x,y> = U.chart(r'x:(-pi/2,+oo) y:(-pi/2,+oo)')
@@ -2086,6 +2144,36 @@ class OpenDomain(Domain):
         return Diffeomorphism(self, domain, coord_functions, chart_from, 
                               chart_to, name, latex_name)
 
+
+    def identity_mapping(self, name=None, latex_name=None):
+        r"""
+        Identity mapping on the current domain
+        
+        See :class:`~sage.geometry.manifolds.diffmapping.IdentityMapping` for a 
+        complete documentation. 
+
+        INPUT:
+
+        - ``name`` -- (default: None) name given to the identity mapping; 
+          if None, it is set to 'Id_U', where 'U' is the domain's name.
+        - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity 
+          mapping; if None, it is set to `\mathrm{Id}_U`, where `U` is the 
+          symbol denoting the domain. 
+
+        OUTPUT:
+        
+        - the identity mapping, as an instance of 
+          :class:`~sage.geometry.manifolds.diffmapping.IdentityMapping`
+
+        EXAMPLE:
+    
+
+        """
+        from diffmapping import IdentityMapping
+        if self._identity_mapping is None:
+            self._identity_mapping = IdentityMapping(self, name=name,
+                                                     latex_name=latex_name)
+        return self._identity_mapping
 
     def aff_connection(self, name, latex_name=None):
         r"""
@@ -2109,6 +2197,7 @@ class OpenDomain(Domain):
     
         Affine connection on a 3-dimensional domain::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M', start_index=1)
             sage: A = M.open_domain('A', latex_name=r'\mathcal{A}')
             sage: #!# nab = A.aff_connection('nabla', r'\nabla') ; nab

@@ -17,8 +17,108 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
+from sage.modules.module import Module
+from sage.structure.unique_representation import UniqueRepresentation
 from sage.tensor.modules.tensor_free_module import TensorFreeModule
-from tensorfield import TensorFieldParal
+from tensorfield import TensorField, TensorFieldParal
+
+class TensorFieldModule(UniqueRepresentation, Module):
+    r"""
+    Module of tensor fields of a given type `(k,l)` along an open subset `U` 
+    of some manifold `S` with values in a open subset `V` of 
+    a manifold `M`.
+    
+    This is a module over `C^\infty(U)`, the ring of differentiable scalar 
+    fields on `U`. 
+    
+    The standard case of tensor fields *on* a manifold corresponds to 
+    `U=V` (and hence `S=M`). Another common case is `\Phi` being an 
+    immersion.
+
+    If `V` is parallelizable, the class :class:`TensorFieldFreeModule` should
+    be used instead.
+    
+    INPUT:
+    
+    - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector 
+      fields along `U` associated with the mapping `\Phi:\; U \rightarrow V`. 
+    - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank and 
+      `l` the covariant rank
+    
+    """
+    
+    Element = TensorField
+
+    def __init__(self, vector_field_module, tensor_type):
+        domain = vector_field_module.domain
+        dest_map = vector_field_module.dest_map
+        kcon = tensor_type[0]
+        lcov = tensor_type[1]
+        name = "TF^(" + str(kcon) + "," + str(lcov) + ")(" + domain.name
+        latex_name = "TF^(" + str(kcon) + "," + str(lcov) + r")\left(" + \
+                     domain.latex_name
+        if dest_map is None:
+            name += ")" 
+            latex_name += r"\right)" 
+        else:
+            name += "," + dest_map.name + ")" 
+            latex_name += "," + dest_map.latex_name + r"\right)" 
+        self.vmodule = vector_field_module
+        self.tensor_type = tensor_type
+        self.name = name
+        self.latex_name = latex_name
+        # the member self.ring is created for efficiency (to avoid calls to 
+        # self.base_ring()):
+        self.ring = domain.scalar_field_ring() 
+        Module.__init__(self, self.ring)
+        self.domain = domain
+        self.dest_map = dest_map
+        self.ambient_domain = vector_field_module.ambient_domain
+
+    #### Methods required for any Parent 
+
+    def _element_constructor_(self, comp=[], frame=None, name=None, 
+                              latex_name=None, sym=None, antisym=None):
+        r"""
+        Construct a tensor field
+        """
+        if comp == 0:
+            return self._zero_element
+        resu = self.element_class(self.vmodule, self.tensor_type, name=name, 
+                                  latex_name=latex_name, sym=sym, 
+                                  antisym=antisym)
+        if comp != []:
+            resu.set_comp(frame)[:] = comp
+        return resu
+
+    def _an_element_(self):
+        r"""
+        Construct some (unamed) tensor field
+        """
+        resu = self.element_class(self.vmodule, self.tensor_type)
+        return resu
+            
+    #### End of methods required for any Parent 
+
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+        description = "module "
+        if self.name is not None:
+            description += self.name + " "
+        description += "of type-(%s,%s)" % \
+                           (str(self.tensor_type[0]), str(self.tensor_type[1]))
+        description += " tensors fields "
+        if self.dest_map is None:
+            description += "on the " + str(self.domain)
+        else:
+            description += "along the " + str(self.domain) + \
+                           " mapped into the " + str(self.ambient_domain)
+        return description
+
+
+#******************************************************************************
 
 class TensorFieldFreeModule(TensorFreeModule):
     r"""

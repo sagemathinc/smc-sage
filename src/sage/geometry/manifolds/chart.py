@@ -734,6 +734,7 @@ class Chart(UniqueRepresentation, SageObject):
 
         Transition map between spherical chart and Cartesian chart on `\RR^2`::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2')
             sage: c_cart.<x,y> = M.chart('x y')
             sage: U = M.open_domain('U') # the complement of the half line {y=0, x >= 0}

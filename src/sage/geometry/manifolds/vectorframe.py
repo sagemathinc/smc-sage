@@ -253,7 +253,7 @@ class VectorFrame(FreeModuleBasis):
                 sd.def_frame = self
         if self.dest_map is None:
             # The frame is added to the list of the domain's covering frames:
-            self.domain.covering_frames.append(self)
+            self.domain._set_covering_frame(self)
         #
         # Dual coframe 
         self.coframe = self.dual_basis()  # self.coframe = a shortcut for self._dual_basis
@@ -530,8 +530,13 @@ class CoordFrame(VectorFrame):
         if not isinstance(chart, Chart):
             raise TypeError("The first argument must be a chart.")
         self.chart = chart
-        VectorFrame.__init__(self, chart.domain.vector_field_module(), 
-                             symbol='X') # 'X' = provisory symbol
+        VectorFrame.__init__(self, 
+                             chart.domain.vector_field_module(force_free=True), 
+                             symbol='X') 
+        # In the above:
+        # - force_free=True ensures that a free module is constructed in case
+        #   it is the first call to the vector field module on chart.domain
+        # - 'X' is a provisory symbol
         n = self.manifold.dim
         for i in range(n):
             self.vec[i].name = "d/d" + str(self.chart.xx[i])

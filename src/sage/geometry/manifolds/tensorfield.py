@@ -317,7 +317,156 @@ EXAMPLES:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
+from sage.structure.element import ModuleElement  
 from sage.tensor.modules.free_module_tensor import FreeModuleTensor
+
+class TensorField(ModuleElement):
+    r"""
+    Base class for tensor fields on an open set of a differentiable manifold, 
+    with values on an open subset of a differentiable manifold. 
+    
+    An instance of this class is a tensor field along an open subset `U` 
+    of some manifold `S` with values in an open subset `V` 
+    of a manifold `M`, via a differentiable mapping `\Phi: U \rightarrow V`. 
+    The standard case of a tensor field *on* a manifold corresponds to `S=M`, 
+    `U=V` and `\Phi = \mathrm{Id}`. Another common case is `\Phi` being an
+    immersion.
+
+    If `V` is parallelizable, the class :class:`TensorFieldParal` should be
+    used instead. 
+    
+    A tensor field of type `(k,\ell)` is a field `t` on `U`, so that at each 
+    point `p\in U`, `t(p)` is a multilinear map of the type:
+
+    .. MATH::
+
+        t(p):\ \underbrace{T_p^*M\times\cdots\times T_p^*M}_{k\ \; \mbox{times}}
+        \times \underbrace{T_p M\times\cdots\times T_p M}_{\ell\ \; \mbox{times}}
+        \longrightarrow \RR
+    
+    where `T_p M` stands for the tangent space at the point `p` on the
+    manifold `M` and `T_p^* M` for its dual vector space. The integer `k+\ell`
+    is called the tensor rank. 
+    
+    INPUT:
+    
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector 
+      fields along `U` with values on `\Phi(U)\subset V \subset M`
+    - ``tensor_type`` -- pair (k,l) with k being the contravariant rank and l 
+      the covariant rank
+    - ``name`` -- (default: None) name given to the tensor field
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the tensor field; 
+      if none is provided, the LaTeX symbol is set to ``name``
+    - ``sym`` -- (default: None) a symmetry or a list of symmetries among the 
+      tensor arguments: each symmetry is described by a tuple containing 
+      the positions of the involved arguments, with the convention position=0
+      for the first argument. For instance:
+        * sym=(0,1) for a symmetry between the 1st and 2nd arguments 
+        * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
+          arguments and a symmetry between the 2nd, 4th and 5th arguments.
+    - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
+      among the arguments, with the same convention as for ``sym``. 
+
+
+    EXAMPLES:
+
+    """
+    def __init__(self, vector_field_module, tensor_type, name=None, 
+                 latex_name=None, sym=None, antisym=None):
+        ModuleElement.__init__(self, 
+                               vector_field_module.tensor_module(*tensor_type))
+        self.vmodule = vector_field_module
+        self.tensor_type = tuple(tensor_type)
+        self.tensor_rank = self.tensor_type[0] + self.tensor_type[1]
+        self.name = name
+        if latex_name is None:
+            self.latex_name = self.name
+        else:
+            self.latex_name = latex_name
+        self.domain = vector_field_module.domain
+        self.ambient_domain = vector_field_module.ambient_domain
+        self.paral_parts = {} # dict. of parts on parallelizable subdomains of
+                              # self.ambient_domain
+        # Treatment of symmetry declarations:
+        self.sym = []
+        if sym is not None and sym != []:
+            if isinstance(sym[0], (int, Integer)):  
+                # a single symmetry is provided as a tuple -> 1-item list:
+                sym = [tuple(sym)]
+            for isym in sym:
+                if len(isym) > 1:
+                    for i in isym:
+                        if i<0 or i>self.tensor_rank-1:
+                            raise IndexError("Invalid position: " + str(i) +
+                                 " not in [0," + str(self.tensor_rank-1) + "]")
+                    self.sym.append(tuple(isym))       
+        self.antisym = []
+        if antisym is not None and antisym != []:
+            if isinstance(antisym[0], (int, Integer)):  
+                # a single antisymmetry is provided as a tuple -> 1-item list:
+                antisym = [tuple(antisym)]
+            for isym in antisym:
+                if len(isym) > 1:
+                    for i in isym:
+                        if i<0 or i>self.tensor_rank-1:
+                            raise IndexError("Invalid position: " + str(i) +
+                                " not in [0," + str(self.tensor_rank-1) + "]")
+                    self.antisym.append(tuple(isym))
+        # Final consistency check:
+        index_list = []
+        for isym in self.sym:
+            index_list += isym
+        for isym in self.antisym:
+            index_list += isym
+        if len(index_list) != len(set(index_list)):
+            # There is a repeated index position:
+            raise IndexError("Incompatible lists of symmetries: the same " + 
+                             "position appears more than once.")
+        # Initialization of derived quantities:
+        self._init_derived() 
+
+    ####### Required methods for ModuleElement (beside arithmetic) #######
+    
+    def __nonzero__(self):
+        r"""
+        Return True if ``self`` is nonzero and False otherwise. 
+        
+        This method is called by self.is_zero(). 
+        """
+        raise NotImplementedError("TensorField.__nonzero__ not implement yet.")
+                
+    ####### End of required methods for ModuleElement (beside arithmetic) #######
+
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+        description = "tensor field"
+        if self.name is not None:
+            description += " '%s'" % self.name
+        description += " of type (%s,%s) " % (str(self.tensor_type[0]), 
+                                             str(self.tensor_type[1]))
+        return self._final_repr(description)
+
+    def _final_repr(self, description):
+        r"""
+        Part of string representation common to all tensor fields.
+        """
+        if self.domain == self.ambient_domain:
+            description += "on the " + str(self.domain)
+        else:
+            description += "along the " + str(self.domain) + \
+                           " with values on the " + str(self.ambient_domain)
+        return description
+
+    def _init_derived(self):
+        r"""
+        Initialize the derived quantities
+        """
+        self._lie_derivatives = {} # collection of Lie derivatives of self
+
+
+#******************************************************************************
 
 class TensorFieldParal(FreeModuleTensor):
     r"""

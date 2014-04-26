@@ -17,9 +17,157 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
+from sage.modules.module import Module
+from sage.structure.unique_representation import UniqueRepresentation
 from sage.tensor.modules.finite_free_module import FiniteFreeModule
 from scalarfield import ScalarField
-from vectorfield import VectorFieldParal
+from vectorfield import VectorField, VectorFieldParal
+
+
+class VectorFieldModule(UniqueRepresentation, Module):
+    r"""
+    Module of vector fields along an open subset `U` of some manifold `S`
+    with values in a open subset `V` of a manifold `M`. 
+    
+    If `V` is parallelizable, the class :class:`VectorFieldFreeModule` should
+    be used instead. 
+    
+    Given a differential mapping
+
+    .. MATH::
+
+        \Phi:\ U\subset S \longrightarrow V\subset \mathcal{M}
+    
+    the module `\mathcal{X}(U,\Phi)` is the set of all vector fields of 
+    the type
+
+    .. MATH::
+
+        v:\ U  \longrightarrow TM
+        
+    such that 
+
+    .. MATH::
+
+        \forall p \in U,\ v(p) \in T_{\Phi(p)}M
+        
+    
+    Since `V` is parallelizable, the `\mathcal{X}(U,\Phi)` is a free module 
+    over `C^\infty(U)`, the ring of differentiable scalar fields on `U`.
+    Its rank is the dimension of `M`. 
+    
+    The standard case of vector fields *on* a manifold corresponds to `S=M`, 
+    `U=V` and `\Phi = \mathrm{Id}`. 
+
+    Another common case is `\Phi` being an immersion.
+    
+    INPUT:
+    
+    - ``domain`` -- open subset `U` on which the vector fields are defined
+    - ``dest_map`` -- (default: None) destination map `\Phi:\ U \rightarrow V` 
+      (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`); 
+      if none is provided, the identity is assumed (case of vector fields *on* 
+      `U`)
+    
+    """
+
+    Element = VectorField
+    
+    def __init__(self, domain, dest_map=None):
+        self.domain = domain
+        name = "X(" + domain.name
+        latex_name = r"\mathcal{X}\left(" + domain.latex_name
+        if dest_map is None:
+            self.dest_map = None
+            self.ambient_domain = domain
+            name += ")" 
+            latex_name += r"\right)"
+        else:
+            self.dest_map = dest_map
+            self.ambient_domain = dest_map.codomain
+            name += "," + self.dest_map.name + ")" 
+            latex_name += "," + self.dest_map.latex_name + r"\right)"
+        self.name = name
+        self.latex_name = latex_name
+        # the member self.ring is created for efficiency (to avoid calls to 
+        # self.base_ring()):
+        self.ring = domain.scalar_field_ring() 
+        Module.__init__(self, self.ring)
+        # Dictionary of the tensor modules built on self 
+        #   (dict. keys = (k,l) --the tensor type)
+        self._tensor_modules = {(1,0): self} # self is considered as the set of
+                                            # tensors of type (1,0)
+        # Zero element:
+        if not hasattr(self, '_zero_element'):
+            self._zero_element = self._element_constructor_(name='zero', 
+                                                            latex_name='0')
+
+    #### Methods required for any Parent 
+
+    def _element_constructor_(self, comp=[], frame=None, name=None, 
+                              latex_name=None):
+        r"""
+        Construct an element of the module
+        """
+        if comp == 0:
+            return self._zero_element
+        resu = self.element_class(self, name=name, latex_name=latex_name)
+        if comp != []:
+            resu.set_comp(frame)[:] = comp
+        return resu
+
+    def _an_element_(self):
+        r"""
+        Construct some (unamed) element of the module
+        """
+        resu = self.element_class(self)
+        return resu
+            
+    #### End of methods required for any Parent 
+
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+        description = "module "
+        if self.name is not None:
+            description += self.name + " "
+        description += "of vector fields "
+        if self.dest_map is None:
+            description += "on the " + str(self.domain)
+        else:
+            description += "along the " + str(self.domain) + \
+                           " mapped into the " + str(self.ambient_domain)
+        return description
+
+    def tensor_module(self, k, l):
+        r"""
+        Return the module of all tensor fields of type (k,l) defined on 
+        ``self``. 
+        
+        INPUT: 
+        
+        - ``k`` -- (non-negative integer) the contravariant rank, the tensor type 
+          being (k,l)
+        - ``l`` -- (non-negative integer) the covariant rank, the tensor type 
+          being (k,l)
+        
+        OUTPUT:
+
+        - instance of 
+          :class:`~sage.geometry.manifolds.tensor_field_module.TensorFieldModule` 
+          representing the free module 
+          `T^{(k,l)}(M)` of type-`(k,l)` tensors on the free module ``self``. 
+        
+        EXAMPLES:
+        """
+        from tensorfield_module import TensorFieldModule
+        if (k,l) not in self._tensor_modules:
+            self._tensor_modules[(k,l)] = TensorFieldModule(self, (k,l))
+        return self._tensor_modules[(k,l)]
+
+
+#******************************************************************************
 
 class VectorFieldFreeModule(FiniteFreeModule):
     r"""

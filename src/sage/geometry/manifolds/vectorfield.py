@@ -22,7 +22,52 @@ AUTHORS:
 #******************************************************************************
 
 from sage.tensor.modules.free_module_tensor import FiniteFreeModuleElement
-from tensorfield import TensorFieldParal
+from tensorfield import TensorField, TensorFieldParal
+
+class VectorField(TensorField):
+    r"""
+    Vector field on an open set of a differentiable manifold, 
+    with values on an open subset of a differentiable manifold. 
+    
+    An instance of this class is a vector field along an open subset `U` 
+    of some manifold `S` with values in an open subset `V` 
+    of a manifold `M`, via a differentiable mapping `\Phi: U \rightarrow V`. 
+    The standard case of a vector field *on* a manifold corresponds to `S=M`, 
+    `U=V` and `\Phi = \mathrm{Id}`. Another common case is `\Phi` being an
+    immersion.
+
+    If `V` is parallelizable, the class :class:`VectorFieldParal` must be 
+    used instead.
+    
+    INPUT:
+    
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector 
+      fields along `U` with values on `\Phi(U)\subset V \subset M`
+    - ``name`` -- (default: None) name given to the vector field
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the vector field; 
+      if none is provided, the LaTeX symbol is set to ``name``
+
+    EXAMPLES:
+
+    """
+    def __init__(self, vector_field_module, name=None, latex_name=None):
+        TensorField.__init__(self, vector_field_module, (1,0), name=name, 
+                             latex_name=latex_name)
+        # Initialization of derived quantities:
+        TensorField._init_derived(self) 
+        # Initialization of list of quantities depending on self:
+#        self._init_dependencies()
+    
+    def _repr_(self) :
+        r"""
+        String representation of the object.
+        """
+        description = "vector field "
+        if self.name is not None:
+            description += "'%s' " % self.name
+        return self._final_repr(description)
+
+#******************************************************************************
 
 class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal):
     r"""

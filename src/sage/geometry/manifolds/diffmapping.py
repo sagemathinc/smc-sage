@@ -1177,3 +1177,171 @@ class Diffeomorphism(DiffMapping):
                                        inv_functions, chart2, chart1,
                                        name=name, latex_name=latex_name)
         return self._inverse
+
+        
+#******************************************************************************
+
+class IdentityMapping(Diffeomorphism):
+    r"""
+    Class for identity mapping on an open subset of some differentiable 
+    manifold.
+
+    INPUT:
+    
+    - ``domain`` -- open subset of some differentiable manifold
+    - ``name`` -- (default: None) name given to the identity mapping; if None,
+      it is set to 'Id_U', where 'U' is the domain's name.
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity 
+      mapping; if None, it is set to `\mathrm{Id}_U`, where `U` is the symbol
+      denoting the domain. 
+      
+    EXAMPLES:
+    
+    Identity mapping on a open subset of a 2-dimensional manifold::
+    
+        sage: M = Manifold(2, 'M')
+        sage: U = M.open_domain('U')
+        sage: c_xy.<x, y> = U.chart('x y')
+        sage: i = U.identity_mapping() ; i
+        identity mapping 'Id_U' on the open domain 'U' on the 2-dimensional manifold 'M'
+        sage: latex(i)
+        \mathrm{Id}_{U}
+
+    The identity mapping acting on a point::
+    
+        sage: p = U.point((1,-2), name='p')
+        sage: i(p)
+        point 'p' on 2-dimensional manifold 'M'
+        sage: i(p) == p
+        True
+        sage: i(p) is p
+        True
+    
+    The coordinate expression of the identity mapping::
+    
+        sage: i.view()
+        Id_U: U --> U, (x, y) |--> (x, y)
+
+    """
+    def __init__(self, domain, name=None, latex_name=None):
+        if name is None:
+            name = 'Id_' + domain.name
+        if latex_name is None:
+            latex_name = r'\mathrm{Id}_{' + domain.latex_name + r'}'
+        Diffeomorphism.__init__(self, domain, domain, name=name, 
+                                latex_name=latex_name)
+        for chart in domain.atlas:
+            coord_functions = chart[:]
+            self.coord_expression[(chart, chart)] = \
+                                    MultiFunctionChart(chart, *coord_functions)
+        self._inverse = self 
+    
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+        description = "identity mapping '%s'" % self.name
+        description += " on the " + str(self.domain)
+        return description
+
+    def _del_derived(self):
+        r"""
+        Delete the derived quantities
+        """
+        DiffMapping._del_derived(self) # derived quantities of the mother class
+        self._inverse = None
+        
+    def set_expr(self, chart1, chart2, coord_functions): 
+        r"""
+        Redefinition of :meth:`DiffMapping.set_expr`: should not be used
+        """
+        raise NotImplementedError("IdentityMapping.set_expr must not be used.")
+
+    def multi_function_chart(self, chart1=None, chart2=None):
+        r""" 
+        Return the functions of the coordinates representing the differentiable
+        mapping in a given pair of charts.
+        
+        If these functions are not already known, they are computed from known 
+        ones by means of change-of-chart formulas. 
+        
+        INPUT:
+        
+        - ``chart1`` -- (default: None) chart on the mapping's domain; if None, 
+          the domain's default chart is assumed
+        - ``chart2`` -- (default: None) chart on the mapping's codomain; if 
+          None,  the codomain's default chart is assumed
+
+        OUTPUT:
+        
+        - instance of class 
+          :class:`~sage.geometry.manifolds.chart.MultiFunctionChart` 
+          representing the identity mapping in the above two charts
+
+        EXAMPLES:
+
+        """
+        def_chart = self.domain.def_chart
+        if chart1 is None:
+            chart1 = def_chart
+        if chart2 is None:
+            chart2 = def_chart
+        if (chart1, chart2) not in self.coord_expression:
+            if chart1 == chart2:
+                coord_functions = chart1[:]
+                self.coord_expression[(chart1, chart1)] = \
+                                   MultiFunctionChart(chart1, *coord_functions)
+            else:
+                return DiffMapping.multi_function_chart(self, chart1, chart2)
+        return self.coord_expression[(chart1, chart2)]
+
+
+    def inverse(self, chart1=None, chart2=None): 
+        r"""
+        Return the inverse diffeomorphism, i.e. itself !
+
+        This is a redefinition of :meth:`Diffeomorphism.inverse`
+        
+        INPUT:
+    
+        - ``chart1`` -- (default: None) unsued
+        - ``chart2`` -- (default: None) unsued
+        
+        OUTPUT:
+        
+        - the identity mapping
+        
+        """
+        return self
+            
+    def __call__(self, p, chart1=None, chart2=None):
+        r"""
+        Image of a point.
+
+        This is a redefinition of :meth:`DiffMapping.__call__`
+
+        INPUT:
+    
+        - ``p`` -- point on the mapping's domain (type: 
+          :class:`~sage.geometry.manifolds.point.Point`)
+        - ``chart1`` -- (default: None) unused 
+        - ``chart2`` -- (default: None) unused
+        
+        OUTPUT:
+
+        - point ``p`` (since ``self`` is the identity mapping
+        
+        """
+        # no test of p being a point in the domain (for efficiency)
+        return p
+
+    def pullback(self, tensor):
+        r""" 
+        Pullback operator associated with the identity mapping.
+        
+        This is a redefinition of :meth:`DiffMapping.pullback`
+        """
+        # no test for efficiency
+        return tensor
+
+        
