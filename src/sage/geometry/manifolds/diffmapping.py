@@ -483,7 +483,8 @@ class DiffMapping(SageObject):
         
         Differential mapping from a 2-dimensional manifold to a 3-dimensional 
         one::
-        
+                
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: N = Manifold(3, 'N')
             sage: c_uv.<u,v> = M.chart('u v')
@@ -519,6 +520,7 @@ class DiffMapping(SageObject):
 
         A rotation in some Euclidean plane::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M') # the plane
             sage: c_spher.<r,ph> = M.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # spherical coordinates on the plane
             sage: rot = M.diff_mapping(M, (r, ph+pi/3), name='R') # pi/3 rotation around r=0
@@ -660,6 +662,7 @@ class DiffMapping(SageObject):
         Polar representation of a planar rotation initally defined in 
         Cartesian coordinates::
             
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2', r'\RR^2')   # Euclidean plane
             sage: c_cart.<x,y> = M.chart('x y')  # Cartesian coordinates
             sage: c_spher.<r,ph> = M.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # spherical coordinates
@@ -767,32 +770,33 @@ class DiffMapping(SageObject):
 
         EXAMPLES:
         
-            Planar rotation acting on a point::
+        Planar rotation acting on a point::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'R^2', r'\RR^2') # Euclidean plane
+            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates
+            sage: # A pi/3 rotation around the origin defined in Cartesian coordinates:
+            sage: rot = M.diff_mapping(M, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
+            sage: p = M.point((1,2), name='p')
+            sage: q = rot(p) ; q
+            point 'R(p)' on 2-dimensional manifold 'R^2'
+            sage: q.coord()
+            (-sqrt(3) + 1/2, 1/2*sqrt(3) + 1)
             
-                sage: M = Manifold(2, 'R^2', r'\RR^2') # Euclidean plane
-                sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates
-                sage: # A pi/3 rotation around the origin defined in Cartesian coordinates:
-                sage: rot = M.diff_mapping(M, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
-                sage: p = M.point((1,2), name='p')
-                sage: q = rot(p) ; q
-                point 'R(p)' on 2-dimensional manifold 'R^2'
-                sage: q.coord()
-                (-sqrt(3) + 1/2, 1/2*sqrt(3) + 1)
-                
-            Image computed by means of coordinates different from the default 
-            ones::
-            
-                sage: # Spherical coord. on the plane:
-                sage: c_spher.<r,ph> = M.chart(r'r:(0,+oo) ph:(0,2*pi):\phi')
-                sage: ch = c_cart.coord_change(c_spher, sqrt(x*x+y*y), atan2(y,x))
-                sage: rot.add_expr(c_spher, c_spher, (r, ph+pi/3))
-                sage: p.coord(c_spher) # the spherical coord. of p are evaluated
-                (sqrt(5), arctan(2))
-                sage: q1 = rot(p, c_spher, c_spher) # q1 is computed by means of spherical coord.
-                sage: q.coord(c_spher) ; # the spherical coord. of q are evaluated
-                (sqrt(5), pi - arctan((sqrt(3) + 2)/(2*sqrt(3) - 1)))
-                sage: q1 == q
-                True
+        Image computed by means of coordinates different from the default 
+        ones::
+        
+            sage: # Spherical coord. on the plane:
+            sage: c_spher.<r,ph> = M.chart(r'r:(0,+oo) ph:(0,2*pi):\phi')
+            sage: ch = c_cart.coord_change(c_spher, sqrt(x*x+y*y), atan2(y,x))
+            sage: rot.add_expr(c_spher, c_spher, (r, ph+pi/3))
+            sage: p.coord(c_spher) # the spherical coord. of p are evaluated
+            (sqrt(5), arctan(2))
+            sage: q1 = rot(p, c_spher, c_spher) # q1 is computed by means of spherical coord.
+            sage: q.coord(c_spher) ; # the spherical coord. of q are evaluated
+            (sqrt(5), pi - arctan((sqrt(3) + 2)/(2*sqrt(3) - 1)))
+            sage: q1 == q
+            True
     
         """
         from manifold import RealLine

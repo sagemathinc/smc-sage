@@ -184,6 +184,7 @@ class Point(Element):
 
         Spherical coordinates of a point on `\RR^3`::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'R3', r'\mathcal{M}')
             sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi') # spherical coordinates
             sage: p = M.point((1, pi/2, 0)) 
@@ -202,6 +203,7 @@ class Point(Element):
 
         Coordinates of a point on a 2-dimensional manifold::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart('x y')
             sage: (a, b) = var('a b') # generic coordinates for the point
@@ -301,6 +303,7 @@ class Point(Element):
 
         Setting coordinates to a point on `\RR^3`::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'R3', r'\mathcal{M}')
             sage: c_cart.<x,y,z> = M.chart('x y z')
             sage: p = M.point()
@@ -351,6 +354,7 @@ class Point(Element):
 
         Setting coordinates to a point on `\RR^3`::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'R3', r'\mathcal{M}')
             sage: c_cart.<x,y,z> = M.chart('x y z')
             sage: p = M.point()

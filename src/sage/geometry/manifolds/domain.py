@@ -50,27 +50,27 @@ State of various data members after the above operations::
      'B': domain 'B' on the 2-dimensional manifold 'M', 
      'M': 2-dimensional manifold 'M', 
      'A_union_B': domain 'A_union_B' on the 2-dimensional manifold 'M'}
-    sage: sorted(a.subdomains) # sorted output of the set a.subdomains
-    [domain 'A' on the 2-dimensional manifold 'M',
-     domain 'A_inter_B' on the 2-dimensional manifold 'M']
-    sage: sorted(a.superdomains) # sorted output of the set a.superdomains
-    [domain 'A' on the 2-dimensional manifold 'M',
-     domain 'A_union_B' on the 2-dimensional manifold 'M',
-     2-dimensional manifold 'M']
-    sage: c.superdomains
+    sage: a.subdomains  # random (set output)
+    set([domain 'A' on the 2-dimensional manifold 'M',
+         domain 'A_inter_B' on the 2-dimensional manifold 'M'])
+    sage: a.superdomains  # random (set output)
+    set([domain 'A_union_B' on the 2-dimensional manifold 'M',
+         2-dimensional manifold 'M',
+         domain 'A' on the 2-dimensional manifold 'M'])
+    sage: c.superdomains  # random (set output)
     set([domain 'B' on the 2-dimensional manifold 'M', 
          domain 'A_union_B' on the 2-dimensional manifold 'M', 
          2-dimensional manifold 'M', 
          domain 'A' on the 2-dimensional manifold 'M', 
          domain 'A_inter_B' on the 2-dimensional manifold 'M'])
-    sage: c.subdomains
+    sage: c.subdomains  # random (set output)
     set([domain 'A_inter_B' on the 2-dimensional manifold 'M'])
-    sage: d.subdomains
+    sage: d.subdomains  # random (set output)
     set([domain 'B' on the 2-dimensional manifold 'M', 
          domain 'A_union_B' on the 2-dimensional manifold 'M', 
          domain 'A_inter_B' on the 2-dimensional manifold 'M', 
          domain 'A' on the 2-dimensional manifold 'M'])
-    sage: d.superdomains
+    sage: d.superdomains  # random (set output)
     set([domain 'A_union_B' on the 2-dimensional manifold 'M', 
          2-dimensional manifold 'M'])
 
@@ -280,10 +280,10 @@ class Domain(UniqueRepresentation, Parent):
 
         B is then a subdomain of A and A is a superdomain of B::
         
-            sage: a.subdomains
+            sage: a.subdomains  # random (set output)
             set([domain 'B' on the 2-dimensional manifold 'M', 
                  domain 'A' on the 2-dimensional manifold 'M'])
-            sage: b.superdomains
+            sage: b.superdomains  # random (set output)
             set([domain 'B' on the 2-dimensional manifold 'M', 
                  2-dimensional manifold 'M', 
                  domain 'A' on the 2-dimensional manifold 'M'])
@@ -400,13 +400,13 @@ class Domain(UniqueRepresentation, Parent):
             sage: b = M.domain('B')
             sage: c = a.intersection(b) ; c
             domain 'A_inter_B' on the 2-dimensional manifold 'M'
-            sage: a.subdomains
+            sage: a.subdomains  # random (set output)
             set([domain 'A_inter_B' on the 2-dimensional manifold 'M', 
                  domain 'A' on the 2-dimensional manifold 'M'])
-            sage: b.subdomains
+            sage: b.subdomains  # random (set output)
             set([domain 'B' on the 2-dimensional manifold 'M', 
                  domain 'A_inter_B' on the 2-dimensional manifold 'M'])
-            sage: c.superdomains
+            sage: c.superdomains  # random (set output)
             set([domain 'A' on the 2-dimensional manifold 'M', 
                  2-dimensional manifold 'M', 
                  domain 'A_inter_B' on the 2-dimensional manifold 'M', 
@@ -495,15 +495,15 @@ class Domain(UniqueRepresentation, Parent):
             sage: b = M.domain('B')
             sage: c = a.union(b) ; c 
             domain 'A_union_B' on the 2-dimensional manifold 'M'
-            sage: a.superdomains
+            sage: a.superdomains  # random (set output)
             set([domain 'A_union_B' on the 2-dimensional manifold 'M', 
                  2-dimensional manifold 'M', 
                  domain 'A' on the 2-dimensional manifold 'M'])
-            sage: b.superdomains
+            sage: b.superdomains  # random (set output)
             set([domain 'B' on the 2-dimensional manifold 'M', 
                  2-dimensional manifold 'M', 
                  domain 'A_union_B' on the 2-dimensional manifold 'M'])
-            sage: c.subdomains
+            sage: c.subdomains  # random (set output)
             set([domain 'A_union_B' on the 2-dimensional manifold 'M', 
                 domain 'A' on the 2-dimensional manifold 'M', 
                 domain 'B' on the 2-dimensional manifold 'M'])

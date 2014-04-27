@@ -393,6 +393,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         Tests on a 2-dimensional manifold::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart('x y')
             sage: f = M.scalar_field(x*y)
@@ -492,6 +493,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         Copy on a 2-dimensional manifold::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')  
             sage: c_xy.<x,y> = M.chart('x y')
             sage: f = M.scalar_field(x*y^2)
@@ -537,6 +539,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         Coordinate function on a 2-dimensional manifold::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')            
             sage: c_xy.<x,y> = M.chart('x y')
             sage: f = M.scalar_field(x*y^2)
@@ -564,6 +567,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         Usage in a physical context (simple Lorentz transformation - boost in 
         x direction, with relative velocity v between o1 and o2 frames)::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: o1.<t,x> = M.chart('t x')
             sage: o2.<T,X> = M.chart('T X')
@@ -644,6 +648,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         Expression of a scalar field on a 2-dimensional manifold::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')            
             sage: c_xy.<x,y> = M.chart('x y')
             sage: f = M.scalar_field(x*y^2)
@@ -688,6 +693,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         Setting scalar field expressions on a 2-dimensional manifold::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart('x y')
             sage: f = M.scalar_field(x^2 + 2*x*y +1)
@@ -737,6 +743,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         Adding scalar field expressions on a 2-dimensional manifold::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart('x y')
             sage: f = M.scalar_field(x^2 + 2*x*y +1)
@@ -776,6 +783,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         Various displays::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart('x y')
             sage: f = M.scalar_field(sqrt(x+1), name='f')
@@ -823,6 +831,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         A very simple example::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart('x y')
             sage: c_uv.<u,v> = M.chart('u v')
@@ -864,6 +873,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         Search for common charts on a 2-dimensional manifold with 2 
         overlapping domains::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: U = M.open_domain('U')
             sage: c_xy.<x,y> = U.chart('x y')
@@ -1169,6 +1179,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         Exterior derivative on a 3-dimensional manifold::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: c_xyz.<x,y,z> = M.chart('x y z')
             sage: f = M.scalar_field(cos(x)*z^3 + exp(y)*z^2, name='f')
@@ -1251,6 +1262,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         Differential 1-form on a 3-dimensional manifold::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: c_xyz.<x,y,z> = M.chart('x y z')
             sage: f = M.scalar_field(cos(x)*z**3 + exp(y)*z**2, name='f')
@@ -1291,6 +1303,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         Lie derivative on a 2-dimensional manifold::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart('x y')
             sage: f = M.scalar_field(x^2*cos(y))
@@ -1355,6 +1368,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
 
         Hodge star of a scalar field in the Euclidean space `R^3`::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M', start_index=1)
             sage: X.<x,y,z> = M.chart('x y z')
             sage: g = M.metric('g')
@@ -1396,6 +1410,7 @@ class ZeroScalarField(ScalarField):
     
     Zero scalar field on a 2-dimensional manifold::
     
+        sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(2, 'M')                  
         sage: c_xy.<x,y> = M.chart('x y')
         sage: from sage.geometry.manifolds.scalarfield import ZeroScalarField

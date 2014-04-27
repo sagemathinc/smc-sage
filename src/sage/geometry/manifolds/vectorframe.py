@@ -190,6 +190,7 @@ class VectorFrame(FreeModuleBasis):
 
     Setting a vector frame on a 3-dimensional manifold::
     
+        sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(3, 'M')
         sage: c_xyz = M.chart('x y z')
         sage: e = M.vector_frame('e')
@@ -342,6 +343,7 @@ class VectorFrame(FreeModuleBasis):
         
         Frame resulting from a pi/3-rotation in the Euclidean plane::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2,'R^2')
             sage: c_xy = M.chart('x y')
             sage: e = M.vector_frame('e') ; M.set_default_frame(e)
@@ -447,6 +449,7 @@ class VectorFrame(FreeModuleBasis):
         Structure coefficients of the orthonormal frame associated to
         spherical coordinates in the Euclidean space `\RR^3`::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'R^3', '\RR^3', start_index=1)
             sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: ch_frame = M.automorphism_field()
@@ -510,6 +513,7 @@ class CoordFrame(VectorFrame):
     The coordinate frame associated to spherical coordinates of the 
     sphere `S^2`::
     
+        sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(2, 'S^2', start_index=1)
         sage: M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
         chart (S^2, (th, ph))
@@ -599,6 +603,7 @@ class CoordFrame(VectorFrame):
         Structure coefficients of the coordinate frame associated to
         spherical coordinates in the Euclidean space `\RR^3`::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
             sage: c_spher = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: b = M.default_frame() ; b
@@ -641,6 +646,7 @@ class CoFrame(FreeModuleCoBasis):
 
     Coframe on a 3-dimensional manifold::
     
+        sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(3, 'M', start_index=1)
         sage: c_xyz = M.chart('x y z')
         sage: v = M.vector_frame('v')
@@ -722,6 +728,7 @@ class CoordCoFrame(CoFrame):
     
     Coordinate coframe on a 3-dimensional manifold::
     
+        sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(3, 'M', start_index=1)
         sage: c_xyz = M.chart('x y z')
         sage: M.frames

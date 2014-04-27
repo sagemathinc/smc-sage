@@ -209,11 +209,11 @@ class Manifold(OpenDomain):
     
     EXAMPLES:
 
-    A 2-dimensional manifold::
+    A 4-dimensional manifold::
     
-        sage: M = Manifold(2, 'M', r'\mathcal{M}')
+        sage: M = Manifold(4, 'M', latex_name=r'\mathcal{M}')
         sage: M
-        2-dimensional manifold 'M'
+        4-dimensional manifold 'M'
         sage: latex(M)
         \mathcal{M}
                 
@@ -235,6 +235,53 @@ class Manifold(OpenDomain):
         sage: M = Manifold(4, 'M', start_index=2)
         sage: list(M.irange())
         [2, 3, 4, 5]
+
+    A manifold is a Sage *Parent* object, in the category of sets::
+    
+        sage: M.category()
+        Category of sets
+        sage: M in Sets()
+        True
+
+    The corresponding Sage *Elements* are points::
+    
+        sage: M.chart('t x y z')
+        chart (M, (t, x, y, z))
+        sage: p = M.an_element(); p
+        point on 4-dimensional manifold 'M'
+        sage: p.parent()
+        4-dimensional manifold 'M'
+        sage: p in M
+        True
+
+    The manifold's points are instances of class 
+    :class:`~sage.geometry.manifolds.point.Point`::
+    
+        sage: isinstance(p, sage.geometry.manifolds.point.Point)
+        True
+
+    The manifold passes all the tests of the test suite relative to the 
+    category of Sets::
+    
+        sage: TestSuite(M).run(verbose=True)
+        running ._test_an_element() . . . pass
+        running ._test_category() . . . pass
+        running ._test_elements() . . .
+          Running the test suite of self.an_element()
+          running ._test_category() . . . pass
+          running ._test_eq() . . . pass
+          running ._test_not_implemented_methods() . . . pass
+          running ._test_pickling() . . . pass
+          pass
+        running ._test_elements_eq_reflexive() . . . pass
+        running ._test_elements_eq_symmetric() . . . pass
+        running ._test_elements_eq_transitive() . . . pass
+        running ._test_elements_neq() . . . pass
+        running ._test_eq() . . . pass
+        running ._test_not_implemented_methods() . . . pass
+        running ._test_pickling() . . . pass
+        running ._test_some_elements() . . . pass
+
 
     """
     def __init__(self, n, name, latex_name=None, start_index=0):
