@@ -166,6 +166,66 @@ class VectorFieldModule(UniqueRepresentation, Module):
             self._tensor_modules[(k,l)] = TensorFieldModule(self, (k,l))
         return self._tensor_modules[(k,l)]
 
+    def tensor(self, tensor_type, name=None, latex_name=None, sym=None, 
+               antisym=None):
+        r"""
+        Construct a tensor on the vector field module. 
+
+        The tensor is actually a tensor field on the domain of ``self``. 
+        
+        INPUT:
+        
+        - ``tensor_type`` -- pair (k,l) with k being the contravariant rank 
+          and l the covariant rank
+        - ``name`` -- (string; default: None) name given to the tensor
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          tensor; if none is provided, the LaTeX symbol is set to ``name``
+        - ``sym`` -- (default: None) a symmetry or a list of symmetries among 
+          the tensor arguments: each symmetry is described by a tuple 
+          containing the positions of the involved arguments, with the 
+          convention position=0 for the first argument. For instance:
+
+          * sym=(0,1) for a symmetry between the 1st and 2nd arguments 
+          * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
+            arguments and a symmetry between the 2nd, 4th and 5th arguments.
+
+        - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
+          among the arguments, with the same convention as for ``sym``. 
+          
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.geometry.geometry.tensorfield.TensorField` 
+          representing the tensor defined on ``self`` with the provided 
+          characteristics.
+          
+        EXAMPLES:
+                    
+                
+        """
+        from tensorfield import TensorField
+#        from rank2field import EndomorphismField, SymBilinFormField
+#        from diffform import DiffForm, OneForm
+        if tensor_type==(1,0):
+            return VectorField(self, name=name, latex_name=latex_name)
+        elif tensor_type==(0,1):
+            return OneForm(self, name=name, latex_name=latex_name)
+        elif tensor_type==(1,1):
+            return EndomorphismField(self, name=name, latex_name=latex_name)
+        elif tensor_type==(0,2) and sym==(0,1):
+            return SymBilinFormField(self, name=name, latex_name=latex_name)
+        elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
+            if len(antisym)==tensor_type[1]:
+                return DiffForm(self, tensor_type[1], name=name, 
+                                                         latex_name=latex_name)
+            else:
+                return TensorField(self, tensor_type, name=name, 
+                                   latex_name=latex_name, sym=sym, 
+                                    antisym=antisym)
+        else:
+            return TensorField(self, tensor_type, name=name, 
+                               latex_name=latex_name, sym=sym, antisym=antisym) 
+
 
 #******************************************************************************
 
@@ -355,8 +415,6 @@ class VectorFieldFreeModule(FiniteFreeModule):
           
         EXAMPLES:
                     
-        See :class:`~sage.geometry.geometry.tensorfield.TensorFieldParal` 
-        for more examples and documentation.
                 
         """
         from tensorfield import TensorFieldParal

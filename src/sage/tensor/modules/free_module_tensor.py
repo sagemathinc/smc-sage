@@ -159,9 +159,6 @@ EXAMPLES:
 
 from sage.rings.integer import Integer
 from sage.structure.element import ModuleElement  
-#!# or from sage.structure.element import Element
-# to avoid arithmetics defined in ModuleElement ??
-
 from comp import Components, CompWithSym, CompFullySym, CompFullyAntiSym
 
 class FreeModuleTensor(ModuleElement):
@@ -876,7 +873,7 @@ class FreeModuleTensor(ModuleElement):
 
     def copy(self):
         r"""
-        Returns an exact copy of ``self``.
+        Return an exact copy of ``self``.
         
         The name and the derived quantities are not copied. 
         

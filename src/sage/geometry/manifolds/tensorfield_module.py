@@ -74,6 +74,8 @@ class TensorFieldModule(UniqueRepresentation, Module):
         self.domain = domain
         self.dest_map = dest_map
         self.ambient_domain = vector_field_module.ambient_domain
+        # NB: self._zero_element is not constructed here, since no element 
+        # can be constructed here, to avoid some infinite recursion. 
 
     #### Methods required for any Parent 
 
@@ -83,6 +85,9 @@ class TensorFieldModule(UniqueRepresentation, Module):
         Construct a tensor field
         """
         if comp == 0:
+            if not hasattr(self, '_zero_element'):
+                self._zero_element = self._element_constructor_(name='zero', 
+                                                                latex_name='0')
             return self._zero_element
         resu = self.element_class(self.vmodule, self.tensor_type, name=name, 
                                   latex_name=latex_name, sym=sym, 

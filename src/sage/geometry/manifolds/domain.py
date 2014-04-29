@@ -1408,7 +1408,7 @@ class OpenDomain(Domain):
             2 d/dx*d/dx*dx
 
         """
-        from tensorfield_module import TensorFieldFreeModule
+        from tensorfield_module import TensorFieldModule, TensorFieldFreeModule
         if tensor_type == (1,0):
             return self.vector_field_module(dest_map=dest_map)
         if dest_map is None:
@@ -1417,11 +1417,15 @@ class OpenDomain(Domain):
             dest_map_name = dest_map.name
         ttype = tuple(tensor_type)
         if (ttype, dest_map_name) not in self._tensor_field_modules:
-            #!# if self.is_manifestly_parallelizable():
-            self._tensor_field_modules[(ttype, dest_map_name)] = \
-              TensorFieldFreeModule(self.vector_field_module(dest_map=dest_map),
-                                    ttype)
-            # else:
+            if self.is_manifestly_parallelizable():
+                self._tensor_field_modules[(ttype, dest_map_name)] = \
+                        TensorFieldFreeModule(
+                            self.vector_field_module(dest_map=dest_map), ttype)
+            else:
+                self._tensor_field_modules[(ttype, dest_map_name)] = \
+                        TensorFieldModule(
+                            self.vector_field_module(dest_map=dest_map), ttype)
+                
         return self._tensor_field_modules[(ttype, dest_map_name)]
 
 
@@ -1591,12 +1595,13 @@ class OpenDomain(Domain):
         examples.
 
         """
-        from tensorfield import TensorFieldParal
+        from tensorfield import TensorField, TensorFieldParal
         if self.is_manifestly_parallelizable():
             return TensorFieldParal(self.vector_field_module(dest_map), 
                                     (k,l), name, latex_name, sym, antisym)
         else:
-            raise NotImplementedError("TensorField not implemented yet")
+            return TensorField(self.vector_field_module(dest_map), (k,l), name,
+                               latex_name, sym, antisym)
 
 
     def sym_bilin_form_field(self, name=None, latex_name=None, 

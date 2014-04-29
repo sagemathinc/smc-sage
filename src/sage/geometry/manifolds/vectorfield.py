@@ -56,7 +56,7 @@ class VectorField(TensorField):
         # Initialization of derived quantities:
         TensorField._init_derived(self) 
         # Initialization of list of quantities depending on self:
-#        self._init_dependencies()
+        self._init_dependencies()
     
     def _repr_(self) :
         r"""
@@ -67,9 +67,32 @@ class VectorField(TensorField):
             description += "'%s' " % self.name
         return self._final_repr(description)
 
+    def _new_instance(self):
+        r"""
+        Create a :class:`VectorField` instance on the same domain and 
+        with the same destination map.
+        
+        """
+        return VectorField(self.vmodule)
+
+    def _init_dependencies(self):
+        r"""
+        Initialize list of quantities that depend on ``self``
+        """
+        self._lie_der_along_self = {}
+
+    def _del_dependencies(self):
+        r"""
+        Clear list of quantities that depend on ``self``
+        """
+        if self._lie_der_along_self != {}:
+            for idtens, tens in self._lie_der_along_self.items():
+                del tens._lie_derivatives[id(self)]
+            self._lie_der_along_self.clear()
+
 #******************************************************************************
 
-class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal):
+class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
     r"""
     Vector field on an open set of a differentiable manifold, 
     with values on parallelizable open subset of a differentiable manifold. 
@@ -197,8 +220,12 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal):
         # TensorFieldParal attributes:
         self.domain = vector_field_module.domain
         self.ambient_domain = vector_field_module.ambient_domain
+        # VectorField attributes:
+        self.vmodule = vector_field_module
+        self.restrictions = {} # dict. of restrictions on subdomains of self.domain        
         # Initialization of derived quantities:
-        TensorFieldParal._init_derived(self) 
+        TensorFieldParal._init_derived(self)
+        VectorField._init_derived(self) 
         # Initialization of list of quantities depending on self:
         self._init_dependencies()
         
@@ -206,10 +233,7 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal):
         r"""
         String representation of the object.
         """
-        description = "vector field "
-        if self.name is not None:
-            description += "'%s' " % self.name
-        return self._final_repr(description)
+        return VectorField._repr_(self)
 
     def _new_instance(self):
         r"""
@@ -223,23 +247,9 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal):
         Delete the derived quantities
         """
         TensorFieldParal._del_derived(self)
+        VectorField._del_derived(self)
         self._del_dependencies()
         
-    def _init_dependencies(self):
-        r"""
-        Initialize list of quantities that depend on ``self``
-        """
-        self._lie_der_along_self = {}
-
-    def _del_dependencies(self):
-        r"""
-        Clear list of quantities that depend on ``self``
-        """
-        if self._lie_der_along_self != {}:
-            for idtens, tens in self._lie_der_along_self.items():
-                del tens._lie_derivatives[id(self)]
-            self._lie_der_along_self.clear()
-
     def __call__(self, scalar):
         r"""
         Action on a scalar field.
