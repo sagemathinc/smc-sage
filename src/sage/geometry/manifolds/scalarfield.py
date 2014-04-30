@@ -1025,13 +1025,16 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             result.latex_name = '-' + self.latex_name
         return result
 
+
+    #########  CommutativeRingElement arithmetic operators ########
+
     def _add_(self, other):
         r"""
         Scalar field addition. 
         
         INPUT:
         
-        - ``other`` -- a scalar field or an expression
+        - ``other`` -- a scalar field (in the same ring as self)
         
         OUPUT:
         
@@ -1044,8 +1047,8 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         com_charts = self.common_charts(other)
         if com_charts is None:
             raise ValueError("No common chart for the addition.")
-        dom_result = self.domain.intersection(other.domain)
-        result = ScalarField(dom_result)
+        dom = self.domain
+        result = ScalarField(dom)
         for chart in com_charts:
             # FunctionChart addition:
             res = self.express[chart] + other.express[chart]
@@ -1053,7 +1056,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             result.coord_expression[(chart, self.codomain.def_chart)] = \
                                 MultiFunctionChart(res.chart, res.express)
         if result.is_zero():
-            return dom_result.zero_scalar_field
+            return dom.zero_scalar_field
         if self.name is not None and other.name is not None:
             result.name = self.name + '+' + other.name
         if self.latex_name is not None and other.latex_name is not None:
@@ -1066,7 +1069,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         INPUT:
         
-        - ``other`` -- a scalar field or an expression
+        - ``other`` -- a scalar field (in the same ring as self)
         
         OUPUT:
         
@@ -1079,8 +1082,8 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         com_charts = self.common_charts(other)
         if com_charts is None:
             raise ValueError("No common chart for the subtraction.")
-        dom_result = self.domain.intersection(other.domain)
-        result = ScalarField(dom_result)
+        dom = self.domain
+        result = ScalarField(dom)
         for chart in com_charts:
             # FunctionChart subtraction:
             res = self.express[chart] - other.express[chart]
@@ -1088,7 +1091,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             result.coord_expression[(chart, self.codomain.def_chart)] = \
                                 MultiFunctionChart(res.chart, res.express)
         if result.is_zero():
-            return dom_result.zero_scalar_field
+            return dom.zero_scalar_field
         if self.name is not None and other.name is not None:
             result.name = self.name + '-' + other.name
         if self.latex_name is not None and other.latex_name is not None:
@@ -1102,7 +1105,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         INPUT:
         
-        - ``other`` -- a scalar field or an expression
+        - ``other`` -- a scalar field (in the same ring as self)
         
         OUPUT:
         
@@ -1116,8 +1119,8 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         com_charts = self.common_charts(other)
         if com_charts is None:
             raise ValueError("No common chart for the multiplication.")
-        dom_result = self.domain.intersection(other.domain)
-        result = ScalarField(dom_result)
+        dom = self.domain
+        result = ScalarField(dom)
         for chart in com_charts:
             # FunctionChart multiplication:
             res = self.express[chart] * other.express[chart]
@@ -1125,7 +1128,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             result.coord_expression[(chart, self.codomain.def_chart)] = \
                                 MultiFunctionChart(res.chart, res.express)
         if result.is_zero():
-            return dom_result.zero_scalar_field
+            return dom.zero_scalar_field
         result.name = format_mul_txt(self.name, '*', other.name)
         result.latex_name = format_mul_latex(self.latex_name, ' ', 
                                              other.latex_name)        
@@ -1137,7 +1140,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         INPUT:
         
-        - ``other`` -- a scalar field or an expression
+        - ``other`` -- a scalar field (in the same ring as self)
         
         OUPUT:
         
@@ -1151,8 +1154,8 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         com_charts = self.common_charts(other)
         if com_charts is None:
             raise ValueError("No common chart for the division.")
-        dom_result = self.domain.intersection(other.domain)
-        result = ScalarField(dom_result)
+        dom = self.domain
+        result = ScalarField(dom)
         for chart in com_charts:
             # FunctionChart division:
             res = self.express[chart] / other.express[chart]
@@ -1161,11 +1164,14 @@ class ScalarField(DiffMapping, CommutativeRingElement):
                                 MultiFunctionChart(res.chart, res.express)
         #!# the following 2 lines could be skipped:
         if result.is_zero():
-            return dom_result.zero_scalar_field
+            return dom.zero_scalar_field
         result.name = format_mul_txt(self.name, '/', other.name)
         result.latex_name = format_mul_latex(self.latex_name, '/', 
                                              other.latex_name)
         return result
+
+    #########  End of CommutativeRingElement arithmetic operators ########
+
 
     def exterior_der(self):
         r"""
@@ -1231,21 +1237,6 @@ class ScalarField(DiffMapping, CommutativeRingElement):
                 for i in self.manifold.irange():
                     self._exterior_derivative.add_comp(chart.frame)[i, chart] \
                         = f.diff(i)
-#@@
-            #if chart is None:
-                #chart = self.pick_a_chart()
-            #f = self.express[chart]
-            #dc = Components(self.parent(), chart.frame, 1, start_index=si, 
-                            #output_formatter=ScalarField.function_chart)
-            #for i in range(n):
-                #dc[i+si, chart] = 
-            #dc._del_zeros() #!# not necessary ?
-            ## Name and LaTeX name of the result (rname and rlname):
-            #rname = format_unop_txt('d', self.name)
-            #rlname = format_unop_latex(r'\mathrm{d}', self.latex_name)
-            #self._exterior_derivative = self.domain.one_form(name=rname, 
-                                                             #latex_name=rlname)
-            #self._exterior_derivative.components[chart.frame] = dc
         return self._exterior_derivative
 
     def differential(self):
@@ -1682,13 +1673,16 @@ class ZeroScalarField(ScalarField):
         """
         return self
 
+
+    #########  CommutativeRingElement arithmetic operators ########
+
     def _add_(self, other):
         r"""
         Scalar field addition. 
         
         INPUT:
         
-        - ``other`` -- a scalar field or an expression
+        - ``other`` -- a scalar field (in the same ring as self)
         
         OUPUT:
         
@@ -1704,7 +1698,7 @@ class ZeroScalarField(ScalarField):
         
         INPUT:
         
-        - ``other`` -- a scalar field or an expression
+        - ``other`` -- a scalar field (in the same ring as self)
         
         OUPUT:
         
@@ -1720,7 +1714,7 @@ class ZeroScalarField(ScalarField):
         
         INPUT:
         
-        - ``other`` -- a scalar field or an expression
+        - ``other`` -- a scalar field (in the same ring as self)
         
         OUPUT:
         
@@ -1736,7 +1730,7 @@ class ZeroScalarField(ScalarField):
         
         INPUT:
         
-        - ``other`` -- a scalar field or an expression
+        - ``other`` -- a scalar field (in the same ring as self)
         
         OUPUT:
         
@@ -1749,6 +1743,10 @@ class ZeroScalarField(ScalarField):
         else:
             return self
 
+    #########  End of CommutativeRingElement arithmetic operators ########
+
+
+    #!# TO BE REWRITTEN:
     def exterior_der(self, chart=None):
         r"""
         Return the exterior derivative of the scalar field, which is zero in 

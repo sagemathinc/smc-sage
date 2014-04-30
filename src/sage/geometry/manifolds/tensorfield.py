@@ -683,11 +683,11 @@ class TensorField(ModuleElement):
         
         INPUT:
         
-        - ``other`` -- a tensor field, of the same type as ``self`` 
+        - ``other`` -- a tensor field, in the same tensor module as ``self`` 
         
         OUPUT:
         
-        - the tensor resulting from the addition of ``self`` and ``other``
+        - the tensor field resulting from the addition of ``self`` and ``other``
         
         """
         if other == 0:
@@ -713,6 +713,80 @@ class TensorField(ModuleElement):
         if self.latex_name is not None and other.latex_name is not None:
             resu.latex_name = self.latex_name + '+' + other.latex_name
         return resu
+
+    def _sub_(self, other):
+        r"""
+        Tensor field subtraction. 
+        
+        INPUT:
+        
+        - ``other`` -- a tensor field, in the same tensor module as ``self``
+        
+        OUPUT:
+        
+        - the tensor field resulting from the subtraction of ``other`` from 
+          ``self``
+                
+        """
+        if other == 0:
+            return +self
+        if not isinstance(other, TensorField):
+            raise TypeError("For the subtraction, other must be a tensor " + 
+                            "field.")
+        if other.vmodule != self.vmodule:
+            raise ValueError("The two tensor fields do not belong to the " + 
+                             "same module.")
+        if other.tensor_type != self.tensor_type:
+            raise TypeError("The two tensor fields are not of the same type.")
+        resu_rst = {}
+        for dom in self._common_subdomains(other):
+            resu_rst[dom] = self.restrictions[dom] - other.restrictions[dom]
+        some_rst = resu_rst.values()[0]
+        resu_sym = some_rst.sym
+        resu_antisym = some_rst.antisym
+        resu = self.vmodule.tensor(self.tensor_type, sym=resu_sym, 
+                                   antisym=resu_antisym)
+        resu.restrictions = resu_rst
+        if self.name is not None and other.name is not None:
+            resu.name = self.name + '-' + other.name
+        if self.latex_name is not None and other.latex_name is not None:
+            resu.latex_name = self.latex_name + '-' + other.latex_name
+        return resu
+
+    def _rmul_(self, other):
+        r"""
+        Multiplication on the left by a scalar field (``other``)
+        
+        """
+        #!# The following test is probably not necessary:
+        if isinstance(other, TensorField):
+            raise NotImplementedError("Left tensor product not implemented.")
+        # Left multiplication by a scalar: 
+        resu = self._new_instance()
+        for dom, rst in self.restrictions.items():
+            resu.restrictions[dom] = other * rst
+        return resu
+
+    ######### End of ModuleElement arithmetic operators ########
+
+    def __radd__(self, other):
+        r"""
+        Addition on the left with ``other``. 
+        
+        This allows to write "0 + t", where "t" is a tensor
+        
+        """
+        return self.__add__(other)
+
+    def __rsub__(self, other):
+        r"""
+        Subtraction from ``other``. 
+
+        This allows to write "0 - t", where "t" is a tensor
+        
+        """
+        return (-self).__add__(other)
+
 
     def up(self, metric, pos=None):
         r"""

@@ -1149,12 +1149,10 @@ class FreeModuleTensor(ModuleElement):
         - the tensor resulting from the addition of ``self`` and ``other``
         
         """
+        # No need for consistency check since self and other are guaranted
+        # to belong to the same tensor module
         if other == 0:
             return +self
-        if not isinstance(other, FreeModuleTensor):
-            raise TypeError("For the addition, other must be a tensor.")
-        if other.tensor_type != self.tensor_type:
-            raise TypeError("The two tensors are not of the same type.")
         basis = self.common_basis(other)
         if basis is None:
             raise ValueError("No common basis for the addition.")
@@ -1179,12 +1177,10 @@ class FreeModuleTensor(ModuleElement):
         - the tensor resulting from the subtraction of ``other`` from ``self``
         
         """
+        # No need for consistency check since self and other are guaranted
+        # to belong to the same tensor module
         if other == 0:
             return +self
-        if not isinstance(other, FreeModuleTensor):
-            raise TypeError("For the subtraction, other must be a tensor.")
-        if other.tensor_type != self.tensor_type:
-            raise TypeError("The two tensors are not of the same type.")
         basis = self.common_basis(other)
         if basis is None:
             raise ValueError("No common basis for the subtraction.")
@@ -1201,6 +1197,7 @@ class FreeModuleTensor(ModuleElement):
         Multiplication on the left by ``other``. 
         
         """
+        #!# The following test is probably not necessary:
         if isinstance(other, FreeModuleTensor):
             raise NotImplementedError("Left tensor product not implemented.")
         # Left multiplication by a scalar: 
@@ -1215,12 +1212,16 @@ class FreeModuleTensor(ModuleElement):
         r"""
         Addition on the left with ``other``. 
         
+        This allows to write "0 + t", where "t" is a tensor
+        
         """
         return self.__add__(other)
 
     def __rsub__(self, other):
         r"""
         Subtraction from ``other``. 
+
+        This allows to write "0 - t", where "t" is a tensor
         
         """
         return (-self).__add__(other)
