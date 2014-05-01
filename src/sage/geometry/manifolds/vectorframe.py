@@ -210,6 +210,7 @@ class VectorFrame(FreeModuleBasis):
     def __init__(self, vector_field_module, symbol, latex_symbol=None,
                  from_frame=None):
         self.domain = vector_field_module.domain
+        self.ambient_domain = vector_field_module.ambient_domain
         self.dest_map = vector_field_module.dest_map
         self.from_frame = from_frame
         self.manifold = self.domain.manifold

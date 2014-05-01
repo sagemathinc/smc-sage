@@ -331,10 +331,10 @@ class Domain(UniqueRepresentation, Parent):
             sage: a = M.domain('A')
             sage: b = a.superdomain('B') ; b
             domain 'B' on the 2-dimensional manifold 'M'
-            sage: b.subdomains
+            sage: b.subdomains # random (set output)
             set([domain 'B' on the 2-dimensional manifold 'M', 
                  domain 'A' on the 2-dimensional manifold 'M'])
-            sage: a.superdomains
+            sage: a.superdomains # random (set output)
             set([domain 'B' on the 2-dimensional manifold 'M', 
                  2-dimensional manifold 'M', 
                  domain 'A' on the 2-dimensional manifold 'M'])
@@ -1353,10 +1353,10 @@ class OpenDomain(Domain):
         if dest_map_name not in self._vector_field_modules:
             if codomain.is_manifestly_parallelizable() or force_free:
                 self._vector_field_modules[dest_map_name] = \
-                     VectorFieldFreeModule(self, dest_map=dest_map)
+                                 VectorFieldFreeModule(self, dest_map=dest_map)
             else:
                 self._vector_field_modules[dest_map_name] = \
-                    VectorFieldModule(self, dest_map=dest_map)
+                                     VectorFieldModule(self, dest_map=dest_map)
         return self._vector_field_modules[dest_map_name]
 
     def tensor_field_module(self, tensor_type, dest_map=None):

@@ -816,7 +816,67 @@ class ScalarField(DiffMapping, CommutativeRingElement):
                            latex(expression)
         return result
 
+    def restriction(self, subdomain):
+        r"""
+        Restriction of the scalar field to a subdomain of its domain of 
+        definition.
+        
+        INPUT:
+        
+        - ``subdomain`` -- the subdomain (instance of
+          :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+        
+        OUTPUT:
+        
+        - instance of :class:`ScalarField` representing the restriction of 
+          ``self`` to ``subdomain``.
 
+        EXAMPLE: 
+        
+        Restriction of a scalar field defined on `\RR^2` to the unit open 
+        disc::
+        
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart('x y')  # Cartesian coordinates
+            sage: U = M.open_domain('U')
+            sage: X_U = X.subchart(U, x^2+y^2 < 1)  # U is the unit open disc
+            sage: f = M.scalar_field(cos(x*y), name='f')
+            sage: f_U = f.restriction(U) ; f_U
+            scalar field 'f|_U' on the open domain 'U' on the 2-dimensional manifold 'M'
+            sage: latex(f_U)
+            \left. f\right| _{U}
+            sage: f_U.view()
+            f|_U: (x, y) |--> cos(x*y)
+            sage: f.parent()
+            ring of scalar fields on the 2-dimensional manifold 'M'
+            sage: f_U.parent()
+            ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'M'
+        
+        The restriction to the whole domain is the identity::
+        
+            sage: f.restriction(M) is f
+            True
+            sage: f_U.restriction(U) is f_U
+            True
+
+        """
+        if subdomain == self.domain:
+            return self
+        if subdomain not in self._restrictions:
+            if not subdomain.is_subdomain(self.domain):
+                raise ValueError("The specified domain is not a subdomain " + 
+                                 "of the domain of definition of the scalar " + 
+                                 "field.")
+            # the restriction is obtained via coercion
+            resu = subdomain.scalar_field_ring()(self)
+            if self.name is not None:
+                resu.name = self.name + "|_" + subdomain.name
+            if self.latex_name is not None:
+                resu.latex_name = r"\left. " + self.latex_name + r"\right| _{" + \
+                                  subdomain.latex_name + r"}"
+            self._restrictions[subdomain] = resu
+        return self._restrictions[subdomain]
+            
     def pick_a_chart(self):
         r"""
         Return a chart for which the scalar field has an expression. 

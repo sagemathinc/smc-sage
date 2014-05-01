@@ -241,14 +241,13 @@ class DiffMapping(SageObject):
         r"""
         Initialize the derived quantities
         """
-        pass # no derived quantity yet
+        self._restrictions = {} # dict. of restrictions to subdomains of self.domain
 
     def _del_derived(self):
         r"""
         Delete the derived quantities
         """
-        pass # no derived quantity yet
-
+        self._restrictions.clear()
 
     def view(self, chart1=None, chart2=None):
         r""" 
@@ -315,7 +314,6 @@ class DiffMapping(SageObject):
             result.latex += latex(chart2[:]) + " = " + latex(expression) + \
                             r"\end{array}"
         return result
-
 
     def multi_function_chart(self, chart1=None, chart2=None):
         r""" 
@@ -837,6 +835,51 @@ class DiffMapping(SageObject):
             
             return Point(self.codomain.manifold, y, chart2, name=res_name, 
                          latex_name=res_latex_name)  #!# check
+
+    def restriction(self, subdomain, subcodomain=None):
+        r"""
+        Restriction of the differentiable mapping to some subdomain of its 
+        domain of definition.
+        
+        INPUT:
+        
+        - ``subdomain`` -- the subdomain of ``self.domain`` (instance of
+          :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+        - ``subcodomain`` -- (default: None) subdomain of ``self.codomain``; 
+          if None, ``self.codomain`` is assumed. 
+        
+        OUTPUT:
+        
+        - the restriction of ``self`` to ``dom``, as an instance of 
+          class :class:`DiffMapping`
+          
+        """
+        if subdomain == self.domain:
+            return self
+        if subcodomain is None:
+            subcodomain = self.codomain
+        if (subdomain, subcodomain) not in self._restrictions:
+            if not subdomain.is_subdomain(self.domain):
+                raise ValueError("The specified domain is not a subdomain " + 
+                                 "of the domain of definition of the diff. " + 
+                                 "mapping.")
+            if not subcodomain.is_subdomain(self.codomain): 
+                raise ValueError("The specified codomain is not a subdomain " + 
+                                 "of the codomain of the diff. mapping.")
+            resu = DiffMapping(subdomain, subcodomain, name=self.name, 
+                               latex_name=self.latex_name)
+            for charts in self.coord_expressions:
+                for ch1 in charts[0].subcharts:
+                    if ch1.domain == subdomain:
+                        for ch2 in charts[1].subcharts:
+                            if ch2.domain == subcodomain:
+                                coord_functions = \
+                                          self.coord_expressions[charts].expr()
+                                resu.coord_expressions[(ch1, ch2)] = \
+                                       MultiFunctionChart(ch1, coord_functions)
+            self._restrictions[(subdomain, subcodomain)] = resu
+        return self._restrictions[(subdomain, subcodomain)]
+
         
     def pullback(self, tensor):
         r""" 

@@ -474,6 +474,15 @@ class TensorField(ModuleElement):
                                              str(self.tensor_type[1]))
         return self._final_repr(description)
 
+    def _latex_(self):
+        r"""
+        LaTeX representation of the object.
+        """
+        if self.latex_name is None:
+            return r'\mbox{' + str(self) + r'}'
+        else:
+           return self.latex_name
+
     def _new_instance(self):
         r"""
         Create a :class:`TensorField` instance of the same tensor type, 
@@ -546,23 +555,201 @@ class TensorField(ModuleElement):
                              "antisymmetries as the current tensor field.")
         self.restrictions[rst.domain] = rst
 
-    def restriction(self, subdomain):
+    def restriction(self, subdomain, dest_map=None):
         r"""
         Return the restriction of ``self`` to some subdomain.
+        
+        If such restriction has not been defined yet, it is constructed here.
 
         INPUT:
         
-        - ``subdomain`` -- open subset of ``self.domain`` (must be an instance 
+        - ``subdomain`` -- open subset `U` of ``self.domain`` (must be an instance 
           of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+        - ``dest_map`` -- (default: None) destination map 
+          `\Phi:\ U \rightarrow V`, where `V` is a subdomain of 
+          ``self.codomain``
+          (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
+          If None, the restriction of ``self.vmodule.dest_map`` to `U` is 
+          used.
+          
+        OUTPUT:
+        
+        - instance of :class:`TensorField` representing the restriction.
           
         """
-        if not subdomain.is_subdomain(self.domain):
-            raise ValueError("The provided domain is not a subdomain of " + 
-                             "the current field's domain.")
+        if subdomain == self.domain:
+            return self
         if subdomain not in self.restrictions:
-            raise ValueError("The restriction is not known on the " + 
-                             str(subdomain))
+            if not subdomain.is_subdomain(self.domain):
+                raise ValueError("The provided domain is not a subdomain of " + 
+                                 "the current field's domain.")
+            if dest_map is None:
+                if self.vmodule.dest_map is not None:
+                    dest_map = self.vmodule.dest_map.restriction(subdomain)
+            elif not dest_map.codomain.is_subdomain(self.ambient_domain):
+                raise ValueError("Argument dest_map not compatible with " + 
+                                 "self.ambient_domain")
+            smodule = subdomain.vector_field_module(dest_map=dest_map)
+            self.restrictions[subdomain] = smodule.tensor(self.tensor_type, 
+                                                    name=self.name, 
+                                                    latex_name=self.latex_name, 
+                                                    sym=self.sym, 
+                                                    antisym=self.antisym)
         return self.restrictions[subdomain]
+
+    def set_comp(self, basis=None):
+        r"""
+        Return the components of the tensor field in a given vector frame 
+        for assignment.
+        
+        The components with respect to other frames on the same domain are 
+        deleted, in order to avoid any inconsistency. To keep them, use the 
+        method :meth:`add_comp` instead.
+        
+        INPUT:
+        
+        - ``basis`` -- (default: None) vector frame in which the components are
+          defined; if none is provided, the components are assumed to refer to 
+          the tensor field domain's default frame.
+         
+        OUTPUT: 
+        
+        - components in the given frame, as an instance of the 
+          class :class:`~sage.tensor.modules.comp.Components`; if such 
+          components did not exist previously, they are created.  
+        
+        EXAMPLES:
+        
+          
+
+        """
+        if self is self.parent().zero(): #!# this is maybe not very efficient
+            raise ValueError("The zero tensor field cannot be changed.")
+        if basis is None: 
+            basis = self.domain.def_frame
+        self._del_derived() # deletes the derived quantities
+        rst = self.restriction(basis.domain, dest_map=basis.dest_map)
+        return rst.set_comp(basis)
+
+    def add_comp(self, basis=None):
+        r"""
+        Return the components of the tensor field in a given vector frame 
+        for assignment.
+        
+        The components with respect to other frames on the same domain are 
+        kept. To delete them them, use the method :meth:`set_comp` instead.
+        
+        INPUT:
+        
+        - ``basis`` -- (default: None) vector frame in which the components are
+          defined; if none is provided, the components are assumed to refer to 
+          the tensor field domain's default frame.
+         
+        OUTPUT: 
+        
+        - components in the given frame, as an instance of the 
+          class :class:`~sage.tensor.modules.comp.Components`; if such 
+          components did not exist previously, they are created.  
+        
+        EXAMPLES:
+        
+          
+
+        """
+        if self is self.parent().zero(): #!# this is maybe not very efficient
+            raise ValueError("The zero tensor field cannot be changed.")
+        if basis is None: 
+            basis = self.domain.def_frame
+        self._del_derived() # deletes the derived quantities
+        rst = self.restriction(basis.domain, dest_map=basis.dest_map)
+        return rst.add_comp(basis)
+
+
+    def comp(self, basis=None, from_basis=None):
+        r"""
+        Return the components in a given vector frame.
+        
+        If the components are not known already, they are computed by the tensor
+        change-of-basis formula from components in another vector frame. 
+        
+        INPUT:
+        
+        - ``basis`` -- (default: None) vector frame in which the components are 
+          required; if none is provided, the components are assumed to refer to
+          the tensor field domain's default frame
+        - ``from_basis`` -- (default: None) vector frame from which the
+          required components are computed, via the tensor change-of-basis 
+          formula, if they are not known already in the basis ``basis``
+          
+        OUTPUT: 
+        
+        - components in the vector frame ``basis``, as an instance of the 
+          class :class:`~sage.tensor.modules.comp.Components` 
+
+        """
+        if basis is None: 
+            basis = self.domain.def_frame
+        self._del_derived() # deletes the derived quantities
+        rst = self.restriction(basis.domain, dest_map=basis.dest_map)
+        return rst.comp(basis=basis, from_basis=from_basis)
+
+    def __getitem__(self, args):
+        r"""
+        Return a component w.r.t. some frame.
+
+        INPUT:
+        
+        - ``args`` -- list of indices defining the component; if [:] is 
+          provided, all the components are returned. The frame can be passed
+          as the first item of ``args``; if not, the default frame of the 
+          tensor field's domain is assumed. 
+    
+        """
+        if isinstance(args, list):  # case of [[...]] syntax
+            if not isinstance(args[0], (int, Integer, slice)):
+                frame = args[0]
+                args = args[1:]
+            else:
+                frame = self.domain.def_frame
+        else:
+            if isinstance(args, (int, Integer, slice)):
+                frame = self.domain.def_frame
+            elif not isinstance(args[0], (int, Integer, slice)):
+                frame = args[0]
+                args = args[1:]
+            else:
+                frame = self.domain.def_frame
+        return self.comp(frame)[args]
+
+    def __setitem__(self, args, value):
+        r"""
+        Sets a component w.r.t to some vector frame. 
+
+        INPUT:
+        
+       - ``args`` -- list of indices; if [:] is provided, all the components 
+          are set. The frame can be passed as the first item of ``args``; if 
+          not, the default frame of the tensor field's domain is assumed. 
+        - ``value`` -- the value to be set or a list of values if ``args``
+          == ``[:]``
+    
+        """
+        if isinstance(args, list):  # case of [[...]] syntax
+            if not isinstance(args[0], (int, Integer, slice)):
+                frame = args[0]
+                args = args[1:]
+            else:
+                frame = self.domain.def_frame
+        else:
+            if isinstance(args, (int, Integer, slice)):
+                frame = self.domain.def_frame
+            elif not isinstance(args[0], (int, Integer, slice)):
+                frame = args[0]
+                args = args[1:]
+            else:
+                frame = self.domain.def_frame
+        self.set_comp(frame)[args] = value
+
 
     def copy(self):
         r"""
@@ -761,10 +948,10 @@ class TensorField(ModuleElement):
         #!# The following test is probably not necessary:
         if isinstance(other, TensorField):
             raise NotImplementedError("Left tensor product not implemented.")
-        # Left multiplication by a scalar: 
+        # Left multiplication by a scalar field: 
         resu = self._new_instance()
         for dom, rst in self.restrictions.items():
-            resu.restrictions[dom] = other * rst
+            resu.restrictions[dom] = other.restriction(dom) * rst
         return resu
 
     ######### End of ModuleElement arithmetic operators ########

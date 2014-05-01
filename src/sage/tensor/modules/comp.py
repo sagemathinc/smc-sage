@@ -614,13 +614,13 @@ class Components(SageObject):
             no_format = True
             if isinstance(args[0], slice):
                 indices = args[0]
-            elif isinstance(args[0], tuple) or isinstance(args[0], list): # to ensure equivalence between
+            elif isinstance(args[0], (tuple, list)): # to ensure equivalence between
                 indices = args[0]           # [[(i,j,...)]] or [[[i,j,...]]] and [[i,j,...]]
             else:
                 indices = tuple(args)
         else:
             # Determining from the input the list of indices and the format
-            if isinstance(args, (int, Integer)) or isinstance(args, slice):
+            if isinstance(args, (int, Integer, slice)):
                 indices = args
             elif isinstance(args[0], slice):
                 indices = args[0]
@@ -736,13 +736,13 @@ class Components(SageObject):
         if isinstance(args, list):  # case of [[...]] syntax
             if isinstance(args[0], slice):
                 indices = args[0]
-            elif isinstance(args[0], tuple) or isinstance(args[0], list): # to ensure equivalence between
+            elif isinstance(args[0], (tuple, list)): # to ensure equivalence between
                 indices = args[0]           # [[(i,j,...)]] or [[[i,j,...]]] and [[i,j,...]]
             else:
                 indices = tuple(args)
         else:
             # Determining from the input the list of indices and the format
-            if isinstance(args, (int, Integer)) or isinstance(args, slice):
+            if isinstance(args, (int, Integer, slice)):
                 indices = args
             elif isinstance(args[0], slice):
                 indices = args[0]
@@ -2072,13 +2072,13 @@ class CompWithSym(Components):
             no_format = True
             if isinstance(args[0], slice):
                 indices = args[0]
-            elif isinstance(args[0], tuple) or isinstance(args[0], list): # to ensure equivalence between
+            elif isinstance(args[0], (tuple, list)): # to ensure equivalence between
                 indices = args[0]           # [[(i,j,...)]] or [[[i,j,...]]] and [[i,j,...]]
             else:
                 indices = tuple(args)
         else:
             # Determining from the input the list of indices and the format
-            if isinstance(args, (int, Integer)) or isinstance(args, slice):
+            if isinstance(args, (int, Integer, slice)):
                 indices = args
             elif isinstance(args[0], slice):
                 indices = args[0]
@@ -2136,13 +2136,13 @@ class CompWithSym(Components):
         if isinstance(args, list):  # case of [[...]] syntax
             if isinstance(args[0], slice):
                 indices = args[0]
-            elif isinstance(args[0], tuple) or isinstance(args[0], list): # to ensure equivalence between
+            elif isinstance(args[0], (tuple, list)): # to ensure equivalence between
                 indices = args[0]           # [[(i,j,...)]] or [[[i,j,...]]] and [[i,j,...]]
             else:
                 indices = tuple(args)
         else:
             # Determining from the input the list of indices and the format
-            if isinstance(args, (int, Integer)) or isinstance(args, slice):
+            if isinstance(args, (int, Integer, slice)):
                 indices = args
             elif isinstance(args[0], slice):
                 indices = args[0]
@@ -3413,13 +3413,13 @@ class CompFullySym(CompWithSym):
             no_format = True
             if isinstance(args[0], slice):
                 indices = args[0]
-            elif isinstance(args[0], tuple) or isinstance(args[0], list): # to ensure equivalence between
+            elif isinstance(args[0], (tuple, list)): # to ensure equivalence between
                 indices = args[0]           # [[(i,j,...)]] or [[[i,j,...]]] and [[i,j,...]]
             else:
                 indices = tuple(args)
         else:
             # Determining from the input the list of indices and the format
-            if isinstance(args, (int, Integer)) or isinstance(args, slice):
+            if isinstance(args, (int, Integer, slice)):
                 indices = args
             elif isinstance(args[0], slice):
                 indices = args[0]
@@ -3466,13 +3466,13 @@ class CompFullySym(CompWithSym):
         if isinstance(args, list):  # case of [[...]] syntax
             if isinstance(args[0], slice):
                 indices = args[0]
-            elif isinstance(args[0], tuple) or isinstance(args[0], list): # to ensure equivalence between
+            elif isinstance(args[0], (tuple, list)): # to ensure equivalence between
                 indices = args[0]           # [[(i,j,...)]] or [[[i,j,...]]] and [[i,j,...]]
             else:
                 indices = tuple(args)
         else:
             # Determining from the input the list of indices and the format
-            if isinstance(args, (int, Integer)) or isinstance(args, slice):
+            if isinstance(args, (int, Integer, slice)):
                 indices = args
             elif isinstance(args[0], slice):
                 indices = args[0]
