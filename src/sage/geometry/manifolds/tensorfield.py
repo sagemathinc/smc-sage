@@ -686,12 +686,126 @@ class TensorField(ModuleElement):
         - components in the vector frame ``basis``, as an instance of the 
           class :class:`~sage.tensor.modules.comp.Components` 
 
+        EXAMPLE:
+        
+        Components of a type-(1,1) tensor field defined on two open domains::
+
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U')
+            sage: c_xy.<x, y> = U.chart('x y')
+            sage: e = U.default_frame() ; e
+            coordinate frame (U, (d/dx,d/dy))
+            sage: V = M.open_domain('V')
+            sage: c_uv.<u, v> = V.chart('u v')
+            sage: f = V.default_frame() ; f
+            coordinate frame (V, (d/du,d/dv))
+            sage: t = M.tensor_field(1,1, name='t')
+            sage: t[e,0,0] = - x + y^3
+            sage: t[e,0,1] = 2+x
+            sage: t[f,1,1] = - u*v
+            sage: t.comp(e)
+            2-indices components w.r.t. coordinate frame (U, (d/dx,d/dy))
+            sage: t.comp(e)[:]
+            [y^3 - x   x + 2]
+            [      0       0]
+            sage: t.comp(f)
+            2-indices components w.r.t. coordinate frame (V, (d/du,d/dv))
+            sage: t.comp(f)[:]
+            [   0    0]
+            [   0 -u*v]
+
+        Since e is M's default frame, the argument e can be omitted::
+        
+            sage: e is M.default_frame()
+            True
+            sage: t.comp() is t.comp(e)
+            True
+
+        Example of computation of the components via a change of frame::
+        
+            sage: a = V.automorphism_field()
+            sage: a[:] = [[1+v, -u^2], [0, 1-u]]
+            sage: h = f.new_frame(a, 'h')
+            sage: t.comp(h)
+            2-indices components w.r.t. vector frame (V, (h_0,h_1))
+            sage: t.comp(h)[:]
+            [             0 -u^3*v/(v + 1)]
+            [             0           -u*v]
+
         """
         if basis is None: 
             basis = self.domain.def_frame
-        self._del_derived() # deletes the derived quantities
         rst = self.restriction(basis.domain, dest_map=basis.dest_map)
         return rst.comp(basis=basis, from_basis=from_basis)
+
+    def view(self, basis=None, chart=None):
+        r"""
+        Displays the tensor field in terms of its expansion w.r.t to a given
+        vector frame.
+        
+        The output is either text-formatted (console mode) or LaTeX-formatted
+        (notebook mode). 
+        
+        INPUT:
+                
+        - ``basis`` -- (default: None) vector frame with respect to 
+          which the tensor is expanded; if none is provided, the default frame
+          of the domain of definition of the tensor field is assumed.
+        - ``chart`` -- (default: None) chart with respect to which the 
+          components of the tensor field in the selected frame are expressed; 
+          if none is provided, the default chart of the vector frame domain
+          is assumed.
+        
+        EXAMPLE:
+        
+        Display of a type-(1,1) tensor field defined on two open domains::
+        
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U')
+            sage: c_xy.<x, y> = U.chart('x y')
+            sage: e = U.default_frame() ; e
+            coordinate frame (U, (d/dx,d/dy))
+            sage: V = M.open_domain('V')
+            sage: c_uv.<u, v> = V.chart('u v')
+            sage: f = V.default_frame() ; f
+            coordinate frame (V, (d/du,d/dv))
+            sage: t = M.tensor_field(1,1, name='t')
+            sage: t[e,0,0] = - x + y^3
+            sage: t[e,0,1] = 2+x
+            sage: t[f,1,1] = - u*v
+            sage: t.view(e)
+            t = (y^3 - x) d/dx*dx + (x + 2) d/dx*dy
+            sage: t.view(f)
+            t = -u*v d/dv*dv
+            
+        Since e is M's default frame, the argument e can be omitted::
+        
+            sage: e is M.default_frame()
+            True
+            sage: t.view()
+            t = (y^3 - x) d/dx*dx + (x + 2) d/dx*dy
+
+        Similarly, since f is V's default frame, the argument f can be omitted
+        when considering the restriction of t to V::
+        
+            sage: t.restriction(V).view()
+            t = -u*v d/dv*dv
+
+        Display w.r.t a frame in which t has not been initialized (automatic
+        use of a change-of-frame formula)::
+        
+            sage: a = V.automorphism_field()
+            sage: a[:] = [[1+v, -u^2], [0, 1-u]]
+            sage: h = f.new_frame(a, 'h')
+            sage: t.view(h)
+            t = -u^3*v/(v + 1) h_0*h^1 - u*v h_1*h^1
+
+        """
+        if basis is None: 
+            basis = self.domain.def_frame
+        rst = self.restriction(basis.domain, dest_map=basis.dest_map)
+        return rst.view(basis, chart)
+
 
     def __getitem__(self, args):
         r"""

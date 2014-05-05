@@ -848,27 +848,64 @@ class FreeModuleTensor(ModuleElement):
         for other_basis in to_be_deleted:
             del self.components[other_basis]
 
-    def __getitem__(self, indices):
+    def __getitem__(self, args):
         r"""
-        Return a component w.r.t. the free module's default basis.
+        Return a component w.r.t. some basis.
 
         INPUT:
         
-        - ``indices`` -- list of indices defining the component
+        - ``args`` -- list of indices defining the component; if [:] is 
+          provided, all the components are returned. The basis can be passed
+          as the first item of ``args``; if not, the free module's default 
+          basis is assumed. 
     
         """
-        return self.comp()[indices]
-        
-    def __setitem__(self, indices, value):
+        if isinstance(args, list):  # case of [[...]] syntax
+            if isinstance(args[0], (int, Integer, slice)):
+                basis = self.fmodule.def_basis
+            else:
+                basis = args[0]
+                args = args[1:]
+        else:
+            if isinstance(args, (int, Integer, slice)):
+                basis = self.fmodule.def_basis
+            elif not isinstance(args[0], (int, Integer, slice)):
+                basis = args[0]
+                args = args[1:]
+            else:
+                basis = self.fmodule.def_basis
+        return self.comp(basis)[args]
+
+       
+    def __setitem__(self, args, value):
         r"""
-        Set a component w.r.t. the free module's default basis.
+        Set a component w.r.t. some basis.
 
         INPUT:
-        
-        - ``indices`` -- list of indices defining the component
-    
+
+        - ``args`` -- list of indices defining the component; if [:] is 
+          provided, all the components are set. The basis can be passed
+          as the first item of ``args``; if not, the free module's default 
+          basis is assumed. 
+        - ``value`` -- the value to be set or a list of values if ``args``
+          == ``[:]``
+   
         """        
-        self.set_comp()[indices] = value
+        if isinstance(args, list):  # case of [[...]] syntax
+            if isinstance(args[0], (int, Integer, slice)):
+                basis = self.fmodule.def_basis
+            else:
+                basis = args[0]
+                args = args[1:]
+        else:
+            if isinstance(args, (int, Integer, slice)):
+                basis = self.fmodule.def_basis
+            elif not isinstance(args[0], (int, Integer, slice)):
+                basis = args[0]
+                args = args[1:]
+            else:
+                basis = self.fmodule.def_basis
+        self.set_comp(basis)[args] = value
 
 
     def copy(self):
