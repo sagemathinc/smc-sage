@@ -79,7 +79,16 @@ EXAMPLES:
         sage: t.view(e)  # expansion of t on the basis e_i*e^j of T^(1,1)(M) 
         t = -3 e_0*e^0
 
-    Since e is M's default basis, shorcuts for the above writings are::
+    The commands t.set_comp(e) and t.comp(e) can be abridged by providing 
+    the basis as the first argument in the square brackets::
+    
+        sage: t[e,0,0] = -3
+        sage: t[e,:]
+        [-3  0  0]
+        [ 0  0  0]
+        [ 0  0  0]
+
+    Actually, since e is M's default basis, the mention of e can be omitted::
     
         sage: t[0,0] = -3
         sage: t[:]
@@ -872,6 +881,8 @@ class FreeModuleTensor(ModuleElement):
             elif not isinstance(args[0], (int, Integer, slice)):
                 basis = args[0]
                 args = args[1:]
+                if len(args)==1:
+                    args = args[0]  # to accommodate for [e,:] syntax 
             else:
                 basis = self.fmodule.def_basis
         return self.comp(basis)[args]
@@ -903,6 +914,8 @@ class FreeModuleTensor(ModuleElement):
             elif not isinstance(args[0], (int, Integer, slice)):
                 basis = args[0]
                 args = args[1:]
+                if len(args)==1:
+                    args = args[0]  # to accommodate for [e,:] syntax 
             else:
                 basis = self.fmodule.def_basis
         self.set_comp(basis)[args] = value
