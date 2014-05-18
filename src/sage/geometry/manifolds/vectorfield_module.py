@@ -1,5 +1,5 @@
 r"""
-Vector field module. 
+Vector field module
 
 
 AUTHORS:

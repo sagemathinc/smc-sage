@@ -30,280 +30,279 @@ fields:
 * :class:`~sage.geometry.manifolds.diffform.DiffForm` for differential forms 
   (fully antisymmetric covariant tensor fields)
 
-
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2013, 2014) : initial version
 
 EXAMPLES:
 
-    A tensor field of type (1,1) on a 2-dimensional manifold::
+A tensor field of type (1,1) on a 2-dimensional manifold::
 
-        sage: M = Manifold(2, 'M', start_index=1)
-        sage: c_xy.<x,y> = M.chart('x y')
-        sage: t = M.tensor_field(1, 1, 'T') ; t
-        tensor field 'T' of type (1,1) on the 2-dimensional manifold 'M'
-        sage: t.tensor_rank
-        2
+    sage: M = Manifold(2, 'M', start_index=1)
+    sage: c_xy.<x,y> = M.chart('x y')
+    sage: t = M.tensor_field(1, 1, 'T') ; t
+    tensor field 'T' of type (1,1) on the 2-dimensional manifold 'M'
+    sage: t.tensor_rank
+    2
 
-    A just-created tensor field has no components::
+A just-created tensor field has no components::
 
-        sage: t.components
-        {}
+    sage: t.components
+    {}
 
-    Components w.r.t. the manifold's default frame are created by providing the
-    relevant indices inside square brackets::
+Components w.r.t. the manifold's default frame are created by providing the
+relevant indices inside square brackets::
 
-        sage: t[1,1] = x^2
+    sage: t[1,1] = x^2
 
-    Unset components are initialized to zero::
+Unset components are initialized to zero::
 
-        sage: t[:]  # list of components w.r.t. the manifold's default vector frame
-        [x^2   0]
-        [  0   0]
+    sage: t[:]  # list of components w.r.t. the manifold's default vector frame
+    [x^2   0]
+    [  0   0]
 
-    The full set of components w.r.t. a given vector frame is returned by the 
-    method :meth:`comp`; it is an instance of the class 
-    :class:`~sage.tensor.modules.comp.Components`::
+The full set of components w.r.t. a given vector frame is returned by the 
+method :meth:`comp`; it is an instance of the class 
+:class:`~sage.tensor.modules.comp.Components`::
+
+    sage: t.comp(c_xy.frame)
+    2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy)) 
+    sage: print type(t.comp(c_xy.frame))
+    <class 'sage.tensor.modules.comp.Components'>
+
+The vector frame can be skipped, it is then assumed to be the
+manifold's default frame::
+
+    sage: M.default_frame()
+    coordinate frame (M, (d/dx,d/dy))
+    sage: t.comp() is t.comp(c_xy.frame)
+    True
+
+Individual components w.r.t. the manifold's default frame are accessed by 
+listing their indices inside double square brackets; they are scalar
+fields on the manifold, and therefore instances of the class 
+:class:`~sage.geometry.manifolds.scalarfield.ScalarField`::
+
+    sage: t[[1,1]]
+    scalar field on the 2-dimensional manifold 'M'
+    sage: t[[1,1]].expr()
+    x^2
+    sage: t[[1,2]]
+    zero scalar field on the 2-dimensional manifold 'M'
+    sage: t[[1,2]].expr()
+    0
     
-        sage: t.comp(c_xy.frame)
-        2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy)) 
-        sage: print type(t.comp(c_xy.frame))
-        <class 'sage.tensor.modules.comp.Components'>
+A direct access to the coordinate expression of some component is obtained
+via the single square brackets::
 
-    The vector frame can be skipped, it is then assumed to be the
-    manifold's default frame::
-    
-        sage: M.default_frame()
-        coordinate frame (M, (d/dx,d/dy))
-        sage: t.comp() is t.comp(c_xy.frame)
-        True
+    sage: t[1,1] 
+    x^2
+    sage: t[1,1] is t[[1,1]].function_chart() # the coordinate function
+    True
+    sage: t[1,1] is t[[1,1]].function_chart(c_xy)
+    True
+    sage: t[1,1] == t[[1,1]].expr() # check the value of the coordinate function
+    True
+    sage: t[1,1].expr() is t[[1,1]].expr() # the symbolic expression
+    True
 
-    Individual components w.r.t. the manifold's default frame are accessed by 
-    listing their indices inside double square brackets; they are scalar
-    fields on the manifold, and therefore instances of the class 
-    :class:`~sage.geometry.manifolds.scalarfield.ScalarField`::
+In other words, the single square brackets return an instance of 
+:class:`~sage.geometry.manifolds.chart.FunctionChart` that is the 
+coordinate function representing the component in some chart (by default, 
+the manifold's default chart)::
 
-        sage: t[[1,1]]
-        scalar field on the 2-dimensional manifold 'M'
-        sage: t[[1,1]].expr()
-        x^2
-        sage: t[[1,2]]
-        zero scalar field on the 2-dimensional manifold 'M'
-        sage: t[[1,2]].expr()
-        0
-        
-    A direct access to the coordinate expression of some component is obtained
-    via the single square brackets::
-    
-        sage: t[1,1] 
-        x^2
-        sage: t[1,1] is t[[1,1]].function_chart() # the coordinate function
-        True
-        sage: t[1,1] is t[[1,1]].function_chart(c_xy)
-        True
-        sage: t[1,1] == t[[1,1]].expr() # check the value of the coordinate function
-        True
-        sage: t[1,1].expr() is t[[1,1]].expr() # the symbolic expression
-        True
+    sage: print type(t[1,1])    # single bracket --> FunctionChart
+    <class 'sage.geometry.manifolds.chart.FunctionChart'>
+    sage: print type(t[[1,1]])  # double bracket --> ScalarField
+    <class 'sage.geometry.manifolds.scalarfield.ScalarFieldRing_with_category.element_class'>
 
-    In other words, the single square brackets return an instance of 
-    :class:`~sage.geometry.manifolds.chart.FunctionChart` that is the 
-    coordinate function representing the component in some chart (by default, 
-    the manifold's default chart)::
-    
-        sage: print type(t[1,1])    # single bracket --> FunctionChart
-        <class 'sage.geometry.manifolds.chart.FunctionChart'>
-        sage: print type(t[[1,1]])  # double bracket --> ScalarField
-        <class 'sage.geometry.manifolds.scalarfield.ScalarFieldRing_with_category.element_class'>
-    
-    Expressions in a chart different from the manifold's default one are 
-    obtained by specifying the chart as the last argument inside the
-    single square brackets::
-    
-        sage: c_uv.<u,v> = M.chart('u v')
-        sage: xy_to_uv = c_xy.coord_change(c_uv, x+y, x-y)  
-        sage: uv_to_xy = xy_to_uv.inverse()
-        sage: t[1,1, c_uv] 
-        1/4*u^2 + 1/2*u*v + 1/4*v^2
+Expressions in a chart different from the manifold's default one are 
+obtained by specifying the chart as the last argument inside the
+single square brackets::
 
-    Note that ``t[1,1, c_uv]`` is the component of the tensor t w.r.t. to 
-    the coordinate frame associated to the chart (x,y) expressed in terms of 
-    the coordinates (u,v). Indeed, ``t[1,1, c_uv]`` is a shortcut for 
-    ``t.comp(c_xy.frame)[[1,1]].function_chart(c_uv)``::
-        
-        sage: t[1,1, c_uv] is t.comp(c_xy.frame)[[1,1]].function_chart(c_uv)
-        True
-    
-    Similarly, ``t[1,1]`` is a shortcut for 
-    ``t.comp(c_xy.frame)[[1,1]].function_chart(c_xy)``::
-    
-        sage: t[1,1] is t.comp(c_xy.frame)[[1,1]].function_chart(c_xy)            
-        True
-        sage: t[1,1] is t.comp()[[1,1]].function_chart()  # since c_xy.frame and c_xy are the manifold's default values                
-        True
+    sage: c_uv.<u,v> = M.chart('u v')
+    sage: xy_to_uv = c_xy.coord_change(c_uv, x+y, x-y)  
+    sage: uv_to_xy = xy_to_uv.inverse()
+    sage: t[1,1, c_uv] 
+    1/4*u^2 + 1/2*u*v + 1/4*v^2
 
-    Internally, the components are stored as a dictionary (attribute 
-    :attr:`_comp` of the class 
-    :class:`~sage.tensor.modules.comp.Components`) whose
-    keys are the indices. Only the non-zero components and non-redundant
-    components (in case of symmetries) are stored::
+Note that ``t[1,1, c_uv]`` is the component of the tensor t w.r.t. to 
+the coordinate frame associated to the chart (x,y) expressed in terms of 
+the coordinates (u,v). Indeed, ``t[1,1, c_uv]`` is a shortcut for 
+``t.comp(c_xy.frame)[[1,1]].function_chart(c_uv)``::
+    
+    sage: t[1,1, c_uv] is t.comp(c_xy.frame)[[1,1]].function_chart(c_uv)
+    True
 
-        sage: t.comp()._comp
-        {(1, 1): scalar field on the 2-dimensional manifold 'M'}
+Similarly, ``t[1,1]`` is a shortcut for 
+``t.comp(c_xy.frame)[[1,1]].function_chart(c_xy)``::
 
-    All the components can be set at once via [:]::
-    
-        sage: t[:] = [[1, -x], [x*y, 2]]
-        sage: t[:]
-        [  1  -x]
-        [x*y   2]
-        
-    The different sets of components, corresponding to representations of the
-    tensor in different vector frames, are stored in the dictionary 
-    :attr:`components`, each item being an instance of the class 
-    :class:`~sage.tensor.modules.comp.Components`::
-    
-        sage: t.components
-        {coordinate frame (M, (d/dx,d/dy)): 2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy))}
-        sage: print type(t.components[c_xy.frame])
-        <class 'sage.tensor.modules.comp.Components'>
-        sage: print type(t.comp())
-        <class 'sage.tensor.modules.comp.Components'>
-        sage: t.comp() is t.components[c_xy.frame]
-        True
+    sage: t[1,1] is t.comp(c_xy.frame)[[1,1]].function_chart(c_xy)            
+    True
+    sage: t[1,1] is t.comp()[[1,1]].function_chart()  # since c_xy.frame and c_xy are the manifold's default values                
+    True
 
-    To set the components in a vector frame different from the manifold's 
-    default one, the method :meth:`set_comp` must be employed::
+Internally, the components are stored as a dictionary (attribute 
+:attr:`_comp` of the class 
+:class:`~sage.tensor.modules.comp.Components`) whose
+keys are the indices. Only the non-zero components and non-redundant
+components (in case of symmetries) are stored::
 
-        sage: e = M.vector_frame('e')
-        sage: t.set_comp(e)[1,1], t.set_comp(e)[1,2] = (x+y, 0)
-        sage: t.set_comp(e)[2,1], t.set_comp(e)[2,2] = (y, -3*x)
-        sage: t.comp(e)
-        2-indices components w.r.t. vector frame (M, (e_1,e_2))
-        sage: t.comp(e)[:]
-        [x + y     0]
-        [    y  -3*x]
+    sage: t.comp()._comp
+    {(1, 1): scalar field on the 2-dimensional manifold 'M'}
 
-    All the components in some frame can be set at once, via the operator
-    [:]::
+All the components can be set at once via [:]::
 
-        sage: t.set_comp(e)[:] = [[x+y, 0], [y, -3*x]]
-        sage: t.comp(e)[:]  # same as above:
-        [x + y     0]
-        [    y  -3*x]
+    sage: t[:] = [[1, -x], [x*y, 2]]
+    sage: t[:]
+    [  1  -x]
+    [x*y   2]
     
-    To avoid any insconstency between the various components, the method 
-    :meth:`set_comp` clears the components in other frames. 
-    Accordingly, the components in the frame c_xy.frame have been deleted::
-    
-        sage: t.components
-        {vector frame (M, (e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_1,e_2))}
+The different sets of components, corresponding to representations of the
+tensor in different vector frames, are stored in the dictionary 
+:attr:`components`, each item being an instance of the class 
+:class:`~sage.tensor.modules.comp.Components`::
 
-    To keep the other components, one must use the method :meth:`add_comp`::
-    
-        sage: t = M.tensor_field(1, 1, 'T')  # Let us restart 
-        sage: t[:] = [[1, -x], [x*y, 2]]  # by first setting the components in the frame c_xy.frame
-        sage: # We now set the components in the frame e with add_comp:
-        sage: t.add_comp(e)[:] = [[x+y, 0], [y, -3*x]]
-        sage: t.components  # Both set of components are present:
-        {coordinate frame (M, (d/dx,d/dy)): 2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy)), vector frame (M, (e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_1,e_2))}
+    sage: t.components
+    {coordinate frame (M, (d/dx,d/dy)): 2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy))}
+    sage: print type(t.components[c_xy.frame])
+    <class 'sage.tensor.modules.comp.Components'>
+    sage: print type(t.comp())
+    <class 'sage.tensor.modules.comp.Components'>
+    sage: t.comp() is t.components[c_xy.frame]
+    True
 
-    The expansion of the tensor field in a given frame is displayed via the 
-    method :meth:`view` (the symbol * stands for tensor product)::
-    
-        sage: t.view()  # expansion in the manifold's default frame
-        T = d/dx*dx - x d/dx*dy + x*y d/dy*dx + 2 d/dy*dy
-        sage: t.view(e)
-        T = (x + y) e_1*e^1 + y e_2*e^1 - 3*x e_2*e^2
+To set the components in a vector frame different from the manifold's 
+default one, the method :meth:`set_comp` must be employed::
 
-    A tensor field acts as a multilinear map on 1-forms and vector fields; 
-    in the present case, T being of type (1,1), it acts on pairs 
-    (1-form, vector)::
-    
-        sage: a = M.one_form('a')
-        sage: a[:] = (1, x)
-        sage: v = M.vector_field('V')
-        sage: v[:] = (y, 2)
-        sage: t(a,v)
-        scalar field 'T(a,V)' on the 2-dimensional manifold 'M'
-        sage: t(a,v).expr()
-        x^2*y^2 + 2*x + y
-        sage: latex(t(a,v))
-        T\left(a,V\right)
-    
-    Check by means of the component expression of t(a,v)::
-    
-        sage: t[1,1]*a[1]*v[1] + t[1,2]*a[1]*v[2] + t[2,1]*a[2]*v[1] + t[2,2]*a[2]*v[2] - t(a,v).expr()
-        0
+    sage: e = M.vector_frame('e')
+    sage: t.set_comp(e)[1,1], t.set_comp(e)[1,2] = (x+y, 0)
+    sage: t.set_comp(e)[2,1], t.set_comp(e)[2,2] = (y, -3*x)
+    sage: t.comp(e)
+    2-indices components w.r.t. vector frame (M, (e_1,e_2))
+    sage: t.comp(e)[:]
+    [x + y     0]
+    [    y  -3*x]
 
-    A scalar field (rank-0 tensor field)::
-    
-        sage: f = M.scalar_field(x*y + 2, name='f') ; f 
-        scalar field 'f' on the 2-dimensional manifold 'M'
-        sage: f.tensor_type
-        (0, 0)
-        
-    A scalar field acts on points on the manifold::
-    
-        sage: p = M.point((1,2))
-        sage: f(p)
-        4
-        
-    A vector field (rank-1 contravariant tensor field)::
-    
-        sage: v = M.vector_field('v') ; v
-        vector field 'v' on the 2-dimensional manifold 'M'
-        sage: v.tensor_type
-        (1, 0)
-        sage: v[1], v[2] = -x, y
-        sage: v.view()
-        v = -x d/dx + y d/dy        
+All the components in some frame can be set at once, via the operator
+[:]::
 
-    A field of symmetric bilinear forms::
-    
-        sage: q = M.sym_bilin_form_field('Q') ; q
-        field of symmetric bilinear forms 'Q' on the 2-dimensional manifold 'M'
-        sage: q.tensor_type
-        (0, 2)
+    sage: t.set_comp(e)[:] = [[x+y, 0], [y, -3*x]]
+    sage: t.comp(e)[:]  # same as above:
+    [x + y     0]
+    [    y  -3*x]
 
-    The components of a symmetric bilinear form are dealt by the subclass 
-    :class:`~sage.tensor.modules.comp.CompFullySym` of the class 
-    :class:`~sage.tensor.modules.comp.Components`, which takes into 
-    account the symmetry between the two indices::
-    
-        sage: q[1,1], q[1,2], q[2,2] = (0, -x, y) # no need to set the component (2,1)
-        sage: print type(q.comp())
-        <class 'sage.tensor.modules.comp.CompFullySym'>
-        sage: q[:] # note that the component (2,1) is equal to the component (1,2)
-        [ 0 -x]
-        [-x  y]
-        sage: q.view()
-        Q = -x dx*dy - x dy*dx + y dy*dy
-    
-    Internally (dictionary :attr:`_comp` of the class 
-    :class:`~sage.tensor.modules.comp.Components`), only
-    the non-zero and non-redundant components are stored::
-    
-        sage: q.comp()._comp
-        {(1, 2): scalar field on the 2-dimensional manifold 'M',
-        (2, 2): scalar field on the 2-dimensional manifold 'M'}
-        sage: q.comp()._comp[(1,2)].expr()
-        -x
-        sage: q.comp()._comp[(2,2)].expr()
-        y
+To avoid any insconstency between the various components, the method 
+:meth:`set_comp` clears the components in other frames. 
+Accordingly, the components in the frame c_xy.frame have been deleted::
 
-    More generally, tensor symmetries or antisymmetries can be specified via
-    the keywords ``sym`` and ``antisym``. For instance a rank-4 covariant 
-    tensor symmetric with respect to its first two arguments and 
-    antisymmetric with respect to its last two ones is declared as follows::
+    sage: t.components
+    {vector frame (M, (e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_1,e_2))}
+
+To keep the other components, one must use the method :meth:`add_comp`::
+
+    sage: t = M.tensor_field(1, 1, 'T')  # Let us restart 
+    sage: t[:] = [[1, -x], [x*y, 2]]  # by first setting the components in the frame c_xy.frame
+    sage: # We now set the components in the frame e with add_comp:
+    sage: t.add_comp(e)[:] = [[x+y, 0], [y, -3*x]]
+    sage: t.components  # Both set of components are present:
+    {coordinate frame (M, (d/dx,d/dy)): 2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy)), vector frame (M, (e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_1,e_2))}
+
+The expansion of the tensor field in a given frame is displayed via the 
+method :meth:`view` (the symbol * stands for tensor product)::
+
+    sage: t.view()  # expansion in the manifold's default frame
+    T = d/dx*dx - x d/dx*dy + x*y d/dy*dx + 2 d/dy*dy
+    sage: t.view(e)
+    T = (x + y) e_1*e^1 + y e_2*e^1 - 3*x e_2*e^2
+
+A tensor field acts as a multilinear map on 1-forms and vector fields; 
+in the present case, T being of type (1,1), it acts on pairs 
+(1-form, vector)::
+
+    sage: a = M.one_form('a')
+    sage: a[:] = (1, x)
+    sage: v = M.vector_field('V')
+    sage: v[:] = (y, 2)
+    sage: t(a,v)
+    scalar field 'T(a,V)' on the 2-dimensional manifold 'M'
+    sage: t(a,v).expr()
+    x^2*y^2 + 2*x + y
+    sage: latex(t(a,v))
+    T\left(a,V\right)
+
+Check by means of the component expression of t(a,v)::
+
+    sage: t[1,1]*a[1]*v[1] + t[1,2]*a[1]*v[2] + t[2,1]*a[2]*v[1] + t[2,2]*a[2]*v[2] - t(a,v).expr()
+    0
+
+A scalar field (rank-0 tensor field)::
+
+    sage: f = M.scalar_field(x*y + 2, name='f') ; f 
+    scalar field 'f' on the 2-dimensional manifold 'M'
+    sage: f.tensor_type
+    (0, 0)
     
-        sage: t = M.tensor_field(0, 4, 'T', sym=(0,1), antisym=(2,3))
-        sage: t[1,2,1,2] = 3
-        sage: t[2,1,1,2] # check of the symmetry with respect to the first 2 indices
-        3
-        sage: t[1,2,2,1] # check of the antisymmetry with respect to the last 2 indices
-        -3
+A scalar field acts on points on the manifold::
+
+    sage: p = M.point((1,2))
+    sage: f(p)
+    4
+    
+A vector field (rank-1 contravariant tensor field)::
+
+    sage: v = M.vector_field('v') ; v
+    vector field 'v' on the 2-dimensional manifold 'M'
+    sage: v.tensor_type
+    (1, 0)
+    sage: v[1], v[2] = -x, y
+    sage: v.view()
+    v = -x d/dx + y d/dy        
+
+A field of symmetric bilinear forms::
+
+    sage: q = M.sym_bilin_form_field('Q') ; q
+    field of symmetric bilinear forms 'Q' on the 2-dimensional manifold 'M'
+    sage: q.tensor_type
+    (0, 2)
+
+The components of a symmetric bilinear form are dealt by the subclass 
+:class:`~sage.tensor.modules.comp.CompFullySym` of the class 
+:class:`~sage.tensor.modules.comp.Components`, which takes into 
+account the symmetry between the two indices::
+
+    sage: q[1,1], q[1,2], q[2,2] = (0, -x, y) # no need to set the component (2,1)
+    sage: print type(q.comp())
+    <class 'sage.tensor.modules.comp.CompFullySym'>
+    sage: q[:] # note that the component (2,1) is equal to the component (1,2)
+    [ 0 -x]
+    [-x  y]
+    sage: q.view()
+    Q = -x dx*dy - x dy*dx + y dy*dy
+
+Internally (dictionary :attr:`_comp` of the class 
+:class:`~sage.tensor.modules.comp.Components`), only
+the non-zero and non-redundant components are stored::
+
+    sage: q.comp()._comp
+    {(1, 2): scalar field on the 2-dimensional manifold 'M',
+    (2, 2): scalar field on the 2-dimensional manifold 'M'}
+    sage: q.comp()._comp[(1,2)].expr()
+    -x
+    sage: q.comp()._comp[(2,2)].expr()
+    y
+
+More generally, tensor symmetries or antisymmetries can be specified via
+the keywords ``sym`` and ``antisym``. For instance a rank-4 covariant 
+tensor symmetric with respect to its first two arguments and 
+antisymmetric with respect to its last two ones is declared as follows::
+
+    sage: t = M.tensor_field(0, 4, 'T', sym=(0,1), antisym=(2,3))
+    sage: t[1,2,1,2] = 3
+    sage: t[2,1,1,2] # check of the symmetry with respect to the first 2 indices
+    3
+    sage: t[1,2,2,1] # check of the antisymmetry with respect to the last 2 indices
+    -3
 
 """
 
@@ -362,14 +361,13 @@ class TensorField(ModuleElement):
       tensor arguments: each symmetry is described by a tuple containing 
       the positions of the involved arguments, with the convention position=0
       for the first argument. For instance:
-        * sym=(0,1) for a symmetry between the 1st and 2nd arguments 
-        * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
-          arguments and a symmetry between the 2nd, 4th and 5th arguments.
+      
+      * sym=(0,1) for a symmetry between the 1st and 2nd arguments 
+      * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
+        arguments and a symmetry between the 2nd, 4th and 5th arguments.
+
     - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
       among the arguments, with the same convention as for ``sym``. 
-
-
-    EXAMPLES:
 
     """
     def __init__(self, vector_field_module, tensor_type, name=None, 
@@ -873,10 +871,8 @@ class TensorField(ModuleElement):
         
         EXAMPLES:
         
-
-        # If the original tensor field is modified, the copy is not::
+        If the original tensor field is modified, the copy is not.
         
-
         """
         resu = self._new_instance()
         for dom, rst in self.restrictions.items():
@@ -1363,9 +1359,11 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
       tensor arguments: each symmetry is described by a tuple containing 
       the positions of the involved arguments, with the convention position=0
       for the first argument. For instance:
-        * sym=(0,1) for a symmetry between the 1st and 2nd arguments 
-        * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
-          arguments and a symmetry between the 2nd, 4th and 5th arguments.
+
+      * sym=(0,1) for a symmetry between the 1st and 2nd arguments 
+      * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
+        arguments and a symmetry between the 2nd, 4th and 5th arguments.
+
     - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
       among the arguments, with the same convention as for ``sym``. 
 

@@ -903,7 +903,7 @@ class FreeModuleTensor(ModuleElement):
    
         """        
         if isinstance(args, list):  # case of [[...]] syntax
-            if isinstance(args[0], (int, Integer, slice)):
+            if isinstance(args[0], (int, Integer, slice, tuple)):
                 basis = self.fmodule.def_basis
             else:
                 basis = args[0]

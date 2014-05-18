@@ -742,7 +742,7 @@ class Metric(SymBilinFormFieldParal):
           
         OUTPUT:
         
-        -  `\sqrt{|\det (g_{ij})|}`, as an instance of 
+        - `\sqrt{|\det (g_{ij})|}`, as an instance of 
           :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
         
         EXAMPLES:

@@ -12,38 +12,39 @@ AUTHORS:
 
 EXAMPLES: 
 
-    Defining a point on `\RR^3` by its spherical coordinates::
-    
-        sage: M = Manifold(3, 'R3', r'\mathcal{M}') 
-        sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-        sage: p = M.point((1, pi/2, 0), name='P') # coordinates in the manifold's default chart
-        sage: p
-        point 'P' on 3-dimensional manifold 'R3'
-        sage: latex(p) 
-        P
+Defining a point on `\RR^3` by its spherical coordinates::
 
-    Computing the coordinates of the point in a new chart::
-    
-        sage: c_cart.<x,y,z> = M.chart('x y z')        
-        sage: ch = c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
-        sage: p.coord(c_cart) # evaluate P's Cartesian coordinates
-        (1, 0, 0)
-    
-    Points can be compared::
-    
-        sage: p1 = M.point((1, pi/2, 0))
-        sage: p == p1
-        True
-        sage: q = M.point((1,2,3), c_cart, name='Q') # point defined by its Cartesian coordinates
-        sage: p == q
-        False
+    sage: M = Manifold(3, 'R3', r'\mathcal{M}') 
+    sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
+    sage: p = M.point((1, pi/2, 0), name='P') # coordinates in the manifold's default chart
+    sage: p
+    point 'P' on 3-dimensional manifold 'R3'
+    sage: latex(p) 
+    P
 
-    Listing all the coordinates of a point in different charts::
-    
-        sage: p.coordinates # random (dictionary output)
-        {chart (R3, (r, th, ph)): (1, 1/2*pi, 0), chart (R3, (x, y, z)): (1, 0, 0)}
-        sage: q.coordinates
-        {chart (R3, (x, y, z)): (1, 2, 3)}
+Computing the coordinates of the point in a new chart::
+
+    sage: c_cart.<x,y,z> = M.chart('x y z')        
+    sage: ch = c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
+    sage: p.coord(c_cart) # evaluate P's Cartesian coordinates
+    (1, 0, 0)
+
+Points can be compared::
+
+    sage: p1 = M.point((1, pi/2, 0))
+    sage: p == p1
+    True
+    sage: q = M.point((1,2,3), c_cart, name='Q') # point defined by its Cartesian coordinates
+    sage: p == q
+    False
+
+Listing all the coordinates of a point in different charts::
+
+    sage: p.coordinates # random (dictionary output)
+    {chart (R3, (r, th, ph)): (1, 1/2*pi, 0), chart (R3, (x, y, z)): (1, 0, 0)}
+    sage: q.coordinates
+    {chart (R3, (x, y, z)): (1, 2, 3)}
+
 """
 
 #*****************************************************************************
@@ -235,6 +236,7 @@ class Point(Element):
             (a^3 - 3*a^2*b + 3*a*b^2 - b^3, a^3 + 3*a^2*b + 3*a*b^2 + b^3)
             sage: p.coordinates # random (dictionary output)
             {chart (M, (u, v)): (a - b, a + b), chart (M, (w, z)): (a^3 - 3*a^2*b + 3*a*b^2 - b^3, a^3 + 3*a^2*b + 3*a*b^2 + b^3)}
+
         """
         atlas = self.manifold.atlas
         if chart is None:
@@ -317,9 +319,10 @@ class Point(Element):
             sage: q = M.point()
             sage: q.set_coord((1,2,3), c_spher)
             sage: cart_from_spher = c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
-            
+        
         If we set the coordinates of q in the chart c_cart, those in the chart c_spher
         are lost::
+        
             sage: q.set_coord( cart_from_spher(*q.coord(c_spher)), c_cart)
             sage: q.coordinates
             {chart (R3, (x, y, z)): (cos(3)*sin(2), sin(3)*sin(2), cos(2))}
@@ -346,9 +349,9 @@ class Point(Element):
           
         .. WARNING::
         
-            If the point has already coordinates in other charts, it 
-            is the user's responsability to make sure that the coordinates
-            to be added are consistent with them. 
+           If the point has already coordinates in other charts, it 
+           is the user's responsability to make sure that the coordinates
+           to be added are consistent with them. 
     
         EXAMPLES: 
 

@@ -1,8 +1,6 @@
 Tensors on free modules of finite rank
 ======================================
 
-More documentation (including worksheets) can be found on the `SageManifolds <http://sagemanifolds.obspm.fr/>`_ home page. 
-
 .. toctree::
    :maxdepth: 2
 

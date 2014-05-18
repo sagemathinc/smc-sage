@@ -1,5 +1,5 @@
 r"""
-Domains on a manifold
+Domains and open sets on a manifold
 
 The class :class:`Domain` implements subsets on a differentiable manifold 
 over `\RR`. 
@@ -157,8 +157,6 @@ class Domain(UniqueRepresentation, Parent):
         True
         sage: p in M
         True
-
-
         
     """
     
@@ -806,7 +804,9 @@ class Domain(UniqueRepresentation, Parent):
           :class:`~sage.geometry.manifolds.vectorframe.VectorFrame`) defined 
           on the current domain
           
-        EXAMPLE::
+        EXAMPLE:
+        
+        Changing the default frame on a 2-dimensional manifold::
         
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
@@ -918,7 +918,7 @@ class OpenDomain(Domain):
     - ``name`` -- name given to the open domain
     - ``latex_name`` --  (default: None) LaTeX symbol to denote the open 
       domain; if none is provided, it is set to ``name``
-    
+
     EXAMPLES:
     
     A open domain on a manifold::
@@ -1038,10 +1038,10 @@ class OpenDomain(Domain):
 
         B is then a subdomain of A and A is a superdomain of B::
         
-            sage: a.subdomains
+            sage: a.subdomains # random (set output)
             set([open domain 'A' on the 2-dimensional manifold 'M', 
                  open domain 'B' on the 2-dimensional manifold 'M'])
-            sage: b.superdomains
+            sage: b.superdomains # random (set output)
             set([open domain 'A' on the 2-dimensional manifold 'M', 
                  2-dimensional manifold 'M', 
                  open domain 'B' on the 2-dimensional manifold 'M'])
@@ -1069,19 +1069,19 @@ class OpenDomain(Domain):
         - ``coordinates`` -- single string defining the coordinate symbols and 
           ranges: the coordinates are separated by ' ' (space) and each 
           coordinate has at most three fields, separated by ':': 
-            
-            1. The coordinate symbol (a letter or a few letters)
-            2. (optional) The interval `I` defining the coordinate range: if not
-               provided, the coordinate is assumed to span all `\RR`; otherwise 
-               `I` must be provided in the form (a,b) (or equivalently ]a,b[)
-               The bounds a and b can be +/-Infinity, Inf, infinity, inf or oo.
-               For *singular* coordinates, non-open intervals such as [a,b] and 
-               (a,b] (or equivalently ]a,b]) are allowed. 
-               Note that the interval declaration must not contain any space 
-               character.
-            3. (optional) The LaTeX spelling of the coordinate; if not provided the
-               coordinate symbol given in the first field will be used.
-          
+
+          1. The coordinate symbol (a letter or a few letters)
+          2. (optional) The interval `I` defining the coordinate range: if not
+             provided, the coordinate is assumed to span all `\RR`; otherwise 
+             `I` must be provided in the form (a,b) (or equivalently ]a,b[)
+             The bounds a and b can be +/-Infinity, Inf, infinity, inf or oo.
+             For *singular* coordinates, non-open intervals such as [a,b] and 
+             (a,b] (or equivalently ]a,b]) are allowed. 
+             Note that the interval declaration must not contain any space 
+             character.
+          3. (optional) The LaTeX spelling of the coordinate; if not provided the
+             coordinate symbol given in the first field will be used.
+
           The order of the fields 2 and 3 does not matter and each of them can 
           be omitted.
           If it contains any LaTeX expression, the string ``coordinates`` must 
@@ -1272,8 +1272,8 @@ class OpenDomain(Domain):
         - ``dest_map`` -- (default: None) destination map 
           `\Phi:\ U \rightarrow V`, where `U` is ``self`` 
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`); 
-          if none is provided, the identity is assumed (case of vector fields 
-          *on* `U`)
+          if none is provided, the identity is assumed (case of vector
+          fields *on* `U`)
         - ``force_free`` -- (default: False) if set to True, force the 
           construction of a *free* module (this implies that `V` is 
           parallelizable)
@@ -1375,8 +1375,8 @@ class OpenDomain(Domain):
         - ``dest_map`` -- (default: None) destination map 
           `\Phi:\ U \rightarrow V`, where `U` is ``self`` 
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`); 
-          if none is provided, the identity is assumed (case of tensor fields 
-          *on* `U`)
+          if none is provided, the identity is assumed (case of tensor  
+          fields *on* `U`)
 
         OUTPUT:
         
@@ -1443,7 +1443,7 @@ class OpenDomain(Domain):
           scalar field
         - ``chart`` -- (default:None) chart defining the coordinates used in 
           ``coord_expression``; if none is provided and a coordinate expression
-           is given, the domain default chart is assumed.
+          is given, the domain default chart is assumed.
         - ``name`` -- (default: None) name given to the scalar field
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the scalar 
           field; if none is provided, the LaTeX symbol is set to ``name``
@@ -1521,7 +1521,6 @@ class OpenDomain(Domain):
             sage: v in U.vector_field_module()
             True
 
-
         See the documentation of class 
         :class:`~sage.geometry.manifolds.vectorfield.VectorField` for more 
         examples.
@@ -1554,9 +1553,11 @@ class OpenDomain(Domain):
           the tensor arguments: each symmetry is described by a tuple containing 
           the positions of the involved arguments, with the convention position=0
           for the first argument. For instance:
-            * sym=(0,1) for a symmetry between the 1st and 2nd arguments 
-            * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
-              arguments and a symmetry between the 2nd, 4th and 5th arguments.
+
+          * sym=(0,1) for a symmetry between the 1st and 2nd arguments 
+          * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
+            arguments and a symmetry between the 2nd, 4th and 5th arguments.
+
         - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
           among the arguments, with the same convention as for ``sym``. 
         - ``dest_map`` -- (default: None) instance of 
@@ -1906,10 +1907,13 @@ class OpenDomain(Domain):
         INPUT:
     
         - ``name`` -- name given to the metric
-        - ``signature`` -- (default: 'positive') sign of the metric signature: 
+        - ``signature`` -- (default: 'positive') sign of the metric 
+          signature: 
+
           * if set to 'positive', the signature is n-2, where n is the manifold's
             dimension, i.e. `(-,+,\cdots,+)`
           * if set to 'negative', the signature is -n+2, i.e. `(+,-,\cdots,-)`
+
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
           none, it is formed from ``name``      
 
@@ -1945,7 +1949,6 @@ class OpenDomain(Domain):
     def diff_form(self, degree, name=None, latex_name=None, 
                   dest_map=None):
         r"""
-
         Define a differential form on the domain.
 
         See :class:`~sage.geometry.manifolds.diffform.DiffForm` for a complete 
@@ -2170,9 +2173,6 @@ class OpenDomain(Domain):
         - the identity mapping, as an instance of 
           :class:`~sage.geometry.manifolds.diffmapping.IdentityMapping`
 
-        EXAMPLE:
-    
-
         """
         from diffmapping import IdentityMapping
         if self._identity_mapping is None:
@@ -2215,5 +2215,4 @@ class OpenDomain(Domain):
         """
         from connection import AffConnection
         return AffConnection(self, name, latex_name)
-
 

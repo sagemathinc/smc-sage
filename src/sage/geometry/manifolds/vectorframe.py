@@ -1,5 +1,5 @@
 r"""
-Vector Frames
+Vector frames
 
 The class :class:`VectorFrame` implements vector frames on differentiable 
 manifolds over `\RR`. 

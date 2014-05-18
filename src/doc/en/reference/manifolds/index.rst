@@ -7,31 +7,19 @@ More documentation (in particular example worksheets) can be found on the
 .. toctree::
    :maxdepth: 2
 
-   sage/geometry/manifolds/manifold
-
-   sage/geometry/manifolds/domain
-
-   sage/geometry/manifolds/chart
-
-   sage/geometry/manifolds/point
+   manifold
 
    sage/geometry/manifolds/diffmapping
 
    sage/geometry/manifolds/submanifold
 
-   sage/geometry/manifolds/tensorfield
-   
-   sage/geometry/manifolds/scalarfield
-   
-   sage/geometry/manifolds/vectorfield
-   
-   sage/geometry/manifolds/rank2field
+   scalarfield
 
+   vectorfield
+
+   tensorfield
+         
    sage/geometry/manifolds/diffform
-
-   sage/geometry/manifolds/vectorframe
-   
-   sage/geometry/manifolds/component
 
    sage/geometry/manifolds/metric
 
