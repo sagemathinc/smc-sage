@@ -350,7 +350,7 @@ class TensorField(ModuleElement):
     
     INPUT:
     
-    - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector 
+    - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector 
       fields along `U` with values on `\Phi(U)\subset V \subset M`
     - ``tensor_type`` -- pair (k,l) with k being the contravariant rank and l 
       the covariant rank
@@ -553,7 +553,7 @@ class TensorField(ModuleElement):
                              "antisymmetries as the current tensor field.")
         self.restrictions[rst.domain] = rst
 
-    def restriction(self, subdomain, dest_map=None):
+    def restrict(self, subdomain, dest_map=None):
         r"""
         Return the restriction of ``self`` to some subdomain.
         
@@ -583,7 +583,7 @@ class TensorField(ModuleElement):
                                  "the current field's domain.")
             if dest_map is None:
                 if self.vmodule.dest_map is not None:
-                    dest_map = self.vmodule.dest_map.restriction(subdomain)
+                    dest_map = self.vmodule.dest_map.restrict(subdomain)
             elif not dest_map.codomain.is_subdomain(self.ambient_domain):
                 raise ValueError("Argument dest_map not compatible with " + 
                                  "self.ambient_domain")
@@ -626,7 +626,7 @@ class TensorField(ModuleElement):
         if basis is None: 
             basis = self.domain.def_frame
         self._del_derived() # deletes the derived quantities
-        rst = self.restriction(basis.domain, dest_map=basis.dest_map)
+        rst = self.restrict(basis.domain, dest_map=basis.dest_map)
         return rst.set_comp(basis)
 
     def add_comp(self, basis=None):
@@ -659,7 +659,7 @@ class TensorField(ModuleElement):
         if basis is None: 
             basis = self.domain.def_frame
         self._del_derived() # deletes the derived quantities
-        rst = self.restriction(basis.domain, dest_map=basis.dest_map)
+        rst = self.restrict(basis.domain, dest_map=basis.dest_map)
         return rst.add_comp(basis)
 
 
@@ -733,7 +733,7 @@ class TensorField(ModuleElement):
         """
         if basis is None: 
             basis = self.domain.def_frame
-        rst = self.restriction(basis.domain, dest_map=basis.dest_map)
+        rst = self.restrict(basis.domain, dest_map=basis.dest_map)
         return rst.comp(basis=basis, from_basis=from_basis)
 
     def view(self, basis=None, chart=None):
@@ -786,7 +786,7 @@ class TensorField(ModuleElement):
         Similarly, since f is V's default frame, the argument f can be omitted
         when considering the restriction of t to V::
         
-            sage: t.restriction(V).view()
+            sage: t.restrict(V).view()
             t = -u*v d/dv*dv
 
         Display w.r.t a frame in which t has not been initialized (automatic
@@ -801,7 +801,7 @@ class TensorField(ModuleElement):
         """
         if basis is None: 
             basis = self.domain.def_frame
-        rst = self.restriction(basis.domain, dest_map=basis.dest_map)
+        rst = self.restrict(basis.domain, dest_map=basis.dest_map)
         return rst.view(basis, chart)
 
 
@@ -1061,7 +1061,7 @@ class TensorField(ModuleElement):
         # Left multiplication by a scalar field: 
         resu = self._new_instance()
         for dom, rst in self.restrictions.items():
-            resu.restrictions[dom] = other.restriction(dom) * rst
+            resu.restrictions[dom] = other.restrict(dom) * rst
         return resu
 
     ######### End of ModuleElement arithmetic operators ########
@@ -1102,7 +1102,7 @@ class TensorField(ModuleElement):
             
         `g^{ab}` being the components of the inverse metric. 
 
-        The reverse operation is :meth:`TensorFieldParal.down`
+        The reverse operation is :meth:`TensorField.down`
 
         INPUT:
         
@@ -1216,7 +1216,7 @@ class TensorField(ModuleElement):
             
         `g_{ab}` being the components of the metric tensor. 
 
-        The reverse operation is :meth:`TensorFieldParal.up`
+        The reverse operation is :meth:`TensorField.up`
         
         INPUT:
         

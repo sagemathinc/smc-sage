@@ -389,7 +389,7 @@ class Point(Element):
             sage: p.coordinates
             {chart (R3, (x, y, z)): (4, 5, 6)}
             sage: p.add_coord((7,8,9), c_spher)
-            sage: p.coordinates
+            sage: p.coordinates # random (dictionary output) 
             {chart (R3, (x, y, z)): (4, 5, 6), chart (R3, (r, th, ph)): (7, 8, 9)}
             
         """

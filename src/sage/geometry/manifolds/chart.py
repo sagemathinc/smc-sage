@@ -2334,43 +2334,49 @@ class CoordChange(SageObject):
         from sage.symbolic.relation import solve
         if self._inverse is not None:
             return self._inverse
-            
+        # The computation is necessary:
         n1 = len(self.chart1.xx)
         n2 = len(self.chart2.xx)
         if n1 != n2:
             raise TypeError("The change of coordinates is not invertible.")
-        
         # New symbolic variables (different from chart2.xx to allow for a 
         #  correct solution even when chart2 = chart1):
         coord_domain = ['real' for i in range(n2)]
         for i in range(n2):
             if self.chart2.xx[i].is_positive():
                 coord_domain[i] = 'positive'
+        x1 = self.chart1.xx
         x2 = [ SR.var('xxxx' + str(i), domain=coord_domain[i]) 
-               for i in range(n2) ]
+                                                           for i in range(n2) ]
         equations = [ x2[i] == self.transf.functions[i].express 
-                      for i in range(n2) ]
-        solutions = solve(equations, self.chart1.xx, solution_dict=True)
-        if len(solutions) == 0: 
-            raise ValueError("No solution found")
-        if len(solutions) > 1: 
-            raise ValueError("Non-unique solution found")
-            
+                                                           for i in range(n2) ]
+        solutions = solve(equations, x1, solution_dict=True)
         #!# This should be the Python 2.7 form: 
         # substitutions = {x2[i]: self.chart2.xx[i] for i in range(n2)}
         #
         # Here we use a form compatible with Python 2.6:
         substitutions = dict([(x2[i], self.chart2.xx[i]) for i in range(n2)])
-       
-        inv_transf = [solutions[0][self.chart1.xx[i]].subs(substitutions) 
-                           for i in range(n1)]
-        for i in range(n1):
-            try:
-                inv_transf[i] = simplify_chain(inv_transf[i])
-            except AttributeError:
-                pass        
-        self._inverse = CoordChange(self.chart2, self.chart1, *inv_transf)
-        
+        x2_to_x1 = []
+        for sol in solutions:
+            if x2[0] in sol:
+                raise ValueError("The system could not be solved.")
+            inv_transf = [sol[x1[i]].subs(substitutions) for i in range(n1)]
+            for i in range(n1):
+                try:
+                    inv_transf[i] = simplify_chain(inv_transf[i])
+                except AttributeError:
+                    pass        
+            if self.chart1.valid_coordinates(*inv_transf):
+                x2_to_x1.append(inv_transf)
+        if len(x2_to_x1) == 0: 
+            raise ValueError("No solution found")
+        if len(x2_to_x1) > 1: 
+            print "Multiple solutions found: "
+            print x2_to_x1
+            raise ValueError(
+               "Non-unique solution to the inverse coordinate transformation.")
+        self._inverse = CoordChange(self.chart2, self.chart1, *(x2_to_x1[0]))
+        #
         # Update of chart expressions of the frame changes:
         if self.chart1.domain == self.chart2.domain:
             domain = self.chart1.domain

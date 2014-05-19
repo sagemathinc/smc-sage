@@ -816,7 +816,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
                            latex(expression)
         return result
 
-    def restriction(self, subdomain):
+    def restrict(self, subdomain):
         r"""
         Restriction of the scalar field to a subdomain of its domain of 
         definition.
@@ -841,7 +841,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             sage: U = M.open_domain('U')
             sage: X_U = X.subchart(U, x^2+y^2 < 1)  # U is the unit open disc
             sage: f = M.scalar_field(cos(x*y), name='f')
-            sage: f_U = f.restriction(U) ; f_U
+            sage: f_U = f.restrict(U) ; f_U
             scalar field 'f|_U' on the open domain 'U' on the 2-dimensional manifold 'M'
             sage: latex(f_U)
             \left. f\right| _{U}
@@ -854,9 +854,9 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         
         The restriction to the whole domain is the identity::
         
-            sage: f.restriction(M) is f
+            sage: f.restrict(M) is f
             True
-            sage: f_U.restriction(U) is f_U
+            sage: f_U.restrict(U) is f_U
             True
 
         """

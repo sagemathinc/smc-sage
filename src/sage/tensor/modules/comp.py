@@ -624,7 +624,8 @@ class Components(SageObject):
                 indices = args
             elif isinstance(args[0], slice):
                 indices = args[0]
-                format_type = args[1]
+                if len(args) == 2:
+                    format_type = args[1]
             elif len(args) == self.nid:
                 indices = args
             else:
@@ -746,7 +747,8 @@ class Components(SageObject):
                 indices = args
             elif isinstance(args[0], slice):
                 indices = args[0]
-                format_type = args[1]
+                if len(args) == 2:
+                    format_type = args[1]
             elif len(args) == self.nid:
                 indices = args
             else:
@@ -2082,7 +2084,8 @@ class CompWithSym(Components):
                 indices = args
             elif isinstance(args[0], slice):
                 indices = args[0]
-                format_type = args[1]
+                if len(args) == 2:
+                    format_type = args[1]
             elif len(args) == self.nid:
                 indices = args
             else:
@@ -2146,7 +2149,8 @@ class CompWithSym(Components):
                 indices = args
             elif isinstance(args[0], slice):
                 indices = args[0]
-                format_type = args[1]
+                if len(args) == 2:
+                    format_type = args[1]
             elif len(args) == self.nid:
                 indices = args
             else:
@@ -3423,7 +3427,8 @@ class CompFullySym(CompWithSym):
                 indices = args
             elif isinstance(args[0], slice):
                 indices = args[0]
-                format_type = args[1]
+                if len(args) == 2:
+                    format_type = args[1]
             elif len(args) == self.nid:
                 indices = args
             else:
@@ -3476,7 +3481,8 @@ class CompFullySym(CompWithSym):
                 indices = args
             elif isinstance(args[0], slice):
                 indices = args[0]
-                format_type = args[1]
+                if len(args) == 2:
+                    format_type = args[1]
             elif len(args) == self.nid:
                 indices = args
             else:

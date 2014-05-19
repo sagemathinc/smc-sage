@@ -836,7 +836,7 @@ class DiffMapping(SageObject):
             return Point(self.codomain.manifold, y, chart2, name=res_name, 
                          latex_name=res_latex_name)  #!# check
 
-    def restriction(self, subdomain, subcodomain=None):
+    def restrict(self, subdomain, subcodomain=None):
         r"""
         Restriction of the differentiable mapping to some subdomain of its 
         domain of definition.
