@@ -222,7 +222,8 @@ class FreeModuleTensor(ModuleElement):
             self.latex_name = self.name
         else:
             self.latex_name = latex_name
-        self.components = {}    # components on various bases (not set yet)
+        self.components = {}  # dict. of the sets of components on various 
+                              # bases, with the bases as keys (initially empty)
         # Treatment of symmetry declarations:
         self.sym = []
         if sym is not None and sym != []:

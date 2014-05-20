@@ -16,6 +16,9 @@ where `T_p M` stands for the tangent space at the point `p` on the
 manifold `M` and `T_p^*M` for its dual vector space. The integer `k+\ell`
 is called the tensor rank. 
 
+The derived class :class:`TensorFieldParal` is devoted to tensor fields with
+values on parallelizable open subsets.
+
 Various derived classes of :class:`TensorField` are devoted to specific tensor
 fields:
 
@@ -384,7 +387,8 @@ class TensorField(ModuleElement):
             self.latex_name = latex_name
         self.domain = vector_field_module.domain
         self.ambient_domain = vector_field_module.ambient_domain
-        self.restrictions = {} # dict. of restrictions on subdomains of self.domain
+        self.restrictions = {} # dict. of restrictions of self on subdomains of 
+                               # self.domain, with the subdomains as keys
         # Treatment of symmetry declarations:
         self.sym = []
         if sym is not None and sym != []:
@@ -561,8 +565,8 @@ class TensorField(ModuleElement):
 
         INPUT:
         
-        - ``subdomain`` -- open subset `U` of ``self.domain`` (must be an instance 
-          of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+        - ``subdomain`` -- open subset `U` of ``self.domain`` (must be an 
+          instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
         - ``dest_map`` -- (default: None) destination map 
           `\Phi:\ U \rightarrow V`, where `V` is a subdomain of 
           ``self.codomain``
@@ -573,7 +577,63 @@ class TensorField(ModuleElement):
         OUTPUT:
         
         - instance of :class:`TensorField` representing the restriction.
-          
+        
+        EXAMPLES:
+        
+        Restrictions of a vector field on the 2-sphere::
+        
+            sage: M = Manifold(2, 'S^2', start_index=1)
+            sage: U = M.open_domain('U') # the complement of the North pole
+            sage: stereoN.<x,y> = U.chart('x y')  # stereographic coordinates from the North pole
+            sage: eN = stereoN.frame # the associated vector frame
+            sage: V =  M.open_domain('V') # the complement of the South pole
+            sage: stereoS.<u,v> = V.chart('u v')  # stereographic coordinates from the South pole
+            sage: eS = stereoS.frame # the associated vector frame
+            sage: transf = stereoN.transition_map(stereoS, (x/(x^2+y^2), y/(x^2+y^2)), intersection_name='W', \
+                                                  restrictions1= x^2+y^2!=0, restrictions2= u^2+v^2!=0)
+            sage: inv = transf.inverse() # transformation from stereoS to stereoN
+            sage: W = U.intersection(V) # the complement of the North and South poles
+            sage: stereoN_W = W.atlas[0]  # restriction of stereographic coord. from North pole to W
+            sage: stereoS_W = W.atlas[1]  # restriction of stereographic coord. from South pole to W
+            sage: eN_W = stereoN_W.frame ; eS_W = stereoS_W.frame
+            sage: v = M.vector_field('v')
+            sage: v.set_comp(eN)[1] = 1  # given the default settings, this can be abriged to v[1] = 1
+            sage: v.view()
+            v = d/dx
+            sage: vU = v.restrict(U) ; vU
+            vector field 'v' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            sage: vU.view()
+            v = d/dx
+            sage: vU == eN[1]
+            True
+            sage: vW = v.restrict(W) ; vW
+            vector field 'v' on the open domain 'W' on the 2-dimensional manifold 'S^2'
+            sage: vW.view()
+            v = d/dx
+            sage: vW.view(eS_W, stereoS_W)
+            v = (-u^2 + v^2) d/du - 2*u*v d/dv
+            sage: vW == eN_W[1]
+            True
+
+        At this stage, defining the restriction of v to domain V fully specifies v::
+        
+            sage: v.restrict(V)[1] = vW[eS_W, 1, stereoS_W]  # note that eS is the default frame on V
+            sage: v.restrict(V)[2] = vW[eS_W, 2, stereoS_W]
+            sage: v.view(eS, stereoS)
+            v = (-u^2 + v^2) d/du - 2*u*v d/dv
+            sage: v.restrict(U).view()
+            v = d/dx
+            sage: v.restrict(V).view()
+            v = (-u^2 + v^2) d/du - 2*u*v d/dv
+            
+        The restriction of the vector field to its own domain is of course 
+        itself::
+        
+            sage: v.restrict(M) is v
+            True
+            sage: vU.restrict(U) is vU
+            True
+
         """
         if subdomain == self.domain:
             return self
@@ -587,8 +647,15 @@ class TensorField(ModuleElement):
             elif not dest_map.codomain.is_subdomain(self.ambient_domain):
                 raise ValueError("Argument dest_map not compatible with " + 
                                  "self.ambient_domain")
-            smodule = subdomain.vector_field_module(dest_map=dest_map)
-            self.restrictions[subdomain] = smodule.tensor(self.tensor_type, 
+            # First one tries to derive the restriction from a tighter domain:
+            for dom, rst in self.restrictions.items():
+                if subdomain.is_subdomain(dom):
+                    self.restrictions[subdomain] = rst.restrict(subdomain)
+                    break
+            # If this fails, the restriction is created from scratch:
+            else:
+                smodule = subdomain.vector_field_module(dest_map=dest_map)
+                self.restrictions[subdomain] = smodule.tensor(self.tensor_type, 
                                                     name=self.name, 
                                                     latex_name=self.latex_name, 
                                                     sym=self.sym, 
@@ -1563,10 +1630,10 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         FreeModuleTensor.__init__(self, vector_field_module, tensor_type,
                                   name=name, latex_name=latex_name,
                                   sym=sym, antisym=antisym)
-        self.domain = vector_field_module.domain
-        self.ambient_domain = vector_field_module.ambient_domain
         # TensorField attributes:
         self.vmodule = vector_field_module
+        self.domain = vector_field_module.domain
+        self.ambient_domain = vector_field_module.ambient_domain
         self.restrictions = {} # dict. of restrictions on subdomains of self.domain        
         # Initialization of derived quantities:
         self._init_derived() 
@@ -1822,5 +1889,114 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             self._lie_derivatives[id(vector)] = (vector, res)
             vector._lie_der_along_self[id(self)] = self
         return self._lie_derivatives[id(vector)][1]
+
+    def restrict(self, subdomain, dest_map=None):
+        r"""
+        Return the restriction of ``self`` to some subdomain.
+        
+        If such restriction has not been defined yet, it is constructed here.
+
+        INPUT:
+        
+        - ``subdomain`` -- open subset `U` of ``self.domain`` (must be an 
+          instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+        - ``dest_map`` -- (default: None) destination map 
+          `\Phi:\ U \rightarrow V`, where `V` is a subdomain of 
+          ``self.codomain``
+          (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
+          If None, the restriction of ``self.vmodule.dest_map`` to `U` is 
+          used.
+          
+        OUTPUT:
+        
+        - instance of :class:`TensorFieldParal` representing the restriction.
+
+        EXAMPLES:
+        
+        Restriction of a vector field defined on `\RR^2` to a disk::
+        
+            sage: M = Manifold(2, 'R^2')
+            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
+            sage: v = M.vector_field('v')
+            sage: v[:] = [x+y, -1+x^2]
+            sage: D = M.open_domain('D') # the unit open disc
+            sage: c_cart_D = c_cart.subchart(D, x^2+y^2<1)
+            sage: v_D = v.restrict(D) ; v_D
+            vector field 'v' on the open domain 'D' on the 2-dimensional manifold 'R^2'
+            sage: v_D.view()
+            v = (x + y) d/dx + (x^2 - 1) d/dy
+            
+        The symbolic expressions of the components w.r.t. Cartesian coordinates 
+        are equal::
+        
+            sage: bool( v_D[1].expr() == v[1].expr() )
+            True
+            
+        but not the chart functions representing the components (they are 
+        defined on different charts)::
+        
+            sage: v_D[1] == v[1]
+            False
+            
+        nor the scalar fields representing the components (they are 
+        defined on different open domains)::
+        
+            sage: v_D[[1]] == v[[1]]
+            False
+
+        The restriction of the vector field to its own domain is of course 
+        itself::
+        
+            sage: v.restrict(M) is v
+            True
+
+        """
+        if subdomain == self.domain:
+            return self
+        if subdomain not in self.restrictions:
+            if not subdomain.is_subdomain(self.domain):
+                raise ValueError("The provided domain is not a subdomain of " + 
+                                 "the current field's domain.")
+            if dest_map is None:
+                if self.fmodule.dest_map is not None:
+                    dest_map = self.fmodule.dest_map.restrict(subdomain)
+            elif not dest_map.codomain.is_subdomain(self.ambient_domain):
+                raise ValueError("Argument dest_map not compatible with " + 
+                                 "self.ambient_domain")
+            smodule = subdomain.vector_field_module(dest_map=dest_map)
+            resu = smodule.tensor(self.tensor_type, name=self.name, 
+                                  latex_name=self.latex_name, sym=self.sym, 
+                                  antisym=self.antisym)
+            for frame in self.components:
+                for sframe in subdomain.covering_frames:
+                    if sframe in frame.subframes:
+                        comp_store = self.components[frame]._comp
+                        scomp = resu._new_comp(sframe)
+                        scomp_store = scomp._comp
+                        # the components of the restriction are evaluated 
+                        # index by index:
+                        for ind, value in comp_store.iteritems():
+                            scomp_store[ind] = value.restrict(subdomain)
+                        resu.components[sframe] = scomp
+            self.restrictions[subdomain] = resu
+        return self.restrictions[subdomain]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

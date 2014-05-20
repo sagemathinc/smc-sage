@@ -955,7 +955,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         a transition map between charts c_xy and c_uv on the intersecting domain
         `W = U\cap V`::
         
-            sage: trans = c_xy.transition_map(c_uv, (x+y, x-y), 'W', x<0, u>0)
+            sage: trans = c_xy.transition_map(c_uv, (x+y, x-y), 'W', x<0, u+v<0)
             sage: c_xy_W = trans.chart1
             sage: c_uv_W = trans.chart2
             sage: trans.inverse()

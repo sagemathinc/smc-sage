@@ -1526,13 +1526,13 @@ class OpenDomain(Domain):
         examples.
     
         """
-        from vectorfield import VectorFieldParal
+        from vectorfield import VectorField, VectorFieldParal
         if self.is_manifestly_parallelizable():
             return VectorFieldParal(self.vector_field_module(dest_map), 
                                     name=name, latex_name=latex_name)
         else:
-            raise NotImplementedError("VectorField not implemented yet")
-
+            return VectorField(self.vector_field_module(dest_map), name=name, 
+                               latex_name=latex_name)
 
     def tensor_field(self, k, l, name=None, latex_name=None, sym=None, 
         antisym=None, dest_map=None):
@@ -1599,11 +1599,12 @@ class OpenDomain(Domain):
         from tensorfield import TensorField, TensorFieldParal
         if self.is_manifestly_parallelizable():
             return TensorFieldParal(self.vector_field_module(dest_map), 
-                                    (k,l), name, latex_name, sym, antisym)
+                                    (k,l), name=name, latex_name=latex_name, 
+                                    sym=sym, antisym=antisym)
         else:
-            return TensorField(self.vector_field_module(dest_map), (k,l), name,
-                               latex_name, sym, antisym)
-
+            return TensorField(self.vector_field_module(dest_map), (k,l), 
+                               name=name, latex_name=latex_name, sym=sym, 
+                               antisym=antisym)
 
     def sym_bilin_form_field(self, name=None, latex_name=None, 
                              dest_map=None):  
