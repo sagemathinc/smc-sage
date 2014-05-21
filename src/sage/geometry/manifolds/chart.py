@@ -363,7 +363,11 @@ class Chart(UniqueRepresentation, SageObject):
         self.subcharts = set([self]) 
         # Initialization of the set of charts which the current chart is a 
         # restriction of:
-        self.supercharts = set([self]) 
+        self.supercharts = set([self])
+        #
+        self._dom_restrict = {} # dict. of the restrictions of self to
+                                # subdomains of self.domain, with the 
+                                # subdomains as keys
     
     def _repr_(self):
         r"""
@@ -516,7 +520,7 @@ class Chart(UniqueRepresentation, SageObject):
         The restrictions are transmitted to subcharts::
         
             sage: A = M.open_domain('A') # annulus 1/2 < r < 1
-            sage: X_A = X.subchart(A, x^2+y^2 > 1/4)
+            sage: X_A = X.restrict(A, x^2+y^2 > 1/4)
             sage: X_A.restrictions
             [x^2 + y^2 < 1, x^2 + y^2 > (1/4)]
             sage: X_A.valid_coordinates(0,1/3)
@@ -531,21 +535,26 @@ class Chart(UniqueRepresentation, SageObject):
         self.restrictions.extend(restrictions)
 
 
-    def subchart(self, domain, restrictions):
+    def restrict(self, subdomain, restrictions=None):
         r"""
-        Construct a subchart.
+        Return the restriction of ``self`` to some subdomain. 
         
-        If ``self`` is the chart `(U,\varphi)`, a subchart is a chart `(V,\psi)`
-        such that `V\subset U` and `\psi = \varphi |_V`. 
+        If ``self`` is the chart `(U,\varphi)`, a restriction (or subchart)
+        is a chart `(V,\psi)` such that `V\subset U` and `\psi = \varphi |_V`. 
+
+        If such subchart has not been defined yet, it is constructed here. 
 
         The coordinates of the subchart bare the same names as the coordinates
         of the mother chart. 
         
         INPUT:
         
-        - ``domain`` -- open subdomain `V` of the chart domain `U` 
-        - ``restrictions`` -- list of coordinate restrictions defining 
-          the subdomain `V`. A restriction can be any symbolic equality or 
+        - ``subdomain`` -- open subdomain `V` of the chart domain `U` (must
+          be an instance of
+          :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+        - ``restrictions`` -- (default: None) list of coordinate restrictions 
+          defining the subdomain `V`. 
+          A restriction can be any symbolic equality or 
           inequality involving the coordinates, such as x>y or x^2+y^2 != 0. 
           The items of the list ``restrictions`` are combined with the ``and`` 
           operator; if some restrictions are to be combined with the ``or`` 
@@ -554,7 +563,9 @@ class Chart(UniqueRepresentation, SageObject):
           being [x>y, (x!=0, y!=0), z^2<x] means (x>y) and ((x!=0) or (y!=0)) 
           and (z^2<x). If the list ``restrictions`` contains only one item, 
           this item can be passed as such, i.e. writing x>y instead of the 
-          single element list [x>y]. 
+          single element list [x>y]. Note that the argument ``restrictions``
+          can be omitted if the subchart has been already initialized by a 
+          previous call.
 
         OUTPUT:
         
@@ -568,7 +579,7 @@ class Chart(UniqueRepresentation, SageObject):
             sage: M = Manifold(2, 'R^2')
             sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
             sage: D = M.open_domain('D') # the unit open disc
-            sage: c_cart_D = c_cart.subchart(D, x^2+y^2<1) 
+            sage: c_cart_D = c_cart.restrict(D, x^2+y^2<1) 
             sage: p = M.point((1/2, 0))
             sage: p in D
             True
@@ -579,7 +590,7 @@ class Chart(UniqueRepresentation, SageObject):
         Cartesian coordinates on the annulus `1<\sqrt{x^2+y^2}<2`::
         
             sage: A = M.open_domain('A')
-            sage: c_cart_A = c_cart.subchart(A, [x^2+y^2>1, x^2+y^2<4])
+            sage: c_cart_A = c_cart.restrict(A, [x^2+y^2>1, x^2+y^2<4])
             sage: p in A, q in A
             (False, False)
             sage: a = M.point((3/2,0))
@@ -587,25 +598,32 @@ class Chart(UniqueRepresentation, SageObject):
             True
 
         """
-        if not domain.is_subdomain(self.domain):
-            raise TypeError("The argument 'domain' must be a subdomain of " + 
-                            " the chart domain.")
-        coordinates = ""
-        for coord in self.xx:
-            coordinates += repr(coord) + ' '
-        res = Chart(domain, coordinates)
-        res.bounds = self.bounds
-        res.restrictions.extend(self.restrictions)
-        res.add_restrictions(restrictions)
-        # Update of supercharts and subcharts:
-        res.supercharts.update(self.supercharts)
-        for schart in self.supercharts:
-            schart.subcharts.add(res)
-        # Update of superframes and subframes:
-        res.frame.superframes.update(self.frame.superframes)
-        for sframe in self.frame.superframes:
-            sframe.subframes.add(res.frame)
-        return res
+        if subdomain == self.domain:
+            return self
+        if subdomain not in self._dom_restrict:
+            if not subdomain.is_subdomain(self.domain):
+                raise ValueError("The specified domain is not a subdomain " + 
+                                 "of the domain of definition of the chart.")
+            coordinates = ""
+            for coord in self.xx:
+                coordinates += repr(coord) + ' '
+            res = Chart(subdomain, coordinates)
+            res.bounds = self.bounds
+            res.restrictions.extend(self.restrictions)
+            res.add_restrictions(restrictions)
+            # Update of supercharts and subcharts:
+            res.supercharts.update(self.supercharts)
+            for schart in self.supercharts:
+                schart.subcharts.add(res)
+                schart._dom_restrict[subdomain] = res
+            # Update of superframes and subframes:
+            res.frame.superframes.update(self.frame.superframes)
+            for sframe in self.frame.superframes:
+                sframe.subframes.add(res.frame)
+                sframe.restrictions[subdomain] = res.frame
+            # Update of domain restrictions:
+            self._dom_restrict[subdomain] = res
+        return self._dom_restrict[subdomain]
         
     def valid_coordinates(self, *coordinates):
         r""" 
@@ -756,11 +774,11 @@ class Chart(UniqueRepresentation, SageObject):
         if dom is dom1:
             chart1 = self
         else:
-            chart1 = self.subchart(dom, restrictions1)
+            chart1 = self.restrict(dom, restrictions1)
         if dom is dom2:
             chart2 = other
         else:
-            chart2 = other.subchart(dom, restrictions2)
+            chart2 = other.restrict(dom, restrictions2)
         if not isinstance(transformations, (tuple, list)):
                 transformations = [transformations]
         return CoordChange(chart1, chart2, *transformations)

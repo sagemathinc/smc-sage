@@ -561,7 +561,7 @@ class TensorField(ModuleElement):
         r"""
         Return the restriction of ``self`` to some subdomain.
         
-        If such restriction has not been defined yet, it is constructed here.
+        If the restriction has not been defined yet, it is constructed here.
 
         INPUT:
         
@@ -1920,7 +1920,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: v = M.vector_field('v')
             sage: v[:] = [x+y, -1+x^2]
             sage: D = M.open_domain('D') # the unit open disc
-            sage: c_cart_D = c_cart.subchart(D, x^2+y^2<1)
+            sage: c_cart_D = c_cart.restrict(D, x^2+y^2<1)
             sage: v_D = v.restrict(D) ; v_D
             vector field 'v' on the open domain 'D' on the 2-dimensional manifold 'R^2'
             sage: v_D.view()

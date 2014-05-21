@@ -118,7 +118,7 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
     subset of `U`::
     
         sage: V = U.open_domain('V')
-        sage: XV = X.subchart(V, x^2+y^2<1)
+        sage: XV = X.restrict(V, x^2+y^2<1)
         sage: CV = V.scalar_field_ring()
         sage: CV.has_coerce_map_from(CU)
         True

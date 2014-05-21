@@ -176,7 +176,7 @@ class VectorFrame(FreeModuleBasis):
  
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector 
       fields along `U` with values on `\Phi(U)\subset V \subset M`
-    - ``symbol`` -- (default: None) a letter (of a few letters) to denote a 
+    - ``symbol`` -- a letter (of a few letters) to denote a 
       generic vector of the frame; can be set to None if the parameter
       ``from_frame`` is filled.
     - ``latex_symbol`` -- (default: None) symbol to denote a generic vector of
@@ -258,7 +258,8 @@ class VectorFrame(FreeModuleBasis):
             self.domain._set_covering_frame(self)
         #
         # Dual coframe 
-        self.coframe = self.dual_basis()  # self.coframe = a shortcut for self._dual_basis
+        self.coframe = self.dual_basis()  # self.coframe = a shortcut for 
+                                          # self._dual_basis
         #
         # Derived quantities:
         self._structure_coef = None
@@ -268,7 +269,12 @@ class VectorFrame(FreeModuleBasis):
         # Initialization of the set of frames which the current frame is a 
         # restriction of:
         self.superframes = set([self]) 
-
+        #
+        self.restrictions = {} # dict. of the restrictions of self to
+                               # subdomains of self.domain, with the 
+                               # subdomains as keys
+        # NB: set(self.restrictions.values()) is identical to self.subframes
+        
 
     ###### Methods that must be redefined by derived classes of FreeModuleBasis ######
 
@@ -394,38 +400,44 @@ class VectorFrame(FreeModuleBasis):
                               self.fmodule.basis_changes[(the_new_frame, self)]
         return the_new_frame
         
-    def new_subframe(self, domain, symbol, latex_symbol=None):
+    def restrict(self, subdomain):
         r"""
-        Construct a subframe.
+        Return the restriction of ``self`` to some subdomain of ``self.domain``.
         
-        If ``self`` is a vector frame defined on the domain U, a subframe
-        is the restriction of ``self`` to a subdomain V of U.
-        
+        If the restriction has not been defined yet, it is constructed here.
+
         INPUT:
         
-        - ``domain`` -- subdomain `V` of the current frame domain `U` 
-        - ``symbol`` -- a letter (of a few letters) to denote a generic vector of
-          the frame
-        - ``latex_symbol`` -- (default: None) symbol to denote a generic vector of
-          the frame; if None, the value of ``symbol`` is used. 
+        - ``subdomain`` -- subdomain `V` of the current frame domain `U` 
         
         OUTPUT:
         
-        - the subframe, as an instance of :class:`VectorFrame`. 
+        - the restriction of ``self`` to `V`, as an instance of 
+          :class:`VectorFrame`. 
 
         """
-        if not domain.is_subdomain(self.domain):
-            raise TypeError("The argument 'domain' must be a subdomain of " + 
-                            " the frame domain.")
-        #!# to be changed: dest_map should be the restriction of self.dest_map 
-        # to V:
-        res = VectorFrame(domain.vector_field_module(self.dest_map), symbol, 
-                          latex_symbol=latex_symbol, dest_map=self.dest_map)
-        # Update of superframes and subframes:
-        res.superframes.update(self.superframes)
-        for sframe in self.superframes:
-            sframe.subframes.add(res)
-        return res
+        if subdomain == self.domain:
+            return self
+        if subdomain not in self.restrictions:
+            if not subdomain.is_subdomain(self.domain):
+                raise ValueError("The provided domain is not a subdomain of " + 
+                                 "the current frame's domain.")
+            if self.dest_map is None:
+                sdest_map = None
+            else:
+                sdest_map = self.dest_map.restrict(subdomain)
+            res = VectorFrame(subdomain.vector_field_module(sdest_map, 
+                                                            force_free=True), 
+                              self.symbol, latex_symbol=self.latex_symbol)
+            n = self.fmodule.rank()
+            for i in range(n):
+                res.vec[i] = self.vec[i].restrict(subdomain)
+            # Update of superframes and subframes:
+            res.superframes.update(self.superframes)
+            for sframe in self.superframes:
+                sframe.subframes.add(res)
+                sframe.restrictions[subdomain] = res # includes sframe = self
+        return self.restrictions[subdomain]
     
     def structure_coef(self):
         r"""

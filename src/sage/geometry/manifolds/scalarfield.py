@@ -839,7 +839,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart('x y')  # Cartesian coordinates
             sage: U = M.open_domain('U')
-            sage: X_U = X.subchart(U, x^2+y^2 < 1)  # U is the unit open disc
+            sage: X_U = X.restrict(U, x^2+y^2 < 1)  # U is the unit open disc
             sage: f = M.scalar_field(cos(x*y), name='f')
             sage: f_U = f.restrict(U) ; f_U
             scalar field 'f|_U' on the open domain 'U' on the 2-dimensional manifold 'M'

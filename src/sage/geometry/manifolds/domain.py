@@ -1005,7 +1005,7 @@ class OpenDomain(Domain):
         """
         return "open domain '" + self.name + "' on the " + str(self.manifold)
 
-    def open_domain(self, name, latex_name=None):
+    def open_domain(self, name, latex_name=None, coord_def=None):
         r"""
         Create an open subdomain of the current domain. 
 
