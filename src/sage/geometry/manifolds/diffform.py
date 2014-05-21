@@ -162,13 +162,13 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
           x == x
           y == y
           z == z
-        sage: eps.comp(c_spher.frame) # computation of the components in the spherical frame
+        sage: eps.comp(c_spher.frame()) # computation of the components in the spherical frame
         fully antisymmetric 3-indices components w.r.t. coordinate frame (R3, (d/dr,d/dth,d/dph))
-        sage: eps.comp(c_spher.frame)[1,2,3, c_spher]
+        sage: eps.comp(c_spher.frame())[1,2,3, c_spher]
         r^2*sin(th)
-        sage: eps.view(c_spher.frame)
+        sage: eps.view(c_spher.frame())
         epsilon = sqrt(x^2 + y^2 + z^2)*sqrt(x^2 + y^2) dr/\dth/\dph
-        sage: eps.view(c_spher.frame, c_spher)
+        sage: eps.view(c_spher.frame(), c_spher)
         epsilon = r^2*sin(th) dr/\dth/\dph
        
     The exterior product of two differential forms is performed via the method 
@@ -334,18 +334,18 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
                 # A coordinate frame is searched, at the price of a change of
                 # frame, priveleging the frame of the domain's default chart
                 dom = self.domain
-                def_coordf = dom.def_chart.frame
+                def_coordf = dom.def_chart._frame
                 for frame in self.components:
-                    if (frame, def_coordf) in dom.frame_changes:
+                    if (frame, def_coordf) in dom._frame_changes:
                         self.comp(def_coordf, from_basis=frame)
                         coord_frames = [def_coordf]
                         break
                 if coord_frames == []:
-                    for chart in dom.atlas:
+                    for chart in dom._atlas:
                         if chart != dom.def_chart: # the case def_chart is treated above
-                            coordf = chart.frame
+                            coordf = chart._frame
                             for frame in self.components:
-                                if (frame, coordf) in dom.frame_changes:
+                                if (frame, coordf) in dom._frame_changes:
                                     self.comp(coordf, from_basis=frame)
                                     coord_frames[coordf]
                                     break

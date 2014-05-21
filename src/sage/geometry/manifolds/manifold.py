@@ -72,7 +72,7 @@ EXAMPLES:
 
     At this stage, the manifold's atlas contains two charts::
     
-        sage: M.atlas
+        sage: M.atlas()
         [chart (U, (x, y)), chart (V, (u, v))]
 
     To finalize things, we must declare the transition map between these two
@@ -124,7 +124,7 @@ EXAMPLES:
 
     Four charts have been defined on the manifold::
     
-        sage: M.atlas
+        sage: M.atlas()
         [chart (U, (x, y)), chart (V, (u, v)), chart (W, (x, y)), chart (W, (u, v))]
          
     The first defined chart is considered as the default chart on the 
@@ -490,7 +490,7 @@ class RealLineManifold(Manifold, UniqueRepresentation):
         True
         sage: RealLine.dimension()
         1
-        sage: RealLine.atlas
+        sage: RealLine.atlas()
         [chart (field R, (x_realline,))]
 
     The instance is unique (singleton pattern)::

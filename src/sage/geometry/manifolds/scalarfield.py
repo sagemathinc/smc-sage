@@ -588,7 +588,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         if chart is None:
             chart = self.domain.def_chart
         else:
-            if chart not in self.domain.atlas:
+            if chart not in self.domain._atlas:
                 raise TypeError("The " + str(chart) + " has not " + \
                       " been defined on the domain " + str(self.domain))
         if chart not in self.express:
@@ -1264,9 +1264,9 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             1-form 'dg' on the 3-dimensional manifold 'M'
             sage: dg.components
             {coordinate frame (M, (d/du,d/dv,d/dw)): 1-index components w.r.t. coordinate frame (M, (d/du,d/dv,d/dw))}
-            sage: dg.comp(c_uvw.frame)[:, c_uvw]
+            sage: dg.comp(c_uvw.frame())[:, c_uvw]
             [v^2*w^3, 2*u*v*w^3, 3*u*v^2*w^2]
-            sage: dg.view(c_uvw.frame, c_uvw)
+            sage: dg.view(c_uvw.frame(), c_uvw)
             dg = v^2*w^3 du + 2*u*v*w^3 dv + 3*u*v^2*w^2 dw
             
         The exterior derivative is nilpotent::
@@ -1295,7 +1295,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             for chart in self.express:
                 f = self.express[chart]
                 for i in self.manifold.irange():
-                    self._exterior_derivative.add_comp(chart.frame)[i, chart] \
+                    self._exterior_derivative.add_comp(chart._frame)[i, chart] \
                         = f.diff(i)
         return self._exterior_derivative
 
@@ -1830,7 +1830,7 @@ class ZeroScalarField(ScalarField):
                 chart = self.pick_a_chart()
             n = self.manifold.dim
             si = self.manifold.sindex
-            dc = Components(chart.frame, 1)
+            dc = Components(chart._frame, 1)
             for i in range(n):      #!# Not necessary if the Components are  
                 dc[i+si] = 0        #!# initialized to zero
             
@@ -1843,6 +1843,6 @@ class ZeroScalarField(ScalarField):
             else:
                 latex_name_r = r'\mathrm{d}' + self.latex_name
             self._exterior_derivative = OneForm(self.domain, name_r, latex_name_r)
-            self._exterior_derivative.components[chart.frame] = dc
+            self._exterior_derivative.components[chart._frame] = dc
         return self._exterior_derivative
 

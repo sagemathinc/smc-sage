@@ -604,7 +604,7 @@ class VectorFieldFreeModule(FiniteFreeModule):
 
    
         See 
-        :class:`sage.geometry.manifolds.rank2field.EndomorphismFieldParal` 
+        :class:`~sage.geometry.manifolds.rank2field.EndomorphismFieldParal` 
         for further documentation. 
 
         """
@@ -635,7 +635,7 @@ class VectorFieldFreeModule(FiniteFreeModule):
 
    
         See 
-        :class:`sage.geometry.manifolds.rank2field.AutomorphismFieldParal` 
+        :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal` 
         for further documentation. 
 
         """
@@ -697,7 +697,7 @@ class VectorFieldFreeModule(FiniteFreeModule):
 
    
         See 
-        :class:`sage.geometry.manifolds.rank2field.SymBilinFormFieldParal` 
+        :class:`~sage.geometry.manifolds.rank2field.SymBilinFormFieldParal` 
         for further documentation. 
 
         """

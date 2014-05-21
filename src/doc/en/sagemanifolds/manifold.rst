@@ -31,8 +31,8 @@ Points on a manifold
    :undoc-members:
    :show-inheritance:
    
-Charts on a manifold
---------------------
+Coordinate charts
+-----------------
 
 .. automodule:: sage.geometry.manifolds.chart
    :members:

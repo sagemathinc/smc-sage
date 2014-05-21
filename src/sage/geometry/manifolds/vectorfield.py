@@ -296,16 +296,16 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
         chart = None
         def_chart = self.domain.def_chart
         if def_chart in scalar.express:
-            if def_chart.frame in self.components:
+            if def_chart._frame in self.components:
                 chart = def_chart
         else:
             for kchart in scalar.express:
-                if kchart.frame in self.components: 
+                if kchart._frame in self.components: 
                     chart = kchart
                     break
         if chart is None:
             raise ValueError("No common chart found.")
-        v = self.comp(chart.frame)
+        v = self.comp(chart._frame)
         f = scalar.function_chart(chart) 
         res = 0 
         for i in scalar.manifold.irange():

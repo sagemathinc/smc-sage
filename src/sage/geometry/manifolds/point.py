@@ -125,7 +125,7 @@ class Point(Element):
             if chart is None: 
                 chart = self.domain.def_chart
             else: 
-                if chart not in self.domain.atlas: 
+                if chart not in self.domain._atlas: 
                     raise ValueError("The " + str(chart) +
                             " has not been defined on the " + str(self.domain))
             #!# The following check is not performed for it would fail with 
@@ -238,7 +238,7 @@ class Point(Element):
             {chart (M, (u, v)): (a - b, a + b), chart (M, (w, z)): (a^3 - 3*a^2*b + 3*a*b^2 - b^3, a^3 + 3*a^2*b + 3*a*b^2 + b^3)}
 
         """
-        atlas = self.manifold.atlas
+        atlas = self.manifold._atlas
         if chart is None:
             dom = self.domain 
             chart = dom.def_chart
@@ -399,7 +399,7 @@ class Point(Element):
         if chart is None: 
             chart = self.domain.def_chart
         else: 
-            if chart not in self.domain.atlas:
+            if chart not in self.domain._atlas:
                 raise ValueError("The " + str(chart) +
                     " has not been defined on the " + str(self.domain))
         self.coordinates[chart] = coords

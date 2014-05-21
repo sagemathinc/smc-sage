@@ -189,11 +189,11 @@ class DiffMapping(SageObject):
         if coord_functions is not None:
             if chart1 is None: chart1 = domain.def_chart
             if chart2 is None: chart2 = codomain.def_chart
-            if chart1 not in self.domain.atlas:
+            if chart1 not in self.domain._atlas:
                 raise ValueError("The " + str(chart1) +
                                     " has not been defined on the " + 
                                     str(self.domain))
-            if chart2 not in self.codomain.atlas:
+            if chart2 not in self.codomain._atlas:
                 raise ValueError("The " + str(chart2) +
                                     " has not been defined on the " + 
                                     str(self.codomain))
@@ -613,10 +613,10 @@ class DiffMapping(SageObject):
             True
                 
         """
-        if chart1 not in self.domain.atlas:
+        if chart1 not in self.domain._atlas:
             raise ValueError("The " + str(chart1) +
                " has not been defined on the " + str(self.domain))
-        if chart2 not in self.codomain.atlas:
+        if chart2 not in self.codomain._atlas:
             raise ValueError("The " + str(chart2) +
               " has not been defined on the " + str(self.codomain))
         self.coord_expression.clear()
@@ -727,10 +727,10 @@ class DiffMapping(SageObject):
             True
                 
         """
-        if chart1 not in self.domain.atlas:
+        if chart1 not in self.domain._atlas:
             raise ValueError("The " + str(chart1) +
                " has not been defined on the " + str(self.domain))
-        if chart2 not in self.codomain.atlas:
+        if chart2 not in self.codomain._atlas:
             raise ValueError("The " + str(chart2) +
               " has not been defined on the " + str(self.codomain))
         n2 = self.codomain.manifold.dim
@@ -971,7 +971,7 @@ class DiffMapping(SageObject):
             resu = ScalarField(dom1, name=resu_name, 
                                latex_name=resu_latex_name)
             for chart2 in tensor.express:
-                for chart1 in dom1.atlas:
+                for chart1 in dom1._atlas:
                     if (chart1, chart2) in self.coord_expression:
                         phi = self.coord_expression[(chart1, chart2)]
                         coord1 = chart1.xx
@@ -1006,10 +1006,10 @@ class DiffMapping(SageObject):
             for frame2 in tensor.components:
                 if isinstance(frame2, CoordFrame):
                     chart2 = frame2.chart
-                    for chart1 in dom1.atlas:
+                    for chart1 in dom1._atlas:
                         if (chart1, chart2) in self.coord_expression:
                             # Computation at the component level:
-                            frame1 = chart1.frame
+                            frame1 = chart1._frame
                             tcomp = tensor.components[frame2]
                             if isinstance(tcomp, CompFullySym):
                                 ptcomp = CompFullySym(ring1, frame1, ncov, 
@@ -1277,7 +1277,7 @@ class IdentityMapping(Diffeomorphism):
             latex_name = r'\mathrm{Id}_{' + domain.latex_name + r'}'
         Diffeomorphism.__init__(self, domain, domain, name=name, 
                                 latex_name=latex_name)
-        for chart in domain.atlas:
+        for chart in domain._atlas:
             coord_functions = chart[:]
             self.coord_expression[(chart, chart)] = \
                                     MultiFunctionChart(chart, *coord_functions)

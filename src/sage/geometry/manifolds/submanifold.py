@@ -87,7 +87,7 @@ class Submanifold(Manifold):
 
     Pullback of 1-forms defined on `\RR^3` to `S^2`::
     
-        sage: dX = c_cart.coframe ; dX
+        sage: dX = c_cart.coframe() ; dX
         coordinate coframe (R^3, (dx,dy,dz))
         sage: dX[1]
         1-form 'dx' on the 3-dimensional manifold 'R^3'
@@ -299,14 +299,14 @@ class Submanifold(Manifold):
         chart1 = None; chart2 = None
         def_chart1 = dom1.def_chart
         def_chart2 = embed.codomain.def_chart 
-        if def_chart1.frame in tensor.components and \
+        if def_chart1._frame in tensor.components and \
                (def_chart1, def_chart2) in embed.coord_expression:
             chart1 = def_chart1
             chart2 = def_chart2
         else:
             for (chart1n, chart2n) in embed.coord_expression:
                 if chart2n == def_chart2 and \
-                                    chart1n.frame in tensor.components:
+                                    chart1n._frame in tensor.components:
                     chart1 = chart1n
                     chart2 = def_chart2
                     break
@@ -314,7 +314,7 @@ class Submanifold(Manifold):
             # It is not possible to have def_chart2 as chart for 
             # expressing the result; any other chart is then looked for:
             for (chart1n, chart2n) in self.coord_expression:
-                if chart1n.frame in tensor.components:
+                if chart1n._frame in tensor.components:
                     chart1 = chart1n
                     chart2 = chart2n
                     break
@@ -322,13 +322,13 @@ class Submanifold(Manifold):
             raise ValueError("No common chart could be find to compute " +
                              "the pushforward of the tensor field.")
         fmodule2 = dom1.vector_field_module(dest_map=embed)
-        frame2 = dom1.vector_frame(dest_map=embed, from_frame=chart2.frame)
+        frame2 = dom1.vector_frame(dest_map=embed, from_frame=chart2._frame)
         si1 = dom1.manifold.sindex
         si2 = fmodule2.sindex
         ring2 = fmodule2.ring
         of2 = fmodule2.output_formatter
         # Computation at the component level:
-        tcomp = tensor.components[chart1.frame]
+        tcomp = tensor.components[chart1._frame]
         # Construction of the pushforward components (ptcomp):
         if isinstance(tcomp, CompFullySym):
             ptcomp = CompFullySym(ring2, frame2, ncon, start_index=si2, 

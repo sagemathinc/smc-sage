@@ -79,9 +79,9 @@ EXAMPLES:
     Defining a vector frame on a manifold automatically creates the dual 
     coframe, which bares the same name (here e)::
     
-        sage: M.coframes
+        sage: M.coframes()
         [coordinate coframe (M, (dx,dy,dz)), coframe (M, (e^1,e^2,e^3))]
-        sage: f = M.coframes[1] ; f
+        sage: f = M.coframes()[1] ; f
         coframe (M, (e^1,e^2,e^3))
    
     Each element of the coframe is a 1-form::
@@ -132,14 +132,14 @@ EXAMPLES:
         
     The change-of-frame matrices::
     
-        sage: M.frame_change(c_spher.frame, e)        
+        sage: M.frame_change(c_spher.frame(), e)        
         field of tangent-space automorphisms on the 2-dimensional manifold 'S^2'
-        sage: M.frame_change(c_spher.frame, e)[:]
+        sage: M.frame_change(c_spher.frame(), e)[:]
         [        1         0]
         [        0 1/sin(th)]
-        sage: M.frame_change(e, c_spher.frame)
+        sage: M.frame_change(e, c_spher.frame())
         field of tangent-space automorphisms on the 2-dimensional manifold 'S^2'
-        sage: M.frame_change(e, c_spher.frame)[:]
+        sage: M.frame_change(e, c_spher.frame())[:]
         [      1       0]
         [      0 sin(th)]
 
@@ -246,11 +246,11 @@ class VectorFrame(FreeModuleBasis):
         # the superdomains' sets of frames; moreover the first defined frame 
         # is considered as the default one
         for sd in self.domain.superdomains:
-            for other in sd.frames:
+            for other in sd._frames:
                 if repr(self) == repr(other):
                     raise ValueError("The " + str(self) + " already exist on" +
                                      " the " + str(sd))
-            sd.frames.append(self)
+            sd._frames.append(self)
             if sd.def_frame is None: 
                 sd.def_frame = self
         if self.dest_map is None:
@@ -258,8 +258,8 @@ class VectorFrame(FreeModuleBasis):
             self.domain._set_covering_frame(self)
         #
         # Dual coframe 
-        self.coframe = self.dual_basis()  # self.coframe = a shortcut for 
-                                          # self._dual_basis
+        self._coframe = self.dual_basis()  # self._coframe = a shortcut for 
+                                           # self._dual_basis
         #
         # Derived quantities:
         self._structure_coef = None
@@ -322,7 +322,12 @@ class VectorFrame(FreeModuleBasis):
         
     ###### End of methods redefined by derived classes ######
 
-        
+    def coframe(self):
+        r""" 
+        Return the dual coframe.
+        """
+        return self._coframe
+
     def new_frame(self, change_of_frame, symbol, latex_symbol=None):
         r"""
         Define a new vector frame from the current one. 
@@ -333,7 +338,7 @@ class VectorFrame(FreeModuleBasis):
         INPUT:
         
         - ``change_of_frame`` -- instance of 
-          :class:`~sage.geometry.rank2field.AutomorphismField`
+          :class:`~sage.geometry.manifolds.rank2field.AutomorphismField`
           describing the automorphism `P` that relates the current frame 
           `(e_i)` (described by ``self``) to the new frame `(n_i)` according
           to `n_i = P(e_i)`
@@ -354,7 +359,7 @@ class VectorFrame(FreeModuleBasis):
             sage: M = Manifold(2,'R^2')
             sage: c_xy = M.chart('x y')
             sage: e = M.vector_frame('e') ; M.set_default_frame(e)
-            sage: M.frame_changes
+            sage: M._frame_changes
             {}
             sage: rot = M.automorphism_field()
             sage: rot[:] = [[sqrt(3)/2, -1/2], [1/2, sqrt(3)/2]]
@@ -394,9 +399,9 @@ class VectorFrame(FreeModuleBasis):
         the_new_frame = self.new_basis(change_of_frame, symbol, 
                                        latex_symbol=latex_symbol)
         for sdom in self.domain.superdomains:
-            sdom.frame_changes[(self, the_new_frame)] = \
+            sdom._frame_changes[(self, the_new_frame)] = \
                               self.fmodule.basis_changes[(self, the_new_frame)]
-            sdom.frame_changes[(the_new_frame, self)] = \
+            sdom._frame_changes[(the_new_frame, self)] = \
                               self.fmodule.basis_changes[(the_new_frame, self)]
         return the_new_frame
         
@@ -414,6 +419,36 @@ class VectorFrame(FreeModuleBasis):
         
         - the restriction of ``self`` to `V`, as an instance of 
           :class:`VectorFrame`. 
+          
+        EXAMPLE:
+        
+        Restriction of a frame defined on `\RR^2` to the unit disk::
+        
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'R^2')
+            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
+            sage: a = M.automorphism_field() 
+            sage: a[:] = [[1-y^2,0], [1+x^2, 2]]
+            sage: e = c_cart.frame().new_frame(a, 'e') ; e
+            vector frame (R^2, (e_0,e_1))
+            sage: U = M.open_domain('U', coord_def={c_cart: x^2+y^2<1})
+            sage: e_U = e.restrict(U) ; e_U
+            vector frame (U, (e_0,e_1))
+            
+        The vectors of the restriction have the same symbols as those of the
+        original frame::
+        
+            sage: e_U[0].view()
+            e_0 = (-y^2 + 1) d/dx + (x^2 + 1) d/dy
+            sage: e_U[1].view()
+            e_1 = 2 d/dy
+        
+        They are actually the restrictions of the original frame vectors::
+        
+            sage: e_U[0] is e[0].restrict(U)
+            True
+            sage: e_U[1] is e[1].restrict(U)
+            True
 
         """
         if subdomain == self.domain:
@@ -430,8 +465,10 @@ class VectorFrame(FreeModuleBasis):
                                                             force_free=True), 
                               self.symbol, latex_symbol=self.latex_symbol)
             n = self.fmodule.rank()
+            new_vectors = list()
             for i in range(n):
-                res.vec[i] = self.vec[i].restrict(subdomain)
+                new_vectors.append( self.vec[i].restrict(subdomain) )
+            res.vec = tuple(new_vectors)
             # Update of superframes and subframes:
             res.superframes.update(self.superframes)
             for sframe in self.superframes:
@@ -467,9 +504,9 @@ class VectorFrame(FreeModuleBasis):
             sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: ch_frame = M.automorphism_field()
             sage: ch_frame[1,1], ch_frame[2,2], ch_frame[3,3] = 1, 1/r, 1/(r*sin(th))
-            sage: M.frames
+            sage: M.frames()
             [coordinate frame (R^3, (d/dr,d/dth,d/dph))]
-            sage: e = c_spher.frame.new_frame(ch_frame, 'e')
+            sage: e = c_spher.frame().new_frame(ch_frame, 'e')
             sage: e[1][:]  # components of e_1 in the manifold's default frame (d/dr, d/dth, d/dth)
             [1, 0, 0]
             sage: e[2][:]
@@ -500,7 +537,7 @@ class VectorFrame(FreeModuleBasis):
             si = fmodule.sindex
             nsi = si + fmodule.rank()
             for k in range(si,nsi):
-                ce_k = self.coframe.form[k-si]
+                ce_k = self._coframe.form[k-si]
                 for i in range(si, nsi):
                     e_i = self.vec[i-si]
                     for j in range(i+1, nsi):
@@ -710,11 +747,11 @@ class CoFrame(FreeModuleCoBasis):
         # The coframe is added to the domain's set of coframes, as well as to 
         # all the superdomains' sets of coframes
         for sd in self.domain.superdomains:
-            for other in sd.coframes:
+            for other in sd._coframes:
                 if repr(self) == repr(other):
                     raise ValueError("The " + str(self) + " already exist on" +
                                      " the " + str(sd))
-            sd.coframes.append(self)
+            sd._coframes.append(self)
         
     
     def _repr_(self):
@@ -744,11 +781,11 @@ class CoordCoFrame(CoFrame):
         sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(3, 'M', start_index=1)
         sage: c_xyz = M.chart('x y z')
-        sage: M.frames
+        sage: M.frames()
         [coordinate frame (M, (d/dx,d/dy,d/dz))] 
-        sage: M.coframes
+        sage: M.coframes()
         [coordinate coframe (M, (dx,dy,dz))]
-        sage: dX = M.coframes[0] ; dX
+        sage: dX = M.coframes()[0] ; dX
         coordinate coframe (M, (dx,dy,dz))
 
     The 1-forms composing the coframe are obtained via the () operator::
@@ -768,7 +805,7 @@ class CoordCoFrame(CoFrame):
 
     The coframe is the dual of the coordinate frame::
     
-        sage: e = c_xyz.frame ; e
+        sage: e = c_xyz.frame() ; e
         coordinate frame (M, (d/dx,d/dy,d/dz))
         sage: dX[1](e[1]).expr(), dX[1](e[2]).expr(), dX[1](e[3]).expr()
         (1, 0, 0)

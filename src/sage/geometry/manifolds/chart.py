@@ -1,5 +1,5 @@
 r"""
-Charts on a manifold
+Coordinate charts
 
 Five classes are defined to deal with coordinates on a differentiable manifold
 over `\RR`:
@@ -52,7 +52,7 @@ class Chart(UniqueRepresentation, SageObject):
     INPUT:
     
     - ``domain`` -- open domain `U` on which the chart is defined (must be 
-      an instance of :class:`OpenDomain`)
+      an instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
     - ``coordinates`` -- single string defining the coordinate symbols and 
       ranges: the coordinates are separated by ' ' (space) and each coordinate 
       has at most three fields, separated by ':': 
@@ -127,12 +127,6 @@ class Chart(UniqueRepresentation, SageObject):
         sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
         sage: c_cart.<x,y,z> = M.chart('x y z')
     
-    Moreover, the method :meth:`OpenDomain.chart` can be invoked instead
-    of the direct call to the Chart constructor::
-    
-        sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
-        sage: c_cart.<x,y,z> = M.chart('x y z')
-     
     Spherical coordinates on the subdomain `U` of `\RR^3` that is the 
     complement of the half-plane `\{y=0, x\geq 0\}`::
     
@@ -189,17 +183,17 @@ class Chart(UniqueRepresentation, SageObject):
 
     Each constructed chart is automatically added to the manifold's atlas::
     
-        sage: M.atlas
+        sage: M.atlas()
         [chart (R^3, (x, y, z)), chart (U, (r, th, ph))]
 
     and to the atlas of the domain in which it has been defined::
     
-        sage: U.atlas
+        sage: U.atlas()
         [chart (U, (r, th, ph))]
 
     Each domain has a default chart, which, unless changed via the method
-    :meth:`Domain.set_default_chart`, is the first defined chart on that 
-    domain (or on a subdomain of it)::
+    :meth:`~sage.geometry.manifolds.domain.Domain.set_default_chart`, is the 
+    first defined chart on that domain (or on a subdomain of it)::
     
         sage: M.default_chart()
         chart (R^3, (x, y, z))
@@ -234,9 +228,9 @@ class Chart(UniqueRepresentation, SageObject):
         sage: c_cartU.<x,y,z> = U.chart('x y z') 
         sage: c_cartU.add_restrictions((y!=0, x<0)) # the tuple (y!=0, x<0) means y!=0 or x<0
         sage: # c_cartU.add_restrictions([y!=0, x<0]) would have meant y!=0 AND x<0
-        sage: U.atlas
+        sage: U.atlas()
         [chart (U, (r, th, ph)), chart (U, (x, y, z))]
-        sage: M.atlas
+        sage: M.atlas()
         [chart (R^3, (x, y, z)), chart (U, (r, th, ph)), chart (U, (x, y, z))]
         sage: c_cartU.valid_coordinates(-1,0,2)
         True
@@ -346,7 +340,7 @@ class Chart(UniqueRepresentation, SageObject):
         # superdomains' atlases; moreover the fist defined chart is considered 
         # as the default chart
         for sd in self.domain.superdomains:
-            sd.atlas.append(self)
+            sd._atlas.append(self)
             if sd.def_chart is None: 
                 sd.def_chart = self
         # The chart is added to the list of the domain's covering charts:
@@ -354,8 +348,8 @@ class Chart(UniqueRepresentation, SageObject):
         # Construction of the coordinate frame associated to the chart:
         if self.domain.name != 'field R':      
             #!# to avoid circular import of RealLine
-            self.frame = CoordFrame(self)
-            self.coframe = self.frame.coframe
+            self._frame = CoordFrame(self)
+            self._coframe = self._frame._coframe
         # The null function of the coordinates:
         self.zero_function = ZeroFunctionChart(self)
         # Initialization of the set of charts that are restrictions of the
@@ -432,6 +426,93 @@ class Chart(UniqueRepresentation, SageObject):
         Return the coordinates of a given point. 
         """
         return point.coord(self)
+
+    def frame(self):
+        r""" 
+        Return the vector frame (coordinate frame) associated with the chart. 
+        
+        OUTPUT: 
+        
+        - instance of :class:`~sage.geometry.manifolds.vectorframe.CoordFrame`
+          representing the coordinate frame. 
+          
+        EXAMPLE:
+        
+        Coordinate frame associated with some chart on a 2-dimensional 
+        manifold::
+
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y')
+            sage: c_xy.frame()
+            coordinate frame (M, (d/dx,d/dy))
+            sage: type(c_xy.frame())
+            <class 'sage.geometry.manifolds.vectorframe.CoordFrame'>
+            
+        Check that c_xy.frame() is indeed the coordinate frame associated with
+        (x,y)::
+        
+            sage: ex = c_xy.frame()[0] ; ex
+            vector field 'd/dx' on the 2-dimensional manifold 'M'
+            sage: ey = c_xy.frame()[1] ; ey
+            vector field 'd/dy' on the 2-dimensional manifold 'M'
+            sage: ex(M.scalar_field(x)).view()
+            (x, y) |--> 1
+            sage: ex(M.scalar_field(y)).view()
+            (x, y) |--> 0
+            sage: ey(M.scalar_field(x)).view()
+            (x, y) |--> 0
+            sage: ey(M.scalar_field(y)).view()
+            (x, y) |--> 1
+
+        """
+        return self._frame
+
+    def coframe(self):
+        r""" 
+        Return the coframe (basis of coordinate differentials) associated 
+        with the chart. 
+        
+        OUTPUT: 
+        
+        - instance of :class:`~sage.geometry.manifolds.vectorframe.CoordCoFrame`
+          representing the coframe. 
+          
+        EXAMPLE:
+        
+        Coordinate coframe associated with some chart on a 2-dimensional 
+        manifold::
+
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart('x y')
+            sage: c_xy.coframe()
+            coordinate coframe (M, (dx,dy))
+            sage: type(c_xy.coframe())
+            <class 'sage.geometry.manifolds.vectorframe.CoordCoFrame'>
+            
+        Check that c_xy.coframe() is indeed the coordinate coframe associated 
+        with (x,y)::
+        
+            sage: dx = c_xy.coframe()[0] ; dx
+            1-form 'dx' on the 2-dimensional manifold 'M'
+            sage: dy = c_xy.coframe()[1] ; dy
+            1-form 'dy' on the 2-dimensional manifold 'M'
+            sage: ex = c_xy.frame()[0] ; ex
+            vector field 'd/dx' on the 2-dimensional manifold 'M'
+            sage: ey = c_xy.frame()[1] ; ey
+            vector field 'd/dy' on the 2-dimensional manifold 'M'
+            sage: dx(ex).view()
+            dx(d/dx): (x, y) |--> 1
+            sage: dx(ey).view()
+            dx(d/dy): (x, y) |--> 0
+            sage: dy(ex).view()
+            dy(d/dx): (x, y) |--> 0
+            sage: dy(ey).view()
+            dy(d/dy): (x, y) |--> 1
+
+        """
+        return self._coframe
+
+
 
     def coord_bounds(self, i=None):
         r"""
@@ -617,10 +698,10 @@ class Chart(UniqueRepresentation, SageObject):
                 schart.subcharts.add(res)
                 schart._dom_restrict[subdomain] = res
             # Update of superframes and subframes:
-            res.frame.superframes.update(self.frame.superframes)
-            for sframe in self.frame.superframes:
-                sframe.subframes.add(res.frame)
-                sframe.restrictions[subdomain] = res.frame
+            res._frame.superframes.update(self._frame.superframes)
+            for sframe in self._frame.superframes:
+                sframe.subframes.add(res._frame)
+                sframe.restrictions[subdomain] = res._frame
             # Update of domain restrictions:
             self._dom_restrict[subdomain] = res
         return self._dom_restrict[subdomain]
@@ -747,7 +828,7 @@ class Chart(UniqueRepresentation, SageObject):
             sage: W = M.domains['W']
             sage: W is U.intersection(V)
             True
-            sage: M.atlas
+            sage: M.atlas()
             [chart (U, (x,)), chart (V, (y,)), chart (W, (x,)), chart (W, (y,))]
 
         Transition map between spherical chart and Cartesian chart on `\RR^2`::
@@ -764,7 +845,7 @@ class Chart(UniqueRepresentation, SageObject):
             sage: M.domains # in this case, no new domain has been created since U inter M = U
             {'R^2': 2-dimensional manifold 'R^2',
              'U': open domain 'U' on the 2-dimensional manifold 'R^2'}
-            sage: M.atlas # ...but a new chart has been created: (U, (x, y))
+            sage: M.atlas() # ...but a new chart has been created: (U, (x, y))
             [chart (R^2, (x, y)), chart (U, (r, phi)), chart (U, (x, y))]
         
         """
@@ -2226,20 +2307,22 @@ class CoordChange(SageObject):
         <class 'sage.geometry.manifolds.chart.CoordChange'>
 
     Each created coordinate change is automatically added to the manifold's 
-    dictionary :attr:`coord_changes`; this dictionary is accessed via the 
-    method :meth:`~sage.geometry.manifolds.domain.Domain.coord_change`::    
+    dictionary :attr:`~sage.geometry.manifolds.domain.Domain.coord_changes`; 
+    this dictionary is accessed via the method 
+    :meth:`~sage.geometry.manifolds.domain.Domain.coord_change`::    
 
         sage: M.coord_change(c_spher, c_cart)
         coordinate change from chart (R3, (r, th, ph)) to chart (R3, (x, y, z))
     
     It also generates a new entry in the manifold's dictionary 
-    :attr:`frame_changes`, containing the relevant change-of-basis matrix; 
+    :attr:`~sage.geometry.manifolds.domain.Domain._frame_changes`, 
+    containing the relevant change-of-basis matrix; 
     this dictionary is accessed via the method 
     :meth:`~sage.geometry.manifolds.domain.Domain.frame_change`::
 
-        sage: M.frame_change(c_cart.frame, c_spher.frame)
+        sage: M.frame_change(c_cart.frame(), c_spher.frame())
         field of tangent-space automorphisms on the 3-dimensional manifold 'R3'
-        sage: M.frame_change(c_cart.frame, c_spher.frame)[:]
+        sage: M.frame_change(c_cart.frame(), c_spher.frame())[:]
         [   cos(ph)*sin(th)  r*cos(ph)*cos(th) -r*sin(ph)*sin(th)]
         [   sin(ph)*sin(th)  r*cos(th)*sin(ph)  r*cos(ph)*sin(th)]
         [           cos(th)         -r*sin(th)                  0]
@@ -2283,8 +2366,8 @@ class CoordChange(SageObject):
             domain = chart1.domain
             for sdom in domain.superdomains:
                 sdom.coord_changes[(chart1, chart2)] = self
-            frame1 = chart1.frame
-            frame2 = chart2.frame
+            frame1 = chart1._frame
+            frame2 = chart2._frame
             vf_module = domain.vector_field_module()
             ch_basis = AutomorphismFieldParal(vf_module)
             ch_basis.add_comp(frame1)[:, chart1] = self.jacobian
@@ -2292,10 +2375,10 @@ class CoordChange(SageObject):
             vf_module.basis_changes[(frame2, frame1)] = ch_basis
             vf_module.basis_changes[(frame1, frame2)] = ch_basis.inverse()            
             for sdom in domain.superdomains:
-                sdom.frame_changes[(frame2, frame1)] = ch_basis
-            if (frame1, frame2) not in domain.frame_changes:
+                sdom._frame_changes[(frame2, frame1)] = ch_basis
+            if (frame1, frame2) not in domain._frame_changes:
                 for sdom in domain.superdomains:
-                    sdom.frame_changes[(frame1, frame2)] = ch_basis.inverse()
+                    sdom._frame_changes[(frame1, frame2)] = ch_basis.inverse()
 
     def _repr_(self):
         r"""
@@ -2416,10 +2499,10 @@ class CoordChange(SageObject):
         # Update of chart expressions of the frame changes:
         if self.chart1.domain == self.chart2.domain:
             domain = self.chart1.domain
-            frame1 = self.chart1.frame
-            frame2 = self.chart2.frame
-            fr_change12 = domain.frame_changes[(frame1,frame2)]
-            fr_change21 = domain.frame_changes[(frame2,frame1)]
+            frame1 = self.chart1._frame
+            frame2 = self.chart2._frame
+            fr_change12 = domain._frame_changes[(frame1,frame2)]
+            fr_change21 = domain._frame_changes[(frame2,frame1)]
             for comp in fr_change12.components[frame1]._comp.values():
                 comp.function_chart(self.chart1, from_chart=self.chart2)
             for comp in fr_change12.components[frame2]._comp.values():
@@ -2499,10 +2582,10 @@ class CoordChange(SageObject):
         # Update of chart expressions of the frame changes:
         if self.chart1.domain == self.chart2.domain:
             domain = self.chart1.domain
-            frame1 = self.chart1.frame
-            frame2 = self.chart2.frame
-            fr_change12 = domain.frame_changes[(frame1,frame2)]
-            fr_change21 = domain.frame_changes[(frame2,frame1)]
+            frame1 = self.chart1._frame
+            frame2 = self.chart2._frame
+            fr_change12 = domain._frame_changes[(frame1,frame2)]
+            fr_change21 = domain._frame_changes[(frame2,frame1)]
             for comp in fr_change12.components[frame1]._comp.values():
                 comp.function_chart(self.chart1, from_chart=self.chart2)
             for comp in fr_change12.components[frame2]._comp.values():

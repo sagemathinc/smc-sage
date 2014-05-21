@@ -68,9 +68,9 @@ The full set of components w.r.t. a given vector frame is returned by the
 method :meth:`comp`; it is an instance of the class 
 :class:`~sage.tensor.modules.comp.Components`::
 
-    sage: t.comp(c_xy.frame)
+    sage: t.comp(c_xy.frame())
     2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy)) 
-    sage: print type(t.comp(c_xy.frame))
+    sage: print type(t.comp(c_xy.frame()))
     <class 'sage.tensor.modules.comp.Components'>
 
 The vector frame can be skipped, it is then assumed to be the
@@ -78,7 +78,7 @@ manifold's default frame::
 
     sage: M.default_frame()
     coordinate frame (M, (d/dx,d/dy))
-    sage: t.comp() is t.comp(c_xy.frame)
+    sage: t.comp() is t.comp(c_xy.frame())
     True
 
 Individual components w.r.t. the manifold's default frame are accessed by 
@@ -132,17 +132,17 @@ single square brackets::
 Note that ``t[1,1, c_uv]`` is the component of the tensor t w.r.t. to 
 the coordinate frame associated to the chart (x,y) expressed in terms of 
 the coordinates (u,v). Indeed, ``t[1,1, c_uv]`` is a shortcut for 
-``t.comp(c_xy.frame)[[1,1]].function_chart(c_uv)``::
+``t.comp(c_xy.frame())[[1,1]].function_chart(c_uv)``::
     
-    sage: t[1,1, c_uv] is t.comp(c_xy.frame)[[1,1]].function_chart(c_uv)
+    sage: t[1,1, c_uv] is t.comp(c_xy.frame())[[1,1]].function_chart(c_uv)
     True
 
 Similarly, ``t[1,1]`` is a shortcut for 
-``t.comp(c_xy.frame)[[1,1]].function_chart(c_xy)``::
+``t.comp(c_xy.frame())[[1,1]].function_chart(c_xy)``::
 
-    sage: t[1,1] is t.comp(c_xy.frame)[[1,1]].function_chart(c_xy)            
+    sage: t[1,1] is t.comp(c_xy.frame())[[1,1]].function_chart(c_xy)            
     True
-    sage: t[1,1] is t.comp()[[1,1]].function_chart()  # since c_xy.frame and c_xy are the manifold's default values                
+    sage: t[1,1] is t.comp()[[1,1]].function_chart()  # since c_xy.frame() and c_xy are the manifold's default values                
     True
 
 Internally, the components are stored as a dictionary (attribute 
@@ -168,11 +168,11 @@ tensor in different vector frames, are stored in the dictionary
 
     sage: t.components
     {coordinate frame (M, (d/dx,d/dy)): 2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy))}
-    sage: print type(t.components[c_xy.frame])
+    sage: print type(t.components[c_xy.frame()])
     <class 'sage.tensor.modules.comp.Components'>
     sage: print type(t.comp())
     <class 'sage.tensor.modules.comp.Components'>
-    sage: t.comp() is t.components[c_xy.frame]
+    sage: t.comp() is t.components[c_xy.frame()]
     True
 
 To set the components in a vector frame different from the manifold's 
@@ -197,7 +197,7 @@ All the components in some frame can be set at once, via the operator
 
 To avoid any insconstency between the various components, the method 
 :meth:`set_comp` clears the components in other frames. 
-Accordingly, the components in the frame c_xy.frame have been deleted::
+Accordingly, the components in the frame c_xy.frame() have been deleted::
 
     sage: t.components
     {vector frame (M, (e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_1,e_2))}
@@ -205,7 +205,7 @@ Accordingly, the components in the frame c_xy.frame have been deleted::
 To keep the other components, one must use the method :meth:`add_comp`::
 
     sage: t = M.tensor_field(1, 1, 'T')  # Let us restart 
-    sage: t[:] = [[1, -x], [x*y, 2]]  # by first setting the components in the frame c_xy.frame
+    sage: t[:] = [[1, -x], [x*y, 2]]  # by first setting the components in the frame c_xy.frame()
     sage: # We now set the components in the frame e with add_comp:
     sage: t.add_comp(e)[:] = [[x+y, 0], [y, -3*x]]
     sage: t.components  # Both set of components are present:
@@ -585,17 +585,17 @@ class TensorField(ModuleElement):
             sage: M = Manifold(2, 'S^2', start_index=1)
             sage: U = M.open_domain('U') # the complement of the North pole
             sage: stereoN.<x,y> = U.chart('x y')  # stereographic coordinates from the North pole
-            sage: eN = stereoN.frame # the associated vector frame
+            sage: eN = stereoN.frame() # the associated vector frame
             sage: V =  M.open_domain('V') # the complement of the South pole
             sage: stereoS.<u,v> = V.chart('u v')  # stereographic coordinates from the South pole
-            sage: eS = stereoS.frame # the associated vector frame
+            sage: eS = stereoS.frame() # the associated vector frame
             sage: transf = stereoN.transition_map(stereoS, (x/(x^2+y^2), y/(x^2+y^2)), intersection_name='W', \
                                                   restrictions1= x^2+y^2!=0, restrictions2= u^2+v^2!=0)
             sage: inv = transf.inverse() # transformation from stereoS to stereoN
             sage: W = U.intersection(V) # the complement of the North and South poles
-            sage: stereoN_W = W.atlas[0]  # restriction of stereographic coord. from North pole to W
-            sage: stereoS_W = W.atlas[1]  # restriction of stereographic coord. from South pole to W
-            sage: eN_W = stereoN_W.frame ; eS_W = stereoS_W.frame
+            sage: stereoN_W = W.atlas()[0]  # restriction of stereographic coord. from North pole to W
+            sage: stereoS_W = W.atlas()[1]  # restriction of stereographic coord. from South pole to W
+            sage: eN_W = stereoN_W.frame() ; eS_W = stereoS_W.frame()
             sage: v = M.vector_field('v')
             sage: v.set_comp(eN)[1] = 1  # given the default settings, this can be abriged to v[1] = 1
             sage: v.view()
@@ -1680,7 +1680,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         If the current components of ``self`` and ``other`` are all relative to
         different frames, a common frame is searched by performing a component
         transformation, via the transformations listed in 
-        ``self.domain.frame_changes``, still privileging transformations to 
+        ``self.domain._frame_changes``, still privileging transformations to 
         the domain's default frame.
         
         INPUT:
@@ -1734,12 +1734,12 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         if isinstance(dom.def_frame, CoordFrame):
             if def_frame in self.components:
                 for oframe in other.components:
-                    if (oframe, def_frame) in dom.frame_changes:
+                    if (oframe, def_frame) in dom._frame_changes:
                         other.comp(def_frame, from_frame=oframe)
                         return def_frame
             if def_frame in other.components:
                 for sframe in self.components:
-                    if (sframe, def_frame) in dom.frame_changes:
+                    if (sframe, def_frame) in dom._frame_changes:
                         self.comp(def_frame, from_frame=sframe)
                         return def_frame
         # If this point is reached, then def_frame cannot be a common frame
@@ -1750,10 +1750,10 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             for oframe in other.components:
                 if not instance(oframe, CoordFrame):
                     continue
-                if (oframe, sframe) in dom.frame_changes:
+                if (oframe, sframe) in dom._frame_changes:
                     other.comp(sframe, from_frame=oframe)
                     return sframe
-                if (sframe, oframe) in dom.frame_changes:
+                if (sframe, oframe) in dom._frame_changes:
                     self.comp(oframe, from_frame=sframe)
                     return oframe
         #
@@ -1763,15 +1763,15 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         # component transformation to get a common frame
         for sframe in self.components:
             for oframe in other.components:
-                if (sframe, def_frame) in dom.frame_changes and \
-                   (oframe, def_frame) in dom.frame_changes and \
+                if (sframe, def_frame) in dom._frame_changes and \
+                   (oframe, def_frame) in dom._frame_changes and \
                    isinstance(def_frame, CoordFrame):
                     self.comp(def_frame, from_frame=sframe)
                     other.comp(def_frame, from_frame=oframe)
                     return def_frame
-                for frame in dom.frames:
-                    if (sframe, frame) in dom.frame_changes and \
-                       (oframe, frame) in dom.frame_changes and \
+                for frame in dom._frames:
+                    if (sframe, frame) in dom._frame_changes and \
+                       (oframe, frame) in dom._frame_changes and \
                        isinstance(frame, CoordFrame):
                         self.comp(frame, from_frame=sframe)
                         other.comp(frame, from_frame=oframe)

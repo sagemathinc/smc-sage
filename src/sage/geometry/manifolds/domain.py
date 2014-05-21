@@ -185,13 +185,13 @@ class Domain(UniqueRepresentation, Parent):
         self.subdomains = set([self]) # domains contained in self
         self.intersections = {} # dict. of intersections with other domains
         self.unions = {} # dict. of unions with other domains
-        self.atlas = []  # list of charts defined on subdomains of self
+        self._atlas = []  # list of charts defined on subdomains of self
         self.def_chart = None  # default chart
         self.coord_changes = {} # dictionary of transition maps 
-        self.frames = []  # list of vector frames defined on subdomains of self
+        self._frames = []  # list of vector frames defined on subdomains of self
         self.def_frame = None  # default frame
-        self.frame_changes = {} # dictionary of changes of frames
-        self.coframes = []  # list of coframes defined on subdomains of self
+        self._frame_changes = {} # dictionary of changes of frames
+        self._coframes = []  # list of coframes defined on subdomains of self
         self.parallelizable_parts = set() # parallelizable domains contained in self
 
     #### Methods required for any Parent in the category of sets:
@@ -231,15 +231,112 @@ class Domain(UniqueRepresentation, Parent):
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
         return "domain '" + self.name + "' on the " + str(self.manifold)
 
     def _latex_(self):
         r"""
-        Special Sage function for the LaTeX representation of the object.
+        LaTeX representation of the object.
         """
         return self.latex_name
+
+    def atlas(self):
+        r"""
+        Return the domain's atlas. 
+        
+        OUTPUT:
+        
+        - list of charts defined on open subdomains of ``self``.
+        
+        EXAMPLES:
+        
+        Charts on domains of `\RR^2`::
+        
+            sage: M = Manifold(2, 'R^2')
+            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
+            sage: M.atlas()
+            [chart (R^2, (x, y))]
+            sage: U = M.open_domain('U', coord_def={c_cart: (y!=0,x<0)}) # U = R^2 \ half line {y=0,x>=0}
+            sage: U.atlas()
+            [chart (U, (x, y))]
+            sage: M.atlas()
+            [chart (R^2, (x, y)), chart (U, (x, y))]
+            sage: c_spher.<r, ph> = U.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # spherical (polar) coordinates on U
+            sage: U.atlas()
+            [chart (U, (x, y)), chart (U, (r, ph))]
+            sage: M.atlas()
+            [chart (R^2, (x, y)), chart (U, (x, y)), chart (U, (r, ph))]
+        
+        """
+        return self._atlas
+
+    def frames(self):
+        r"""
+        Return the list of vector frames defined on subdomains of ``self``. 
+        
+        OUTPUT:
+        
+        - list of vector frames defined on open subdomains of ``self``.
+        
+        EXAMPLES:
+        
+        Vector frames on domains of `\RR^2`::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'R^2')
+            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
+            sage: M.frames()
+            [coordinate frame (R^2, (d/dx,d/dy))]
+            sage: e = M.vector_frame('e')
+            sage: M.frames()
+            [coordinate frame (R^2, (d/dx,d/dy)), vector frame (R^2, (e_0,e_1))]
+            sage: U = M.open_domain('U', coord_def={c_cart: x^2+y^2<1}) # Unit disk
+            sage: U.frames()
+            [coordinate frame (U, (d/dx,d/dy))]
+            sage: M.frames()
+            [coordinate frame (R^2, (d/dx,d/dy)),
+             vector frame (R^2, (e_0,e_1)),
+             coordinate frame (U, (d/dx,d/dy))]
+        
+        """
+        return self._frames
+
+    def coframes(self):
+        r"""
+        Return the list of coframes defined on subdomains of ``self``. 
+        
+        OUTPUT:
+        
+        - list of coframes defined on open subdomains of ``self``.
+        
+        EXAMPLES:
+        
+        Coframes on domains of `\RR^2`::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'R^2')
+            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
+            sage: M.coframes()
+            [coordinate coframe (R^2, (dx,dy))]
+            sage: e = M.vector_frame('e')
+            sage: M.coframes()
+            [coordinate coframe (R^2, (dx,dy)), coframe (R^2, (e^0,e^1))]
+            sage: U = M.open_domain('U', coord_def={c_cart: x^2+y^2<1}) # Unit disk
+            sage: U.coframes()
+            [coordinate coframe (U, (dx,dy))]
+            sage: e.restrict(U)
+            vector frame (U, (e_0,e_1))
+            sage: U.coframes()
+            [coordinate coframe (U, (dx,dy)), coframe (U, (e^0,e^1))]
+            sage: M.coframes()
+            [coordinate coframe (R^2, (dx,dy)),
+             coframe (R^2, (e^0,e^1)),
+             coordinate coframe (U, (dx,dy)),
+             coframe (U, (e^0,e^1))]
+       
+        """
+        return self._coframes
 
     def domain(self, name, latex_name=None, is_open=False):
         r"""
@@ -358,11 +455,11 @@ class Domain(UniqueRepresentation, Parent):
         res.subdomains.update(self.subdomains)
         for sd in self.subdomains:
             sd.superdomains.add(res)
-        res.atlas = list(self.atlas)
+        res._atlas = list(self._atlas)
         res.coord_changes = dict(self.coord_changes)
-        res.frames = list(self.frames)
-        res.frame_changes = dict(self.frame_changes)
-        res.coframes = list(self.coframes)
+        res._frames = list(self._frames)
+        res._frame_changes = dict(self._frame_changes)
+        res._coframes = list(self._coframes)
         res.def_chart = self.def_chart
         res.def_frame = self.def_frame
         return res
@@ -553,17 +650,17 @@ class Domain(UniqueRepresentation, Parent):
             res.subdomains.update(other.subdomains)
             for sd in other.subdomains:
                 sd.superdomains.add(res)
-            for chart in other.atlas:
-                if chart not in res.atlas:
-                    res.atlas.append(chart)
+            for chart in other._atlas:
+                if chart not in res._atlas:
+                    res._atlas.append(chart)
             res.coord_changes.update(other.coord_changes)
-            for frame in other.frames:
-                if frame not in res.frames:
-                    res.frames.append(frame)
-            res.frame_changes.update(other.frame_changes)
-            for coframe in other.coframes:
-                if coframe not in res.coframes:
-                    res.coframes.append(coframe)
+            for frame in other._frames:
+                if frame not in res._frames:
+                    res._frames.append(frame)
+            res._frame_changes.update(other._frame_changes)
+            for coframe in other._coframes:
+                if coframe not in res._coframes:
+                    res._coframes.append(coframe)
             self.unions[other.name] = res
             other.unions[self.name] = res
             return res
@@ -600,13 +697,13 @@ class Domain(UniqueRepresentation, Parent):
         """
         if point.parent().is_subdomain(self):
             return True
-        for chart in self.atlas:
+        for chart in self._atlas:
             if chart in point.coordinates:
                 if chart.valid_coordinates( *(point.coordinates[chart]) ):
                     return True
         for chart in point.coordinates:
             for schart in chart.subcharts:
-                if schart in self.atlas and schart.valid_coordinates( 
+                if schart in self._atlas and schart.valid_coordinates( 
                                           *(point.coordinates[chart]) ):
                     return True
         return False
@@ -723,7 +820,7 @@ class Domain(UniqueRepresentation, Parent):
         from chart import Chart
         if not isinstance(chart, Chart):
             raise TypeError(str(chart) + " is not a chart.")
-        if chart not in self.atlas:
+        if chart not in self._atlas:
             raise ValueError("The chart must be defined on the " + 
                              str(self))
         self.def_chart = chart
@@ -854,25 +951,25 @@ class Domain(UniqueRepresentation, Parent):
             sage: c_uv.<u,v> = M.chart('u v')
             sage: c_xy.transition_map(c_uv, (x+y, x-y))
             coordinate change from chart (M, (x, y)) to chart (M, (u, v))
-            sage: M.frame_change(c_xy.frame, c_uv.frame)
+            sage: M.frame_change(c_xy.frame(), c_uv.frame())
             field of tangent-space automorphisms on the 2-dimensional manifold 'M'
-            sage: M.frame_change(c_xy.frame, c_uv.frame)[:]
+            sage: M.frame_change(c_xy.frame(), c_uv.frame())[:]
             [ 1/2  1/2]
             [ 1/2 -1/2]
-            sage: M.frame_change(c_uv.frame, c_xy.frame)
+            sage: M.frame_change(c_uv.frame(), c_xy.frame())
             field of tangent-space automorphisms on the 2-dimensional manifold 'M'
-            sage: M.frame_change(c_uv.frame, c_xy.frame)[:]
+            sage: M.frame_change(c_uv.frame(), c_xy.frame())[:]
             [ 1  1]
             [ 1 -1]
-            sage: M.frame_change(c_uv.frame, c_xy.frame) ==  M.frame_change(c_xy.frame, c_uv.frame).inverse()
+            sage: M.frame_change(c_uv.frame(), c_xy.frame()) ==  M.frame_change(c_xy.frame(), c_uv.frame()).inverse()
             True            
 
         """
-        if (frame1, frame2) not in self.frame_changes:
+        if (frame1, frame2) not in self._frame_changes:
             raise TypeError("The change of frame from '" + repr(frame1) + 
                             "' to '" + repr(frame2) + "' has not been " + 
                             "defined on the " + repr(self))
-        return self.frame_changes[(frame1, frame2)]
+        return self._frame_changes[(frame1, frame2)]
     
     def is_manifestly_coordinate_domain(self):
         r"""
@@ -1005,7 +1102,7 @@ class OpenDomain(Domain):
         """
         return "open domain '" + self.name + "' on the " + str(self.manifold)
 
-    def open_domain(self, name, latex_name=None, coord_def=None):
+    def open_domain(self, name, latex_name=None, coord_def={}):
         r"""
         Create an open subdomain of the current domain. 
 
@@ -1017,6 +1114,10 @@ class OpenDomain(Domain):
         - ``name`` -- name given to the open subdomain
         - ``latex_name`` --  (default: None) LaTeX symbol to denote the 
           subdomain; if none is provided, it is set to ``name``
+        - ``coord_def`` -- (default: {}) definition of the subdomain in 
+          terms of coordinates; ``coord_def`` must a be dictionary with keys 
+          charts on ``self`` and values the symbolic expressions formed by the
+          coordinates to define the subdomain. 
 
         OUTPUT:
         
@@ -1046,8 +1147,38 @@ class OpenDomain(Domain):
                  2-dimensional manifold 'M', 
                  open domain 'B' on the 2-dimensional manifold 'M'])
 
+        Defining an open subdomain by some coordinate restrictions: the open 
+        unit disk in `\RR^2`::
+        
+            sage: M = Manifold(2, 'R^2')
+            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
+            sage: U = M.open_domain('U', coord_def={c_cart: x^2+y^2<1}) ; U
+            open domain 'U' on the 2-dimensional manifold 'R^2'
+            
+        Since the argument ``coord_def`` has been set, U is automatically
+        provided with a chart, which is the restriction of the Cartesian one
+        to U::
+        
+            sage: U.atlas()
+            [chart (U, (x, y))]
+        
+        Therefore, one can immediately check whether a point belongs to U::
+        
+            sage: M.point((0,0)) in U
+            True
+            sage: M.point((1/2,1/3)) in U
+            True
+            sage: M.point((1,2)) in U
+            False            
+
         """
-        return self.domain(name, latex_name=latex_name, is_open=True)
+        resu = self.domain(name, latex_name=latex_name, is_open=True)
+        for chart, restrictions in coord_def.items():
+            if chart not in self._atlas:
+                raise ValueError("The " + str(chart) + "does not belong to " + 
+                    "the atlas of " + str(self))
+            chart.restrict(resu, restrictions)
+        return resu
 
     def chart(self, coordinates, names=None):
         r"""

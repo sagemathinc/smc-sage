@@ -229,7 +229,7 @@ class AffConnection(SageObject):
             <class 'sage.tensor.modules.comp.Components'>
             sage: M.default_frame()
             coordinate frame (M, (d/dx,d/dy,d/dz))
-            sage: nab.coef() is nab.coef(c_xyz.frame)
+            sage: nab.coef() is nab.coef(c_xyz.frame())
             True
             sage: nab.coef()[:]  # full list of coefficients:
             [[[0, x^2, 0], [0, 0, 0], [0, 0, 0]],
@@ -243,7 +243,7 @@ class AffConnection(SageObject):
             # the coefficients must be computed
             manif = self.manifold
             ev = frame  # the vector frame
-            ef = ev.coframe # the dual frame
+            ef = ev._coframe # the dual frame
             gam = self._new_coef(ev)
             for k in manif.irange():
                 for i in manif.irange():
@@ -282,7 +282,7 @@ class AffConnection(SageObject):
         """
         if frame is None: frame = self.domain.def_frame
         if frame not in self.coefficients:
-            if frame not in self.domain.frames:
+            if frame not in self.domain._frames:
                 raise ValueError("The vector frame " + frame +
                                  " has not been defined on the " + 
                                  str(self.domain))
@@ -326,7 +326,7 @@ class AffConnection(SageObject):
         """
         if frame is None: frame = self.domain.def_frame
         if frame not in self.coefficients:
-            if frame not in self.domain.frames:
+            if frame not in self.domain._frames:
                 raise ValueError("The vector frame " + frame +
                                  " has not been defined on the " + 
                                  str(self.domain))
@@ -751,7 +751,7 @@ class AffConnection(SageObject):
         Check of the formula `\omega^i_{\ \, j} = \Gamma^i_{\ \, jk} e^k`::
         
             sage: #... on the manifold's default frame (d/dx, d/dy, d:dz)
-            sage: dx = M.default_frame().coframe ; dx
+            sage: dx = M.default_frame().coframe() ; dx
             coordinate coframe (M, (dx,dy,dz))
             sage: check = []
             sage: for i in M.irange():
@@ -761,12 +761,12 @@ class AffConnection(SageObject):
             sage: check
             [True, True, True, True, True, True, True, True, True]
             sage: #... on the frame e
-            sage: ef = e.coframe ; ef
+            sage: ef = e.coframe() ; ef
             coframe (M, (e^1,e^2,e^3))
             sage: check = []
             sage: for i in M.irange():
             ...       for j in M.irange():
-            ...           s = nab.connection_form(i,j,e).comp(c_xyz.frame, from_basis=e) 
+            ...           s = nab.connection_form(i,j,e).comp(c_xyz.frame(), from_basis=e) 
             ...           check.append( nab.connection_form(i,j,e) == sum( nab.coef(e)[[i,j,k]]*ef[k] for k in M.irange() ) )
             ...
             sage: check
@@ -863,7 +863,7 @@ class AffConnection(SageObject):
             sage: e = M.default_frame().new_frame(ch_basis, 'e')
             sage: e[1][:], e[2][:], e[3][:]
             ([y, 0, 0], [0, z, 0], [0, 0, x])
-            sage: ef = e.coframe 
+            sage: ef = e.coframe()
             sage: ef[1][:], ef[2][:], ef[3][:]
             ([1/y, 0, 0], [0, 1/z, 0], [0, 0, 1/x])
             sage: nab.torsion_form(1, e)
@@ -961,7 +961,7 @@ class AffConnection(SageObject):
             sage: e = M.default_frame().new_frame(ch_basis, 'e')
             sage: e[1].view(), e[2].view(), e[3].view()
             (e_1 = y d/dx, e_2 = z d/dy, e_3 = x d/dz)
-            sage: ef = e.coframe 
+            sage: ef = e.coframe()
             sage: ef[1].view(), ef[2].view(), ef[3].view()
             (e^1 = 1/y dx, e^2 = 1/z dy, e^3 = 1/x dz)
             sage: nab.curvature_form(1,1,e)
@@ -1075,7 +1075,7 @@ class LeviCivitaConnection(AffConnection):
         # Initialization of the derived quantities:
         LeviCivitaConnection._init_derived(self)
         # Initialization of the Christoffel symbols in the domain's default chart:
-        self.coef(self.domain.def_chart.frame)
+        self.coef(self.domain.def_chart._frame)
         
     def _repr_(self):
         r"""
@@ -1164,7 +1164,7 @@ class LeviCivitaConnection(AffConnection):
         
             sage: ch_basis = M.automorphism_field() 
             sage: ch_basis[1,1], ch_basis[2,2], ch_basis[3,3] = 1, 1/r, 1/(r*sin(th))
-            sage: e = c_spher.frame.new_frame(ch_basis, 'e')
+            sage: e = c_spher.frame().new_frame(ch_basis, 'e')
             sage: gam_e = nab.coef(e) ; gam_e
             3-indices components w.r.t. vector frame (R^3, (e_1,e_2,e_3))
             sage: gam_e[:]

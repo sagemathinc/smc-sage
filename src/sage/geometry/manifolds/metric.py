@@ -84,19 +84,19 @@ class Metric(SymBilinFormFieldParal):
         coordinate change from chart (M, (x, y)) to chart (M, (u, v))
         sage: uv_to_xy = xy_to_uv.inverse() ; uv_to_xy
         coordinate change from chart (M, (u, v)) to chart (M, (x, y))
-        sage: M.atlas
+        sage: M.atlas()
         [chart (M, (x, y)), chart (M, (u, v))]
-        sage: M.frames
+        sage: M.frames()
         [coordinate frame (M, (d/dx,d/dy)), coordinate frame (M, (d/du,d/dv))]
-        sage: g.comp(c_uv.frame)[:]  # metric components in frame c_uv.frame expressed in M's default chart (x,y)
+        sage: g.comp(c_uv.frame())[:]  # metric components in frame c_uv.frame() expressed in M's default chart (x,y)
         [ 1/2*x*y + 1/2          1/2*x]
         [         1/2*x -1/2*x*y + 1/2]
-        sage: g.view(c_uv.frame)
+        sage: g.view(c_uv.frame())
         g = (1/2*x*y + 1/2) du*du + 1/2*x du*dv + 1/2*x dv*du + (-1/2*x*y + 1/2) dv*dv
-        sage: g.comp(c_uv.frame)[:, c_uv]   # metric components in frame c_uv.frame expressed in chart (u,v)
+        sage: g.comp(c_uv.frame())[:, c_uv]   # metric components in frame c_uv.frame() expressed in chart (u,v)
         [ 1/8*u^2 - 1/8*v^2 + 1/2            1/4*u + 1/4*v]
         [           1/4*u + 1/4*v -1/8*u^2 + 1/8*v^2 + 1/2]
-        sage: g.view(c_uv.frame, c_uv)
+        sage: g.view(c_uv.frame(), c_uv)
         g = (1/8*u^2 - 1/8*v^2 + 1/2) du*du + (1/4*u + 1/4*v) du*dv + (1/4*u + 1/4*v) dv*du + (-1/8*u^2 + 1/8*v^2 + 1/2) dv*dv
 
 
@@ -404,9 +404,9 @@ class Metric(SymBilinFormFieldParal):
         
         """
         if chart is None:
-            frame = self.domain.def_chart.frame
+            frame = self.domain.def_chart._frame
         else:
-            frame = chart.frame
+            frame = chart._frame
         return self.connection().coef(frame)
           
     def riemann(self, frame=None, name=None, latex_name=None):
@@ -684,24 +684,24 @@ class Metric(SymBilinFormFieldParal):
             sage: ch_X_Y = X.coord_change(Y, x+y, x-y)   
             sage: ch_X_Y.inverse()
             coordinate change from chart (M, (u, v)) to chart (M, (x, y))                 
-            sage: g.comp(Y.frame)[:, Y]
+            sage: g.comp(Y.frame())[:, Y]
             [ 1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2                            1/4*u]
             [                           1/4*u -1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2]
-            sage: g.determinant(Y.frame).expr()
+            sage: g.determinant(Y.frame()).expr()
             -1/4*x^2*y^2 - 1/4*(x + 1)*y + 1/4*x + 1/4
-            sage: g.determinant(Y.frame).expr(Y)
+            sage: g.determinant(Y.frame()).expr(Y)
             -1/64*u^4 - 1/64*v^4 + 1/32*(u^2 + 2)*v^2 - 1/16*u^2 + 1/4*v + 1/4
 
         A chart can be passed instead of a frame::
         
-            sage: g.determinant(X) is g.determinant(X.frame)
+            sage: g.determinant(X) is g.determinant(X.frame())
             True
-            sage: g.determinant(Y) is g.determinant(Y.frame)
+            sage: g.determinant(Y) is g.determinant(Y.frame())
             True
 
         The metric determinant depends on the frame::
         
-            sage: g.determinant(X.frame) == g.determinant(Y.frame)
+            sage: g.determinant(X.frame()) == g.determinant(Y.frame())
             False
         
         """
@@ -711,10 +711,10 @@ class Metric(SymBilinFormFieldParal):
         dom = self.domain
         if frame is None:
             frame = dom.def_frame
-        if frame in dom.atlas:   
+        if frame in dom._atlas:   
             # frame is actually a chart and is changed to the associated 
             # coordinate frame:
-            frame = frame.frame
+            frame = frame._frame
         if frame not in self._determinants:
             # a new computation is necessary
             resu = dom.scalar_field()
@@ -779,22 +779,22 @@ class Metric(SymBilinFormFieldParal):
             sage: ch_X_Y = X.coord_change(Y, x+y, x-y)   
             sage: ch_X_Y.inverse()
             coordinate change from chart (M, (u, v)) to chart (M, (x, y))                    
-            sage: g.comp(Y.frame)[:, Y]
+            sage: g.comp(Y.frame())[:, Y]
             [ 1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2                            1/4*u]
             [                           1/4*u -1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2]
-            sage: g.sqrt_abs_det(Y.frame).expr()
+            sage: g.sqrt_abs_det(Y.frame()).expr()
             1/2*sqrt(-x^2*y^2 - (x + 1)*y + x + 1)
-            sage: g.sqrt_abs_det(Y.frame).expr(Y)
+            sage: g.sqrt_abs_det(Y.frame()).expr(Y)
             1/8*sqrt(-u^4 - v^4 + 2*(u^2 + 2)*v^2 - 4*u^2 + 16*v + 16)
 
         A chart can be passed instead of a frame::
         
-            sage: g.sqrt_abs_det(Y) is g.sqrt_abs_det(Y.frame)
+            sage: g.sqrt_abs_det(Y) is g.sqrt_abs_det(Y.frame())
             True
 
         The metric determinant depends on the frame::
         
-            sage: g.sqrt_abs_det(X.frame) == g.sqrt_abs_det(Y.frame) 
+            sage: g.sqrt_abs_det(X.frame()) == g.sqrt_abs_det(Y.frame()) 
             False
 
         """
@@ -803,10 +803,10 @@ class Metric(SymBilinFormFieldParal):
         dom = self.domain
         if frame is None:
             frame = dom.def_frame
-        if frame in dom.atlas:   
+        if frame in dom._atlas:   
             # frame is actually a chart and is changed to the associated 
             # coordinate frame:
-            frame = frame.frame
+            frame = frame._frame
         if frame not in self._sqrt_abs_dets:
             # a new computation is necessary
             detg = self.determinant(frame)
