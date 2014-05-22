@@ -254,7 +254,7 @@ class Domain(UniqueRepresentation, Parent):
         Charts on domains of `\RR^2`::
         
             sage: M = Manifold(2, 'R^2')
-            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
+            sage: c_cart.<x,y> = M.chart() # Cartesian coordinates on R^2
             sage: M.atlas()
             [chart (R^2, (x, y))]
             sage: U = M.open_domain('U', coord_def={c_cart: (y!=0,x<0)}) # U = R^2 \ half line {y=0,x>=0}
@@ -285,7 +285,7 @@ class Domain(UniqueRepresentation, Parent):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2')
-            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
+            sage: c_cart.<x,y> = M.chart() # Cartesian coordinates on R^2
             sage: M.frames()
             [coordinate frame (R^2, (d/dx,d/dy))]
             sage: e = M.vector_frame('e')
@@ -316,7 +316,7 @@ class Domain(UniqueRepresentation, Parent):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2')
-            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
+            sage: c_cart.<x,y> = M.chart() # Cartesian coordinates on R^2
             sage: M.coframes()
             [coordinate coframe (R^2, (dx,dy))]
             sage: e = M.vector_frame('e')
@@ -737,13 +737,13 @@ class Domain(UniqueRepresentation, Parent):
         
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: c_xy = M.chart('x y')
+            sage: c_xy.<x,y> = M.chart()
             sage: p = M.point((1,2), name='p') ; p
             point 'p' on 2-dimensional manifold 'M'
             sage: p in M
             True
             sage: a = M.open_domain('A')
-            sage: c_uv = a.chart('u v')
+            sage: c_uv.<u,v> = a.chart()
             sage: q = a.point((-1,0), name='q') ; q
             point 'q' on 2-dimensional manifold 'M'
             sage: q in a   
@@ -846,8 +846,8 @@ class Domain(UniqueRepresentation, Parent):
             
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: c_xy.<x,y> = M.chart('x y')
-            sage: c_uv.<u,v> = M.chart('u v')
+            sage: c_xy.<x,y> = M.chart()
+            sage: c_uv.<u,v> = M.chart()
             sage: c_xy.transition_map(c_uv, (x+y, x-y)) # defines the coordinate change
             coordinate change from chart (M, (x, y)) to chart (M, (u, v))
             sage: M.coord_change(c_xy, c_uv) # returns the coordinate change defined above
@@ -947,8 +947,8 @@ class Domain(UniqueRepresentation, Parent):
         
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: c_xy.<x,y> = M.chart('x y')
-            sage: c_uv.<u,v> = M.chart('u v')
+            sage: c_xy.<x,y> = M.chart()
+            sage: c_uv.<u,v> = M.chart()
             sage: c_xy.transition_map(c_uv, (x+y, x-y))
             coordinate change from chart (M, (x, y)) to chart (M, (u, v))
             sage: M.frame_change(c_xy.frame(), c_uv.frame())
@@ -1151,7 +1151,7 @@ class OpenDomain(Domain):
         unit disk in `\RR^2`::
         
             sage: M = Manifold(2, 'R^2')
-            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
+            sage: c_cart.<x,y> = M.chart() # Cartesian coordinates on R^2
             sage: U = M.open_domain('U', coord_def={c_cart: x^2+y^2<1}) ; U
             open domain 'U' on the 2-dimensional manifold 'R^2'
             
@@ -1180,7 +1180,7 @@ class OpenDomain(Domain):
             chart.restrict(resu, restrictions)
         return resu
 
-    def chart(self, coordinates, names=None):
+    def chart(self, coordinates='', names=None):
         r"""
         Define a chart on the open domain. 
         
@@ -1218,8 +1218,13 @@ class OpenDomain(Domain):
           If it contains any LaTeX expression, the string ``coordinates`` must 
           be declared with the prefix 'r' (for "raw") to allow for a proper 
           treatment of the backslash character (see examples below). 
-        - ``names`` -- (default: None) unused argument (present only to enable
-          the use of the shortcut operator <,>). 
+          If no interval range and no LaTeX spelling is to be provided for any
+          coordinate, the argument ``coordinates`` can be omitted when the 
+          shortcut operator <,> is used via Sage preparser (see examples below)
+        - ``names`` -- (default: None) unused argument, except if
+          ``coordinates`` is not provided; it must then be a tuple containing 
+          the coordinate symbols (this is guaranted if the shortcut operator <,> 
+          is used). 
         
         OUTPUT:
         
@@ -1263,7 +1268,7 @@ class OpenDomain(Domain):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: U = M.open_domain('U')
-            sage: X.<x,y> = U.chart('x y') ; X
+            sage: X.<x,y> = U.chart() ; X
             chart (U, (x, y))
             
         Indeed, the declared coordinates are then known at the global level::
@@ -1273,7 +1278,7 @@ class OpenDomain(Domain):
             sage: (x,y) == X[:]
             True
     
-        Actually the instruction ``X.<x,y> = U.chart('x y')`` is
+        Actually the instruction ``X.<x,y> = U.chart()`` is
         equivalent to the two instructions ``X = U.chart('x y')`` 
         and ``(x,y) = X[:]``. 
             
@@ -1283,7 +1288,7 @@ class OpenDomain(Domain):
         
         """
         from chart import Chart
-        return Chart(self, coordinates)
+        return Chart(self, coordinates, names)
 
     def vector_frame(self, symbol=None, latex_symbol=None, dest_map=None,
                      from_frame=None): 
