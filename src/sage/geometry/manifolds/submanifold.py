@@ -55,7 +55,7 @@ class Submanifold(Manifold):
     The sphere `S^2` as a submanifold of the Euclidean space `\RR^3`::
     
         sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
-        sage: c_cart.<x,y,z> = M.chart('x y z')   # Cartesian coordinates on R^3
+        sage: c_cart.<x,y,z> = M.chart()   # Cartesian coordinates on R^3
         sage: S = M.submanifold(2, 'S^2', start_index=1) 
         sage: U = S.open_domain('U') # U = S minus two poles
         sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coordinates on U
@@ -176,7 +176,7 @@ class Submanifold(Manifold):
         Plot of a torus embedded in `\RR^3`::
             
             sage: M = Manifold(3, 'R^3', r'\RR^3')
-            sage: c_cart.<x,y,z> = M.chart('x y z')  # Cartesian coordinates on R^3
+            sage: c_cart.<x,y,z> = M.chart()  # Cartesian coordinates on R^3
             sage: T = M.submanifold(2, 'T')
             sage: W = T.open_domain('W') # Domain of the torus covered by the cyclic coordinates (u,v)
             sage: c_uv.<u,v> = W.chart(r'u:(0,2*pi) v:(0,2*pi)') # cyclic coordinates on T
@@ -193,7 +193,7 @@ class Submanifold(Manifold):
         Plot of an Archimedean spiral embedded in `\RR^2`::
         
             sage: M = Manifold(2, 'R^2', r'\RR^2')
-            sage: c_cart.<x,y> = M.chart('x y')
+            sage: c_cart.<x,y> = M.chart()
             sage: S = M.submanifold(1, 'S')
             sage: c_param.<t> = S.chart('t')
             sage: S.def_embedding(S.diff_mapping(M, [t*cos(t), t*sin(t)]))
@@ -243,7 +243,7 @@ class Submanifold(Manifold):
         Pushforward of a vector field defined on `S^2`, submanifold of `\RR^3`::
         
             sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
-            sage: c_cart.<x,y,z> = M.chart('x y z') # Cartesian coordinates on R^3
+            sage: c_cart.<x,y,z> = M.chart() # Cartesian coordinates on R^3
             sage: S = M.submanifold(2, 'S^2', start_index=1)
             sage: U = S.open_domain('U') # U = S minus two poles
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coordinates on U

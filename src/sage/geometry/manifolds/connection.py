@@ -43,7 +43,7 @@ class AffConnection(SageObject):
     Affine connection on a 3-dimensional manifold::
     
         sage: M = Manifold(3, 'M', start_index=1)
-        sage: c_xyz.<x,y,z> = M.chart('x y z')
+        sage: c_xyz.<x,y,z> = M.chart()
         sage: nab = M.aff_connection('nabla', r'\nabla') ; nab
         affine connection 'nabla' on the 3-dimensional manifold 'M'
         
@@ -220,7 +220,7 @@ class AffConnection(SageObject):
         manifold::
     
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: c_xyz.<x,y,z> = M.chart()
             sage: nab = M.aff_connection('nabla', r'\nabla')
             sage: nab[1,1,2], nab[3,2,3] = x^2, y*z  # Gamma^1_{12} = x^2, Gamma^3_{23} = yz
             sage: nab.coef()
@@ -503,7 +503,7 @@ class AffConnection(SageObject):
         Torsion of an affine connection on a 3-dimensional manifold::
     
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: c_xyz.<x,y,z> = M.chart()
             sage: nab = M.aff_connection('nabla', r'\nabla')
             sage: nab[1,1,2], nab[3,2,3] = x^2, y*z  # Gamma^1_{12} = x^2, Gamma^3_{23} = yz
             sage: t = nab.torsion() ; t
@@ -587,7 +587,7 @@ class AffConnection(SageObject):
         Curvature of an affine connection on a 3-dimensional manifold::
             
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: c_xyz.<x,y,z> = M.chart()
             sage: nab = M.aff_connection('nabla', r'\nabla') ; nab
             affine connection 'nabla' on the 3-dimensional manifold 'M'
             sage: nab[1,1,2], nab[3,2,3] = x^2, y*z  # Gamma^1_{12} = x^2, Gamma^3_{23} = yz 
@@ -667,7 +667,7 @@ class AffConnection(SageObject):
         Ricci tensor of an affine connection on a 3-dimensional manifold::
             
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: c_xyz.<x,y,z> = M.chart()
             sage: nab = M.aff_connection('nabla', r'\nabla') ; nab
             affine connection 'nabla' on the 3-dimensional manifold 'M'
             sage: nab[1,1,2], nab[3,2,3] = x^2, y*z  # Gamma^1_{12} = x^2, Gamma^3_{23} = yz 
@@ -724,7 +724,7 @@ class AffConnection(SageObject):
         Connection 1-forms on a 3-dimensional manifold::
         
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: c_xyz.<x,y,z> = M.chart()
             sage: nab = M.aff_connection('nabla', r'\nabla')
             sage: nab[1,1,1], nab[1,1,2], nab[1,1,3] = x*y*z, x^2, -y*z
             sage: nab[1,2,3], nab[1,3,1], nab[1,3,2] = -x^3, y^2*z, y^2-x^2
@@ -842,7 +842,7 @@ class AffConnection(SageObject):
         Torsion 2-forms on a 3-dimensional manifold::
         
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: c_xyz.<x,y,z> = M.chart()
             sage: nab = M.aff_connection('nabla', r'\nabla')
             sage: nab[1,1,1], nab[1,1,2], nab[1,1,3] = x*y*z, x^2, -y*z
             sage: nab[1,2,3], nab[1,3,1], nab[1,3,2] = -x^3, y^2*z, y^2-x^2
@@ -942,7 +942,7 @@ class AffConnection(SageObject):
         Curvature 2-forms on a 3-dimensional manifold::
         
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: c_xyz.<x,y,z> = M.chart()
             sage: nab = M.aff_connection('nabla', r'\nabla')
             sage: nab[1,1,1], nab[1,1,2], nab[1,1,3] = x*y*z, x^2, -y*z
             sage: nab[1,2,3], nab[1,3,1], nab[1,3,2] = -x^3, y^2*z, y^2-x^2

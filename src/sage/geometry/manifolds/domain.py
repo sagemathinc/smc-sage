@@ -808,8 +808,8 @@ class Domain(UniqueRepresentation, Parent):
             
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: c_xy = M.chart('x y')
-            sage: c_uv = M.chart('u v')
+            sage: c_xy.<x,y> = M.chart()
+            sage: c_uv.<u,v> = M.chart()
             sage: M.default_chart()
             chart (M, (x, y))
             sage: M.set_default_chart(c_uv)
@@ -884,7 +884,7 @@ class Domain(UniqueRepresentation, Parent):
             
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: c_xy = M.chart('x y')
+            sage: c_xy.<x,y> = M.chart()
             sage: M.default_frame()
             coordinate frame (M, (d/dx,d/dy))
 
@@ -907,7 +907,7 @@ class Domain(UniqueRepresentation, Parent):
         
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: c_xy = M.chart('x y')
+            sage: c_xy.<x,y> = M.chart()
             sage: e = M.vector_frame('e')
             sage: M.default_frame()
             coordinate frame (M, (d/dx,d/dy))                 
@@ -1057,7 +1057,7 @@ class OpenDomain(Domain):
     Consequently, points can be created by providing their coordinates in some
     chart via the operator () applied to the domain::
 
-        sage: chart1 = A.chart('x y')
+        sage: chart1.<x,y> = A.chart()
         sage: p = A((-2,3)) ; p   
         point on 2-dimensional manifold 'M'
         sage: p.coord()
@@ -1262,8 +1262,9 @@ class OpenDomain(Domain):
             sage: type(y)
             <type 'sage.symbolic.expression.Expression'>
 
-        But a shorter way to proceed is to use the operator <,> in the chart
-        declaration::
+        But a shorter way to proceed is to use the operator <,> in the
+        left-hand side of the chart declaration (there is then no need to 
+        pass the string 'x y' to chart())::
         
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
@@ -1332,7 +1333,7 @@ class OpenDomain(Domain):
             sage: M = Manifold(3, 'M')
             sage: A = M.open_domain('A', latex_name=r'\mathcal{A}'); A 
             open domain 'A' on the 3-dimensional manifold 'M'
-            sage: c_xyz.<x,y,z> = A.chart('x y z')
+            sage: c_xyz.<x,y,z> = A.chart()
             sage: e = A.vector_frame('e'); e 
             vector frame (A, (e_0,e_1,e_2))
             sage: e[0]
@@ -1465,7 +1466,7 @@ class OpenDomain(Domain):
         embedding `\Phi` of `\mathbb{S}^2` into `\mathbb{R}^3`::
         
             sage: R3 = Manifold(3, 'R^3')
-            sage: cart_coord.<x, y, z> = R3.chart('x y z')
+            sage: cart_coord.<x, y, z> = R3.chart()
             sage: Phi = U.diff_mapping(R3, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='Phi')
             sage: XU_R3 = U.vector_field_module(dest_map=Phi) ; XU_R3
             free module X(U,Phi) of vector fields along the open domain 'U' on the 2-dimensional manifold 'S^2' mapped into the 3-dimensional manifold 'R^3'
@@ -1529,7 +1530,7 @@ class OpenDomain(Domain):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: U = M.open_domain('U')
-            sage: c_xyz.<x,y,z> = U.chart('x y z')
+            sage: c_xyz.<x,y,z> = U.chart()
             sage: TU = U.tensor_field_module((2,1)) ; TU
             free module TF^(2,1)(U) of type-(2,1) tensors fields on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: TU.category()
@@ -1596,7 +1597,7 @@ class OpenDomain(Domain):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: U = M.open_domain('U')
-            sage: c_xyz.<x,y,z> = U.chart('x y z')
+            sage: c_xyz.<x,y,z> = U.chart()
             sage: f = U.scalar_field(sin(x)*cos(y) + z, name='F'); f
             scalar field 'F' on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: f.view()
@@ -1645,7 +1646,7 @@ class OpenDomain(Domain):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: U = M.open_domain('U')
-            sage: c_xyz.<x,y,z> = U.chart('x y z')
+            sage: c_xyz.<x,y,z> = U.chart()
             sage: v = U.vector_field('v'); v
             vector field 'v' on the open domain 'U' on the 3-dimensional manifold 'M'
             
@@ -1714,7 +1715,7 @@ class OpenDomain(Domain):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: U = M.open_domain('U')
-            sage: c_xyz.<x,y,z> = U.chart('x y z')
+            sage: c_xyz.<x,y,z> = U.chart()
             sage: t = U.tensor_field(2, 0, 'T'); t
             tensor field 'T' of type (2,0) on the open domain 'U' on the 3-dimensional manifold 'M'
 
@@ -1773,7 +1774,7 @@ class OpenDomain(Domain):
     
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
-            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: c_xyz.<x,y,z> = M.chart()
             sage: t = M.sym_bilin_form_field('T'); t
             field of symmetric bilinear forms 'T' on the 3-dimensional manifold 'M'
 
@@ -1823,7 +1824,7 @@ class OpenDomain(Domain):
     
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: c_xyz.<x,y,z> = M.chart()
             sage: t = M.endomorphism_field('T'); t
             field of endomorphisms 'T' on the 3-dimensional manifold 'M'
             sage: t.parent()
@@ -1875,7 +1876,7 @@ class OpenDomain(Domain):
     
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3,'M')
-            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: c_xyz.<x,y,z> = M.chart()
             sage: a = M.automorphism_field('A') ; a
             field of tangent-space automorphisms 'A' on the 3-dimensional manifold 'M'
             sage: a.parent()
@@ -1925,7 +1926,7 @@ class OpenDomain(Domain):
     
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: c_xyz.<x,y,z> = M.chart()
             sage: a = M.identity_map(); a
             field of tangent-space identity maps 'Id' on the 3-dimensional manifold 'M'
             sage: a.comp()
@@ -1975,7 +1976,7 @@ class OpenDomain(Domain):
     
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = M.chart('x y z')
+            sage: c_xyz.<x,y,z> = M.chart()
             sage: #!# g = M.metric('g'); g 
             pseudo-Riemannian metric 'g' on the 3-dimensional manifold 'M'
         
@@ -2163,7 +2164,7 @@ class OpenDomain(Domain):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: A = M.open_domain('A', latex_name=r'\mathcal{A}')
-            sage: X.<x,y,z> = A.chart('x y z')                      
+            sage: X.<x,y,z> = A.chart()                      
             sage: om = A.one_form('omega', r'\omega') ; om  
             1-form 'omega' on the open domain 'A' on the 3-dimensional manifold 'M'
             sage: om.parent()
@@ -2223,7 +2224,7 @@ class OpenDomain(Domain):
             sage: U = M.open_domain('U') # the subdomain of S^2 covered by regular spherical coordinates
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: N = Manifold(3, 'R^3', r'\RR^3')
-            sage: c_cart.<x,y,z> = N.chart('x y z')  # Cartesian coord. on R^3
+            sage: c_cart.<x,y,z> = N.chart()  # Cartesian coord. on R^3
             sage: Phi = U.diff_mapping(N, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
 
         See the documentation of class 

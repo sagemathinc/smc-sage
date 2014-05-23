@@ -42,7 +42,7 @@ EXAMPLES:
 A tensor field of type (1,1) on a 2-dimensional manifold::
 
     sage: M = Manifold(2, 'M', start_index=1)
-    sage: c_xy.<x,y> = M.chart('x y')
+    sage: c_xy.<x,y> = M.chart()
     sage: t = M.tensor_field(1, 1, 'T') ; t
     tensor field 'T' of type (1,1) on the 2-dimensional manifold 'M'
     sage: t.tensor_rank
@@ -123,7 +123,7 @@ Expressions in a chart different from the manifold's default one are
 obtained by specifying the chart as the last argument inside the
 single square brackets::
 
-    sage: c_uv.<u,v> = M.chart('u v')
+    sage: c_uv.<u,v> = M.chart()
     sage: xy_to_uv = c_xy.coord_change(c_uv, x+y, x-y)  
     sage: uv_to_xy = xy_to_uv.inverse()
     sage: t[1,1, c_uv] 
@@ -441,9 +441,9 @@ class TensorField(ModuleElement):
         
             sage: M = Manifold(2, 'M')
             sage: U = M.open_domain('U')
-            sage: c_xy.<x, y> = U.chart('x y')
+            sage: c_xy.<x, y> = U.chart()
             sage: V = M.open_domain('V')
-            sage: c_uv.<u, v> = V.chart('u v')
+            sage: c_uv.<u, v> = V.chart()
             sage: t = M.tensor_field(1, 2, name='t')
             sage: tu = U.tensor_field(1, 2, name='t')
             sage: t.set_restriction(tu)
@@ -584,10 +584,10 @@ class TensorField(ModuleElement):
         
             sage: M = Manifold(2, 'S^2', start_index=1)
             sage: U = M.open_domain('U') # the complement of the North pole
-            sage: stereoN.<x,y> = U.chart('x y')  # stereographic coordinates from the North pole
+            sage: stereoN.<x,y> = U.chart()  # stereographic coordinates from the North pole
             sage: eN = stereoN.frame() # the associated vector frame
             sage: V =  M.open_domain('V') # the complement of the South pole
-            sage: stereoS.<u,v> = V.chart('u v')  # stereographic coordinates from the South pole
+            sage: stereoS.<u,v> = V.chart()  # stereographic coordinates from the South pole
             sage: eS = stereoS.frame() # the associated vector frame
             sage: transf = stereoN.transition_map(stereoS, (x/(x^2+y^2), y/(x^2+y^2)), intersection_name='W', \
                                                   restrictions1= x^2+y^2!=0, restrictions2= u^2+v^2!=0)
@@ -757,11 +757,11 @@ class TensorField(ModuleElement):
 
             sage: M = Manifold(2, 'M')
             sage: U = M.open_domain('U')
-            sage: c_xy.<x, y> = U.chart('x y')
+            sage: c_xy.<x, y> = U.chart()
             sage: e = U.default_frame() ; e
             coordinate frame (U, (d/dx,d/dy))
             sage: V = M.open_domain('V')
-            sage: c_uv.<u, v> = V.chart('u v')
+            sage: c_uv.<u, v> = V.chart()
             sage: f = V.default_frame() ; f
             coordinate frame (V, (d/du,d/dv))
             sage: t = M.tensor_field(1,1, name='t')
@@ -827,11 +827,11 @@ class TensorField(ModuleElement):
         
             sage: M = Manifold(2, 'M')
             sage: U = M.open_domain('U')
-            sage: c_xy.<x, y> = U.chart('x y')
+            sage: c_xy.<x, y> = U.chart()
             sage: e = U.default_frame() ; e
             coordinate frame (U, (d/dx,d/dy))
             sage: V = M.open_domain('V')
-            sage: c_uv.<u, v> = V.chart('u v')
+            sage: c_uv.<u, v> = V.chart()
             sage: f = V.default_frame() ; f
             coordinate frame (V, (d/du,d/dv))
             sage: t = M.tensor_field(1,1, name='t')
@@ -1188,7 +1188,7 @@ class TensorField(ModuleElement):
         Raising the index of a 1-form results in a vector field::
         
             sage: M = Manifold(2, 'M', start_index=1)
-            sage: c_xy.<x,y> = M.chart('x y')
+            sage: c_xy.<x,y> = M.chart()
             sage: g = M.metric('g')
             sage: g[1,1], g[1,2], g[2,2] = 1+x, x*y, 1-y
             sage: w = M.one_form()
@@ -1303,7 +1303,7 @@ class TensorField(ModuleElement):
         Lowering the index of a vector field results in a 1-form::
         
             sage: M = Manifold(2, 'M', start_index=1)
-            sage: c_xy.<x,y> = M.chart('x y')
+            sage: c_xy.<x,y> = M.chart()
             sage: g = M.metric('g')
             sage: g[1,1], g[1,2], g[2,2] = 1+x, x*y, 1-y
             sage: v = M.vector_field()
@@ -1440,7 +1440,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
     A tensor field of type (2,0) on a 3-dimensional manifold::
     
         sage: M = Manifold(3, 'M')
-        sage: c_xyz.<x,y,z> = M.chart('x y z')
+        sage: c_xyz.<x,y,z> = M.chart()
         sage: t = M.tensor_field(2, 0, 'T') ; t
         tensor field 'T' of type (2,0) on the 3-dimensional manifold 'M'
 
@@ -1806,7 +1806,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         Lie derivative of a vector::
         
             sage: M = Manifold(2, 'M', start_index=1)
-            sage: c_xy.<x,y> = M.chart('x y')
+            sage: c_xy.<x,y> = M.chart()
             sage: v = M.vector_field('v')
             sage: v[:] = (-y, x)
             sage: w = M.vector_field()
@@ -1916,7 +1916,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         Restriction of a vector field defined on `\RR^2` to a disk::
         
             sage: M = Manifold(2, 'R^2')
-            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
+            sage: c_cart.<x,y> = M.chart() # Cartesian coordinates on R^2
             sage: v = M.vector_field('v')
             sage: v[:] = [x+y, -1+x^2]
             sage: D = M.open_domain('D') # the unit open disc

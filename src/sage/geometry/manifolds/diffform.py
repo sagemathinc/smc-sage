@@ -141,7 +141,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     coordinates::
      
         sage: M = Manifold(3, 'R3', '\RR^3', start_index=1)                                
-        sage: c_cart.<x,y,z> = M.chart('x y z')                                           
+        sage: c_cart.<x,y,z> = M.chart()                                           
         sage: eps = M.diff_form(3, 'epsilon', r'\epsilon')
         sage: eps[1,2,3] = 1  # the only independent component
         sage: eps[:] # all the components are set from the previous line:
@@ -400,7 +400,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         Hodge star of a 1-form in the Euclidean space `R^3`::
         
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: X.<x,y,z> = M.chart('x y z')
+            sage: X.<x,y,z> = M.chart()
             sage: g = M.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, 1, 1
             sage: a = M.one_form('A')
@@ -569,7 +569,7 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
     A 1-form on a 3-dimensional manifold::
     
         sage: M = Manifold(3, 'M')                      
-        sage: c_xyz.<x,y,z> = M.chart('x y z')
+        sage: c_xyz.<x,y,z> = M.chart()
         sage: om = M.one_form('omega', r'\omega') ; om  
         1-form 'omega' on the 3-dimensional manifold 'M'
 

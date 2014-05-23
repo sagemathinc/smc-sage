@@ -38,7 +38,7 @@ EXAMPLES:
     A standard chart on U is provided by the stereographic projection from the
     North pole to the equatorial plane::
     
-        sage: stereoN.<x,y> = U.chart('x y') ; stereoN
+        sage: stereoN.<x,y> = U.chart() ; stereoN
         chart (U, (x, y))
         
     Thanks to the operator <x,y> on the left-hand side, the coordinates 

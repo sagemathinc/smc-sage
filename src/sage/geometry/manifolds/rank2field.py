@@ -58,7 +58,7 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
     A field of symmetric bilinear forms on a 3-dimensional manifold::
     
         sage: M = Manifold(3, 'M')
-        sage: c_xyz = M.chart('x y z')
+        sage: c_xyz.<x,y,z> = M.chart()
         sage: t = M.sym_bilin_form_field('T') ; t
         field of symmetric bilinear forms 'T' on the 3-dimensional manifold 'M'
     
@@ -106,7 +106,7 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
     A symmetric bilinear form acts on vector pairs::
     
         sage: M = Manifold(2, 'M')
-        sage: c_xy.<x,y> = M.chart('x y')
+        sage: c_xy.<x,y> = M.chart()
         sage: t = M.sym_bilin_form_field('T')
         sage: t[0,0], t[0,1], t[1,1] = (-1, x, y*x)
         sage: v1 = M.vector_field('V_1')
@@ -210,7 +210,7 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
     A field of endomorphisms on a 3-dimensional manifold::
     
         sage: M = Manifold(3, 'M', start_index=1)
-        sage: c_xyz = M.chart('x y z')
+        sage: c_xyz.<x,y,z> = M.chart()
         sage: t = M.endomorphism_field('T') ; t
         field of endomorphisms 'T' on the 3-dimensional manifold 'M'
         
@@ -316,7 +316,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
     A pi/3-rotation in the Euclidean 2-plane::
     
         sage: M = Manifold(2,'R^2')
-        sage: c_xy = M.chart('x y')
+        sage: c_xy.<x,y> = M.chart()
         sage: rot = M.automorphism_field('R') ; rot
         field of tangent-space automorphisms 'R' on the 2-dimensional manifold 'R^2'
         sage: rot[:] = [[sqrt(3)/2, -1/2], [1/2, sqrt(3)/2]]
@@ -446,7 +446,7 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
     Identity map on a 3-dimensional manifold::
     
         sage: M = Manifold(3, 'M', start_index=1)
-        sage: c_xyz.<x,y,z> = M.chart('x y z')
+        sage: c_xyz.<x,y,z> = M.chart()
         sage: a = M.identity_map(); a
         field of tangent-space identity maps 'Id' on the 3-dimensional manifold 'M'
         sage: latex(a)

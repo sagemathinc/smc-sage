@@ -27,7 +27,7 @@ EXAMPLES:
     Setting a vector frame on a 3-dimensional manifold::
     
         sage: M = Manifold(3, 'M')
-        sage: c_xyz = M.chart('x y z')
+        sage: c_xyz.<x,y,z> = M.chart()
         sage: e = M.vector_frame('e') ; e
         vector frame (M, (e_0,e_1,e_2))
         sage: latex(e)
@@ -59,7 +59,7 @@ EXAMPLES:
     The index range depends on the starting index defined on the manifold::
 
         sage: M = Manifold(3, 'M', start_index=1)
-        sage: c_xyz = M.chart('x y z')
+        sage: c_xyz.<x,y,z> = M.chart()
         sage: e = M.vector_frame('e')              
         sage: e.vec
         (vector field 'e_1' on the 3-dimensional manifold 'M', vector field 'e_2' on the 3-dimensional manifold 'M', vector field 'e_3' on the 3-dimensional manifold 'M')
@@ -192,7 +192,7 @@ class VectorFrame(FreeModuleBasis):
     
         sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(3, 'M')
-        sage: c_xyz = M.chart('x y z')
+        sage: c_xyz.<x,y,z> = M.chart()
         sage: e = M.vector_frame('e')
         sage: e
         vector frame (M, (e_0,e_1,e_2))
@@ -357,7 +357,7 @@ class VectorFrame(FreeModuleBasis):
         
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2,'R^2')
-            sage: c_xy = M.chart('x y')
+            sage: c_xy.<x,y> = M.chart()
             sage: e = M.vector_frame('e') ; M.set_default_frame(e)
             sage: M._frame_changes
             {}
@@ -426,7 +426,7 @@ class VectorFrame(FreeModuleBasis):
         
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2')
-            sage: c_cart.<x,y> = M.chart('x y') # Cartesian coordinates on R^2
+            sage: c_cart.<x,y> = M.chart() # Cartesian coordinates on R^2
             sage: a = M.automorphism_field() 
             sage: a[:] = [[1-y^2,0], [1+x^2, 2]]
             sage: e = c_cart.frame().new_frame(a, 'e') ; e
@@ -698,7 +698,7 @@ class CoFrame(FreeModuleCoBasis):
     
         sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(3, 'M', start_index=1)
-        sage: c_xyz = M.chart('x y z')
+        sage: c_xyz.<x,y,z> = M.chart()
         sage: v = M.vector_frame('v')
         sage: from sage.geometry.manifolds.vectorframe import CoFrame
         sage: e = CoFrame(v, 'e') ; e
@@ -780,7 +780,7 @@ class CoordCoFrame(CoFrame):
     
         sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(3, 'M', start_index=1)
-        sage: c_xyz = M.chart('x y z')
+        sage: c_xyz.<x,y,z> = M.chart()
         sage: M.frames()
         [coordinate frame (M, (d/dx,d/dy,d/dz))] 
         sage: M.coframes()

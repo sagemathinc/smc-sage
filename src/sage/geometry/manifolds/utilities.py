@@ -48,7 +48,7 @@ def is_atomic(expression):
         sage: is_atomic("(2+x)")
         True
         sage: M = Manifold(2, 'M')
-        sage: c_xy.<x,y> = M.chart('x y')
+        sage: c_xy.<x,y> = M.chart()
         sage: f = c_xy.function(x^2+3*y+1) ; f
         x^2 + 3*y + 1
         sage: is_atomic(latex(f))

@@ -117,7 +117,7 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
     A vector field on a 3-dimensional manifold::
     
         sage: M = Manifold(3, 'M')
-        sage: c_xyz.<x,y,z> = M.chart('x y z')
+        sage: c_xyz.<x,y,z> = M.chart()
         sage: v = M.vector_field('V') ; v
         vector field 'V' on the 3-dimensional manifold 'M'
         sage: latex(v)
@@ -188,7 +188,7 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
     The range of the indices depends on the convention set for the manifold::
         
         sage: M = Manifold(3, 'M', start_index=1)
-        sage: c_xyz.<x,y,z> = M.chart('x y z')
+        sage: c_xyz.<x,y,z> = M.chart()
         sage: e = M.vector_frame('e') ; M.set_default_frame(e)
         sage: v = M.vector_field('V')
         sage: (v[1], v[2], v[3]) = (1, 4, 9)
@@ -200,7 +200,7 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
     A vector field acts on scalar fields (derivation along the vector field)::
     
         sage: M = Manifold(2, 'M')            
-        sage: c_cart.<x,y> = M.chart('x y')
+        sage: c_cart.<x,y> = M.chart()
         sage: f = M.scalar_field(x*y^2, name='f')  
         sage: v = M.vector_field('v')         
         sage: v[:] = (-y, x)
@@ -269,7 +269,7 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
         Action of a vector field on a scalar field on a 2-dimensional manifold::
         
             sage: M = Manifold(2, 'M')            
-            sage: c_cart.<x,y> = M.chart('x y')
+            sage: c_cart.<x,y> = M.chart()
             sage: f = M.scalar_field(x*y^2)  
             sage: v = M.vector_field()         
             sage: v[:] = (-y, x)

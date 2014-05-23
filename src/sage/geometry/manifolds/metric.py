@@ -51,7 +51,7 @@ class Metric(SymBilinFormFieldParal):
     Metric on a 2-dimensional manifold::
     
         sage: M = Manifold(2, 'M', start_index=1)
-        sage: c_xy.<x,y> = M.chart('x y')
+        sage: c_xy.<x,y> = M.chart()
         sage: g = M.metric('g') ; g
         pseudo-Riemannian metric 'g' on the 2-dimensional manifold 'M'
         sage: latex(g)
@@ -79,7 +79,7 @@ class Metric(SymBilinFormFieldParal):
 
     Metric components in a frame different from the manifold's default one::
     
-        sage: c_uv.<u,v> = M.chart('u v')  # new chart on M
+        sage: c_uv.<u,v> = M.chart()  # new chart on M
         sage: xy_to_uv = c_xy.coord_change(c_uv, x+y, x-y) ; xy_to_uv
         coordinate change from chart (M, (x, y)) to chart (M, (u, v))
         sage: uv_to_xy = xy_to_uv.inverse() ; uv_to_xy
@@ -204,7 +204,7 @@ class Metric(SymBilinFormFieldParal):
         Signatures on a 2-dimensional manifold::
         
             sage: M = Manifold(2, 'M')
-            sage: X.<x,y> = M.chart('x y')
+            sage: X.<x,y> = M.chart()
             sage: g = M.metric('g') # if not specified, the signature is Riemannian
             sage: g.signature() 
             2
@@ -245,7 +245,7 @@ class Metric(SymBilinFormFieldParal):
         Inverse metric on a 2-dimensional manifold::
     
             sage: M = Manifold(2, 'M', start_index=1)
-            sage: c_xy.<x,y> = M.chart('x y')
+            sage: c_xy.<x,y> = M.chart()
             sage: g = M.metric('g') 
             sage: g[1,1], g[1,2], g[2,2] = 1+x, x*y, 1-x 
             sage: g[:]  # components in the manifold's default frame
@@ -668,7 +668,7 @@ class Metric(SymBilinFormFieldParal):
         Metric determinant on a 2-dimensional manifold::
         
             sage: M = Manifold(2, 'M', start_index=1)
-            sage: X.<x,y> = M.chart('x y')
+            sage: X.<x,y> = M.chart()
             sage: g = M.metric('g')
             sage: g[1,1], g[1, 2], g[2, 2] = 1+x, x*y , 1-y
             sage: g[:]
@@ -680,7 +680,7 @@ class Metric(SymBilinFormFieldParal):
 
         Determinant in a frame different from the default's one::
             
-            sage: Y.<u,v> = M.chart('u v')
+            sage: Y.<u,v> = M.chart()
             sage: ch_X_Y = X.coord_change(Y, x+y, x-y)   
             sage: ch_X_Y.inverse()
             coordinate change from chart (M, (u, v)) to chart (M, (x, y))                 
@@ -762,7 +762,7 @@ class Metric(SymBilinFormFieldParal):
         Metric determinant on a 2-dimensional manifold::
         
             sage: M = Manifold(2, 'M', start_index=1)
-            sage: X.<x,y> = M.chart('x y')
+            sage: X.<x,y> = M.chart()
             sage: g = M.metric('g')
             sage: g[1,1], g[1, 2], g[2, 2] = 1+x, x*y , 1-y
             sage: g[:]
@@ -775,7 +775,7 @@ class Metric(SymBilinFormFieldParal):
 
         Determinant in a frame different from the default's one::
             
-            sage: Y.<u,v> = M.chart('u v')
+            sage: Y.<u,v> = M.chart()
             sage: ch_X_Y = X.coord_change(Y, x+y, x-y)   
             sage: ch_X_Y.inverse()
             coordinate change from chart (M, (u, v)) to chart (M, (x, y))                    

@@ -92,12 +92,13 @@ class Chart(UniqueRepresentation, SageObject):
         sage: type(c_cart)
         <class 'sage.geometry.manifolds.chart.Chart'>
 
-    To have the coordinates accessible as global variables, one shall set::
+    To have the coordinates accessible as global variables, one has to set::
     
         sage: (x,y,z) = c_cart[:]
         
-    However, a shortcut is to use the declarator ``<x,y,z>`` during the Chart
-    construction::
+    However, a shortcut is to use the declarator ``<x,y,z>`` in the left-hand
+    side of the chart declaration (there is then no need to pass the string
+    'x y z' to chart())::
 
         sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)

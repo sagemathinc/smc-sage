@@ -24,7 +24,7 @@ Defining a point on `\RR^3` by its spherical coordinates::
 
 Computing the coordinates of the point in a new chart::
 
-    sage: c_cart.<x,y,z> = M.chart('x y z')        
+    sage: c_cart.<x,y,z> = M.chart()        
     sage: ch = c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
     sage: p.coord(c_cart) # evaluate P's Cartesian coordinates
     (1, 0, 0)
@@ -80,7 +80,7 @@ class Point(Element):
     A point on a 2-dimensional manifold::
     
         sage: M = Manifold(2, 'M')
-        sage: c_xy = M.chart('x y')
+        sage: c_xy.<x,y> = M.chart()
         sage: (a, b) = var('a b') # generic coordinates for the point
         sage: p = M.point((a, b), name='P') ; p
         point 'P' on 2-dimensional manifold 'M'
@@ -196,7 +196,7 @@ class Point(Element):
 
         Computing the Cartesian coordinates from the spherical ones::
 
-            sage: c_cart.<x,y,z> = M.chart('x y z')  # Cartesian coordinates   
+            sage: c_cart.<x,y,z> = M.chart()  # Cartesian coordinates   
             sage: c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
             coordinate change from chart (R3, (r, th, ph)) to chart (R3, (x, y, z))
             sage: p.coord(c_cart)  # the computation is performed by means of the above change of coordinates
@@ -206,7 +206,7 @@ class Point(Element):
     
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: c_xy.<x,y> = M.chart('x y')
+            sage: c_xy.<x,y> = M.chart()
             sage: (a, b) = var('a b') # generic coordinates for the point
             sage: p = M.point((a, b), name='P')
             sage: p.coord()  # coordinates of P in the manifold's default chart
@@ -214,7 +214,7 @@ class Point(Element):
             
         Coordinates of P in a new chart::
         
-            sage: c_uv.<u,v> = M.chart('u v')
+            sage: c_uv.<u,v> = M.chart()
             sage: ch_xy_uv = c_xy.coord_change(c_uv, x-y, x+y)
             sage: p.coord(c_uv)
             (a - b, a + b)
@@ -307,7 +307,7 @@ class Point(Element):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'R3', r'\mathcal{M}')
-            sage: c_cart.<x,y,z> = M.chart('x y z')
+            sage: c_cart.<x,y,z> = M.chart()
             sage: p = M.point()
             sage: p.set_coord((1,2,3))  # coordinates on the manifold's default chart
             sage: p.coord()
@@ -359,7 +359,7 @@ class Point(Element):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'R3', r'\mathcal{M}')
-            sage: c_cart.<x,y,z> = M.chart('x y z')
+            sage: c_cart.<x,y,z> = M.chart()
             sage: p = M.point()
             sage: p.add_coord((1,2,3))  # coordinates on the manifold's default chart
             sage: p.coord()
