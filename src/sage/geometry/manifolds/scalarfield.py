@@ -10,10 +10,7 @@ manifolds over `\RR`, i.e. differentiable mappings of the form
     
 where `U` is an open subset of the differentiable manifold `M`.
 
-The class :class:`ScalarField`  inherits from the classes 
-:class:`~sage.geometry.manifolds.diffmapping.DiffMapping` (a scalar field being 
-a differentiable mapping to `\RR`) 
-and :class:`~sage.structure.element.CommutativeRingElement` (a scalar field on
+The class :class:`ScalarField`  inherits from the class  :class:`~sage.structure.element.CommutativeRingElement` (a scalar field on
 `U` being an element of the commutative ring (actually a commutative 
 algebra) `C^\infty(U)`).
 
@@ -39,9 +36,8 @@ from sage.structure.element import CommutativeRingElement
 from sage.rings.integer import Integer
 from domain import Domain
 from chart import FunctionChart, ZeroFunctionChart, MultiFunctionChart
-from diffmapping import DiffMapping
 
-class ScalarField(DiffMapping, CommutativeRingElement):
+class ScalarField(CommutativeRingElement):
     r"""
     Class for scalar fields on a differentiable manifold.
     
@@ -161,26 +157,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         sage: f.expr() is f.function_chart().expr()
         True
         
-    A scalar field is a differential mapping from the manifold to the field of
-    real numbers (modeled by the unique instance :data:`RealLine` of the class
-    :class:`~sage.geometry.manifolds.manifold.RealLineManifold`)::
-    
-        sage: isinstance(f, sage.geometry.manifolds.diffmapping.DiffMapping)
-        True
-        sage: f.domain # the domain on the start manifold
-        2-dimensional manifold 'S^2'
-        sage: f.codomain # the target domain
-        field R of real numbers
-        sage: print type(f.codomain)
-        <class 'sage.geometry.manifolds.manifold.RealLineManifold_with_category'>
-        sage: f.codomain is RealLine
-        True
-        sage: f.coord_expression
-        {(chart (U, (th, ph)), chart (field R, (x_realline,))): functions (cos(ph)*sin(th),) on the chart (U, (th, ph))}
-        sage: f.expr()  # expression with respect to the manifold's default chart
-        cos(ph)*sin(th)
-
-    As such, it acts on the manifold's points::
+    By definition, a scalar field acts on the manifold's points::
     
         sage: p = M.point((pi/2, pi))
         sage: f(p)
@@ -357,27 +334,31 @@ class ScalarField(DiffMapping, CommutativeRingElement):
     """
     def __init__(self, domain, coord_expression=None, chart=None, name=None, 
                  latex_name=None):
-        from manifold import RealLine
-        if isinstance(coord_expression, FunctionChart):
-            coord_expression = coord_expression.express
-        DiffMapping.__init__(self, domain, RealLine, coord_expression, chart)
         CommutativeRingElement.__init__(self, domain.scalar_field_ring())
         self.manifold = domain.manifold
+        self.domain = domain
+        self.tensor_type = (0,0)
         self.name = name
         if latex_name is None:
             self.latex_name = self.name
         else:
             self.latex_name = latex_name
-        if coord_expression is not None:
-            if chart is None:
-                chart = self.domain.def_chart
-            if coord_expression == 0:
-                self.express = {chart: chart.zero_function}
-            else:
-                self.express = {chart: FunctionChart(chart, coord_expression)}
-        else:
+        if coord_expression is None:
             self.express = {}
-        self.tensor_type = (0,0)
+        else:
+            if isinstance(coord_expression, FunctionChart):
+                self.express = {coord_expression.chart: coord_expression}
+            elif isinstance(coord_expression, dict):
+                self.express = {}
+                for chart, expression in coord_expression.items():
+                    self.express[chart] = FunctionChart(chart, expression)
+            else:
+                if chart is None:
+                    chart = self.domain.def_chart
+                if coord_expression == 0:
+                    self.express = {chart: chart.zero_function}
+                else:
+                    self.express = {chart: FunctionChart(chart, coord_expression)}
         self._init_derived()   # initialization of derived quantities
 
 
@@ -454,6 +435,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         r"""
         Initialize the derived quantities
         """
+        self._restrictions = {} # dict. of restrictions to subdomains of self.domain
         self._exterior_derivative = None # differential
         self._lie_derivatives = {} # collection of Lie derivatives of self
 
@@ -461,7 +443,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         r"""
         Delete the derived quantities
         """
-        DiffMapping._del_derived(self) # derived quantities of the mother class
+        self._restrictions.clear()
         self._exterior_derivative = None 
         # First deletes any reference to self in the vectors' dictionary:
         for vid, val in self._lie_derivatives.items():
@@ -477,6 +459,15 @@ class ScalarField(DiffMapping, CommutativeRingElement):
             description += " '%s'" % self.name
         description += " on the " + str(self.domain)
         return description
+
+    def _latex_(self):
+        r"""
+        LaTeX representation of the object.
+        """
+        if self.latex_name is None:
+            return r'\mbox{no symbol}'
+        else:
+           return self.latex_name
 
     def _new_instance(self):
         r"""
@@ -511,8 +502,6 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         result = ScalarField(self.domain)  #!# what about the name ?
         for chart, funct in self.express.items():
             result.express[chart] = funct.copy()
-        for key, mfunct in self.coord_expression.items():
-            result.coord_expression[key] = mfunct.copy()
         return result
 
     def function_chart(self, chart=None, from_chart=None):
@@ -598,9 +587,6 @@ class ScalarField(DiffMapping, CommutativeRingElement):
                 if chart in known_chart.subcharts:
                     new_expr = self.express[known_chart].expr()
                     self.express[chart] = FunctionChart(chart, new_expr)
-                    self.coord_expression[(chart, self.codomain.def_chart)] = \
-                                            MultiFunctionChart(chart, new_expr)
-                    self._del_derived()
                     return self.express[chart]
             # If this point is reached, the expression must be computed 
             # from that in the chart from_chart, by means of a 
@@ -619,8 +605,6 @@ class ScalarField(DiffMapping, CommutativeRingElement):
                        for i in range(self.manifold.dim) ]
             new_expr = self.express[from_chart](*coords)
             self.express[chart] = FunctionChart(chart, new_expr)
-            self.coord_expression[(chart, self.codomain.def_chart)] = \
-                                        MultiFunctionChart(chart, new_expr)
             self._del_derived()
         return self.express[chart]
 
@@ -714,10 +698,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         if chart is None:
             chart = self.domain.def_chart
         self.express.clear()
-        self.coord_expression.clear()
         self.express[chart] = FunctionChart(chart, coord_expression)
-        self.coord_expression[(chart, self.codomain.def_chart)] = \
-                                    MultiFunctionChart(chart, coord_expression)
         self._del_derived()
 
     def add_expr(self, coord_expression, chart=None):
@@ -761,8 +742,6 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         if chart is None:
             chart = self.domain.def_chart
         self.express[chart] = FunctionChart(chart, coord_expression)
-        self.coord_expression[(chart, self.codomain.def_chart)] = \
-                                    MultiFunctionChart(chart, coord_expression)
         self._del_derived()
 
 
@@ -1043,6 +1022,43 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         else:
             return resu
 
+    def __call__(self, p, chart=None):
+        r"""
+        Compute the value of the scalar field at a given point.
+
+        INPUT:
+    
+        - ``p`` -- point in the scalar field's domain (type: 
+          :class:`~sage.geometry.manifolds.point.Point`)
+        - ``chart`` -- (default: None) chart in which the coordinates of p 
+          are to be considered; if none is provided, a chart in which both p's 
+          coordinates and the expression of ``self`` are known is searched, 
+          starting from the default chart of self.domain will be used
+        
+        OUTPUT:
+
+        - value at p 
+
+        EXAMPLES:
+        
+        """
+        if p not in self.manifold: 
+            raise ValueError("The point " + str(p) +
+                             " does not belong to the " + str(self.manifold))
+        if chart is None: 
+            def_chart = self.domain.def_chart
+            if def_chart in p.coordinates and def_chart in self.express:
+                chart = def_chart
+            else:
+                for chart_p in p.coordinates:
+                    if chart_p in self.express:
+                        chart = chart_p
+                        break
+        if chart is None:
+            raise ValueError("No common chart has been found to evaluate " \
+                "the action of " + str(self) + " on the " + str(p) + ".")
+        return self.express[chart](*(p.coordinates[chart]))
+
     def __pos__(self):
         r"""
         Unary plus operator. 
@@ -1054,10 +1070,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         """
         result = self._new_instance()
         for chart in self.express:
-            res = + self.express[chart]
-            result.express[chart] = res
-            result.coord_expression[(chart, self.codomain.def_chart)] = \
-                                    MultiFunctionChart(res.chart, res.express)
+            result.express[chart] = + self.express[chart]
         if self.name is not None:
             result.name = '+' + self.name 
         if self.latex_name is not None:
@@ -1075,10 +1088,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         """
         result = self._new_instance()
         for chart in self.express:
-            res = - self.express[chart]
-            result.express[chart] = res
-            result.coord_expression[(chart, self.codomain.def_chart)] = \
-                                    MultiFunctionChart(res.chart, res.express)
+            result.express[chart] = - self.express[chart]
         if self.name is not None:
             result.name = '-' + self.name 
         if self.latex_name is not None:
@@ -1111,10 +1121,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         result = ScalarField(dom)
         for chart in com_charts:
             # FunctionChart addition:
-            res = self.express[chart] + other.express[chart]
-            result.express[chart] = res
-            result.coord_expression[(chart, self.codomain.def_chart)] = \
-                                MultiFunctionChart(res.chart, res.express)
+            result.express[chart] = self.express[chart] + other.express[chart]
         if result.is_zero():
             return dom.zero_scalar_field
         if self.name is not None and other.name is not None:
@@ -1146,10 +1153,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         result = ScalarField(dom)
         for chart in com_charts:
             # FunctionChart subtraction:
-            res = self.express[chart] - other.express[chart]
-            result.express[chart] = res
-            result.coord_expression[(chart, self.codomain.def_chart)] = \
-                                MultiFunctionChart(res.chart, res.express)
+            result.express[chart] = self.express[chart] - other.express[chart]
         if result.is_zero():
             return dom.zero_scalar_field
         if self.name is not None and other.name is not None:
@@ -1183,10 +1187,8 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         result = ScalarField(dom)
         for chart in com_charts:
             # FunctionChart multiplication:
-            res = self.express[chart] * other.express[chart]
-            result.express[chart] = res
-            result.coord_expression[(chart, self.codomain.def_chart)] = \
-                                MultiFunctionChart(res.chart, res.express)
+            result.express[chart] = self.express[chart] * other.express[chart]
+        #!# the following 2 lines could be skipped:
         if result.is_zero():
             return dom.zero_scalar_field
         result.name = format_mul_txt(self.name, '*', other.name)
@@ -1218,10 +1220,7 @@ class ScalarField(DiffMapping, CommutativeRingElement):
         result = ScalarField(dom)
         for chart in com_charts:
             # FunctionChart division:
-            res = self.express[chart] / other.express[chart]
-            result.express[chart] = res
-            result.coord_expression[(chart, self.codomain.def_chart)] = \
-                                MultiFunctionChart(res.chart, res.express)
+            result.express[chart] = self.express[chart] / other.express[chart]
         #!# the following 2 lines could be skipped:
         if result.is_zero():
             return dom.zero_scalar_field
@@ -1532,27 +1531,15 @@ class ZeroScalarField(ScalarField):
 
     """
     def __init__(self, domain, name=None, latex_name=None):
-        from manifold import RealLine
-        DiffMapping.__init__(self, domain, RealLine)
-        CommutativeRingElement.__init__(self, domain.scalar_field_ring())
-        self.manifold = domain.manifold
-        self.domain = domain
-        self.name = name
-        if latex_name is None:
-            self.latex_name = self.name
-        else:
-            self.latex_name = latex_name
+        ScalarField.__init__(self, domain, name=name, latex_name=latex_name)
 
     ####### Required methods for a ring element (beside arithmetic) #######
     
     def __nonzero__(self):
         r"""
-        Return always False (since ``self`` is zero). 
+        Always return False (since ``self`` is zero!). 
         
         This method is called by self.is_zero(). 
-
-        EXAMPLES:
-        
 
         """
         return False

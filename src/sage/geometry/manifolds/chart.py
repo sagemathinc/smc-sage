@@ -1114,8 +1114,6 @@ class FunctionChart(SageObject):
     """
     def __init__(self, chart, expression): 
         from sage.symbolic.ring import SR
-        if not isinstance(chart, Chart):
-            raise TypeError("The first argument must be a chart.")
         self.chart = chart
         self.express = SR(expression)
         self.nc = len(self.chart.xx)    # number of coordinates
@@ -1670,8 +1668,6 @@ class FunctionChart(SageObject):
         result = ScalarField(self.chart.domain, name=name, 
                              latex_name=latex_name)
         result.express = {self.chart: self}
-        result.coord_expression = {(self.chart, result.codomain.def_chart):
-                                MultiFunctionChart(self.chart, self.express)}
         return result
 
  
@@ -2377,7 +2373,7 @@ class CoordChange(SageObject):
         self.transf = MultiFunctionChart(chart1, *transformations)
         self._inverse = None
         # Jacobian matrix: 
-        self.jacobian  = self.transf.jacobian()     
+        self.jacobian  = self.transf.jacobian()  
         # Jacobian determinant: 
         if n1 == n2: 
             self.jacobian_det = self.transf.jacobian_det()

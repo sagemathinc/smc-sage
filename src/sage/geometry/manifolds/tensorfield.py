@@ -617,8 +617,8 @@ class TensorField(ModuleElement):
 
         At this stage, defining the restriction of v to domain V fully specifies v::
         
-            sage: v.restrict(V)[1] = vW[eS_W, 1, stereoS_W]  # note that eS is the default frame on V
-            sage: v.restrict(V)[2] = vW[eS_W, 2, stereoS_W]
+            sage: v.restrict(V)[1] = vW[eS_W, 1, stereoS_W].expr()  # note that eS is the default frame on V
+            sage: v.restrict(V)[2] = vW[eS_W, 2, stereoS_W].expr()
             sage: v.view(eS, stereoS)
             v = (-u^2 + v^2) d/du - 2*u*v d/dv
             sage: v.restrict(U).view()

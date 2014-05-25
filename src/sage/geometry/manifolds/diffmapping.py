@@ -219,7 +219,7 @@ class DiffMapping(SageObject):
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
         description = "differentiable mapping"
         if self.name is not None:
@@ -230,7 +230,7 @@ class DiffMapping(SageObject):
         
     def _latex_(self):
         r"""
-        Special Sage function for the LaTeX representation of the object.
+        LaTeX representation of the object.
         """
         if self.latex_name is None:
             return r'\mbox{no symbol}'
