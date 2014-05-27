@@ -1,17 +1,15 @@
 r"""
-Scalar field ring
+Scalar field algebra
 
-The class :class:`ScalarFieldRing` implements the commutative ring 
+The class :class:`ScalarFieldAlgebra` implements the commutative algebra 
 `C^\infty(U)` of differentiable scalar fields on some open subset `U` of a 
-differentiable manifold `M` over `\RR`. By *scalar field*, it is meant a map 
-`U\rightarrow \RR`. The ring product is the pointwise scalar multiplication,
-which is clearly commutative. 
- 
-.. NOTE::
-
-    `C^\infty(U)` is actually a commutative algebra over `\RR`. Here only the
-    ring part is implemented. 
-
+differentiable manifold `M` over `\RR`. By *scalar field*, it is meant a 
+function `U\rightarrow \RR`. 
+`C^\infty(U)` is an algebra over `\RR`, whose ring product is the pointwise 
+multiplication of real-valued functions, which is clearly commutative. 
+In the present implementation, the field `\RR`, over which the 
+albegra `C^\infty(U)` is constructed, is represented by Sage's symbolic ring
+SR. 
 
 AUTHORS:
 
@@ -31,20 +29,22 @@ AUTHORS:
 
 from sage.structure.parent import Parent
 from sage.structure.unique_representation import UniqueRepresentation
-from sage.categories.commutative_rings import CommutativeRings
+from sage.categories.commutative_algebras import CommutativeAlgebras
 from sage.rings.integer_ring import ZZ
 from sage.rings.rational_field import QQ
 from sage.symbolic.ring import SR
 from sage.geometry.manifolds.scalarfield import ScalarField, ZeroScalarField
 
-class ScalarFieldRing(UniqueRepresentation, Parent):
+class ScalarFieldAlgebra(UniqueRepresentation, Parent):
     r"""
-    Commutative ring `C^\infty(U)` of differentiable maps `U \rightarrow \RR`, 
-    where `U` is an open subset of some differentiable manifold over `\RR`.
+    Commutative algebra `C^\infty(U)` of differentiable functions 
+    `U \rightarrow \RR`, where `U` is an open subset of some differentiable 
+    manifold over `\RR`. `C^\infty(U)` is a commutative algebra over `\RR`,
+    the latter being represented by Sage's symbolic ring SR. 
     
-    The class :class:`ScalarFieldRing` inherits from 
+    The class :class:`ScalarFieldAlgebra` inherits from 
     :class:`~sage.structure.parent.Parent`, with the category set to
-    :class:`~sage.categories.commutative_rings.CommutativeRings`. 
+    :class:`~sage.categories.commutative_algebras.CommutativeAlgebras`. 
     The corresponding Element class is 
     :class:`~sage.geometry.manifolds.scalarfield.ScalarField`. 
 
@@ -61,15 +61,16 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
         sage: M = Manifold(2, 'M')
         sage: U = M.open_domain('U')
         sage: X.<x,y> = U.chart()
-        sage: CU = U.scalar_field_ring() ; CU
-        ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'M'
+        sage: CU = U.scalar_field_algebra() ; CU
+        algebra of scalar fields on the open domain 'U' on the 2-dimensional manifold 'M'
         sage: latex(CU)
         C^\infty(U)
 
-    `C^\infty(U)` belongs to the category of commutative rings::
+    `C^\infty(U)` belongs to the category of commutative algebras over `\RR` 
+    (represented here by Sage's symbolic ring)::
     
         sage: CU.category()
-        Category of commutative rings
+        Category of commutative algebras over Symbolic Ring
 
     The elements of `C^\infty(U)` are scalar fields::
     
@@ -79,7 +80,7 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
         (x, y) |--> 2
         sage: f = U.scalar_field(x + y^2, name='f')
         sage: f.parent()
-        ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'M'
+        algebra of scalar fields on the open domain 'U' on the 2-dimensional manifold 'M'
         sage: f in CU
         True
 
@@ -101,7 +102,7 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
         sage: CU.one() == CU(1)
         True
 
-    As for any ring in Sage, elements can be constructed by means of the 
+    As for any parent in Sage, elements can be constructed by means of the 
     __call__ operator, by providing some coordinate expression::
     
         sage: g = CU(sin(x)) ; g  # coordinate expression in the default chart
@@ -109,17 +110,17 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
         sage: g.view()
         (x, y) |--> sin(x)
         sage: Y.<u,v> = U.chart()
-        sage: g = CU(exp(u+v), chart=Y) ; g  # coordinate expression in a non-default chart
+        sage: g = CU({Y: exp(u+v)}) ; g  # coordinate expression in a non-default chart
         scalar field on the open domain 'U' on the 2-dimensional manifold 'M'
         sage: g.view(Y)
         (u, v) |--> e^(u + v)
      
-    The ring `C^\infty(U)` coerces to `C^\infty(V)` where `V` is any open 
+    The algebra `C^\infty(U)` coerces to `C^\infty(V)` where `V` is any open 
     subset of `U`::
     
         sage: V = U.open_domain('V')
         sage: XV = X.restrict(V, x^2+y^2<1)
-        sage: CV = V.scalar_field_ring()
+        sage: CV = V.scalar_field_algebra()
         sage: CV.has_coerce_map_from(CU)
         True
 
@@ -137,11 +138,11 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
     
         sage: h = V.scalar_field(x*y)
         sage: f.parent() , h.parent()
-        (ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'M',
-         ring of scalar fields on the open domain 'V' on the 2-dimensional manifold 'M')
+        (algebra of scalar fields on the open domain 'U' on the 2-dimensional manifold 'M',
+         algebra of scalar fields on the open domain 'V' on the 2-dimensional manifold 'M')
         sage: s = f + h
         sage: s.parent()
-        ring of scalar fields on the open domain 'V' on the 2-dimensional manifold 'M'
+        algebra of scalar fields on the open domain 'V' on the 2-dimensional manifold 'M'
         sage: s.view()
         (x, y) |--> x*y + y^2 + x
         sage: s == f_V + h
@@ -154,13 +155,13 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
     Element = ScalarField
 
     def __init__(self, domain):
-        Parent.__init__(self, category=CommutativeRings())
+        Parent.__init__(self, base=SR, category=CommutativeAlgebras(SR))
         self.domain = domain
         self._populate_coercion_lists_()
         
     #### Methods required for any Parent 
-    def _element_constructor_(self, coord_expression=None, chart=None, 
-                              name=None, latex_name=None):
+    def _element_constructor_(self, coord_expression=None, name=None, 
+                              latex_name=None):
         r"""
         Construct a scalarfield
         """
@@ -168,28 +169,29 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
             return ZeroScalarField(self.domain)
         if isinstance(coord_expression, ScalarField):
             if self.domain.is_subdomain(coord_expression.domain):
-                if chart is None:
-                    chart = self.domain.def_chart
+                # restriction of the scalar field to self.domain:
+                sexpress = {}
+                for chart, funct in coord_expression.express.items():
+                    for schart in self.domain._atlas:
+                        if schart in chart.subcharts:
+                            sexpress[schart] = funct.expr()
                 resu = self.element_class(self.domain, 
-                                coord_expression=coord_expression.expr(chart), 
-                                chart=chart, name=name, 
-                                latex_name=latex_name)
+                                          coord_expression=sexpress, name=name, 
+                                          latex_name=latex_name)
             else:
-                raise TypeError("Cannot coerce this scalar field to a " + 
-                                "scalar field on the " + str(self.domain))
+                raise TypeError("Cannot coerce the " + str(coord_expression) +
+                                "to a scalar field on the " + str(self.domain))
         else:
             resu = self.element_class(self.domain, 
                                       coord_expression=coord_expression, 
-                                      chart=chart, name=name, 
-                                      latex_name=latex_name)
+                                      name=name, latex_name=latex_name)
         return resu
 
     def _an_element_(self):
         r"""
         Construct some (unamed) element of the module
         """
-        resu = self.element_class(self.domain, coord_expression=2)
-        return resu
+        return self.element_class(self.domain, coord_expression=2)
             
             
     def _coerce_map_from_(self, other):
@@ -197,12 +199,13 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
         Determine whether coercion to self exists from other parent
         """
         if other is SR:
-            return True
+            return True  # coercion from the base ring (multiplication by the 
+                         # algebra unit, i.e. self.one())
         elif other is ZZ:
-           return True
+           return True   # important to define self(1) (for self.one())
         elif other is QQ:
             return True
-        elif isinstance(other, ScalarFieldRing):
+        elif isinstance(other, ScalarFieldAlgebra):
             return self.domain.is_subdomain(other.domain)
         else:
             return False
@@ -213,7 +216,7 @@ class ScalarFieldRing(UniqueRepresentation, Parent):
         r"""
         String representation of the object.
         """
-        return "ring of scalar fields on the " + str(self.domain)
+        return "algebra of scalar fields on the " + str(self.domain)
         
     def _latex_(self):
         r"""

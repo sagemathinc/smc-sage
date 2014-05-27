@@ -413,7 +413,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
                                   output_formatter=fmodule.output_formatter)
                 for i in range(si, nsi):
                     for j in range(si, nsi):
-                        cinv[i, j, chart] = simplify_chain(mat_inv[i-si,j-si])
+                        cinv[i, j] = {chart: simplify_chain(mat_inv[i-si,j-si])}
                 self._inverse.components[frame] = cinv
         return self._inverse
 

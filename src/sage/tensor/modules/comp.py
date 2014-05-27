@@ -767,7 +767,12 @@ class Components(SageObject):
                 if format_type is None:
                     self._comp[ind] = self.ring(value)
                 else:
-                    self._comp[ind] = self.ring(value, format_type)
+                    self._comp[ind] = self.ring({format_type: value})
+                    # NB: the writing 
+                    #   self._comp[ind] = self.ring(value, format_type) 
+                    # is not allowed when ring is an algebra and value some
+                    # element of the algebra's base ring, cf. the discussion at
+                    # http://trac.sagemath.org/ticket/16054
 
     def _set_list(self, ind_slice, format_type, values):
         r"""
@@ -2178,9 +2183,9 @@ class CompWithSym(Components):
                         self._comp[ind] = -self.ring(value)
                 else:
                     if sign == 1:
-                        self._comp[ind] = self.ring(value, format_type)
+                        self._comp[ind] = self.ring({format_type: value})
                     else:   # sign = -1
-                        self._comp[ind] = -self.ring(value, format_type)
+                        self._comp[ind] = -self.ring({format_type: value})
 
     def swap_adjacent_indices(self, pos1, pos2, pos3):
         r"""
@@ -3499,7 +3504,7 @@ class CompFullySym(CompWithSym):
                 if format_type is None:
                     self._comp[ind] = self.ring(value)
                 else:
-                    self._comp[ind] = self.ring(value, format_type)
+                    self._comp[ind] = self.ring({format_type: value})
 
     def __add__(self, other):
         r"""

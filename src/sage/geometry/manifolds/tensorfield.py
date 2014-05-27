@@ -117,7 +117,7 @@ the manifold's default chart)::
     sage: print type(t[1,1])    # single bracket --> FunctionChart
     <class 'sage.geometry.manifolds.chart.FunctionChart'>
     sage: print type(t[[1,1]])  # double bracket --> ScalarField
-    <class 'sage.geometry.manifolds.scalarfield.ScalarFieldRing_with_category.element_class'>
+    <class 'sage.geometry.manifolds.scalarfield.ScalarField'>
 
 Expressions in a chart different from the manifold's default one are 
 obtained by specifying the chart as the last argument inside the
@@ -1450,7 +1450,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         sage: t.parent()
         free module TF^(2,0)(M) of type-(2,0) tensors fields on the 3-dimensional manifold 'M'
         sage: t.parent().base_ring()
-        ring of scalar fields on the 3-dimensional manifold 'M'
+        algebra of scalar fields on the 3-dimensional manifold 'M'
 
     The components with respect to the manifold's default frame are set or read
     by means of square brackets::

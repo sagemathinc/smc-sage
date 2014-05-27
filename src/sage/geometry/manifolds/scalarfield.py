@@ -10,9 +10,8 @@ manifolds over `\RR`, i.e. differentiable mappings of the form
     
 where `U` is an open subset of the differentiable manifold `M`.
 
-The class :class:`ScalarField`  inherits from the class  :class:`~sage.structure.element.CommutativeRingElement` (a scalar field on
-`U` being an element of the commutative ring (actually a commutative 
-algebra) `C^\infty(U)`).
+The class :class:`ScalarField`  inherits from the class  :class:`~sage.structure.element.CommutativeAlgebraElement` (a scalar field on
+`U` being an element of the commutative algebra `C^\infty(U)`).
 
 The subclass :class:`ZeroScalarField` deals with null scalar fields. 
 
@@ -32,12 +31,12 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from sage.structure.element import CommutativeRingElement
+from sage.structure.element import CommutativeAlgebraElement
 from sage.rings.integer import Integer
 from domain import Domain
 from chart import FunctionChart, ZeroFunctionChart, MultiFunctionChart
 
-class ScalarField(CommutativeRingElement):
+class ScalarField(CommutativeAlgebraElement):
     r"""
     Class for scalar fields on a differentiable manifold.
     
@@ -48,9 +47,6 @@ class ScalarField(CommutativeRingElement):
       :class:`~sage.geometry.manifolds.domain.OpenDomain`)
     - ``coord_expression`` -- (default: None) coordinate expression of the 
       scalar field
-    - ``chart`` -- (default:None) chart defining the coordinates used in 
-      ``coord_expression``; if none is provided and a
-      coordinate expression is given, the domain default chart is assumed.
     - ``name`` -- (default: None) name given to the scalar field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the scalar field; 
       if none is provided, the LaTeX symbol is set to ``name``
@@ -63,11 +59,11 @@ class ScalarField(CommutativeRingElement):
         sage: f = M.scalar_field() ; f
         scalar field on the 2-dimensional manifold 'S^2'
     
-    Scalar fields on `M` belong to the ring `C^\infty(M)`::
+    Scalar fields on `M` belong to the algebra `C^\infty(M)`::
      
         sage: f.parent()
-        ring of scalar fields on the 2-dimensional manifold 'S^2'
-        sage: f.parent() is M.scalar_field_ring()
+        algebra of scalar fields on the 2-dimensional manifold 'S^2'
+        sage: f.parent() is M.scalar_field_algebra()
         True
 
     Named scalar field::
@@ -332,9 +328,9 @@ class ScalarField(CommutativeRingElement):
         <class 'sage.geometry.manifolds.scalarfield.ZeroScalarField'>
 
     """
-    def __init__(self, domain, coord_expression=None, chart=None, name=None, 
+    def __init__(self, domain, coord_expression=None, name=None, 
                  latex_name=None):
-        CommutativeRingElement.__init__(self, domain.scalar_field_ring())
+        CommutativeAlgebraElement.__init__(self, domain.scalar_field_algebra())
         self.manifold = domain.manifold
         self.domain = domain
         self.tensor_type = (0,0)
@@ -343,26 +339,26 @@ class ScalarField(CommutativeRingElement):
             self.latex_name = self.name
         else:
             self.latex_name = latex_name
-        if coord_expression is None:
-            self.express = {}
-        else:
+        self.express = {}
+        if coord_expression is not None:
             if isinstance(coord_expression, FunctionChart):
-                self.express = {coord_expression.chart: coord_expression}
+                self.express[coord_expression.chart] = coord_expression
             elif isinstance(coord_expression, dict):
-                self.express = {}
                 for chart, expression in coord_expression.items():
-                    self.express[chart] = FunctionChart(chart, expression)
+                    if isinstance(expression, FunctionChart):
+                        self.express[chart] = expression
+                    else:
+                        self.express[chart] = FunctionChart(chart, expression)
+            elif coord_expression == 0:
+                for chart in self.domain._atlas:
+                    self.express[chart] = chart.zero_function
             else:
-                if chart is None:
-                    chart = self.domain.def_chart
-                if coord_expression == 0:
-                    self.express = {chart: chart.zero_function}
-                else:
-                    self.express = {chart: FunctionChart(chart, coord_expression)}
+                for chart in self.domain._atlas:
+                    self.express[chart] = FunctionChart(chart, 
+                                                        coord_expression)
         self._init_derived()   # initialization of derived quantities
 
-
-    ####### Required methods for a ring element (beside arithmetic) #######
+    ####### Required methods for an algebra element (beside arithmetic) #######
     
     def __nonzero__(self):
         r"""
@@ -429,7 +425,7 @@ class ScalarField(CommutativeRingElement):
         """
         return not self.__eq__(other)
         
-    ####### End of required methods a ring element (beside arithmetic) #######
+    ####### End of required methods for an algebra element (beside arithmetic) #######
 
     def _init_derived(self):
         r"""
@@ -827,9 +823,9 @@ class ScalarField(CommutativeRingElement):
             sage: f_U.view()
             f|_U: (x, y) |--> cos(x*y)
             sage: f.parent()
-            ring of scalar fields on the 2-dimensional manifold 'M'
+            algebra of scalar fields on the 2-dimensional manifold 'M'
             sage: f_U.parent()
-            ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'M'
+            algebra of scalar fields on the open domain 'U' on the 2-dimensional manifold 'M'
         
         The restriction to the whole domain is the identity::
         
@@ -847,7 +843,7 @@ class ScalarField(CommutativeRingElement):
                                  "of the domain of definition of the scalar " + 
                                  "field.")
             # the restriction is obtained via coercion
-            resu = subdomain.scalar_field_ring()(self)
+            resu = subdomain.scalar_field_algebra()(self)
             if self.name is not None:
                 resu.name = self.name + "|_" + subdomain.name
             if self.latex_name is not None:
@@ -1096,7 +1092,7 @@ class ScalarField(CommutativeRingElement):
         return result
 
 
-    #########  CommutativeRingElement arithmetic operators ########
+    #########  CommutativeAlgebraElement arithmetic operators ########
 
     def _add_(self, other):
         r"""
@@ -1104,7 +1100,7 @@ class ScalarField(CommutativeRingElement):
         
         INPUT:
         
-        - ``other`` -- a scalar field (in the same ring as self)
+        - ``other`` -- a scalar field (in the same algebra as self)
         
         OUPUT:
         
@@ -1136,7 +1132,7 @@ class ScalarField(CommutativeRingElement):
         
         INPUT:
         
-        - ``other`` -- a scalar field (in the same ring as self)
+        - ``other`` -- a scalar field (in the same algebra as self)
         
         OUPUT:
         
@@ -1169,7 +1165,7 @@ class ScalarField(CommutativeRingElement):
         
         INPUT:
         
-        - ``other`` -- a scalar field (in the same ring as self)
+        - ``other`` -- a scalar field (in the same algebra as self)
         
         OUPUT:
         
@@ -1202,7 +1198,7 @@ class ScalarField(CommutativeRingElement):
         
         INPUT:
         
-        - ``other`` -- a scalar field (in the same ring as self)
+        - ``other`` -- a scalar field (in the same algebra as self)
         
         OUPUT:
         
@@ -1229,7 +1225,47 @@ class ScalarField(CommutativeRingElement):
                                              other.latex_name)
         return result
 
-    #########  End of CommutativeRingElement arithmetic operators ########
+    def _lmul_(self, number):
+        r"""
+        Multiplication on the left of a scalar field by a real number. 
+        
+        INPUT:
+        
+        - ``number`` -- an element of the ring on which the algebra is defined; 
+          mathematically, this should be a real number; here it is a member of
+          the symbolic ring SR. 
+        
+        OUPUT:
+        
+        - the scalar field ``number*self`` 
+        
+        """
+        if number == 0:
+            return self.domain.zero_scalar_field
+        result = ScalarField(self.domain)
+        for chart, expr in self.express.items():
+            result.express[chart] = number * expr
+        return result
+
+    def _rmul_(self, number):
+        r"""
+        Multiplication on the right of a scalar field by a real number. 
+        
+        INPUT:
+        
+        - ``number`` -- an element of the ring on which the algebra is defined; 
+          mathematically, this should be a real number; here it is a member of
+          the symbolic ring SR. 
+        
+        OUPUT:
+        
+        - the scalar field ``number*self`` 
+        
+        """
+        return self._lmul_(number) # since the algebra is commutative
+
+
+    #########  End of CommutativeAlgebraElement arithmetic operators ########
 
 
     def exterior_der(self):
@@ -1533,7 +1569,7 @@ class ZeroScalarField(ScalarField):
     def __init__(self, domain, name=None, latex_name=None):
         ScalarField.__init__(self, domain, name=name, latex_name=latex_name)
 
-    ####### Required methods for a ring element (beside arithmetic) #######
+    ####### Required methods for an algebra element (beside arithmetic) #######
     
     def __nonzero__(self):
         r"""
@@ -1572,7 +1608,7 @@ class ZeroScalarField(ScalarField):
         """
         return not self.__eq__(other)
         
-    ####### End of required methods a ring element (beside arithmetic) #######
+    ####### End of required methods for an algebra element (beside arithmetic) #######
 
     def _repr_(self):
         r"""
@@ -1721,7 +1757,7 @@ class ZeroScalarField(ScalarField):
         return self
 
 
-    #########  CommutativeRingElement arithmetic operators ########
+    #########  CommutativeAlgebraElement arithmetic operators ########
 
     def _add_(self, other):
         r"""
@@ -1729,7 +1765,7 @@ class ZeroScalarField(ScalarField):
         
         INPUT:
         
-        - ``other`` -- a scalar field (in the same ring as self)
+        - ``other`` -- a scalar field (in the same algebra as self)
         
         OUPUT:
         
@@ -1745,7 +1781,7 @@ class ZeroScalarField(ScalarField):
         
         INPUT:
         
-        - ``other`` -- a scalar field (in the same ring as self)
+        - ``other`` -- a scalar field (in the same algebra as self)
         
         OUPUT:
         
@@ -1761,7 +1797,7 @@ class ZeroScalarField(ScalarField):
         
         INPUT:
         
-        - ``other`` -- a scalar field (in the same ring as self)
+        - ``other`` -- a scalar field (in the same algebra as self)
         
         OUPUT:
         
@@ -1777,7 +1813,7 @@ class ZeroScalarField(ScalarField):
         
         INPUT:
         
-        - ``other`` -- a scalar field (in the same ring as self)
+        - ``other`` -- a scalar field (in the same algebra as self)
         
         OUPUT:
         
@@ -1790,7 +1826,25 @@ class ZeroScalarField(ScalarField):
         else:
             return self
 
-    #########  End of CommutativeRingElement arithmetic operators ########
+    def _lmul_(self, number):
+        r"""
+        Multiplication on the left of the scalar field by a real number. 
+        
+        INPUT:
+        
+        - ``number`` -- an element of the ring on which the algebra is defined; 
+          mathematically, this should be a real number; here it is a member of
+          the symbolic ring SR. 
+        
+        OUPUT:
+        
+        - the scalar field ``number*self`` 
+        
+        """
+        return self
+
+
+    #########  End of CommutativeAlgebraElement arithmetic operators ########
 
 
     #!# TO BE REWRITTEN:

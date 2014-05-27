@@ -290,10 +290,10 @@ class Metric(SymBilinFormFieldParal):
                     continue
                 gmat_inv = gmat.inverse()
                 cinv = CompFullySym(fmodule.ring, frame, 2, start_index=si,
-                                  output_formatter=fmodule.output_formatter)
+                                    output_formatter=fmodule.output_formatter)
                 for i in range(si, nsi):
                     for j in range(i, nsi):   # symmetry taken into account
-                        cinv[i, j, chart] = simplify_chain(gmat_inv[i-si,j-si])
+                        cinv[i, j] = {chart: simplify_chain(gmat_inv[i-si,j-si])}
                 self._inverse.components[frame] = cinv
         return self._inverse
         

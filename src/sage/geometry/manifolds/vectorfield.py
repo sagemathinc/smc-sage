@@ -123,13 +123,13 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
         sage: latex(v)
         V
     
-    Vector fields are considered as elements of a module over the ring of
-    scalar fields on `M`::
+    Vector fields are considered as elements of a module over the ring 
+    (algebra) of scalar fields on `M`::
     
         sage: v.parent()
         free module X(M) of vector fields on the 3-dimensional manifold 'M'
         sage: v.parent().base_ring()
-        ring of scalar fields on the 3-dimensional manifold 'M'
+        algebra of scalar fields on the 3-dimensional manifold 'M'
         sage: v.parent() is M.vector_field_module()
         True
 

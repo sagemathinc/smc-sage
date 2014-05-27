@@ -28,8 +28,8 @@ class TensorFieldModule(UniqueRepresentation, Module):
     of some manifold `S` with values in a open subset `V` of 
     a manifold `M`.
     
-    This is a module over `C^\infty(U)`, the ring of differentiable scalar 
-    fields on `U`. 
+    This is a module over `C^\infty(U)`, the ring (algebra) of differentiable 
+    scalar fields on `U`. 
     
     The standard case of tensor fields *on* a manifold corresponds to 
     `U=V` (and hence `S=M`). Another common case is `\Phi` being an 
@@ -69,7 +69,7 @@ class TensorFieldModule(UniqueRepresentation, Module):
         self.latex_name = latex_name
         # the member self.ring is created for efficiency (to avoid calls to 
         # self.base_ring()):
-        self.ring = domain.scalar_field_ring() 
+        self.ring = domain.scalar_field_algebra() 
         Module.__init__(self, self.ring)
         self.domain = domain
         self.dest_map = dest_map
@@ -132,7 +132,7 @@ class TensorFieldFreeModule(TensorFreeModule):
     a manifold `M`.
     
     Since `V` is parallelizable, the module is a free module over `C^\infty(U)`,
-    the ring of differentiable scalar fields on `U`. 
+    the ring (algebra) of differentiable scalar fields on `U`. 
     
     The standard case of tensor fields *on* a manifold corresponds to 
     `U=V` (and hence `S=M`). Another common case is `\Phi` being an 

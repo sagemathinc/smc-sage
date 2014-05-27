@@ -53,8 +53,8 @@ class VectorFieldModule(UniqueRepresentation, Module):
         
     
     Since `V` is parallelizable, the `\mathcal{X}(U,\Phi)` is a free module 
-    over `C^\infty(U)`, the ring of differentiable scalar fields on `U`.
-    Its rank is the dimension of `M`. 
+    over `C^\infty(U)`, the ring (algebra) of differentiable scalar fields on 
+    `U`. Its rank is the dimension of `M`. 
     
     The standard case of vector fields *on* a manifold corresponds to `S=M`, 
     `U=V` and `\Phi = \mathrm{Id}`. 
@@ -91,7 +91,7 @@ class VectorFieldModule(UniqueRepresentation, Module):
         self.latex_name = latex_name
         # the member self.ring is created for efficiency (to avoid calls to 
         # self.base_ring()):
-        self.ring = domain.scalar_field_ring() 
+        self.ring = domain.scalar_field_algebra() 
         Module.__init__(self, self.ring)
         # Dictionary of the tensor modules built on self 
         #   (dict. keys = (k,l) --the tensor type)
@@ -255,8 +255,8 @@ class VectorFieldFreeModule(FiniteFreeModule):
         
     
     Since `V` is parallelizable, the `\mathcal{X}(U,\Phi)` is a free module 
-    over `C^\infty(U)`, the ring of differentiable scalar fields on `U`.
-    Its rank is the dimension of `M`. 
+    over `C^\infty(U)`, the ring (algebra) of differentiable scalar fields on 
+    `U`. Its rank is the dimension of `M`. 
     
     The standard case of vector fields *on* a manifold corresponds to `S=M`, 
     `U=V` and `\Phi = \mathrm{Id}`. 
@@ -290,7 +290,7 @@ class VectorFieldFreeModule(FiniteFreeModule):
             name += "," + self.dest_map.name + ")" 
             latex_name += "," + self.dest_map.latex_name + r"\right)" 
         manif = self.ambient_domain.manifold
-        FiniteFreeModule.__init__(self, domain.scalar_field_ring(), 
+        FiniteFreeModule.__init__(self, domain.scalar_field_algebra(), 
                                   manif.dim, name=name, latex_name=latex_name, 
                                   start_index=manif.sindex,
                                   output_formatter=ScalarField.function_chart)

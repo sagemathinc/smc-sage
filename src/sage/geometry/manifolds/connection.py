@@ -182,7 +182,7 @@ class AffConnection(SageObject):
         """
         from sage.tensor.modules.comp import Components
         from scalarfield import ScalarField
-        return Components(self.domain.scalar_field_ring(), frame, 3, 
+        return Components(self.domain.scalar_field_algebra(), frame, 3, 
                           start_index=self.manifold.sindex,
                           output_formatter=ScalarField.function_chart)
         
@@ -437,12 +437,12 @@ class AffConnection(SageObject):
         tc = tensor.components[frame]
         gam = self.coefficients[frame]
         if tensor.sym == [] and tensor.antisym == []:
-            resc = Components(tdom.scalar_field_ring(), frame,
+            resc = Components(tdom.scalar_field_algebra(), frame,
                               tensor.tensor_rank+1, 
                               start_index=self.manifold.sindex,
                               output_formatter=ScalarField.function_chart)
         else:
-            resc = CompWithSym(tdom.scalar_field_ring(), frame,
+            resc = CompWithSym(tdom.scalar_field_algebra(), frame,
                               tensor.tensor_rank+1, 
                               start_index=self.manifold.sindex,
                               output_formatter=ScalarField.function_chart,
@@ -1192,7 +1192,7 @@ class LeviCivitaConnection(AffConnection):
             if isinstance(frame, CoordFrame):
                 # Christoffel symbols
                 chart = frame.chart
-                gam = CompWithSym(dom.scalar_field_ring(), frame, 3, 
+                gam = CompWithSym(dom.scalar_field_algebra(), frame, 3, 
                                   start_index=self.manifold.sindex,
                                   output_formatter=ScalarField.function_chart,
                                   sym=(1,2))
@@ -1356,7 +1356,7 @@ class LeviCivitaConnection(AffConnection):
             sage: g[0,0], g[1,1] = -(1-2*m/r), 1/(1-2*m/r)
             sage: g[2,2], g[3,3] = r^2, (r*sin(th))^2
             sage: g.view()
-            g = (2*m/r - 1) dt*dt - 1/(2*m/r - 1) dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
+            g = (2*m - r)/r dt*dt - r/(2*m - r) dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
             sage: nab = g.connection() ; nab
             Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the 4-dimensional manifold 'M'
             sage: ric = nab.ricci() ; ric
@@ -1377,7 +1377,7 @@ class LeviCivitaConnection(AffConnection):
                 else: # a random frame is picked
                     frame = riem.components.items()[0][0]
             criem = riem.components[frame]
-            cric = CompFullySym(dom.scalar_field_ring(), frame, 2,
+            cric = CompFullySym(dom.scalar_field_algebra(), frame, 2,
                                 start_index=self.manifold.sindex,
                                 output_formatter=ScalarField.function_chart)
             si = manif.sindex

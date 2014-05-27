@@ -1083,8 +1083,8 @@ class OpenDomain(Domain):
         # list of vector frames that individually cover the domain, i.e. whose 
         # domains are self (if non-empty, self is parallelizable):
         self.covering_frames = [] 
-        # ring of scalar fields defined on self (not contructed yet) 
-        self._scalar_field_ring = None 
+        # algebra of scalar fields defined on self (not contructed yet) 
+        self._scalar_field_algebra = None 
         # The zero scalar field is constructed:
         if self.name != 'field R':  
             #!# to avoid circular import of RealLine
@@ -1361,44 +1361,44 @@ class OpenDomain(Domain):
             if not sd.is_manifestly_parallelizable():
                 sd.parallelizable_parts.add(self)
             
-    def scalar_field_ring(self):
+    def scalar_field_algebra(self):
         r"""
-        Returns the ring of scalar fields defined on ``self``.
+        Returns the algebra of scalar fields defined on ``self``.
         
-        See :class:`~sage.geometry.manifolds.scalarfield_ring.ScalarFieldRing` 
+        See :class:`~sage.geometry.manifolds.scalarfield_algebra.ScalarFieldAlgebra` 
         for a complete documentation.  
         
         OUTPUT:
         
         - instance of 
-          :class:`~sage.geometry.manifolds.scalarfield_ring.ScalarFieldRing`
+          :class:`~sage.geometry.manifolds.scalarfield_algebra.ScalarFieldAlgebra`
           representing the algebra `C^\infty(U)` of all scalar fields defined
           on `U` = ``self``.
           
         EXAMPLE:
         
-        Scalar ring of a 3-dimensional open domain::
+        Scalar algebra of a 3-dimensional open domain::
         
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: U = M.open_domain('U')
-            sage: CU = U.scalar_field_ring() ; CU
-            ring of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            sage: CU = U.scalar_field_algebra() ; CU
+            algebra of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: CU.category()
-            Category of commutative rings
+            Category of commutative algebras over Symbolic Ring
             sage: CU.zero()
             zero scalar field on the open domain 'U' on the 3-dimensional manifold 'M'
           
         """
-        from scalarfield_ring import ScalarFieldRing
-        if self._scalar_field_ring is None:
-            self._scalar_field_ring = ScalarFieldRing(self)
-        return self._scalar_field_ring
+        from scalarfield_algebra import ScalarFieldAlgebra
+        if self._scalar_field_algebra is None:
+            self._scalar_field_algebra = ScalarFieldAlgebra(self)
+        return self._scalar_field_algebra
 
     def vector_field_module(self, dest_map=None, force_free=False):
         r"""
         Returns the set of vector fields defined on ``self``, possibly 
-        within some ambient manifold, as a module over the ring of scalar
+        within some ambient manifold, as a module over the algebra of scalar
         fields defined on ``self``.
 
         See :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule` 
@@ -1437,10 +1437,10 @@ class OpenDomain(Domain):
             sage: XU = U.vector_field_module() ; XU
             free module X(U) of vector fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
             sage: XU.category()
-            Category of modules over ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            Category of modules over algebra of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
             sage: XU.base_ring()
-            ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
-            sage: XU.base_ring() is U.scalar_field_ring()
+            algebra of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            sage: XU.base_ring() is U.scalar_field_algebra()
             True
 
         `\mathcal{X}(U)` is a free module because `U` is parallelizable (being
@@ -1471,7 +1471,7 @@ class OpenDomain(Domain):
             sage: XU_R3 = U.vector_field_module(dest_map=Phi) ; XU_R3
             free module X(U,Phi) of vector fields along the open domain 'U' on the 2-dimensional manifold 'S^2' mapped into the 3-dimensional manifold 'R^3'
             sage: XU_R3.base_ring()
-            ring of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            algebra of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
             
         `\mathcal{X}(U,\mathbb{R}^3)` is a free module because `\mathbb{R}^3`
         is parallelizable and its rank is 3::
@@ -1499,7 +1499,7 @@ class OpenDomain(Domain):
     def tensor_field_module(self, tensor_type, dest_map=None):
         r"""
         Returns the set of tensor fields of a given type defined on ``self``, 
-        possibly within some ambient manifold, as a module over the ring of 
+        possibly within some ambient manifold, as a module over the algebra of 
         scalar fields defined on ``self``.
 
         See :class:`~sage.geometry.manifolds.tensorfield_module.TensorFieldModule` 
@@ -1534,10 +1534,10 @@ class OpenDomain(Domain):
             sage: TU = U.tensor_field_module((2,1)) ; TU
             free module TF^(2,1)(U) of type-(2,1) tensors fields on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: TU.category()
-            Category of modules over ring of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'            
+            Category of modules over algebra of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'            
             sage: TU.base_ring()
-            ring of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
-            sage: TU.base_ring() is U.scalar_field_ring()
+            algebra of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            sage: TU.base_ring() is U.scalar_field_algebra()
             True
             sage: TU.an_element()
             tensor field of type (2,1) on the open domain 'U' on the 3-dimensional manifold 'M'
@@ -1603,8 +1603,8 @@ class OpenDomain(Domain):
             sage: f.view()
             F: (x, y, z) |--> cos(y)*sin(x) + z
             sage: f.parent()
-            ring of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
-            sage: f in U.scalar_field_ring()
+            algebra of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            sage: f in U.scalar_field_algebra()
             True
 
         See the documentation of class 
@@ -1612,8 +1612,22 @@ class OpenDomain(Domain):
         examples.
         
         """
+        from sage.symbolic.expression import Expression
         from scalarfield import ScalarField
-        return ScalarField(self, coord_expression, chart, name, latex_name) 
+        if isinstance(coord_expression, dict):
+            # check validity of entry
+            for chart in coord_expression:
+                if not chart.domain.is_subdomain(self):
+                    raise ValueError("The " + str(chart) + " is not defined " +
+                                     "on some subdomain of the " + str(self))
+        elif isinstance(coord_expression, Expression):
+            if coord_expression.variables() != ():  
+                # the expression is not a constant
+                if chart is None:
+                    chart = self.def_chart
+                coord_expression = {chart: coord_expression}
+        return ScalarField(self, coord_expression=coord_expression, 
+                           name=name, latex_name=latex_name) 
 
 
     def vector_field(self, name=None, latex_name=None, dest_map=None):
