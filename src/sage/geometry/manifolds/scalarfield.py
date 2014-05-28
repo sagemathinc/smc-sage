@@ -777,18 +777,31 @@ class ScalarField(CommutativeAlgebraElement):
         from utilities import FormattedExpansion
         result = FormattedExpansion(self)
         if chart is None:
-            chart = self.domain.def_chart
+            result.txt = ""
+            result.latex = r"\begin{array}{l}"
+            for chart1 in self.domain._atlas:
+                try:
+                    result.txt += repr(self.view(chart1)) + "\n"
+                    result.latex += latex(self.view(chart1)) + r"\\"
+                except (TypeError, ValueError):
+                    pass
+            result.txt = result.txt[:-1]
+            result.latex = result.latex[:-2] + r"\end{array}"
+            return result
         expression = self.expr(chart)
         if self.name is None:
-            result.txt = repr(chart[:]) + " |--> " + repr(expression)
+            result.txt = "on " + chart.domain.name + ": " + \
+                         repr(chart[:]) + " |--> " + repr(expression)
         else:
-            result.txt = self.name + ": " + repr(chart[:]) + " |--> " + \
-                         repr(expression)
+            result.txt = self.name + " on " + chart.domain.name + ": " +  \
+                         repr(chart[:]) + " |--> " + repr(expression)
         if self.latex_name is None:
-            result.latex = latex(chart[:]) + r"\mapsto" + latex(expression)
+            result.latex = r"\mbox{on}\ " + latex(chart.domain) + ":\ " + \
+                           latex(chart[:]) + r"\mapsto" + latex(expression)
         else:
-            result.latex = latex(self) + ":\ " + latex(chart[:]) + r"\mapsto" + \
-                           latex(expression)
+            result.latex = latex(self) + r"\ \mbox{on}\ " + \
+                           latex(chart.domain) + ":\ " + latex(chart[:]) + \
+                           r"\mapsto" + latex(expression)
         return result
 
     def restrict(self, subdomain):
