@@ -62,7 +62,7 @@ EXAMPLES:
     
         sage: V = M.open_domain('V') ; V
         open domain 'V' on the 2-dimensional manifold 'S^2'
-        sage: stereoS.<u,v> = V.chart('u v') ; stereoS
+        sage: stereoS.<u,v> = V.chart() ; stereoS
         chart (V, (u, v))
 
     The North pole is the point of coordinates `(u,v)=(0,0)` in this chart::
@@ -80,25 +80,24 @@ EXAMPLES:
     defined by `x^2+y^2\not=0`, as well as the subdomain of V defined by 
     `u^2+v^2\not=0`), we set::
     
-        sage: trans = stereoN.transition_map(stereoS, (x/(x^2+y^2), y/(x^2+y^2)), 'W', \
-                                             x^2+y^2!=0, u^2+v^2!=0)
-        sage: trans
+        sage: transf = stereoN.transition_map(stereoS, (x/(x^2+y^2), y/(x^2+y^2)), \
+                        intersection_name='W', restrictions1= x^2+y^2!=0, restrictions2= u^2+v^2!=0)
+        sage: transf
         coordinate change from chart (W, (x, y)) to chart (W, (u, v))
-        sage: stereoN_W = trans.chart1
-        sage: stereoS_W = trans.chart2
+        sage: W = U.intersection(V)
+        sage: W.atlas()
+        [chart (W, (x, y)), chart (W, (u, v))]
+        sage: stereoN_W = W.atlas()[0]
+        sage: stereoS_W = W.atlas()[1]
         
-    We also give the inverse of the transition map::
+    The inverse of the transition map is computed by the method inverse()::
     
-        sage: trans.set_inverse(u/(u^2+v^2), v/(u^2+v^2))
-        Check of the inverse coordinate transformation:
-           x == x
-           y == y
-           u == u
-           v == v
+        sage: transf.inverse()(u,v)
+        (u/(u^2 + v^2), v/(u^2 + v^2))
            
     At this stage, we have four open domains on `S^2`::
         
-        sage: M.domains
+        sage: M._domains
         {'U': open domain 'U' on the 2-dimensional manifold 'S^2', 
          'S^2': 2-dimensional manifold 'S^2', 
          'W': open domain 'W' on the 2-dimensional manifold 'S^2', 
@@ -106,10 +105,6 @@ EXAMPLES:
 
     W is the open domain that is the complement of the two poles::
     
-        sage: W = M.domains['W'] ; W
-        open domain 'W' on the 2-dimensional manifold 'S^2'
-        sage: W is U.intersection(V)
-        True
         sage: N in W
         False
         sage: S in W
@@ -138,7 +133,7 @@ EXAMPLES:
     specifying some point coordinates::
     
         sage: p = M.point((1,2))  # a point is created with coordinates (1,2)
-        sage: p.coordinates # random (dictionary output):
+        sage: p._coordinates # random (dictionary output):
         {chart (W, (x, y)): (1, 2), chart (U, (x, y)): (1, 2)}
         sage: p.coord() # if the chart is not specified, the default chart coordinates are returned:
         (1, 2)
@@ -166,13 +161,13 @@ EXAMPLES:
     it is an instance of 
     :class:`~sage.geometry.manifolds.scalarfield.ZeroScalarField`::
     
-        sage: M.zero_scalar_field
+        sage: M._zero_scalar_field
         zero scalar field on the 2-dimensional manifold 'S^2'
-        sage: M.zero_scalar_field(p)
+        sage: M._zero_scalar_field(p)
         0
-        sage: M.zero_scalar_field(N)
+        sage: M._zero_scalar_field(N)
         0
-        sage: M.zero_scalar_field(S)
+        sage: M._zero_scalar_field(S)
         0
         
 """
@@ -221,10 +216,10 @@ class Manifold(OpenDomain):
     of the manifold::
     
         sage: M = Manifold(4, 'M')  # default value of start_index is 0
-        sage: M.sindex
+        sage: M._sindex
         0
         sage: M = Manifold(4, 'M', start_index=1)
-        sage: M.sindex
+        sage: M._sindex
         1
         
     It defines the range of indices on the manifold::
@@ -291,22 +286,22 @@ class Manifold(OpenDomain):
         if n<1:
             raise ValueError("The manifold dimension must be strictly " + 
                              "positive.")
-        self.dim = n
+        self._dim = n
         OpenDomain.__init__(self, self, name, latex_name)
-        self.sindex = start_index
-        self.domains = {self.name: self}
+        self._sindex = start_index
+        self._domains = {self._name: self}
         
     def _repr_(self):
         r"""
         Special Sage function for the string representation of the object.
         """
-        return str(self.dim) + "-dimensional manifold '%s'" % self.name
+        return str(self._dim) + "-dimensional manifold '%s'" % self._name
     
     def _latex_(self):
         r"""
         Special Sage function for the LaTeX representation of the object.
         """
-        return self.latex_name
+        return self._latex_name
 
     def dimension(self):
         r"""
@@ -319,7 +314,7 @@ class Manifold(OpenDomain):
             2
 
         """
-        return self.dim
+        return self._dim
 
 
     def irange(self, start=None):
@@ -329,12 +324,12 @@ class Manifold(OpenDomain):
         INPUT:
         
         - ``start`` -- (default: None) initial value of the index; if none is 
-          provided, ``self.sindex`` is assumed
+          provided, ``self._sindex`` is assumed
 
         OUTPUT:
         
         - an iterable index, starting from ``start`` and ending at
-          ``self.sindex + self.dim -1``
+          ``self._sindex + self._dim -1``
 
         EXAMPLES:
         
@@ -365,8 +360,8 @@ class Manifold(OpenDomain):
             2 3 4
         
         """
-        si = self.sindex
-        imax = self.dim + si
+        si = self._sindex
+        imax = self._dim + si
         if start is None:
             i = si
         else:
@@ -416,8 +411,8 @@ class Manifold(OpenDomain):
             (2, 2)  :  (1, 1) (1, 2) (2, 1) (2, 2) 
 
         """
-        si = self.sindex
-        imax = self.dim - 1 + si
+        si = self._sindex
+        imax = self._dim - 1 + si
         ind = [si for k in range(nb_indices)]
         ind_end = [si for k in range(nb_indices)]
         ind_end[0] = imax+1

@@ -60,9 +60,9 @@ class FreeModuleEndomorphism(FreeModuleTensor):
 
         sage: t.parent()
         free module of type-(1,1) tensors on the rank-3 free module M over the Integer Ring
-        sage: t.tensor_type
+        sage: t._tensor_type
         (1, 1)
-        sage: t.tensor_rank
+        sage: t._tensor_rank
         2
 
     Consequently, an endomorphism can also be created by the module method 
@@ -107,9 +107,9 @@ class FreeModuleEndomorphism(FreeModuleTensor):
         String representation of the object.
         """
         description = "endomorphism "
-        if self.name is not None:
-            description += self.name + " " 
-        description += "on the " + str(self.fmodule)
+        if self._name is not None:
+            description += self._name + " " 
+        description += "on the " + str(self._fmodule)
         return description
 
     def _new_instance(self):
@@ -117,7 +117,7 @@ class FreeModuleEndomorphism(FreeModuleTensor):
         Create a :class:`FreeModuleEndomorphism` instance. 
         
         """
-        return FreeModuleEndomorphism(self.fmodule)
+        return FreeModuleEndomorphism(self._fmodule)
 
     def __call__(self, *arg):
         r"""
@@ -135,9 +135,9 @@ class FreeModuleEndomorphism(FreeModuleTensor):
         if not isinstance(vector, FiniteFreeModuleElement):
             raise TypeError("The argument must be an element of a free module.")
         basis = self.common_basis(vector)
-        t = self.components[basis]
-        v = vector.components[basis]
-        fmodule = self.fmodule
+        t = self._components[basis]
+        v = vector._components[basis]
+        fmodule = self._fmodule
         result = vector._new_instance()
         for i in fmodule.irange():
             res = 0
@@ -145,14 +145,14 @@ class FreeModuleEndomorphism(FreeModuleTensor):
                 res += t[[i,j]]*v[[j]]
             result.set_comp(basis)[i] = res
         # Name of the output:
-        result.name = None
-        if self.name is not None and vector.name is not None:
-            result.name = self.name + "(" + vector.name + ")"
+        result._name = None
+        if self._name is not None and vector._name is not None:
+            result._name = self._name + "(" + vector._name + ")"
         # LaTeX symbol for the output:
-        result.latex_name = None
-        if self.latex_name is not None and vector.latex_name is not None:
-            result.latex_name = self.latex_name + r"\left(" + \
-                              vector.latex_name + r"\right)"
+        result._latex_name = None
+        if self._latex_name is not None and vector._latex_name is not None:
+            result._latex_name = self._latex_name + r"\left(" + \
+                              vector._latex_name + r"\right)"
         return result
 
 #******************************************************************************
@@ -181,9 +181,9 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
     
         sage: a.parent()
         free module of type-(1,1) tensors on the rank-2 free module M over the Rational Field
-        sage: a.tensor_type
+        sage: a._tensor_type
         (1, 1)
-        sage: a.tensor_rank
+        sage: a._tensor_rank
         2
 
     Setting the components in a basis::
@@ -221,16 +221,16 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
         String representation of the object.
         """
         description = "automorphism "
-        if self.name is not None:
-            description += self.name + " " 
-        description += "on the " + str(self.fmodule)
+        if self._name is not None:
+            description += self._name + " " 
+        description += "on the " + str(self._fmodule)
         return description
 
     def _new_instance(self):
         r"""
         Create a :class:`FreeModuleAutomorphism` instance. 
         """
-        return FreeModuleAutomorphism(self.fmodule)
+        return FreeModuleAutomorphism(self._fmodule)
         
     def _del_derived(self):
         r"""
@@ -283,19 +283,19 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
         from sage.matrix.constructor import matrix
         from comp import Components
         if self._inverse is None:
-            if self.name is None:
+            if self._name is None:
                 inv_name = None
             else:
-                inv_name = self.name  + '^(-1)'
-            if self.latex_name is None:
+                inv_name = self._name  + '^(-1)'
+            if self._latex_name is None:
                 inv_latex_name = None
             else:
-                inv_latex_name = self.latex_name + r'^{-1}'
-            fmodule = self.fmodule
-            si = fmodule.sindex ; nsi = fmodule._rank + si
+                inv_latex_name = self._latex_name + r'^{-1}'
+            fmodule = self._fmodule
+            si = fmodule._sindex ; nsi = fmodule._rank + si
             self._inverse = FreeModuleAutomorphism(fmodule, inv_name, 
                                                    inv_latex_name)
-            for basis in self.components:
+            for basis in self._components:
                 try:    
                     mat_self = matrix(
                               [[self.comp(basis)[[i, j]]
@@ -303,12 +303,12 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
                 except (KeyError, ValueError):
                     continue
                 mat_inv = mat_self.inverse()
-                cinv = Components(fmodule.ring, basis, 2, start_index=si,
-                                  output_formatter=fmodule.output_formatter)
+                cinv = Components(fmodule._ring, basis, 2, start_index=si,
+                                  output_formatter=fmodule._output_formatter)
                 for i in range(si, nsi):
                     for j in range(si, nsi):   
                         cinv[i, j] = mat_inv[i-si,j-si]
-                self._inverse.components[basis] = cinv
+                self._inverse._components[basis] = cinv
         return self._inverse
 
 
@@ -347,9 +347,9 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
     
         sage: a.parent()
         free module of type-(1,1) tensors on the rank-3 free module M over the Integer Ring
-        sage: a.tensor_type
+        sage: a._tensor_type
         (1, 1)
-        sage: a.tensor_rank
+        sage: a._tensor_rank
         2
 
     Its components are Kronecker deltas in any basis::
@@ -421,9 +421,9 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
         String representation of the object.
         """
         description = "identity map "
-        if self.name != 'Id':
-            description += self.name + " " 
-        description += "on the " + str(self.fmodule)
+        if self._name != 'Id':
+            description += self._name + " " 
+        description += "on the " + str(self._fmodule)
         return description
 
     def _del_derived(self):
@@ -439,7 +439,7 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
         Create a :class:`FreeModuleIdentityMap` instance. 
         
         """
-        return FreeModuleIdentityMap(self.fmodule)
+        return FreeModuleIdentityMap(self._fmodule)
         
     def _new_comp(self, basis): 
         r"""
@@ -447,9 +447,9 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
                 
         """
         from comp import KroneckerDelta
-        fmodule = self.fmodule  # the base free module
-        return KroneckerDelta(fmodule.ring, basis, start_index=fmodule.sindex,
-                              output_formatter=fmodule.output_formatter)
+        fmodule = self._fmodule  # the base free module
+        return KroneckerDelta(fmodule._ring, basis, start_index=fmodule._sindex,
+                              output_formatter=fmodule._output_formatter)
 
     def comp(self, basis=None):
         r"""
@@ -487,10 +487,10 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
          
         """
         if basis is None: 
-            basis = self.fmodule.def_basis
-        if basis not in self.components:
-            self.components[basis] = self._new_comp(basis)
-        return self.components[basis]
+            basis = self._fmodule._def_basis
+        if basis not in self._components:
+            self._components[basis] = self._new_comp(basis)
+        return self._components[basis]
 
     def set_comp(self, basis=None):
         r"""
@@ -564,9 +564,9 @@ class FreeModuleSymBilinForm(FreeModuleTensor):
     
         sage: a.parent()
         free module of type-(0,2) tensors on the rank-3 free module M over the Integer Ring
-        sage: a.tensor_type
+        sage: a._tensor_type
         (0, 2)
-        sage: a.tensor_rank
+        sage: a._tensor_rank
         2
         sage: a.symmetries()
         symmetry: (0, 1);  no antisymmetry
@@ -636,9 +636,9 @@ class FreeModuleSymBilinForm(FreeModuleTensor):
         String representation of the object.
         """
         description = "symmetric bilinear form "
-        if self.name is not None:
-            description += self.name + " " 
-        description += "on the " + str(self.fmodule)
+        if self._name is not None:
+            description += self._name + " " 
+        description += "on the " + str(self._fmodule)
         return description
 
     def _new_instance(self):
@@ -646,7 +646,7 @@ class FreeModuleSymBilinForm(FreeModuleTensor):
         Create a :class:`FreeModuleSymBilinForm` instance. 
         
         """
-        return FreeModuleSymBilinForm(self.fmodule)
+        return FreeModuleSymBilinForm(self._fmodule)
 
     def _new_comp(self, basis): 
         r"""
@@ -654,8 +654,8 @@ class FreeModuleSymBilinForm(FreeModuleTensor):
                 
         """
         from comp import CompFullySym
-        fmodule = self.fmodule  # the base free module
-        return CompFullySym(fmodule.ring, basis, 2, start_index=fmodule.sindex,
-                            output_formatter=fmodule.output_formatter)
+        fmodule = self._fmodule  # the base free module
+        return CompFullySym(fmodule._ring, basis, 2, start_index=fmodule._sindex,
+                            output_formatter=fmodule._output_formatter)
 
 

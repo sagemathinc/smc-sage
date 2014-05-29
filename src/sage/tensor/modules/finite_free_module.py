@@ -387,22 +387,22 @@ class FiniteFreeModule(UniqueRepresentation, Module):
         if not ring.is_commutative():
             raise TypeError("The module base ring must be commutative.")
         Module.__init__(self, ring)
-        self.ring = ring # for efficiency (to avoid calls to self.base_ring())
+        self._ring = ring # same as self._base
         self._rank = rank 
-        self.name = name
+        self._name = name
         if latex_name is None:
-            self.latex_name = self.name
+            self._latex_name = self._name
         else:
-            self.latex_name = latex_name
-        self.sindex = start_index
-        self.output_formatter = output_formatter
+            self._latex_name = latex_name
+        self._sindex = start_index
+        self._output_formatter = output_formatter
         # Dictionary of the tensor modules built on self 
         #   (dict. keys = (k,l) --the tensor type)
         self._tensor_modules = {(1,0): self} # self is considered as the set of
                                             # tensors of type (1,0)
-        self.known_bases = []  # List of known bases on the free module
-        self.def_basis = None # default basis
-        self.basis_changes = {} # Dictionary of the changes of bases
+        self._known_bases = []  # List of known bases on the free module
+        self._def_basis = None # default basis
+        self._basis_changes = {} # Dictionary of the changes of bases
         # Zero element:
         if not hasattr(self, '_zero_element'):
             self._zero_element = self._element_constructor_(name='zero', 
@@ -428,8 +428,8 @@ class FiniteFreeModule(UniqueRepresentation, Module):
         Construct some (unamed) element of the module
         """
         resu = self.element_class(self)
-        if self.def_basis is not None:
-            resu.set_comp()[:] = [self.ring.an_element() for i in 
+        if self._def_basis is not None:
+            resu.set_comp()[:] = [self._ring.an_element() for i in 
                                                              range(self._rank)]
         return resu
             
@@ -442,9 +442,9 @@ class FiniteFreeModule(UniqueRepresentation, Module):
         String representation of the object.
         """
         description = "rank-" + str(self._rank) + " free module "
-        if self.name is not None:
-            description += self.name + " "
-        description += "over the " + str(self.ring)
+        if self._name is not None:
+            description += self._name + " "
+        description += "over the " + str(self._ring)
         return description
         
     def tensor_module(self, k, l):
@@ -565,8 +565,8 @@ class FiniteFreeModule(UniqueRepresentation, Module):
         if symbol is None:
             return self.default_basis()
         else:
-            for other in self.known_bases:
-                if symbol == other.symbol:
+            for other in self._known_bases:
+                if symbol == other._symbol:
                     return other
             return FreeModuleBasis(self, symbol, latex_symbol)
 
@@ -721,13 +721,13 @@ class FiniteFreeModule(UniqueRepresentation, Module):
         from comp import CompWithSym, CompFullySym, CompFullyAntiSym
         #
         # 0/ Compatibility checks:
-        if comp.ring is not self.ring:
+        if comp._ring is not self._ring:
              raise TypeError("The components are not defined on the same" + 
                             " ring as the module.")           
-        if comp.frame not in self.known_bases:
+        if comp._frame not in self._known_bases:
             raise TypeError("The components are not defined on a basis of" + 
                             " the module.")
-        if comp.nid != tensor_type[0] + tensor_type[1]:
+        if comp._nid != tensor_type[0] + tensor_type[1]:
             raise TypeError("Number of component indices not compatible with "+
                             " the tensor type.")
         #
@@ -751,11 +751,11 @@ class FiniteFreeModule(UniqueRepresentation, Module):
                                     latex_name=latex_name) 
             # Tensor symmetries deduced from those of comp:
             if isinstance(comp, CompWithSym):
-                resu.sym = comp.sym
-                resu.antisym = comp.antisym
+                resu._sym = comp._sym
+                resu._antisym = comp._antisym
         #
         # 2/ Tensor components set to comp:
-        resu.components[comp.frame] = comp
+        resu._components[comp._frame] = comp
         #
         return resu
 
@@ -902,7 +902,7 @@ class FiniteFreeModule(UniqueRepresentation, Module):
     
             sage: t.parent()
             free module of type-(1,1) tensors on the rank-3 free module M over the Integer Ring
-            sage: t.tensor_type
+            sage: t._tensor_type
             (1, 1)
 
         Consequently, an endomorphism can also be created by the method 
@@ -948,7 +948,7 @@ class FiniteFreeModule(UniqueRepresentation, Module):
         
             sage: a.parent()
             free module of type-(1,1) tensors on the rank-2 free module M over the Rational Field
-            sage: a.tensor_type
+            sage: a._tensor_type
             (1, 1)
 
         See
@@ -997,7 +997,7 @@ class FiniteFreeModule(UniqueRepresentation, Module):
         
             sage: a.parent()
             free module of type-(1,1) tensors on the rank-3 free module M over the Integer Ring
-            sage: a.tensor_type
+            sage: a._tensor_type
             (1, 1)
 
         See
@@ -1038,7 +1038,7 @@ class FiniteFreeModule(UniqueRepresentation, Module):
         
             sage: a.parent()
             free module of type-(0,2) tensors on the rank-3 free module M over the Integer Ring
-            sage: a.tensor_type
+            sage: a._tensor_type
             (0, 2)
             sage: a.symmetries()
             symmetry: (0, 1);  no antisymmetry
@@ -1057,10 +1057,10 @@ class FiniteFreeModule(UniqueRepresentation, Module):
         r"""
         LaTeX representation of the object.
         """
-        if self.latex_name is None:
+        if self._latex_name is None:
             return r'\mbox{' + str(self) + r'}'
         else:
-           return self.latex_name
+           return self._latex_name
 
     def rank(self):
         r"""
@@ -1182,12 +1182,12 @@ class FiniteFreeModule(UniqueRepresentation, Module):
         INPUT:
         
         - ``start`` -- (integer; default: None) initial value of the index; if none is 
-          provided, ``self.sindex`` is assumed
+          provided, ``self._sindex`` is assumed
 
         OUTPUT:
         
         - an iterable index, starting from ``start`` and ending at
-          ``self.sindex + self.rank() -1``
+          ``self._sindex + self.rank() -1``
 
         EXAMPLES:
         
@@ -1210,7 +1210,7 @@ class FiniteFreeModule(UniqueRepresentation, Module):
             -4 -3 -2
 
         """
-        si = self.sindex
+        si = self._sindex
         imax = self._rank + si
         if start is None:
             i = si
@@ -1254,9 +1254,9 @@ class FiniteFreeModule(UniqueRepresentation, Module):
             basis (e_1,e_2) on the rank-2 free module M over the Integer Ring
 
         """
-        if self.def_basis is None:
+        if self._def_basis is None:
             print "No default basis has been defined on the " + str(self)
-        return self.def_basis
+        return self._def_basis
         
     def set_default_basis(self, basis):
         r"""
@@ -1291,9 +1291,9 @@ class FiniteFreeModule(UniqueRepresentation, Module):
         from free_module_basis import FreeModuleBasis
         if not isinstance(basis, FreeModuleBasis):
             raise TypeError("The argument is not a free module basis.")
-        if basis.fmodule is not self:
+        if basis._fmodule is not self:
             raise ValueError("The basis is not defined on the current module.")
-        self.def_basis = basis
+        self._def_basis = basis
                 
 
     def view_bases(self):
@@ -1323,13 +1323,13 @@ class FiniteFreeModule(UniqueRepresentation, Module):
              - (f_1,f_2,f_3,f_4) (default basis)
 
         """
-        if self.known_bases == []:
+        if self._known_bases == []:
             print "No basis has been defined on the " + str(self)
         else:
             print "Bases defined on the " + str(self) + ":"
-            for basis in self.known_bases:
-                item = " - " + basis.name
-                if basis is self.def_basis:
+            for basis in self._known_bases:
+                item = " - " + basis._name
+                if basis is self._def_basis:
                     item += " (default basis)"
                 print item
     

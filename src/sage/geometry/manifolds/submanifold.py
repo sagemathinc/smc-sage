@@ -63,7 +63,7 @@ class Submanifold(Manifold):
         sage: S.def_embedding(emb)
         sage: S
         2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
-        sage: S.embedding.view()
+        sage: S._embedding.view()
         i: U --> R^3, (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
 
     A helix as a submanifold of `\RR^3`::
@@ -74,13 +74,13 @@ class Submanifold(Manifold):
         sage: H.def_embedding(emb)
         sage: H
         1-dimensional submanifold 'H' of the 3-dimensional manifold 'R^3'
-        sage: H.embedding.view()
+        sage: H._embedding.view()
         i: H --> R^3, (t,) |--> (x, y, z) = (cos(t), sin(t), t)
 
     The constructed submanifolds are automatically added to the subdomains of 
     the ambient manifold::
     
-        sage: M.domains
+        sage: M._domains
         {'R^3': 3-dimensional manifold 'R^3', 
          'H': domain 'H' on the 3-dimensional manifold 'R^3',
          'S^2': domain 'S^2' on the 3-dimensional manifold 'R^3'}
@@ -91,13 +91,13 @@ class Submanifold(Manifold):
         coordinate coframe (R^3, (dx,dy,dz))
         sage: dX[1]
         1-form 'dx' on the 3-dimensional manifold 'R^3'
-        sage: S.embedding.pullback(dX[1])
+        sage: S._embedding.pullback(dX[1])
         1-form 'i_*(dx)' on the open domain 'U' on the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
-        sage: S.embedding.pullback(dX[1]).view()
+        sage: S._embedding.pullback(dX[1]).view()
         i_*(dx) = cos(ph)*cos(th) dth - sin(ph)*sin(th) dph
-        sage: S.embedding.pullback(dX[2]).view()
+        sage: S._embedding.pullback(dX[2]).view()
         i_*(dy) = cos(th)*sin(ph) dth + cos(ph)*sin(th) dph
-        sage: S.embedding.pullback(dX[3]).view()
+        sage: S._embedding.pullback(dX[3]).view()
         i_*(dz) = -sin(th) dth
         
     Pushforward of vector fields defined on `S^2` to `\RR^3`::
@@ -118,20 +118,20 @@ class Submanifold(Manifold):
                  start_index=0):
         if not isinstance(ambient_manifold, Manifold):
             raise TypeError("The argument ambient_manifold must be a manifold.")
-        self.ambient_manifold = ambient_manifold
+        self._ambient_manifold = ambient_manifold
         Manifold.__init__(self, n, name, latex_name, start_index)
         # The embedding map:
-        self.embedding = None  # not defined yet
+        self._embedding = None  # not defined yet
         # The submanifold as a subdomain of the ambient manifold:
-        self.domain_amb = self.ambient_manifold.domain(name, latex_name)
+        self._domain_amb = self._ambient_manifold.domain(name, latex_name)
 
     def _repr_(self):
         r"""
         Special Sage function for the string representation of the object.
         """
-        return str(self.dim) + \
-            "-dimensional submanifold '%s'" % self.name + \
-            " of the " + str(self.ambient_manifold)
+        return str(self._dim) + \
+            "-dimensional submanifold '%s'" % self._name + \
+            " of the " + str(self._ambient_manifold)
 
     def def_embedding(self, embedding):
         r"""
@@ -147,7 +147,7 @@ class Submanifold(Manifold):
         if not isinstance(embedding, DiffMapping):
             raise TypeError("The argument must an instance of " + 
                             "class DiffMapping.")
-        self.embedding = embedding
+        self._embedding = embedding
 
     def plot(self, coord_ranges, local_chart=None, ambient_chart=None, **kwds):
         r"""
@@ -202,22 +202,22 @@ class Submanifold(Manifold):
         """
         from sage.plot.plot import parametric_plot
         if local_chart is None:
-            local_chart = self.def_chart
+            local_chart = self._def_chart
         if ambient_chart is None:
-            ambient_chart = self.ambient_manifold.def_chart
-        if self.dim > 2:
+            ambient_chart = self._ambient_manifold._def_chart
+        if self._dim > 2:
             raise ValueError("The dimension must be at most 2 " + 
                              "for plotting.")
         coord_functions = \
-          self.embedding.coord_expression[(local_chart, ambient_chart)].functions
-        coord_express = [coord_functions[i].express for i in 
-                                             range(self.ambient_manifold.dim)]
-        if self.dim == 1:
-            urange = (local_chart.xx[0], coord_ranges[0], coord_ranges[1])
+          self._embedding._coord_expression[(local_chart, ambient_chart)]._functions
+        coord_express = [coord_functions[i]._express for i in 
+                                             range(self._ambient_manifold._dim)]
+        if self._dim == 1:
+            urange = (local_chart._xx[0], coord_ranges[0], coord_ranges[1])
             graph = parametric_plot(coord_express, urange, **kwds)
-        else:   # self.dim = 2
-            urange = (local_chart.xx[0], coord_ranges[0][0], coord_ranges[0][1])
-            vrange = (local_chart.xx[1], coord_ranges[1][0], coord_ranges[1][1])
+        else:   # self._dim = 2
+            urange = (local_chart._xx[0], coord_ranges[0][0], coord_ranges[0][1])
+            vrange = (local_chart._xx[1], coord_ranges[1][0], coord_ranges[1][1])
             graph = parametric_plot(coord_express, urange, vrange, **kwds)
         return graph
 
@@ -277,19 +277,19 @@ class Submanifold(Manifold):
         """
         from sage.tensor.modules.comp import Components, CompWithSym, \
                                                  CompFullySym, CompFullyAntiSym
-        dom1 = tensor.domain
+        dom1 = tensor._domain
         if not dom1.is_subdomain(self):
             raise TypeError("The tensor field is not defined on " + str(self))
-        (ncon, ncov) = tensor.tensor_type
+        (ncon, ncov) = tensor._tensor_type
         if ncov != 0:
             raise TypeError("The pushforward cannot be taken on a tensor " + 
                             "with some covariant part.")
-        embed = self.embedding
+        embed = self._embedding
         resu_name = None ; resu_latex_name = None
-        if embed.name is not None and tensor.name is not None:
-            resu_name = embed.name + '_*(' + tensor.name + ')'
-        if embed.latex_name is not None and tensor.latex_name is not None:
-            resu_latex_name = embed.latex_name + '_*' + tensor.latex_name                
+        if embed._name is not None and tensor._name is not None:
+            resu_name = embed._name + '_*(' + tensor._name + ')'
+        if embed._latex_name is not None and tensor._latex_name is not None:
+            resu_latex_name = embed._latex_name + '_*' + tensor._latex_name                
         if ncon == 0:
             raise NotImplementedError("The case of a scalar field is not " + 
                                       "implemented yet.")
@@ -297,24 +297,24 @@ class Submanifold(Manifold):
         # is feasable is searched, privileging the default chart of the 
         # start domain for chart1
         chart1 = None; chart2 = None
-        def_chart1 = dom1.def_chart
-        def_chart2 = embed.codomain.def_chart 
-        if def_chart1._frame in tensor.components and \
-               (def_chart1, def_chart2) in embed.coord_expression:
+        def_chart1 = dom1._def_chart
+        def_chart2 = embed._codomain._def_chart 
+        if def_chart1._frame in tensor._components and \
+               (def_chart1, def_chart2) in embed._coord_expression:
             chart1 = def_chart1
             chart2 = def_chart2
         else:
-            for (chart1n, chart2n) in embed.coord_expression:
+            for (chart1n, chart2n) in embed._coord_expression:
                 if chart2n == def_chart2 and \
-                                    chart1n._frame in tensor.components:
+                                    chart1n._frame in tensor._components:
                     chart1 = chart1n
                     chart2 = def_chart2
                     break
         if chart2 is None:
             # It is not possible to have def_chart2 as chart for 
             # expressing the result; any other chart is then looked for:
-            for (chart1n, chart2n) in self.coord_expression:
-                if chart1n._frame in tensor.components:
+            for (chart1n, chart2n) in self._coord_expression:
+                if chart1n._frame in tensor._components:
                     chart1 = chart1n
                     chart2 = chart2n
                     break
@@ -323,12 +323,12 @@ class Submanifold(Manifold):
                              "the pushforward of the tensor field.")
         fmodule2 = dom1.vector_field_module(dest_map=embed)
         frame2 = dom1.vector_frame(dest_map=embed, from_frame=chart2._frame)
-        si1 = dom1.manifold.sindex
-        si2 = fmodule2.sindex
-        ring2 = fmodule2.ring
-        of2 = fmodule2.output_formatter
+        si1 = dom1._manifold._sindex
+        si2 = fmodule2._sindex
+        ring2 = fmodule2._ring
+        of2 = fmodule2._output_formatter
         # Computation at the component level:
-        tcomp = tensor.components[chart1._frame]
+        tcomp = tensor._components[chart1._frame]
         # Construction of the pushforward components (ptcomp):
         if isinstance(tcomp, CompFullySym):
             ptcomp = CompFullySym(ring2, frame2, ncon, start_index=si2, 
@@ -338,17 +338,17 @@ class Submanifold(Manifold):
                                       output_formatter=of2)
         elif isinstance(tcomp, CompWithSym):
             ptcomp = CompWithSym(ring2, frame2, ncon, start_index=si2, 
-                                 output_formatter=of2, sym=tcomp.sym, 
-                                 antisym=tcomp.antisym)
+                                 output_formatter=of2, sym=tcomp._sym, 
+                                 antisym=tcomp._antisym)
         else:
             ptcomp = Components(ring2, frame2, ncon, start_index=si2, 
                                 output_formatter=of2)
-        phi = embed.coord_expression[(chart1, chart2)]
+        phi = embed._coord_expression[(chart1, chart2)]
         jacob = phi.jacobian()
         # X2 coordinates expressed in terms of X1 ones via the mapping:
-        # coord2_1 = phi(*(chart1.xx)) 
-        si1 = self.sindex
-        si2 = self.ambient_manifold.sindex
+        # coord2_1 = phi(*(chart1._xx)) 
+        si1 = self._sindex
+        si2 = self._ambient_manifold._sindex
         for ind_new in ptcomp.non_redundant_index_generator(): 
             res = 0 
             for ind_old in self.index_generator(ncon): 

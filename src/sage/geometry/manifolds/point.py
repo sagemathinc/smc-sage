@@ -40,9 +40,9 @@ Points can be compared::
 
 Listing all the coordinates of a point in different charts::
 
-    sage: p.coordinates # random (dictionary output)
+    sage: p._coordinates # random (dictionary output)
     {chart (R3, (r, th, ph)): (1, 1/2*pi, 0), chart (R3, (x, y, z)): (1, 0, 0)}
-    sage: q.coordinates
+    sage: q._coordinates
     {chart (R3, (x, y, z)): (1, 2, 3)}
 
 """
@@ -115,54 +115,54 @@ class Point(Element):
     def __init__(self, domain, coords=None, chart=None, name=None, 
                  latex_name=None): 
         Element.__init__(self, domain)
-        self.manifold = domain.manifold
-        self.domain = domain
-        self.coordinates = {}
+        self._manifold = domain._manifold
+        self._domain = domain
+        self._coordinates = {}
         if coords is not None: 
-            if len(coords) != self.manifold.dim: 
+            if len(coords) != self._manifold._dim: 
                 raise ValueError("The number of coordinates must be equal" +
                                  " to the manifold dimension.")
             if chart is None: 
-                chart = self.domain.def_chart
+                chart = self._domain._def_chart
             else: 
-                if chart not in self.domain._atlas: 
+                if chart not in self._domain._atlas: 
                     raise ValueError("The " + str(chart) +
-                            " has not been defined on the " + str(self.domain))
+                            " has not been defined on the " + str(self._domain))
             #!# The following check is not performed for it would fail with 
             # symbolic coordinates:
             # if not chart.valid_coordinates(*coords):
             #    raise ValueError("The coordinates " + str(coords) + 
             #                     " are not valid on the " + str(chart))
-            for schart in chart.supercharts:
-                self.coordinates[schart] = tuple(coords) 
-            for schart in chart.subcharts:
+            for schart in chart._supercharts:
+                self._coordinates[schart] = tuple(coords) 
+            for schart in chart._subcharts:
                 if schart != chart:
                     if schart.valid_coordinates(*coords):
-                        self.coordinates[schart] = tuple(coords)
-        self.name = name
+                        self._coordinates[schart] = tuple(coords)
+        self._name = name
         if latex_name is None:
-            self.latex_name = self.name
+            self._latex_name = self._name
         else:
-            self.latex_name = latex_name
+            self._latex_name = latex_name
 
     def _repr_(self):
         r"""
         Special Sage function for the string representation of the object.
         """
         description = "point"
-        if self.name is not None:
-            description += " '%s'" % self.name
-        description += " on " + str(self.manifold)
+        if self._name is not None:
+            description += " '%s'" % self._name
+        description += " on " + str(self._manifold)
         return description
 
     def _latex_(self):
         r"""
         Special Sage function for the LaTeX representation of the object.
         """
-        if self.latex_name is None:
+        if self._latex_name is None:
             return r'\mbox{no symbol}'
         else:
-           return self.latex_name
+           return self._latex_name
 
     def coord(self, chart=None, old_chart=None):
         r"""
@@ -230,32 +230,32 @@ class Point(Element):
         old_chart='uv'::
         
             sage: p.set_coord((a-b, a+b), c_uv) # erases all the coordinates except those in the chart c_uv
-            sage: p.coordinates  
+            sage: p._coordinates  
             {chart (M, (u, v)): (a - b, a + b)}              
             sage: p.coord(c_wz)                
             (a^3 - 3*a^2*b + 3*a*b^2 - b^3, a^3 + 3*a^2*b + 3*a*b^2 + b^3)
-            sage: p.coordinates # random (dictionary output)
+            sage: p._coordinates # random (dictionary output)
             {chart (M, (u, v)): (a - b, a + b), chart (M, (w, z)): (a^3 - 3*a^2*b + 3*a*b^2 - b^3, a^3 + 3*a^2*b + 3*a*b^2 + b^3)}
 
         """
-        atlas = self.manifold._atlas
+        atlas = self._manifold._atlas
         if chart is None:
-            dom = self.domain 
-            chart = dom.def_chart
+            dom = self._domain 
+            chart = dom._def_chart
             def_chart = chart
         else:
-            dom = chart.domain
-            def_chart = dom.def_chart
+            dom = chart._domain
+            def_chart = dom._def_chart
             if self not in dom:
                 raise ValueError("The point does not belong to the domain " + 
                                  "of " + str(chart))
-        if chart not in self.coordinates:
+        if chart not in self._coordinates:
             # Check whether chart corresponds to a superchart of a chart 
             # in which the coordinates are known:
-            for ochart in self.coordinates:
-                if chart in ochart.supercharts:
-                    self.coordinates[chart] = self.coordinates[ochart]
-                    return self.coordinates[chart]
+            for ochart in self._coordinates:
+                if chart in ochart._supercharts:
+                    self._coordinates[chart] = self._coordinates[ochart]
+                    return self._coordinates[chart]
             # If this point is reached, some change of coordinates must be 
             # performed
             if old_chart is not None:
@@ -263,28 +263,28 @@ class Point(Element):
             else:
                 # a chart must be find as a starting point of the computation
                 # the domain's default chart is privileged:
-                if def_chart in self.coordinates \
-                        and (def_chart, chart) in dom.coord_changes:
+                if def_chart in self._coordinates \
+                        and (def_chart, chart) in dom._coord_changes:
                     old_chart = def_chart
                     s_old_chart = def_chart
                 else:
-                    for ochart in self.coordinates:
-                        for subchart in ochart.subcharts:
-                            if (subchart, chart) in dom.coord_changes:
+                    for ochart in self._coordinates:
+                        for subchart in ochart._subcharts:
+                            if (subchart, chart) in dom._coord_changes:
                                 old_chart = ochart
                                 s_old_chart = subchart
                                 break
                         if old_chart is not None:
                             break
             if old_chart is not None:
-                chcoord = dom.coord_changes[(s_old_chart, chart)]
-                self.coordinates[chart] = \
-                                    chcoord(*self.coordinates[old_chart])
+                chcoord = dom._coord_changes[(s_old_chart, chart)]
+                self._coordinates[chart] = \
+                                    chcoord(*self._coordinates[old_chart])
             else:
                 raise ValueError("The coordinates of " + str(self) + \
                     " in the " + str(chart) + " cannot be computed" + \
                     " by means of known changes of charts.")
-        return self.coordinates[chart]
+        return self._coordinates[chart]
         
     def set_coord(self, coords, chart=None):
         r"""
@@ -324,13 +324,13 @@ class Point(Element):
         are lost::
         
             sage: q.set_coord( cart_from_spher(*q.coord(c_spher)), c_cart)
-            sage: q.coordinates
+            sage: q._coordinates
             {chart (R3, (x, y, z)): (cos(3)*sin(2), sin(3)*sin(2), cos(2))}
-            sage: p.coordinates
+            sage: p._coordinates
             {chart (R3, (x, y, z)): (1, 2, 3)}
             
         """
-        self.coordinates.clear()
+        self._coordinates.clear()
         self.add_coord(coords, chart)
 
     def add_coord(self, coords, chart=None):
@@ -372,9 +372,9 @@ class Point(Element):
             sage: q.add_coord((1,2,3), c_spher)
             sage: cart_from_spher = c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
             sage: q.add_coord( cart_from_spher(*q.coord(c_spher)), c_cart)
-            sage: q.coordinates # random (dictionary output)
+            sage: q._coordinates # random (dictionary output)
             {chart (R3, (r, th, ph)): (1, 2, 3), chart (R3, (x, y, z)): (cos(3)*sin(2), sin(3)*sin(2), cos(2))}
-            sage: p.coordinates
+            sage: p._coordinates
             {chart (R3, (x, y, z)): (1, 2, 3)}
             sage: p == q  # p and q should differ because the coordinates (1,2,3) are on different charts
             False     
@@ -383,26 +383,26 @@ class Point(Element):
         the coordinates in other charts::
         
             sage: p = M.point((1,2,3), c_spher)
-            sage: p.coordinates
+            sage: p._coordinates
             {chart (R3, (r, th, ph)): (1, 2, 3)}
             sage: p.set_coord((4,5,6), c_cart)
-            sage: p.coordinates
+            sage: p._coordinates
             {chart (R3, (x, y, z)): (4, 5, 6)}
             sage: p.add_coord((7,8,9), c_spher)
-            sage: p.coordinates # random (dictionary output) 
+            sage: p._coordinates # random (dictionary output) 
             {chart (R3, (x, y, z)): (4, 5, 6), chart (R3, (r, th, ph)): (7, 8, 9)}
             
         """
-        if len(coords) != self.manifold.dim: 
+        if len(coords) != self._manifold._dim: 
             raise ValueError("The number of coordinates must be equal " + 
                              "to the manifold dimension.")
         if chart is None: 
-            chart = self.domain.def_chart
+            chart = self._domain._def_chart
         else: 
-            if chart not in self.domain._atlas:
+            if chart not in self._domain._atlas:
                 raise ValueError("The " + str(chart) +
-                    " has not been defined on the " + str(self.domain))
-        self.coordinates[chart] = coords
+                    " has not been defined on the " + str(self._domain))
+        self._coordinates[chart] = coords
 
     def __eq__(self, other):
         r"""
@@ -413,19 +413,19 @@ class Point(Element):
         # Search for a common chart to compare the coordinates
         common_chart = None
         # the domain's default chart is privileged:
-        def_chart = self.domain.def_chart
-        if def_chart in self.coordinates and def_chart in other.coordinates:
+        def_chart = self._domain._def_chart
+        if def_chart in self._coordinates and def_chart in other._coordinates:
             common_chart = def_chart
         else:
-            for chart in self.coordinates:
-                if chart in other.coordinates:
+            for chart in self._coordinates:
+                if chart in other._coordinates:
                     common_chart = chart
                     break
         if common_chart is None:
             raise ValueError("No common chart has been found to compare " +
                              str(self) + " and " + str(other))
-        return self.coordinates[common_chart] == \
-                                              other.coordinates[common_chart]
+        return self._coordinates[common_chart] == \
+                                              other._coordinates[common_chart]
         
 
 

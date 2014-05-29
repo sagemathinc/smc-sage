@@ -255,13 +255,13 @@ class Chart(UniqueRepresentation, SageObject):
     Each constructed chart has its zero function, mapping the coordinates to 0;
     this zero function is an instance of :class:`ZeroFunctionChart`::
     
-        sage: c_spher.zero_function
+        sage: c_spher._zero_function
         0
-        sage: print type(c_spher.zero_function)
+        sage: print type(c_spher._zero_function)
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
-        sage: c_cart.zero_function
+        sage: c_cart._zero_function
         0
-        sage: c_cart.zero_function == c_spher.zero_function
+        sage: c_cart._zero_function == c_spher._zero_function
         False
         sage: # the result is False for the zero functions are not defined on the same chart
     
@@ -276,14 +276,14 @@ class Chart(UniqueRepresentation, SageObject):
         if coordinates == '':
             for x in names:
                 coordinates += x + ' '
-        self.manifold = domain.manifold
-        self.domain = domain        
+        self._manifold = domain._manifold
+        self._domain = domain        
         # Treatment of the coordinates:
         if ' ' in coordinates:
             coord_list = coordinates.split()
         else:
             coord_list = [coordinates]
-        n = self.manifold.dim 
+        n = self._manifold._dim 
         if len(coord_list) != n:
             raise ValueError("The list of coordinates must contain " + \
                               str(n) + " elements.")
@@ -330,7 +330,7 @@ class Chart(UniqueRepresentation, SageObject):
             # This is triggered by the lazy import
             #   from sage.calculus.calculus import maxima
             # in line 112 of the file /sage/symbolic/assumptions.py
-            if self.domain.name != 'field R':
+            if self._domain._name != 'field R':
                 assume(coord_var, 'real')
 
             if xmin != -Infinity:
@@ -345,38 +345,38 @@ class Chart(UniqueRepresentation, SageObject):
                     assume(coord_var < xmax)
             xx_list.append(coord_var)
             bounds_list.append(((xmin, xmin_included), (xmax, xmax_included)))
-        self.xx = tuple(xx_list)
-        self.bounds = tuple(bounds_list)
+        self._xx = tuple(xx_list)
+        self._bounds = tuple(bounds_list)
         # End of the treatment of the coordinates
         
         # Additional restrictions on the coordinates
-        self.restrictions = []  # to be set with method add_restrictions()
+        self._restrictions = []  # to be set with method add_restrictions()
 
         # The chart is added to the domain's atlas, as well as to all the 
         # superdomains' atlases; moreover the fist defined chart is considered 
         # as the default chart
-        for sd in self.domain.superdomains:
+        for sd in self._domain._superdomains:
             sd._atlas.append(self)
-            if sd.def_chart is None: 
-                sd.def_chart = self
+            if sd._def_chart is None: 
+                sd._def_chart = self
         # The chart is added to the list of the domain's covering charts:
-        self.domain.covering_charts.append(self)
+        self._domain._covering_charts.append(self)
         # Construction of the coordinate frame associated to the chart:
-        if self.domain.name != 'field R':      
+        if self._domain._name != 'field R':      
             #!# to avoid circular import of RealLine
             self._frame = CoordFrame(self)
             self._coframe = self._frame._coframe
         # The null function of the coordinates:
-        self.zero_function = ZeroFunctionChart(self)
+        self._zero_function = ZeroFunctionChart(self)
         # Initialization of the set of charts that are restrictions of the
         # current chart to subdomains of the chart domain:
-        self.subcharts = set([self]) 
+        self._subcharts = set([self]) 
         # Initialization of the set of charts which the current chart is a 
         # restriction of:
-        self.supercharts = set([self])
+        self._supercharts = set([self])
         #
         self._dom_restrict = {} # dict. of the restrictions of self to
-                                # subdomains of self.domain, with the 
+                                # subdomains of self._domain, with the 
                                 # subdomains as keys
     
     def _repr_(self):
@@ -384,7 +384,7 @@ class Chart(UniqueRepresentation, SageObject):
         String representation of the object.
         """
         description = 'chart ' + \
-                      '(' + self.domain.name + ', ' + str(self.xx) + ')'
+                      '(' + self._domain._name + ', ' + str(self._xx) + ')'
         return description
     
     def _latex_(self):
@@ -392,11 +392,11 @@ class Chart(UniqueRepresentation, SageObject):
         LaTeX representation of the object.
         """
         from sage.misc.latex import latex
-        description = '(' + latex(self.domain).strip() + ',('
-        n = len(self.xx)
+        description = '(' + latex(self._domain).strip() + ',('
+        n = len(self._xx)
         for i in range(n-1):
-            description += latex(self.xx[i]).strip() + ', '
-        description += latex(self.xx[n-1]).strip() + '))'
+            description += latex(self._xx[i]).strip() + ', '
+        description += latex(self._xx[n-1]).strip() + '))'
         return description
 
     def _latex_coordinates(self):
@@ -405,10 +405,10 @@ class Chart(UniqueRepresentation, SageObject):
         """
         from sage.misc.latex import latex
         description = '(' 
-        n = len(self.xx)
+        n = len(self._xx)
         for i in range(n-1):
-            description += latex(self.xx[i]).strip() + ', '
-        description += latex(self.xx[n-1]).strip() + ')'
+            description += latex(self._xx[i]).strip() + ', '
+        description += latex(self._xx[n-1]).strip() + ')'
         return description
 
     def _first_ngens(self, n):
@@ -439,9 +439,9 @@ class Chart(UniqueRepresentation, SageObject):
           ``i`` is [:]
         """
         if isinstance(i, slice): 
-            return self.xx
+            return self._xx
         else: 
-            return self.xx[i-self.manifold.sindex]
+            return self._xx[i-self._manifold._sindex]
 
     def __call__(self, point):
         r"""
@@ -478,13 +478,13 @@ class Chart(UniqueRepresentation, SageObject):
             sage: ey = c_xy.frame()[1] ; ey
             vector field 'd/dy' on the 2-dimensional manifold 'M'
             sage: ex(M.scalar_field(x)).view()
-            (x, y) |--> 1
+            on M: (x, y) |--> 1
             sage: ex(M.scalar_field(y)).view()
-            (x, y) |--> 0
+            on M: (x, y) |--> 0
             sage: ey(M.scalar_field(x)).view()
-            (x, y) |--> 0
+            on M: (x, y) |--> 0
             sage: ey(M.scalar_field(y)).view()
-            (x, y) |--> 1
+            on M: (x, y) |--> 1
 
         """
         return self._frame
@@ -523,13 +523,13 @@ class Chart(UniqueRepresentation, SageObject):
             sage: ey = c_xy.frame()[1] ; ey
             vector field 'd/dy' on the 2-dimensional manifold 'M'
             sage: dx(ex).view()
-            dx(d/dx): (x, y) |--> 1
+            dx(d/dx) on M: (x, y) |--> 1
             sage: dx(ey).view()
-            dx(d/dy): (x, y) |--> 0
+            dx(d/dy) on M: (x, y) |--> 0
             sage: dy(ex).view()
-            dy(d/dx): (x, y) |--> 0
+            dy(d/dx) on M: (x, y) |--> 0
             sage: dy(ey).view()
-            dy(d/dy): (x, y) |--> 1
+            dy(d/dy) on M: (x, y) |--> 1
 
         """
         return self._coframe
@@ -585,9 +585,9 @@ class Chart(UniqueRepresentation, SageObject):
             
         """
         if i is None: 
-            return self.bounds
+            return self._bounds
         else: 
-            return self.bounds[i-self.manifold.sindex]
+            return self._bounds[i-self._manifold._sindex]
 
     def add_restrictions(self, restrictions):
         r"""
@@ -624,7 +624,7 @@ class Chart(UniqueRepresentation, SageObject):
         
             sage: A = M.open_domain('A') # annulus 1/2 < r < 1
             sage: X_A = X.restrict(A, x^2+y^2 > 1/4)
-            sage: X_A.restrictions
+            sage: X_A._restrictions
             [x^2 + y^2 < 1, x^2 + y^2 > (1/4)]
             sage: X_A.valid_coordinates(0,1/3)
             False
@@ -635,7 +635,7 @@ class Chart(UniqueRepresentation, SageObject):
         if not isinstance(restrictions, list): 
             # case of a single condition or conditions to be combined by "or"
             restrictions = [restrictions]
-        self.restrictions.extend(restrictions)
+        self._restrictions.extend(restrictions)
 
 
     def restrict(self, subdomain, restrictions=None):
@@ -701,29 +701,29 @@ class Chart(UniqueRepresentation, SageObject):
             True
 
         """
-        if subdomain == self.domain:
+        if subdomain == self._domain:
             return self
         if subdomain not in self._dom_restrict:
-            if not subdomain.is_subdomain(self.domain):
+            if not subdomain.is_subdomain(self._domain):
                 raise ValueError("The specified domain is not a subdomain " + 
                                  "of the domain of definition of the chart.")
             coordinates = ""
-            for coord in self.xx:
+            for coord in self._xx:
                 coordinates += repr(coord) + ' '
             res = Chart(subdomain, coordinates)
-            res.bounds = self.bounds
-            res.restrictions.extend(self.restrictions)
+            res._bounds = self._bounds
+            res._restrictions.extend(self._restrictions)
             res.add_restrictions(restrictions)
             # Update of supercharts and subcharts:
-            res.supercharts.update(self.supercharts)
-            for schart in self.supercharts:
-                schart.subcharts.add(res)
+            res._supercharts.update(self._supercharts)
+            for schart in self._supercharts:
+                schart._subcharts.add(res)
                 schart._dom_restrict[subdomain] = res
             # Update of superframes and subframes:
             res._frame.superframes.update(self._frame.superframes)
             for sframe in self._frame.superframes:
                 sframe.subframes.add(res._frame)
-                sframe.restrictions[subdomain] = res._frame
+                sframe._restrictions[subdomain] = res._frame
             # Update of domain restrictions:
             self._dom_restrict[subdomain] = res
         return self._dom_restrict[subdomain]
@@ -743,10 +743,10 @@ class Chart(UniqueRepresentation, SageObject):
 
         """
         n = len(coordinates)
-        if n != self.manifold.dim:
+        if n != self._manifold._dim:
             return False
         # Check of the coordinate ranges:
-        for x, bounds in zip(coordinates, self.bounds):
+        for x, bounds in zip(coordinates, self._bounds):
             xmin = bounds[0][0]
             min_included = bounds[0][1]
             xmax = bounds[1][0]
@@ -764,10 +764,10 @@ class Chart(UniqueRepresentation, SageObject):
                 if x >= xmax:
                     return False
         # Check of additional restrictions:
-        if self.restrictions != []:
-            substitutions = dict([(self.xx[j], coordinates[j]) for j in 
+        if self._restrictions != []:
+            substitutions = dict([(self._xx[j], coordinates[j]) for j in 
                                                                     range(n)])
-            for restrict in self.restrictions:
+            for restrict in self._restrictions:
                 if isinstance(restrict, tuple): # case of or conditions
                     combine = False
                     for expr in restrict:
@@ -842,12 +842,12 @@ class Chart(UniqueRepresentation, SageObject):
             sage: trans = cU.transition_map(cV, 1/x, 'W', x!=0, y!=0)
             sage: trans
             coordinate change from chart (W, (x,)) to chart (W, (y,))
-            sage: M.domains # the domain W, intersection of U and V, has been created by transition_map()
+            sage: M._domains # the domain W, intersection of U and V, has been created by transition_map()
             {'V': open domain 'V' on the 1-dimensional manifold 'S^1', 
              'U': open domain 'U' on the 1-dimensional manifold 'S^1', 
              'W': open domain 'W' on the 1-dimensional manifold 'S^1', 
              'S^1': 1-dimensional manifold 'S^1'}
-            sage: W = M.domains['W']
+            sage: W = M._domains['W']
             sage: W is U.intersection(V)
             True
             sage: M.atlas()
@@ -864,15 +864,15 @@ class Chart(UniqueRepresentation, SageObject):
                                                  restrictions2=(y!=0, x<0))
             sage: trans
             coordinate change from chart (U, (r, phi)) to chart (U, (x, y))
-            sage: M.domains # in this case, no new domain has been created since U inter M = U
+            sage: M._domains # in this case, no new domain has been created since U inter M = U
             {'R^2': 2-dimensional manifold 'R^2',
              'U': open domain 'U' on the 2-dimensional manifold 'R^2'}
             sage: M.atlas() # ...but a new chart has been created: (U, (x, y))
             [chart (R^2, (x, y)), chart (U, (r, phi)), chart (U, (x, y))]
         
         """
-        dom1 = self.domain
-        dom2 = other.domain
+        dom1 = self._domain
+        dom2 = other._domain
         dom = dom1.intersection(dom2, name=intersection_name)
         if dom is dom1:
             chart1 = self
@@ -1055,7 +1055,7 @@ class FunctionChart(SageObject):
         sage: f = c_xy.function(x^2+3*y+1)
         sage: type(f)
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
-        sage: f.chart
+        sage: f._chart
         chart (M, (x, y))
         sage: f.view()
         (x, y) |--> x^2 + 3*y + 1
@@ -1114,9 +1114,9 @@ class FunctionChart(SageObject):
     """
     def __init__(self, chart, expression): 
         from sage.symbolic.ring import SR
-        self.chart = chart
-        self.express = SR(expression)
-        self.nc = len(self.chart.xx)    # number of coordinates
+        self._chart = chart
+        self._express = SR(expression)
+        self._nc = len(self._chart._xx)    # number of coordinates
         # Derived quantities:
         self._der = None  # partial derivatives
 
@@ -1124,14 +1124,14 @@ class FunctionChart(SageObject):
         r"""
         Special Sage function for the string representation of the object.
         """
-        return str(self.express)
+        return str(self._express)
 
     def _latex_(self):
         r"""
         Special Sage function for the LaTeX representation of the object.
         """
         from sage.misc.latex import latex
-        return latex(self.express)
+        return latex(self._express)
 
     def expr(self):
         r"""
@@ -1157,7 +1157,7 @@ class FunctionChart(SageObject):
             x^2 + 3*y + 1
             sage: print type(f.expr())
             <type 'sage.symbolic.expression.Expression'>
-            sage: f.expr() is f.express
+            sage: f.expr() is f._express
             True
 
         The method :meth:`expr` is useful for accessing to all the 
@@ -1179,7 +1179,7 @@ class FunctionChart(SageObject):
             True
 
         """
-        return self.express
+        return self._express
         
     def view(self):
         r"""
@@ -1204,8 +1204,8 @@ class FunctionChart(SageObject):
         from sage.misc.latex import latex
         from utilities import FormattedExpansion
         result = FormattedExpansion(self)
-        result.txt = repr((self.chart)[:]) + ' |--> ' + repr(self.express)
-        result.latex = self.chart._latex_coordinates() + r' \mapsto' + latex(self.express)
+        result.txt = repr((self._chart)[:]) + ' |--> ' + repr(self._express)
+        result.latex = self._chart._latex_coordinates() + r' \mapsto' + latex(self._express)
         return result
 
     def _del_derived(self):
@@ -1239,7 +1239,7 @@ class FunctionChart(SageObject):
             False
         
         """
-        return FunctionChart(self.chart, self.express)
+        return FunctionChart(self._chart, self._express)
         
     def __call__(self, *coords):
         r"""
@@ -1256,12 +1256,12 @@ class FunctionChart(SageObject):
          
         """
         #!# This should be the Python 2.7 form: 
-        # substitutions = {self.chart.xx[j]: coords[j] for j in range(self.nc)}
+        # substitutions = {self._chart._xx[j]: coords[j] for j in range(self._nc)}
         #
         # Here we use a form compatible with Python 2.6:
-        substitutions = dict([(self.chart.xx[j], coords[j]) for j in 
-                                                               range(self.nc)])
-        resu = self.express.subs(substitutions)
+        substitutions = dict([(self._chart._xx[j], coords[j]) for j in 
+                                                               range(self._nc)])
+        resu = self._express.subs(substitutions)
         return simplify_chain(resu)
                      
     def diff(self, coord):
@@ -1319,13 +1319,13 @@ class FunctionChart(SageObject):
         from sage.calculus.functional import diff
         if self._der is None:
             # the partial derivatives have to be updated
-            self._der = [FunctionChart(self.chart,
-                         simplify_chain(diff(self.express, self.chart.xx[j])))
-                                                    for j in range(self.nc) ]
+            self._der = [FunctionChart(self._chart,
+                         simplify_chain(diff(self._express, self._chart._xx[j])))
+                                                    for j in range(self._nc) ]
         if isinstance(coord, (int, Integer)):
-            return self._der[coord - self.chart.manifold.sindex]
+            return self._der[coord - self._chart._manifold._sindex]
         else:
-            return self._der[self.chart.xx.index(coord)]
+            return self._der[self._chart._xx.index(coord)]
 
     def is_zero(self):
         r""" 
@@ -1345,7 +1345,7 @@ class FunctionChart(SageObject):
             True
 
         """
-        return self.express.is_zero()
+        return self._express.is_zero()
         
     def __eq__(self, other):
         r"""
@@ -1361,12 +1361,12 @@ class FunctionChart(SageObject):
         
         """
         if isinstance(other, FunctionChart):
-            if other.chart != self.chart:
+            if other._chart != self._chart:
                 return False
             else:
-                return bool(other.express == self.express)
+                return bool(other._express == self._express)
         else:
-            return bool(self.express == other)
+            return bool(self._express == other)
 
     def __ne__(self, other):
         r"""
@@ -1392,7 +1392,7 @@ class FunctionChart(SageObject):
         - an exact copy of ``self``
     
         """
-        return FunctionChart(self.chart, self.express)
+        return FunctionChart(self._chart, self._express)
 
     def __neg__(self):
         r"""
@@ -1403,7 +1403,7 @@ class FunctionChart(SageObject):
         - the opposite of the function ``self``
     
         """
-        return FunctionChart(self.chart, simplify_chain(-self.express))
+        return FunctionChart(self._chart, simplify_chain(-self._express))
 
     def __add__(self, other):
         r"""
@@ -1419,20 +1419,20 @@ class FunctionChart(SageObject):
         
         """
         if isinstance(other, FunctionChart):
-            if other.chart != self.chart:
+            if other._chart != self._chart:
                 raise TypeError("Two functions not defined on the same " + 
                                 "chart cannot be added.")
             if isinstance(other, ZeroFunctionChart):
                 return self.copy()
-            res = simplify_chain(self.express + other.express)
+            res = simplify_chain(self._express + other._express)
         elif isinstance(other, (int, RingElement)):  #!# check
-            res = simplify_chain(self.express + other)
+            res = simplify_chain(self._express + other)
         else:
             return other.__radd__(self)
         if res == 0:
-            return self.chart.zero_function
+            return self._chart._zero_function
         else:
-            return FunctionChart(self.chart, res)
+            return FunctionChart(self._chart, res)
 
     def __radd__(self, other):
         r"""
@@ -1467,20 +1467,20 @@ class FunctionChart(SageObject):
         
         """
         if isinstance(other, FunctionChart):
-            if other.chart != self.chart:
+            if other._chart != self._chart:
                 raise TypeError("Two functions not defined on the same " + 
                                 "chart cannot be subtracted.")
             if isinstance(other, ZeroFunctionChart):
                 return self.copy()
-            res = simplify_chain(self.express - other.express)
+            res = simplify_chain(self._express - other._express)
         elif isinstance(other, (int, RingElement)):  #!# check
-            res = simplify_chain(self.express - other)
+            res = simplify_chain(self._express - other)
         else:
             return other.__rsub__(self)
         if res == 0:
-            return self.chart.zero_function
+            return self._chart._zero_function
         else:
-            return FunctionChart(self.chart, res)
+            return FunctionChart(self._chart, res)
 
     def __rsub__(self, other):
         r"""
@@ -1516,20 +1516,20 @@ class FunctionChart(SageObject):
                 
         """
         if isinstance(other, FunctionChart):
-            if other.chart != self.chart:
+            if other._chart != self._chart:
                 raise TypeError("Two functions not defined on the same " + 
                                 "chart cannot be multiplied.")
             if isinstance(other, ZeroFunctionChart):
-                return self.chart.zero_function
-            res = simplify_chain(self.express * other.express)
+                return self._chart._zero_function
+            res = simplify_chain(self._express * other._express)
         elif isinstance(other, (int, RingElement)):  #!# check
-            res = simplify_chain(self.express * other)
+            res = simplify_chain(self._express * other)
         else:
             return other.__rmul__(self)
         if res == 0:
-            return self.chart.zero_function
+            return self._chart._zero_function
         else:
-            return FunctionChart(self.chart, res)
+            return FunctionChart(self._chart, res)
 
     def __rmul__(self, other):
         r"""
@@ -1565,22 +1565,22 @@ class FunctionChart(SageObject):
                 
         """
         if isinstance(other, FunctionChart):
-            if other.chart != self.chart:
+            if other._chart != self._chart:
                 raise TypeError("Two functions not defined on the same " + 
                                 "chart cannot be divided.")
             if isinstance(other, ZeroFunctionChart):
                 raise ZeroDivisionError("Division of a FunctionChart by zero.")
-            res = simplify_chain(self.express / other.express)
+            res = simplify_chain(self._express / other._express)
         elif isinstance(other, (int, RingElement)):  #!# check
-            res = simplify_chain(self.express / other)
+            res = simplify_chain(self._express / other)
         else:
             if other == 0:
                 raise ZeroDivisionError("Division of a FunctionChart by zero.")
             return other.__rdiv__(self)
         if res == 0:
-            return self.chart.zero_function
+            return self._chart._zero_function
         else:
-            return FunctionChart(self.chart, res)
+            return FunctionChart(self._chart, res)
 
     def __rdiv__(self, other):
         r"""
@@ -1588,8 +1588,8 @@ class FunctionChart(SageObject):
         
         """
         #!# to be improved
-        res = simplify_chain(other / self.express)
-        return FunctionChart(self.chart, res)
+        res = simplify_chain(other / self._express)
+        return FunctionChart(self._chart, res)
 
 
     def __idiv__(self, other):
@@ -1610,7 +1610,7 @@ class FunctionChart(SageObject):
         
         OUTPUT:
         
-        - ``self``, with ``self.express`` factorized
+        - ``self``, with ``self._express`` factorized
         
         EXAMPLES:
         
@@ -1627,7 +1627,7 @@ class FunctionChart(SageObject):
             (x + y)^2
 
         """
-        self.express = self.express.factor()
+        self._express = self._express.factor()
         self._del_derived()
         return self
         
@@ -1659,15 +1659,15 @@ class FunctionChart(SageObject):
             sage: f = fc.scalar_field() ; f
             scalar field on the 2-dimensional manifold 'M'
             sage: f.view()
-            (x, y) |--> 2*y^3 + x
+            on M: (x, y) |--> 2*y^3 + x
             sage: f.function_chart(c_xy) is fc
             True
 
         """
         from scalarfield import ScalarField
-        result = ScalarField(self.chart.domain, name=name, 
+        result = ScalarField(self._chart._domain, name=name, 
                              latex_name=latex_name)
-        result.express = {self.chart: self}
+        result._express = {self._chart: self}
         return result
 
  
@@ -1701,11 +1701,11 @@ class ZeroFunctionChart(FunctionChart):
 
     Each chart has its zero function::
 
-        sage: c_xy.zero_function
+        sage: c_xy._zero_function
         0
-        sage: print type(c_xy.zero_function)
+        sage: print type(c_xy._zero_function)
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
-        sage: f == c_xy.zero_function
+        sage: f == c_xy._zero_function
         True
 
     Arithmetics between instances of :class:`ZeroFunctionChart`::
@@ -1790,7 +1790,7 @@ class ZeroFunctionChart(FunctionChart):
         if necessary.
 
         """
-        return ZeroFunctionChart(self.chart)
+        return ZeroFunctionChart(self._chart)
         
     def __call__(self, *coords):
         r"""
@@ -1825,7 +1825,7 @@ class ZeroFunctionChart(FunctionChart):
                   
         """
         if self._der is None:
-            self._der = [self.chart.zero_function for j in range(self.nc)]
+            self._der = [self._chart._zero_function for j in range(self._nc)]
         return self._der[0]
 
     def is_zero(self):
@@ -1849,7 +1849,7 @@ class ZeroFunctionChart(FunctionChart):
         
         """
         if isinstance(other, FunctionChart):
-            if other.chart != self.chart:
+            if other._chart != self._chart:
                 return False
             else:
                 return other.is_zero()
@@ -1892,7 +1892,7 @@ class ZeroFunctionChart(FunctionChart):
         
         """
         if isinstance(other, FunctionChart):
-            if other.chart != self.chart:
+            if other._chart != self._chart:
                 raise TypeError("Two functions not defined on the same chart " + 
                                 "cannot be added.")
             return other.copy()
@@ -1900,7 +1900,7 @@ class ZeroFunctionChart(FunctionChart):
             if other == 0:
                 return self
             else:
-                return FunctionChart(self.chart, other)
+                return FunctionChart(self._chart, other)
         else:
             return other.__radd__(self)
 
@@ -1919,7 +1919,7 @@ class ZeroFunctionChart(FunctionChart):
         
         """
         if isinstance(other, FunctionChart):
-            if other.chart != self.chart:
+            if other._chart != self._chart:
                 raise TypeError("Two functions not defined on the same chart " + 
                                 "cannot be subtracted.")
             return -other    
@@ -1927,7 +1927,7 @@ class ZeroFunctionChart(FunctionChart):
             if other == 0:
                 return self
             else:
-                return FunctionChart(self.chart, -other)
+                return FunctionChart(self._chart, -other)
         else:
             return other.__rsub__(self)
  
@@ -1995,13 +1995,13 @@ class ZeroFunctionChart(FunctionChart):
 
             sage: M = Manifold(2, 'M')                  
             sage: c_xy.<x,y> = M.chart()
-            sage: fc = c_xy.zero_function
+            sage: fc = c_xy._zero_function
             sage: f = fc.scalar_field() ; f
             zero scalar field on the 2-dimensional manifold 'M'
             sage: f.expr()
             0
         """
-        return self.chart.domain.zero_scalar_field
+        return self._chart._domain._zero_scalar_field
 
 #*****************************************************************************
 
@@ -2042,7 +2042,7 @@ class MultiFunctionChart(SageObject):
         functions (x - y, x*y, cos(x)*e^y) on the chart (M, (x, y))
         sage: type(f)
         <class 'sage.geometry.manifolds.chart.MultiFunctionChart'>
-        sage: f.functions
+        sage: f._functions
         (x - y, x*y, cos(x)*e^y)
         sage: f(x,y)
         (x - y, x*y, cos(x)*e^y)
@@ -2071,7 +2071,7 @@ class MultiFunctionChart(SageObject):
     rather employ the class :class:`FunctionChart` for this purpose::
     
         sage: g = c_xy.multifunction(x*y^2)
-        sage: g.functions
+        sage: g._functions
         (x*y^2,)
     
     Evaluating the functions at specified coordinates::
@@ -2102,10 +2102,10 @@ class MultiFunctionChart(SageObject):
     def __init__(self, chart, *expressions): 
         if not isinstance(chart, Chart):
             raise TypeError("The first argument must be a chart.")
-        self.chart = chart
-        self.nc = len(self.chart.xx)    # number of coordinates
-        self.nf = len(expressions)      # number of functions
-        self.functions = tuple(FunctionChart(chart, expressions[i]) for i in range(self.nf))
+        self._chart = chart
+        self._nc = len(self._chart._xx)    # number of coordinates
+        self._nf = len(expressions)      # number of functions
+        self._functions = tuple(FunctionChart(chart, expressions[i]) for i in range(self._nf))
         self._jacob = None
         self._jacob_matrix = None
         self._jacob_det = None
@@ -2114,8 +2114,8 @@ class MultiFunctionChart(SageObject):
         r"""
         Special Sage function for the string representation of the object.
         """
-        description = "functions " + str(self.functions) + " on the " + \
-                      str(self.chart) 
+        description = "functions " + str(self._functions) + " on the " + \
+                      str(self._chart) 
         return description
         
     def _latex_(self):
@@ -2123,7 +2123,7 @@ class MultiFunctionChart(SageObject):
         Special Sage function for the LaTeX representation of the object.
         """
         from sage.misc.latex import latex
-        return latex(self.functions)
+        return latex(self._functions)
         
     def expr(self):
         r"""
@@ -2152,7 +2152,7 @@ class MultiFunctionChart(SageObject):
             True
 
         """
-        return tuple( self.functions[i].express for i in range(self.nf) )
+        return tuple( self._functions[i]._express for i in range(self._nf) )
         
     def copy(self):
         r"""
@@ -2172,7 +2172,7 @@ class MultiFunctionChart(SageObject):
             functions (x - y, x*y, cos(x)*e^y) on the chart (M, (x, y))
 
         """
-        return MultiFunctionChart(self.chart, *(self.expr()))
+        return MultiFunctionChart(self._chart, *(self.expr()))
 
     def __getitem__(self, index):
         r""" 
@@ -2187,7 +2187,7 @@ class MultiFunctionChart(SageObject):
         -- instance of :class:`FunctionChart` representing the function
             
         """
-        return self.functions[index]
+        return self._functions[index]
         
     def __call__(self, *coords):
         r"""
@@ -2203,7 +2203,7 @@ class MultiFunctionChart(SageObject):
         - the values of the `m` functions.   
          
         """
-        return tuple( self.functions[i](*coords) for i in range(self.nf) )
+        return tuple( self._functions[i](*coords) for i in range(self._nf) )
 
     def jacobian(self):
         r"""
@@ -2242,12 +2242,12 @@ class MultiFunctionChart(SageObject):
         from sage.matrix.constructor import matrix
         from sage.calculus.functional import diff
         if self._jacob is None:
-            self._jacob = [[ FunctionChart(self.chart, 
-                            simplify_chain(diff(self.functions[i].express, 
-                                                self.chart.xx[j])) )
-                    for j in range(self.nc) ] for i in range(self.nf) ]
-            self._jacob_matrix = matrix( [[ self._jacob[i][j].express 
-                    for j in range(self.nc) ] for i in range(self.nf) ] )
+            self._jacob = [[ FunctionChart(self._chart, 
+                            simplify_chain(diff(self._functions[i]._express, 
+                                                self._chart._xx[j])) )
+                    for j in range(self._nc) ] for i in range(self._nf) ]
+            self._jacob_matrix = matrix( [[ self._jacob[i][j]._express 
+                    for j in range(self._nc) ] for i in range(self._nf) ] )
         return self._jacob
         
     def jacobian_det(self):
@@ -2283,14 +2283,14 @@ class MultiFunctionChart(SageObject):
         """
         from utilities import simple_determinant
         if self._jacob_det is None: 
-            if (self.nf != self.nc):
+            if (self._nf != self._nc):
                 raise ValueError("The Jacobian matrix is not square.")
             self.jacobian() # to force the computation of self._jacob_matrix
             #!# the following is a workaround for a bug in Sage (cf. trac ticket #14403)
-            self._jacob_det = FunctionChart(self.chart, 
+            self._jacob_det = FunctionChart(self._chart, 
                        simplify_chain(simple_determinant(self._jacob_matrix)) )
             # the proper writing should be this:
-            # self._jacob_det = FunctionChart(self.chart, simplify_chain(self._jacob_matrix.det()) )
+            # self._jacob_det = FunctionChart(self._chart, simplify_chain(self._jacob_matrix.det()) )
         return self._jacob_det
 
 
@@ -2325,7 +2325,7 @@ class CoordChange(SageObject):
         <class 'sage.geometry.manifolds.chart.CoordChange'>
 
     Each created coordinate change is automatically added to the manifold's 
-    dictionary :attr:`~sage.geometry.manifolds.domain.Domain.coord_changes`; 
+    dictionary :attr:`~sage.geometry.manifolds.domain.Domain._coord_changes`; 
     this dictionary is accessed via the method 
     :meth:`~sage.geometry.manifolds.domain.Domain.coord_change`::    
 
@@ -2353,9 +2353,9 @@ class CoordChange(SageObject):
         
     The Jacobian matrix of the coordinate change::
     
-        sage: ch.jacobian
+        sage: ch._jacobian
         [[cos(ph)*sin(th), r*cos(ph)*cos(th), -r*sin(ph)*sin(th)], [sin(ph)*sin(th), r*cos(th)*sin(ph), r*cos(ph)*sin(th)], [cos(th), -r*sin(th), 0]]
-        sage: ch.jacobian_det  # Jacobian determinant
+        sage: ch._jacobian_det  # Jacobian determinant
         r^2*sin(th)
         
     """
@@ -2363,61 +2363,61 @@ class CoordChange(SageObject):
         from sage.matrix.constructor import matrix
         from sage.calculus.functional import diff
         from rank2field import AutomorphismFieldParal
-        n1 = len(chart1.xx)
-        n2 = len(chart2.xx)
+        n1 = len(chart1._xx)
+        n2 = len(chart2._xx)
         if len(transformations) != n2:
             raise ValueError(str(n2) + 
                              " coordinate transformations must be provided.")
-        self.chart1 = chart1
-        self.chart2 = chart2
-        self.transf = MultiFunctionChart(chart1, *transformations)
+        self._chart1 = chart1
+        self._chart2 = chart2
+        self._transf = MultiFunctionChart(chart1, *transformations)
         self._inverse = None
         # Jacobian matrix: 
-        self.jacobian  = self.transf.jacobian()  
+        self._jacobian  = self._transf.jacobian()  
         # Jacobian determinant: 
         if n1 == n2: 
-            self.jacobian_det = self.transf.jacobian_det()
+            self._jacobian_det = self._transf.jacobian_det()
         # If the two charts are on the same domain, the coordinate change is 
         # added to the domain (and superdomains) dictionary and the 
         # Jacobian matrix is added to the dictionary of changes of frame:
-        if chart1.domain == chart2.domain:
-            domain = chart1.domain
-            for sdom in domain.superdomains:
-                sdom.coord_changes[(chart1, chart2)] = self
+        if chart1._domain == chart2._domain:
+            domain = chart1._domain
+            for sdom in domain._superdomains:
+                sdom._coord_changes[(chart1, chart2)] = self
             frame1 = chart1._frame
             frame2 = chart2._frame
             vf_module = domain.vector_field_module()
             ch_basis = AutomorphismFieldParal(vf_module)
-            ch_basis.add_comp(frame1)[:, chart1] = self.jacobian
-            ch_basis.add_comp(frame2)[:, chart1] = self.jacobian
-            vf_module.basis_changes[(frame2, frame1)] = ch_basis
-            vf_module.basis_changes[(frame1, frame2)] = ch_basis.inverse()            
-            for sdom in domain.superdomains:
+            ch_basis.add_comp(frame1)[:, chart1] = self._jacobian
+            ch_basis.add_comp(frame2)[:, chart1] = self._jacobian
+            vf_module._basis_changes[(frame2, frame1)] = ch_basis
+            vf_module._basis_changes[(frame1, frame2)] = ch_basis.inverse()            
+            for sdom in domain._superdomains:
                 sdom._frame_changes[(frame2, frame1)] = ch_basis
             if (frame1, frame2) not in domain._frame_changes:
-                for sdom in domain.superdomains:
+                for sdom in domain._superdomains:
                     sdom._frame_changes[(frame1, frame2)] = ch_basis.inverse()
 
     def _repr_(self):
         r"""
         Special Sage function for the string representation of the object.
         """
-        description = "coordinate change from " + str(self.chart1) + " to " + \
-                      str(self.chart2)
+        description = "coordinate change from " + str(self._chart1) + " to " + \
+                      str(self._chart2)
         return description
 
     def _latex_(self):
         r"""
         Special Sage function for the LaTeX representation of the object.
         """
-        return self.chart1._latex_coordinates() + r' \mapsto ' + \
-                self.chart2._latex_coordinates()
+        return self._chart1._latex_coordinates() + r' \mapsto ' + \
+                self._chart2._latex_coordinates()
     
     def __call__(self, *old_coords):
         r"""
         Computes the new coordinates from old ones.
         """
-        return self.transf(*old_coords)
+        return self._transf(*old_coords)
 
     def inverse(self):
         r""" 
@@ -2438,13 +2438,13 @@ class CoordChange(SageObject):
             sage: c_xy.<x,y> = M.chart()
             sage: c_uv.<u,v> = M.chart()
             sage: ch_to_uv = c_xy.coord_change(c_uv, (x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2)
-            sage: M.coord_changes 
+            sage: M._coord_changes 
             {(chart (M, (x, y)), chart (M, (u, v))): coordinate change from chart (M, (x, y)) to chart (M, (u, v))}
             sage: ch_to_xy = ch_to_uv.inverse() ; ch_to_xy
             coordinate change from chart (M, (u, v)) to chart (M, (x, y))
-            sage: ch_to_xy.transf                                                         
+            sage: ch_to_xy._transf                                                         
             functions (1/2*sqrt(3)*v + 1/2*u, -1/2*sqrt(3)*u + 1/2*v) on the chart (M, (u, v))
-            sage: M.coord_changes # optional - dictionary_output
+            sage: M._coord_changes # optional - dictionary_output
             {(chart (M, (u, v)), chart (M, (x, y))): coordinate change from chart (M, (u, v)) to chart (M, (x, y)), 
             (chart (M, (x, y)), chart (M, (u, v))): coordinate change from chart (M, (x, y)) to chart (M, (u, v))}
    
@@ -2454,8 +2454,8 @@ class CoordChange(SageObject):
         if self._inverse is not None:
             return self._inverse
         # The computation is necessary:
-        x1 = self.chart1.xx  # list of coordinates in chart1
-        x2 = self.chart2.xx  # list of coordinates in chart2
+        x1 = self._chart1._xx  # list of coordinates in chart1
+        x2 = self._chart2._xx  # list of coordinates in chart2
         n1 = len(x1)
         n2 = len(x2)
         if n1 != n2:
@@ -2470,7 +2470,7 @@ class CoordChange(SageObject):
                 coord_domain[i] = 'positive'
         xp2 = [ SR.var('xxxx' + str(i), domain=coord_domain[i]) 
                                                            for i in range(n2) ]
-        equations = [ xp2[i] == self.transf.functions[i].express 
+        equations = [ xp2[i] == self._transf._functions[i]._express 
                                                            for i in range(n2) ]
         solutions = solve(equations, x1, solution_dict=True)
         #!# This should be the Python 2.7 form: 
@@ -2498,7 +2498,7 @@ class CoordChange(SageObject):
                         transf = simplify_chain(transf)
                     except AttributeError:
                         pass        
-                if self.chart1.valid_coordinates(*x2_to_x1):
+                if self._chart1.valid_coordinates(*x2_to_x1):
                     list_x2_to_x1.append(x2_to_x1)
             if len(list_x2_to_x1) == 0: 
                 raise ValueError("No solution found; use " + 
@@ -2512,23 +2512,23 @@ class CoordChange(SageObject):
                    "transformation;  use CoordChange.set_inverse to set the " + 
                    "inverse manually.")
             x2_to_x1 = list_x2_to_x1[0]
-        self._inverse = CoordChange(self.chart2, self.chart1, *x2_to_x1)
+        self._inverse = CoordChange(self._chart2, self._chart1, *x2_to_x1)
         #
         # Update of chart expressions of the frame changes:
-        if self.chart1.domain == self.chart2.domain:
-            domain = self.chart1.domain
-            frame1 = self.chart1._frame
-            frame2 = self.chart2._frame
+        if self._chart1._domain == self._chart2._domain:
+            domain = self._chart1._domain
+            frame1 = self._chart1._frame
+            frame2 = self._chart2._frame
             fr_change12 = domain._frame_changes[(frame1,frame2)]
             fr_change21 = domain._frame_changes[(frame2,frame1)]
-            for comp in fr_change12.components[frame1]._comp.values():
-                comp.function_chart(self.chart1, from_chart=self.chart2)
-            for comp in fr_change12.components[frame2]._comp.values():
-                comp.function_chart(self.chart1, from_chart=self.chart2)
-            for comp in fr_change21.components[frame1]._comp.values():
-                comp.function_chart(self.chart2, from_chart=self.chart1)
-            for comp in fr_change21.components[frame2]._comp.values():
-                comp.function_chart(self.chart2, from_chart=self.chart1)
+            for comp in fr_change12._components[frame1]._comp.values():
+                comp.function_chart(self._chart1, from_chart=self._chart2)
+            for comp in fr_change12._components[frame2]._comp.values():
+                comp.function_chart(self._chart1, from_chart=self._chart2)
+            for comp in fr_change21._components[frame1]._comp.values():
+                comp.function_chart(self._chart2, from_chart=self._chart1)
+            for comp in fr_change21._components[frame2]._comp.values():
+                comp.function_chart(self._chart2, from_chart=self._chart1)
         return self._inverse
 
 
@@ -2566,7 +2566,7 @@ class CoordChange(SageObject):
                y == y
             sage: spher_to_cart.inverse()
             coordinate change from chart (U, (x, y)) to chart (U, (r, ph))
-            sage: M.coord_changes # random output order
+            sage: M._coord_changes # random output order
             {(chart (U, (x, y)),
               chart (U, (r, ph))): coordinate change from chart (U, (x, y)) to chart (U, (r, ph)),
              (chart (U, (r, ph)),
@@ -2587,29 +2587,29 @@ class CoordChange(SageObject):
             check = kwds['check']
         else:
             check = True
-        self._inverse = CoordChange(self.chart2, self.chart1, *transformations)
+        self._inverse = CoordChange(self._chart2, self._chart1, *transformations)
         if check:
             print "Check of the inverse coordinate transformation:"
-            x1 = self.chart1.xx
-            x2 = self.chart2.xx
+            x1 = self._chart1._xx
+            x2 = self._chart2._xx
             n1 = len(x1)
             for i in range(n1):
                 print "  ", x1[i], '==' , self._inverse(*(self(*x1)))[i]
             for i in range(n1):
                 print "  ", x2[i], '==', self(*(self._inverse(*x2)))[i]
         # Update of chart expressions of the frame changes:
-        if self.chart1.domain == self.chart2.domain:
-            domain = self.chart1.domain
-            frame1 = self.chart1._frame
-            frame2 = self.chart2._frame
+        if self._chart1._domain == self._chart2._domain:
+            domain = self._chart1._domain
+            frame1 = self._chart1._frame
+            frame2 = self._chart2._frame
             fr_change12 = domain._frame_changes[(frame1,frame2)]
             fr_change21 = domain._frame_changes[(frame2,frame1)]
-            for comp in fr_change12.components[frame1]._comp.values():
-                comp.function_chart(self.chart1, from_chart=self.chart2)
-            for comp in fr_change12.components[frame2]._comp.values():
-                comp.function_chart(self.chart1, from_chart=self.chart2)
-            for comp in fr_change21.components[frame1]._comp.values():
-                comp.function_chart(self.chart2, from_chart=self.chart1)
-            for comp in fr_change21.components[frame2]._comp.values():
-                comp.function_chart(self.chart2, from_chart=self.chart1)
+            for comp in fr_change12._components[frame1]._comp.values():
+                comp.function_chart(self._chart1, from_chart=self._chart2)
+            for comp in fr_change12._components[frame2]._comp.values():
+                comp.function_chart(self._chart1, from_chart=self._chart2)
+            for comp in fr_change21._components[frame1]._comp.values():
+                comp.function_chart(self._chart2, from_chart=self._chart1)
+            for comp in fr_change21._components[frame2]._comp.values():
+                comp.function_chart(self._chart2, from_chart=self._chart1)
     

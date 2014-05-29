@@ -63,7 +63,7 @@ class Metric(SymBilinFormFieldParal):
     
         sage: g.parent()
         free module TF^(0,2)(M) of type-(0,2) tensors fields on the 2-dimensional manifold 'M'
-        sage: g.tensor_type
+        sage: g._tensor_type
         (0, 2)
         sage: g.symmetries()  # g is symmetric:
         symmetry: (0, 1);  no antisymmetry
@@ -116,7 +116,7 @@ class Metric(SymBilinFormFieldParal):
         SymBilinFormFieldParal.__init__(self, domain.vector_field_module(), 
                                         name=name, latex_name=latex_name)
         # signature:
-        ndim = self.ambient_domain.manifold.dim
+        ndim = self._ambient_domain._manifold._dim
         if signature is None:
             signature = ndim
         else:
@@ -139,8 +139,8 @@ class Metric(SymBilinFormFieldParal):
         r"""
         Special Sage function for the string representation of the object.
         """
-        description = "pseudo-Riemannian metric '%s'" % self.name
-        description += " on the " + str(self.domain)
+        description = "pseudo-Riemannian metric '%s'" % self._name
+        description += " on the " + str(self._domain)
         return description
 
     def _new_instance(self):
@@ -148,7 +148,7 @@ class Metric(SymBilinFormFieldParal):
         Create a :class:`Metric` instance with the same signature.
         
         """
-        return Metric(self.domain, 'unnamed', signature=self._signature)
+        return Metric(self._domain, 'unnamed', signature=self._signature)
 
     def _init_derived(self):
         r"""
@@ -158,9 +158,9 @@ class Metric(SymBilinFormFieldParal):
         #!# Provisory: SymBilinFormFieldParal must be replaced by SymBilinFormField:
         SymBilinFormFieldParal._init_derived(self) 
         # inverse metric:
-        inv_name = 'inv_' + self.name
-        inv_latex_name = self.latex_name + r'^{-1}'
-        self._inverse = self.domain.tensor_field(2, 0, name=inv_name, 
+        inv_name = 'inv_' + self._name
+        inv_latex_name = self._latex_name + r'^{-1}'
+        self._inverse = self._domain.tensor_field(2, 0, name=inv_name, 
                                                  latex_name=inv_latex_name, 
                                                  sym=(0,1))   
         self._connection = None  # Levi-Civita connection (not set yet)
@@ -177,7 +177,7 @@ class Metric(SymBilinFormFieldParal):
         #!# Provisory: SymBilinFormFieldParal must be replaced by SymBilinFormField:
         SymBilinFormFieldParal._del_derived(self)
         # The inverse metric is cleared: 
-        self._inverse.components.clear()
+        self._inverse._components.clear()
         self._inverse._del_derived()
         # The connection and Weyl tensor are reset to None:
         self._connection = None
@@ -227,14 +227,14 @@ class Metric(SymBilinFormFieldParal):
         #!# Provisory: SymBilinFormFieldParal must be replaced by SymBilinFormField:
         if not isinstance(symbiform, SymBilinFormFieldParal):
             raise TypeError("The argument must be a symmetric bilinear form.")
-        if symbiform.domain != self.domain:
+        if symbiform._domain != self._domain:
             raise TypeError("The symmetric bilinear form and the metric are " + 
                             "not defined on the same domain.")
-        self.domain = symbiform.domain
+        self._domain = symbiform._domain
         self._init_derived()
-        self.components.clear()
-        for frame in symbiform.components:
-            self.components[frame] = symbiform.components[frame].copy()
+        self._components.clear()
+        for frame in symbiform._components:
+            self._components[frame] = symbiform._components[frame].copy()
         
     def inverse(self):
         r"""
@@ -272,29 +272,29 @@ class Metric(SymBilinFormFieldParal):
         from vectorframe import CoordFrame
         from utilities import simplify_chain
         # Is the inverse metric up to date ?
-        for frame in self.components:
-            if frame not in self._inverse.components:
+        for frame in self._components:
+            if frame not in self._inverse._components:
                 # the computation is necessary
-                fmodule = self.fmodule
-                si = fmodule.sindex ; nsi = fmodule._rank + si
-                dom = self.domain
+                fmodule = self._fmodule
+                si = fmodule._sindex ; nsi = fmodule._rank + si
+                dom = self._domain
                 if isinstance(frame, CoordFrame):
-                    chart = frame.chart
+                    chart = frame._chart
                 else:
-                    chart = dom.def_chart
+                    chart = dom._def_chart
                 try:    
                     gmat = matrix(
-                              [[self.comp(frame)[i, j, chart].express 
+                              [[self.comp(frame)[i, j, chart]._express 
                               for j in range(si, nsi)] for i in range(si, nsi)])
                 except (KeyError, ValueError):
                     continue
                 gmat_inv = gmat.inverse()
-                cinv = CompFullySym(fmodule.ring, frame, 2, start_index=si,
-                                    output_formatter=fmodule.output_formatter)
+                cinv = CompFullySym(fmodule._ring, frame, 2, start_index=si,
+                                    output_formatter=fmodule._output_formatter)
                 for i in range(si, nsi):
                     for j in range(i, nsi):   # symmetry taken into account
                         cinv[i, j] = {chart: simplify_chain(gmat_inv[i-si,j-si])}
-                self._inverse.components[frame] = cinv
+                self._inverse._components[frame] = cinv
         return self._inverse
         
     def connection(self, name=None, latex_name=None):
@@ -349,9 +349,9 @@ class Metric(SymBilinFormFieldParal):
         from connection import LeviCivitaConnection
         if self._connection is None:
             if name is None:
-                name = 'nabla_' + self.name
+                name = 'nabla_' + self._name
             if latex_name is None:
-                latex_name = r'\nabla_{' + self.latex_name + '}'
+                latex_name = r'\nabla_{' + self._latex_name + '}'
             self._connection = LeviCivitaConnection(self, name, latex_name)
         return self._connection
 
@@ -404,7 +404,7 @@ class Metric(SymBilinFormFieldParal):
         
         """
         if chart is None:
-            frame = self.domain.def_chart._frame
+            frame = self._domain._def_chart._frame
         else:
             frame = chart._frame
         return self.connection().coef(frame)
@@ -621,11 +621,11 @@ class Metric(SymBilinFormFieldParal):
 
         """
         if self._weyl is None:
-            n = self.ambient_domain.dim
+            n = self._ambient_domain._dim
             if n < 3:
                 raise ValueError("The Weyl tensor is not defined for a " + 
                                  "manifold of dimension n <= 2.")
-            delta = self.domain.identity_map()
+            delta = self._domain.identity_map()
             riem = self.riemann()
             ric = self.ricci()
             rscal = self.ricci_scalar()
@@ -637,14 +637,14 @@ class Metric(SymBilinFormFieldParal):
             aux = self*ricup + ric*delta - rscal/(n-1)* self*delta
             self._weyl = riem + 2/(n-2)* aux.antisymmetrize([2,3]) 
             if name is None:
-                self._weyl.name = "C(" + self.name + ")"
+                self._weyl._name = "C(" + self._name + ")"
             else:
-                self._weyl.name = name
+                self._weyl._name = name
             if latex_name is None:
-                self._weyl.latex_name = r"\mathrm{C}\left(" + self.latex_name \
+                self._weyl._latex_name = r"\mathrm{C}\left(" + self._latex_name \
                                         + r"\right)"
             else:
-                self._weyl.latex_name = latex_name
+                self._weyl._latex_name = latex_name
         return self._weyl
             
     def determinant(self, frame=None):
@@ -707,10 +707,10 @@ class Metric(SymBilinFormFieldParal):
         """
         from sage.matrix.constructor import matrix
         from utilities import simple_determinant, simplify_chain
-        manif = self.ambient_domain.manifold
-        dom = self.domain
+        manif = self._ambient_domain._manifold
+        dom = self._domain
         if frame is None:
-            frame = dom.def_frame
+            frame = dom._def_frame
         if frame in dom._atlas:   
             # frame is actually a chart and is changed to the associated 
             # coordinate frame:
@@ -719,9 +719,9 @@ class Metric(SymBilinFormFieldParal):
             # a new computation is necessary
             resu = dom.scalar_field()
             gg = self.comp(frame)
-            i1 = manif.sindex
-            for chart in gg[[i1, i1]].express:
-                gm = matrix( [[ gg[i, j, chart].express 
+            i1 = manif._sindex
+            for chart in gg[[i1, i1]]._express:
+                gm = matrix( [[ gg[i, j, chart]._express 
                             for j in manif.irange()] for i in manif.irange()] )
                 detgm = simplify_chain(simple_determinant(gm))
                 resu.add_expr(detgm, chart=chart)
@@ -800,9 +800,9 @@ class Metric(SymBilinFormFieldParal):
         """
         from sage.functions.other import sqrt
         from utilities import simplify_chain
-        dom = self.domain
+        dom = self._domain
         if frame is None:
-            frame = dom.def_frame
+            frame = dom._def_frame
         if frame in dom._atlas:   
             # frame is actually a chart and is changed to the associated 
             # coordinate frame:
@@ -811,8 +811,8 @@ class Metric(SymBilinFormFieldParal):
             # a new computation is necessary
             detg = self.determinant(frame)
             resu = dom.scalar_field()
-            for chart in detg.express:
-                x = self._indic_signat * detg.express[chart].express # |g|
+            for chart in detg._express:
+                x = self._indic_signat * detg._express[chart]._express # |g|
                 x = simplify_chain(sqrt(x))
                 resu.add_expr(x, chart=chart)
             self._sqrt_abs_dets[frame] = resu
@@ -914,13 +914,13 @@ class Metric(SymBilinFormFieldParal):
         """
         if self._vol_forms == []:
             # a new computation is necessary
-            manif = self.ambient_domain.manifold
-            dom = self.domain
-            ndim = manif.dim
-            eps = dom.diff_form(ndim, name='eps_'+self.name, 
-                                latex_name=r'\epsilon_{'+self.latex_name+r'}')
-            ind = tuple(range(manif.sindex, manif.sindex+ndim))
-            eps[[ind]] = self.sqrt_abs_det(dom.def_frame)
+            manif = self._ambient_domain._manifold
+            dom = self._domain
+            ndim = manif._dim
+            eps = dom.diff_form(ndim, name='eps_'+self._name, 
+                                latex_name=r'\epsilon_{'+self._latex_name+r'}')
+            ind = tuple(range(manif._sindex, manif._sindex+ndim))
+            eps[[ind]] = self.sqrt_abs_det(dom._def_frame)
             self._vol_forms.append(eps)  # Levi-Civita tensor constructed
             # Tensors related to the Levi-Civita one by index rising:
             for k in range(1, ndim+1):
@@ -969,15 +969,15 @@ class RiemannMetric(Metric):
 
     """
     def __init__(self, domain, name, latex_name=None):
-        Metric.__init__(self, domain, name, signature=domain.manifold.dim, 
+        Metric.__init__(self, domain, name, signature=domain._manifold._dim, 
                         latex_name=latex_name)
     
     def _repr_(self):
         r"""
         Special Sage function for the string representation of the object.
         """
-        description = "Riemannian metric '%s'" % self.name
-        description += " on the " + str(self.domain)
+        description = "Riemannian metric '%s'" % self._name
+        description += " on the " + str(self._domain)
         return description
 
     def _new_instance(self):
@@ -985,7 +985,7 @@ class RiemannMetric(Metric):
         Create a :class:`RiemannMetric` instance on the same domain.
         
         """
-        return RiemannMetric(self.domain, 'unnamed')
+        return RiemannMetric(self._domain, 'unnamed')
 
 
 #*****************************************************************************
@@ -1035,9 +1035,9 @@ class LorentzMetric(Metric):
     """
     def __init__(self, domain, name, signature='positive', latex_name=None):
         if signature=='positive':
-            signat = domain.manifold.dim - 2
+            signat = domain._manifold._dim - 2
         else:
-            signat = 2 - domain.manifold.dim
+            signat = 2 - domain._manifold._dim
         Metric.__init__(self, domain, name, signature=signat,
                         latex_name=latex_name)
 
@@ -1045,8 +1045,8 @@ class LorentzMetric(Metric):
         r"""
         Special Sage function for the string representation of the object.
         """
-        description = "Lorentzian metric '%s'" % self.name
-        description += " on the " + str(self.domain)
+        description = "Lorentzian metric '%s'" % self._name
+        description += " on the " + str(self._domain)
         return description
 
     def _new_instance(self):
@@ -1058,7 +1058,7 @@ class LorentzMetric(Metric):
             signature_type = 'positive'
         else:
             signature_type = 'negative'            
-        return LorentzMetric(self.domain, 'unnamed', signature=signature_type)
+        return LorentzMetric(self._domain, 'unnamed', signature=signature_type)
 
 
 

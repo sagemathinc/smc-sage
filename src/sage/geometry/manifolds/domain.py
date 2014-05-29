@@ -27,7 +27,7 @@ Two domains on a manifold::
     domain 'A' on the 2-dimensional manifold 'M'
     sage: b = M.domain('B') ; b
     domain 'B' on the 2-dimensional manifold 'M'
-    sage: M.domains
+    sage: M._domains
     {'A': domain 'A' on the 2-dimensional manifold 'M',
      'B': domain 'B' on the 2-dimensional manifold 'M',
      'M': 2-dimensional manifold 'M'}
@@ -44,33 +44,33 @@ Their union::
 
 State of various data members after the above operations::
 
-    sage: M.domains
+    sage: M._domains
     {'A': domain 'A' on the 2-dimensional manifold 'M', 
      'A_inter_B': domain 'A_inter_B' on the 2-dimensional manifold 'M',
      'B': domain 'B' on the 2-dimensional manifold 'M', 
      'M': 2-dimensional manifold 'M', 
      'A_union_B': domain 'A_union_B' on the 2-dimensional manifold 'M'}
-    sage: a.subdomains  # random (set output)
+    sage: a._subdomains  # random (set output)
     set([domain 'A' on the 2-dimensional manifold 'M',
          domain 'A_inter_B' on the 2-dimensional manifold 'M'])
-    sage: a.superdomains  # random (set output)
+    sage: a._superdomains  # random (set output)
     set([domain 'A_union_B' on the 2-dimensional manifold 'M',
          2-dimensional manifold 'M',
          domain 'A' on the 2-dimensional manifold 'M'])
-    sage: c.superdomains  # random (set output)
+    sage: c._superdomains  # random (set output)
     set([domain 'B' on the 2-dimensional manifold 'M', 
          domain 'A_union_B' on the 2-dimensional manifold 'M', 
          2-dimensional manifold 'M', 
          domain 'A' on the 2-dimensional manifold 'M', 
          domain 'A_inter_B' on the 2-dimensional manifold 'M'])
-    sage: c.subdomains  # random (set output)
+    sage: c._subdomains  # random (set output)
     set([domain 'A_inter_B' on the 2-dimensional manifold 'M'])
-    sage: d.subdomains  # random (set output)
+    sage: d._subdomains  # random (set output)
     set([domain 'B' on the 2-dimensional manifold 'M', 
          domain 'A_union_B' on the 2-dimensional manifold 'M', 
          domain 'A_inter_B' on the 2-dimensional manifold 'M', 
          domain 'A' on the 2-dimensional manifold 'M'])
-    sage: d.superdomains  # random (set output)
+    sage: d._superdomains  # random (set output)
     set([domain 'A_union_B' on the 2-dimensional manifold 'M', 
          2-dimensional manifold 'M'])
 
@@ -124,7 +124,7 @@ class Domain(UniqueRepresentation, Parent):
         
         sage: B = M.domain('B', latex_name=r'\mathcal{B}') ; B
         domain 'B' on the 2-dimensional manifold 'M'
-        sage: M.domains
+        sage: M._domains
         {'A': domain 'A' on the 2-dimensional manifold 'M',
          'B': domain 'B' on the 2-dimensional manifold 'M',
          'M': 2-dimensional manifold 'M'}
@@ -164,35 +164,35 @@ class Domain(UniqueRepresentation, Parent):
     
     def __init__(self, manifold, name, latex_name=None):
         Parent.__init__(self, category=Sets())
-        self.manifold = manifold
+        self._manifold = manifold
         if self != manifold:
-            if name not in manifold.domains:
-                self.name = name
-                manifold.domains[name] = self
-                manifold.subdomains.add(self)
+            if name not in manifold._domains:
+                self._name = name
+                manifold._domains[name] = self
+                manifold._subdomains.add(self)
                 # set of domains containing self:
-                self.superdomains = set([manifold, self]) 
+                self._superdomains = set([manifold, self]) 
             else:
                 raise ValueError("The name '" + name + "' is already used for "
                                  + "another domain on " + str(manifold))
         else: # case where the domain is the full manifold
-            self.name = name
-            self.superdomains = set([self])
+            self._name = name
+            self._superdomains = set([self])
         if latex_name is None:
-            self.latex_name = self.name
+            self._latex_name = self._name
         else:
-            self.latex_name = latex_name
-        self.subdomains = set([self]) # domains contained in self
-        self.intersections = {} # dict. of intersections with other domains
-        self.unions = {} # dict. of unions with other domains
+            self._latex_name = latex_name
+        self._subdomains = set([self]) # domains contained in self
+        self._intersections = {} # dict. of intersections with other domains
+        self._unions = {} # dict. of unions with other domains
         self._atlas = []  # list of charts defined on subdomains of self
-        self.def_chart = None  # default chart
-        self.coord_changes = {} # dictionary of transition maps 
+        self._def_chart = None  # default chart
+        self._coord_changes = {} # dictionary of transition maps 
         self._frames = []  # list of vector frames defined on subdomains of self
-        self.def_frame = None  # default frame
+        self._def_frame = None  # default frame
         self._frame_changes = {} # dictionary of changes of frames
         self._coframes = []  # list of coframes defined on subdomains of self
-        self.parallelizable_parts = set() # parallelizable domains contained in self
+        self._parallelizable_parts = set() # parallelizable domains contained in self
 
     #### Methods required for any Parent in the category of sets:
     def _element_constructor_(self, coords=None, chart=None, name=None, 
@@ -207,11 +207,11 @@ class Domain(UniqueRepresentation, Parent):
         Construct some (unamed) point on the domain
         """
         from sage.rings.infinity import Infinity
-        if self.def_chart is None:
+        if self._def_chart is None:
             return self.element_class(self)
-        chart = self.def_chart
+        chart = self._def_chart
         coords = []
-        for coord_range in chart.bounds:
+        for coord_range in chart._bounds:
             xmin = coord_range[0][0]
             xmax = coord_range[1][0]
             if xmin == -Infinity:
@@ -233,13 +233,13 @@ class Domain(UniqueRepresentation, Parent):
         r"""
         String representation of the object.
         """
-        return "domain '" + self.name + "' on the " + str(self.manifold)
+        return "domain '" + self._name + "' on the " + str(self._manifold)
 
     def _latex_(self):
         r"""
         LaTeX representation of the object.
         """
-        return self.latex_name
+        return self._latex_name
 
     def atlas(self):
         r"""
@@ -375,10 +375,10 @@ class Domain(UniqueRepresentation, Parent):
 
         B is then a subdomain of A and A is a superdomain of B::
         
-            sage: a.subdomains  # random (set output)
+            sage: a._subdomains  # random (set output)
             set([domain 'B' on the 2-dimensional manifold 'M', 
                  domain 'A' on the 2-dimensional manifold 'M'])
-            sage: b.superdomains  # random (set output)
+            sage: b._superdomains  # random (set output)
             set([domain 'B' on the 2-dimensional manifold 'M', 
                  2-dimensional manifold 'M', 
                  domain 'A' on the 2-dimensional manifold 'M'])
@@ -390,12 +390,12 @@ class Domain(UniqueRepresentation, Parent):
             
         """
         if is_open:
-            res = OpenDomain(self.manifold, name, latex_name)
+            res = OpenDomain(self._manifold, name, latex_name)
         else:
-            res = Domain(self.manifold, name, latex_name)
-        res.superdomains.update(self.superdomains)
-        for sd in self.superdomains:
-            sd.subdomains.add(res)
+            res = Domain(self._manifold, name, latex_name)
+        res._superdomains.update(self._superdomains)
+        for sd in self._superdomains:
+            sd._subdomains.add(res)
         return res
             
     def superdomain(self, name, latex_name=None, is_open=False):
@@ -426,10 +426,10 @@ class Domain(UniqueRepresentation, Parent):
             sage: a = M.domain('A')
             sage: b = a.superdomain('B') ; b
             domain 'B' on the 2-dimensional manifold 'M'
-            sage: b.subdomains # random (set output)
+            sage: b._subdomains # random (set output)
             set([domain 'B' on the 2-dimensional manifold 'M', 
                  domain 'A' on the 2-dimensional manifold 'M'])
-            sage: a.superdomains # random (set output)
+            sage: a._superdomains # random (set output)
             set([domain 'B' on the 2-dimensional manifold 'M', 
                  2-dimensional manifold 'M', 
                  domain 'A' on the 2-dimensional manifold 'M'])
@@ -446,22 +446,22 @@ class Domain(UniqueRepresentation, Parent):
             False
 
         """
-        if self is self.manifold:
+        if self is self._manifold:
             return self
         if is_open:
-            res = OpenDomain(self.manifold, name, latex_name)
+            res = OpenDomain(self._manifold, name, latex_name)
         else:
-            res = Domain(self.manifold, name, latex_name)
-        res.subdomains.update(self.subdomains)
-        for sd in self.subdomains:
-            sd.superdomains.add(res)
+            res = Domain(self._manifold, name, latex_name)
+        res._subdomains.update(self._subdomains)
+        for sd in self._subdomains:
+            sd._superdomains.add(res)
         res._atlas = list(self._atlas)
-        res.coord_changes = dict(self.coord_changes)
+        res._coord_changes = dict(self._coord_changes)
         res._frames = list(self._frames)
         res._frame_changes = dict(self._frame_changes)
         res._coframes = list(self._coframes)
-        res.def_chart = self.def_chart
-        res.def_frame = self.def_frame
+        res._def_chart = self._def_chart
+        res._def_frame = self._def_frame
         return res
             
 
@@ -474,7 +474,7 @@ class Domain(UniqueRepresentation, Parent):
         - ``other`` -- another domain on the same manifold
         - ``name`` -- (default: None) name given to the intersection in the
           case the latter has to be created; the default is 
-          ``self.name`` inter ``other.name``
+          ``self._name`` inter ``other._name``
         - ``latex_name`` --  (default: None) LaTeX symbol to denote the 
           intersection in the case the latter has to be created; the default
           is built upon the symbol `\cap`
@@ -495,13 +495,13 @@ class Domain(UniqueRepresentation, Parent):
             sage: b = M.domain('B')
             sage: c = a.intersection(b) ; c
             domain 'A_inter_B' on the 2-dimensional manifold 'M'
-            sage: a.subdomains  # random (set output)
+            sage: a._subdomains  # random (set output)
             set([domain 'A_inter_B' on the 2-dimensional manifold 'M', 
                  domain 'A' on the 2-dimensional manifold 'M'])
-            sage: b.subdomains  # random (set output)
+            sage: b._subdomains  # random (set output)
             set([domain 'B' on the 2-dimensional manifold 'M', 
                  domain 'A_inter_B' on the 2-dimensional manifold 'M'])
-            sage: c.superdomains  # random (set output)
+            sage: c._superdomains  # random (set output)
             set([domain 'A' on the 2-dimensional manifold 'M', 
                  2-dimensional manifold 'M', 
                  domain 'A_inter_B' on the 2-dimensional manifold 'M', 
@@ -525,40 +525,40 @@ class Domain(UniqueRepresentation, Parent):
             True
             
         """
-        if other.manifold != self.manifold:
+        if other._manifold != self._manifold:
             raise TypeError(
                 "The two domains do not belong to the same manifold.")
         # Particular cases:
-        if self is self.manifold:
+        if self is self._manifold:
             return other
-        if other is self.manifold:
+        if other is self._manifold:
             return self
-        if self in other.subdomains:
+        if self in other._subdomains:
             return self
-        if other in self.subdomains:
+        if other in self._subdomains:
             return other
         # Generic case:
-        if other.name in self.intersections:
+        if other._name in self._intersections:
             # the intersection has already been created:
-            return self.intersections[other.name]
+            return self._intersections[other._name]
         else:
             # the intersection must be created:
             if latex_name is None:
                 if name is None:
-                    latex_name = self.latex_name + r'\cap ' + other.latex_name
+                    latex_name = self._latex_name + r'\cap ' + other._latex_name
                 else:
                     latex_name = name
             if name is None:
-                name = self.name + "_inter_" + other.name
+                name = self._name + "_inter_" + other._name
             if isinstance(self, OpenDomain) and isinstance(other, OpenDomain):
                 res = self.open_domain(name, latex_name)
             else:
                 res = self.domain(name, latex_name)
-            res.superdomains.update(other.superdomains)
-            for sd in other.superdomains:
-                sd.subdomains.add(res)
-            self.intersections[other.name] = res
-            other.intersections[self.name] = res
+            res._superdomains.update(other._superdomains)
+            for sd in other._superdomains:
+                sd._subdomains.add(res)
+            self._intersections[other._name] = res
+            other._intersections[self._name] = res
             return res
         
     def union(self, other, name=None, latex_name=None):
@@ -570,7 +570,7 @@ class Domain(UniqueRepresentation, Parent):
         - ``other`` -- another domain on the same manifold
         - ``name`` -- (default: None) name given to the union in the
           case the latter has to be created; the default is 
-          ``self.name`` union ``other.name``
+          ``self._name`` union ``other._name``
         - ``latex_name`` --  (default: None) LaTeX symbol to denote the 
           union in the case the latter has to be created; the default
           is built upon the symbol `\cup`
@@ -590,15 +590,15 @@ class Domain(UniqueRepresentation, Parent):
             sage: b = M.domain('B')
             sage: c = a.union(b) ; c 
             domain 'A_union_B' on the 2-dimensional manifold 'M'
-            sage: a.superdomains  # random (set output)
+            sage: a._superdomains  # random (set output)
             set([domain 'A_union_B' on the 2-dimensional manifold 'M', 
                  2-dimensional manifold 'M', 
                  domain 'A' on the 2-dimensional manifold 'M'])
-            sage: b.superdomains  # random (set output)
+            sage: b._superdomains  # random (set output)
             set([domain 'B' on the 2-dimensional manifold 'M', 
                  2-dimensional manifold 'M', 
                  domain 'A_union_B' on the 2-dimensional manifold 'M'])
-            sage: c.subdomains  # random (set output)
+            sage: c._subdomains  # random (set output)
             set([domain 'A_union_B' on the 2-dimensional manifold 'M', 
                 domain 'A' on the 2-dimensional manifold 'M', 
                 domain 'B' on the 2-dimensional manifold 'M'])
@@ -621,39 +621,39 @@ class Domain(UniqueRepresentation, Parent):
             True
             
         """
-        if other.manifold != self.manifold:
+        if other._manifold != self._manifold:
             raise TypeError(
                 "The two domains do not belong to the same manifold.")
         # Particular cases:
-        if (self is self.manifold) or (other is self.manifold):
-            return self.manifold
-        if self in other.subdomains:
+        if (self is self._manifold) or (other is self._manifold):
+            return self._manifold
+        if self in other._subdomains:
             return other
-        if other in self.subdomains:
+        if other in self._subdomains:
             return self
         # Generic case:
-        if other.name in self.unions:
+        if other._name in self._unions:
             # the union has already been created:
-            return self.unions[other.name]
+            return self._unions[other._name]
         else:
             # the union must be created:
             if latex_name is None:
                 if name is None:
-                    latex_name = self.latex_name + r'\cup ' + other.latex_name
+                    latex_name = self._latex_name + r'\cup ' + other._latex_name
                 else:
                     latex_name = name
             if name is None:
-                name = self.name + "_union_" + other.name
+                name = self._name + "_union_" + other._name
             res_open = isinstance(self, OpenDomain) and \
                        isinstance(other, OpenDomain)
             res = self.superdomain(name, latex_name, is_open=res_open)
-            res.subdomains.update(other.subdomains)
-            for sd in other.subdomains:
-                sd.superdomains.add(res)
+            res._subdomains.update(other._subdomains)
+            for sd in other._subdomains:
+                sd._superdomains.add(res)
             for chart in other._atlas:
                 if chart not in res._atlas:
                     res._atlas.append(chart)
-            res.coord_changes.update(other.coord_changes)
+            res._coord_changes.update(other._coord_changes)
             for frame in other._frames:
                 if frame not in res._frames:
                     res._frames.append(frame)
@@ -661,8 +661,8 @@ class Domain(UniqueRepresentation, Parent):
             for coframe in other._coframes:
                 if coframe not in res._coframes:
                     res._coframes.append(coframe)
-            self.unions[other.name] = res
-            other.unions[self.name] = res
+            self._unions[other._name] = res
+            other._unions[self._name] = res
             return res
         
     def is_subdomain(self, other):
@@ -689,7 +689,7 @@ class Domain(UniqueRepresentation, Parent):
             False
         
         """
-        return self in other.subdomains
+        return self in other._subdomains
         
     def __contains__(self, point):
         r"""
@@ -698,13 +698,13 @@ class Domain(UniqueRepresentation, Parent):
         if point.parent().is_subdomain(self):
             return True
         for chart in self._atlas:
-            if chart in point.coordinates:
-                if chart.valid_coordinates( *(point.coordinates[chart]) ):
+            if chart in point._coordinates:
+                if chart.valid_coordinates( *(point._coordinates[chart]) ):
                     return True
-        for chart in point.coordinates:
-            for schart in chart.subcharts:
+        for chart in point._coordinates:
+            for schart in chart._subcharts:
                 if schart in self._atlas and schart.valid_coordinates( 
-                                          *(point.coordinates[chart]) ):
+                                          *(point._coordinates[chart]) ):
                     return True
         return False
 
@@ -748,9 +748,9 @@ class Domain(UniqueRepresentation, Parent):
             point 'q' on 2-dimensional manifold 'M'
             sage: q in a   
             True
-            sage: p.coordinates
+            sage: p._coordinates
             {chart (M, (x, y)): (1, 2)}
-            sage: q.coordinates
+            sage: q._coordinates
             {chart (A, (u, v)): (-1, 0)}
 
         """
@@ -791,7 +791,7 @@ class Domain(UniqueRepresentation, Parent):
             chart (B, (t, z))
 
         """
-        return self.def_chart
+        return self._def_chart
         
     def set_default_chart(self, chart):
         r"""
@@ -823,7 +823,7 @@ class Domain(UniqueRepresentation, Parent):
         if chart not in self._atlas:
             raise ValueError("The chart must be defined on the " + 
                              str(self))
-        self.def_chart = chart
+        self._def_chart = chart
 
     def coord_change(self, chart1, chart2):
         r"""
@@ -854,11 +854,11 @@ class Domain(UniqueRepresentation, Parent):
             coordinate change from chart (M, (x, y)) to chart (M, (u, v))
 
         """
-        if (chart1, chart2) not in self.coord_changes:
+        if (chart1, chart2) not in self._coord_changes:
             raise TypeError("The change of coordinates from " + str(chart1) + 
                             " to " + str(chart2) + " has not been " + 
                             "defined on the " + str(self))
-        return self.coord_changes[(chart1, chart2)]
+        return self._coord_changes[(chart1, chart2)]
 
 
     def default_frame(self):
@@ -889,7 +889,7 @@ class Domain(UniqueRepresentation, Parent):
             coordinate frame (M, (d/dx,d/dy))
 
         """
-        return self.def_frame
+        return self._def_frame
 
     def set_default_frame(self, frame):
         r"""
@@ -919,10 +919,10 @@ class Domain(UniqueRepresentation, Parent):
         from vectorframe import VectorFrame
         if not isinstance(frame, VectorFrame):
             raise TypeError(str(frame) + " is not a vector frame.")
-        if not frame.domain.is_subdomain(self):
+        if not frame._domain.is_subdomain(self):
             raise TypeError("The frame must be defined on the domain.")
-        self.def_frame = frame
-        frame.fmodule.set_default_basis(frame)
+        self._def_frame = frame
+        frame._fmodule.set_default_basis(frame)
 
     def frame_change(self, frame1, frame2):
         r"""
@@ -981,7 +981,7 @@ class Domain(UniqueRepresentation, Parent):
         """
         if not isinstance(self, OpenDomain):
             return False
-        return not self.covering_charts == [] 
+        return not self._covering_charts == [] 
 
     def is_manifestly_parallelizable(self):
         r"""
@@ -993,7 +993,7 @@ class Domain(UniqueRepresentation, Parent):
         """
         if not isinstance(self, OpenDomain):
             return False
-        return not self.covering_frames == [] 
+        return not self._covering_frames == [] 
 
 #******************************************************************************
 
@@ -1033,7 +1033,7 @@ class OpenDomain(Domain):
         
         sage: B = M.open_domain('B', latex_name=r'\mathcal{B}') ; B
         open domain 'B' on the 2-dimensional manifold 'M'
-        sage: M.domains
+        sage: M._domains
         {'A': open domain 'A' on the 2-dimensional manifold 'M',
          'B': open domain 'B' on the 2-dimensional manifold 'M',
          'M': 2-dimensional manifold 'M'}
@@ -1079,16 +1079,16 @@ class OpenDomain(Domain):
         Domain.__init__(self, manifold, name, latex_name)
         # list of charts that individually cover the domain, i.e. whose 
         # domains are self (if non-empty, self is coordinate domain):
-        self.covering_charts = [] 
+        self._covering_charts = [] 
         # list of vector frames that individually cover the domain, i.e. whose 
         # domains are self (if non-empty, self is parallelizable):
-        self.covering_frames = [] 
+        self._covering_frames = [] 
         # algebra of scalar fields defined on self (not contructed yet) 
         self._scalar_field_algebra = None 
         # The zero scalar field is constructed:
-        if self.name != 'field R':  
+        if self._name != 'field R':  
             #!# to avoid circular import of RealLine
-            self.zero_scalar_field = ZeroScalarField(self)
+            self._zero_scalar_field = ZeroScalarField(self)
         # dict. of vector field modules along self:
         self._vector_field_modules = {}
         # dict. of tensor field modules along self: 
@@ -1100,7 +1100,7 @@ class OpenDomain(Domain):
         r"""
         Special Sage function for the string representation of the object.
         """
-        return "open domain '" + self.name + "' on the " + str(self.manifold)
+        return "open domain '" + self._name + "' on the " + str(self._manifold)
 
     def open_domain(self, name, latex_name=None, coord_def={}):
         r"""
@@ -1139,10 +1139,10 @@ class OpenDomain(Domain):
 
         B is then a subdomain of A and A is a superdomain of B::
         
-            sage: a.subdomains # random (set output)
+            sage: a._subdomains # random (set output)
             set([open domain 'A' on the 2-dimensional manifold 'M', 
                  open domain 'B' on the 2-dimensional manifold 'M'])
-            sage: b.superdomains # random (set output)
+            sage: b._superdomains # random (set output)
             set([open domain 'A' on the 2-dimensional manifold 'M', 
                  2-dimensional manifold 'M', 
                  open domain 'B' on the 2-dimensional manifold 'M'])
@@ -1354,12 +1354,12 @@ class OpenDomain(Domain):
         r"""
         Declare a frame covering ``self``.
         """
-        self.covering_frames.append(frame)
-        self.parallelizable_parts = set([self])
+        self._covering_frames.append(frame)
+        self._parallelizable_parts = set([self])
         # if self cotained smaller parallelizable parts, they are forgotten
-        for sd in self.superdomains:
+        for sd in self._superdomains:
             if not sd.is_manifestly_parallelizable():
-                sd.parallelizable_parts.add(self)
+                sd._parallelizable_parts.add(self)
             
     def scalar_field_algebra(self):
         r"""
@@ -1485,8 +1485,8 @@ class OpenDomain(Domain):
             dest_map_name = 'Id'
             codomain = self
         else:
-            dest_map_name = dest_map.name
-            codomain = dest_map.codomain
+            dest_map_name = dest_map._name
+            codomain = dest_map._codomain
         if dest_map_name not in self._vector_field_modules:
             if codomain.is_manifestly_parallelizable() or force_free:
                 self._vector_field_modules[dest_map_name] = \
@@ -1551,7 +1551,7 @@ class OpenDomain(Domain):
         if dest_map is None:
             dest_map_name = 'Id'
         else:
-            dest_map_name = dest_map.name
+            dest_map_name = dest_map._name
         ttype = tuple(tensor_type)
         if (ttype, dest_map_name) not in self._tensor_field_modules:
             if self.is_manifestly_parallelizable():
@@ -1601,7 +1601,7 @@ class OpenDomain(Domain):
             sage: f = U.scalar_field(sin(x)*cos(y) + z, name='F'); f
             scalar field 'F' on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: f.view()
-            F: (x, y, z) |--> cos(y)*sin(x) + z
+            F on U: (x, y, z) |--> cos(y)*sin(x) + z
             sage: f.parent()
             algebra of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: f in U.scalar_field_algebra()
@@ -1617,14 +1617,14 @@ class OpenDomain(Domain):
         if isinstance(coord_expression, dict):
             # check validity of entry
             for chart in coord_expression:
-                if not chart.domain.is_subdomain(self):
+                if not chart._domain.is_subdomain(self):
                     raise ValueError("The " + str(chart) + " is not defined " +
                                      "on some subdomain of the " + str(self))
         elif isinstance(coord_expression, Expression):
             if coord_expression.variables() != ():  
                 # the expression is not a constant
                 if chart is None:
-                    chart = self.def_chart
+                    chart = self._def_chart
                 coord_expression = {chart: coord_expression}
         return ScalarField(self, coord_expression=coord_expression, 
                            name=name, latex_name=latex_name) 

@@ -63,8 +63,8 @@ class VectorField(TensorField):
         String representation of the object.
         """
         description = "vector field "
-        if self.name is not None:
-            description += "'%s' " % self.name
+        if self._name is not None:
+            description += "'%s' " % self._name
         return self._final_repr(description)
 
     def _new_instance(self):
@@ -73,7 +73,7 @@ class VectorField(TensorField):
         with the same destination map.
         
         """
-        return VectorField(self.vmodule)
+        return VectorField(self._vmodule)
 
     def _init_dependencies(self):
         r"""
@@ -135,9 +135,9 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
 
     A vector field is a tensor field of rank 1 and of type (1,0)::
     
-        sage: v.tensor_rank
+        sage: v._tensor_rank
         1
-        sage: v.tensor_type
+        sage: v._tensor_type
         (1, 0)
 
     Components of a vector field with respect to a given frame::
@@ -218,12 +218,12 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
         FiniteFreeModuleElement.__init__(self, vector_field_module, name=name, 
                                          latex_name=latex_name)
         # TensorFieldParal attributes:
-        self.domain = vector_field_module.domain
-        self.ambient_domain = vector_field_module.ambient_domain
+        self._domain = vector_field_module._domain
+        self._ambient_domain = vector_field_module._ambient_domain
         # VectorField attributes:
-        self.vmodule = vector_field_module
-        self.restrictions = {} # dict. of restrictions of self on subdomains of 
-                               # self.domain, with the subdomains as keys
+        self._vmodule = vector_field_module
+        self._restrictions = {} # dict. of restrictions of self on subdomains of 
+                               # self._domain, with the subdomains as keys
         # Initialization of derived quantities:
         TensorFieldParal._init_derived(self)
         VectorField._init_derived(self) 
@@ -241,7 +241,7 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
         Create a :class:`VectorFieldParal` instance. 
         
         """
-        return VectorFieldParal(self.fmodule)
+        return VectorFieldParal(self._fmodule)
 
     def _del_derived(self):
         r"""
@@ -287,20 +287,20 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
             return scalar(self)
         if not isinstance(scalar, ScalarField):
             raise TypeError("The argument must be a scalar field")
-        if not scalar.domain.is_subdomain(self.domain):
+        if not scalar._domain.is_subdomain(self._domain):
             raise ValueError("The scalar field and the vector are defined " +
                              "on different domains.")
         if isinstance(scalar, ZeroScalarField):
             return scalar
         # search for a commont chart: 
         chart = None
-        def_chart = self.domain.def_chart
-        if def_chart in scalar.express:
-            if def_chart._frame in self.components:
+        def_chart = self._domain._def_chart
+        if def_chart in scalar._express:
+            if def_chart._frame in self._components:
                 chart = def_chart
         else:
-            for kchart in scalar.express:
-                if kchart._frame in self.components: 
+            for kchart in scalar._express:
+                if kchart._frame in self._components: 
                     chart = kchart
                     break
         if chart is None:
@@ -308,15 +308,15 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
         v = self.comp(chart._frame)
         f = scalar.function_chart(chart) 
         res = 0 
-        for i in scalar.manifold.irange():
+        for i in scalar._manifold.irange():
             res += v[i, chart] * f.diff(i)
         # Name of the output:
         res_name = None
-        if self.name is not None and scalar.name is not None:
-            res_name = self.name + "(" + scalar.name + ")"
+        if self._name is not None and scalar._name is not None:
+            res_name = self._name + "(" + scalar._name + ")"
         # LaTeX symbol for the output:
         res_latex = None
-        if self.latex_name is not None and scalar.latex_name is not None:
-            res_latex = self.latex_name + r"\left(" + scalar.latex_name + \
+        if self._latex_name is not None and scalar._latex_name is not None:
+            res_latex = self._latex_name + r"\left(" + scalar._latex_name + \
                         r"\right)"
         return res.scalar_field(name=res_name, latex_name=res_latex)

@@ -49,7 +49,7 @@ class AffConnection(SageObject):
         
     A just-created connection has no connection coefficients::
     
-        sage: nab.coefficients
+        sage: nab._coefficients
         {}
 
     The connection coefficients relative to the manifold's default frame 
@@ -57,7 +57,7 @@ class AffConnection(SageObject):
     are created by providing the relevant indices inside square brackets::
     
         sage: nab[1,1,2], nab[3,2,3] = x^2, y*z  # Gamma^1_{12} = x^2, Gamma^3_{23} = yz 
-        sage: nab.coefficients
+        sage: nab._coefficients
         {coordinate frame (M, (d/dx,d/dy,d/dz)): 3-indices components w.r.t. coordinate frame (M, (d/dx,d/dy,d/dz))}
         
     Unset components are initialized to zero::
@@ -119,14 +119,14 @@ class AffConnection(SageObject):
     def __init__(self, domain, name, latex_name=None):
         if not isinstance(domain, Domain):
             raise TypeError("The first argument must be a domain.")
-        self.manifold = domain.manifold
-        self.domain = domain
-        self.name = name
+        self._manifold = domain._manifold
+        self._domain = domain
+        self._name = name
         if latex_name is None:
-            self.latex_name = self.name
+            self._latex_name = self._name
         else:
-            self.latex_name = latex_name
-        self.coefficients = {}    # coefficients not set yet
+            self._latex_name = latex_name
+        self._coefficients = {}    # coefficients not set yet
         # Initialization of derived quantities:
         AffConnection._init_derived(self) 
 
@@ -135,19 +135,19 @@ class AffConnection(SageObject):
         Special Sage function for the string representation of the object.
         """
         description = "affine connection"
-        if self.name is not None:
-            description += " '%s'" % self.name
-        description += " on the " + str(self.domain)
+        if self._name is not None:
+            description += " '%s'" % self._name
+        description += " on the " + str(self._domain)
         return description
 
     def _latex_(self):
         r"""
         Special Sage function for the LaTeX representation of the object.
         """
-        if self.latex_name is None:
+        if self._latex_name is None:
             return r'\mbox{no symbol}'
         else:
-           return self.latex_name
+           return self._latex_name
 
     def _init_derived(self):
         r"""
@@ -182,8 +182,8 @@ class AffConnection(SageObject):
         """
         from sage.tensor.modules.comp import Components
         from scalarfield import ScalarField
-        return Components(self.domain.scalar_field_algebra(), frame, 3, 
-                          start_index=self.manifold.sindex,
+        return Components(self._domain.scalar_field_algebra(), frame, 3, 
+                          start_index=self._manifold._sindex,
                           output_formatter=ScalarField.function_chart)
         
     def coef(self, frame=None):
@@ -238,10 +238,10 @@ class AffConnection(SageObject):
 
         """
         if frame is None: 
-            frame = self.domain.def_frame
-        if frame not in self.coefficients:
+            frame = self._domain._def_frame
+        if frame not in self._coefficients:
             # the coefficients must be computed
-            manif = self.manifold
+            manif = self._manifold
             ev = frame  # the vector frame
             ef = ev._coframe # the dual frame
             gam = self._new_coef(ev)
@@ -249,8 +249,8 @@ class AffConnection(SageObject):
                 for i in manif.irange():
                     for j in manif.irange():
                         gam[[k,i,j]] = self(ev[i])(ef[k],ev[j])
-            self.coefficients[frame] = gam
-        return self.coefficients[frame]
+            self._coefficients[frame] = gam
+        return self._coefficients[frame]
         
 
     def set_coef(self, frame=None):
@@ -280,16 +280,16 @@ class AffConnection(SageObject):
         
 
         """
-        if frame is None: frame = self.domain.def_frame
-        if frame not in self.coefficients:
-            if frame not in self.domain._frames:
+        if frame is None: frame = self._domain._def_frame
+        if frame not in self._coefficients:
+            if frame not in self._domain._frames:
                 raise ValueError("The vector frame " + frame +
                                  " has not been defined on the " + 
-                                 str(self.domain))
-            self.coefficients[frame] = self._new_coef(frame)
+                                 str(self._domain))
+            self._coefficients[frame] = self._new_coef(frame)
         self._del_derived() # deletes the derived quantities
         self.del_other_coef(frame)
-        return self.coefficients[frame]
+        return self._coefficients[frame]
 
     def add_coef(self, frame=None):
         r"""
@@ -324,15 +324,15 @@ class AffConnection(SageObject):
         
 
         """
-        if frame is None: frame = self.domain.def_frame
-        if frame not in self.coefficients:
-            if frame not in self.domain._frames:
+        if frame is None: frame = self._domain._def_frame
+        if frame not in self._coefficients:
+            if frame not in self._domain._frames:
                 raise ValueError("The vector frame " + frame +
                                  " has not been defined on the " + 
-                                 str(self.domain))
-            self.coefficients[frame] = self._new_coef(frame)
+                                 str(self._domain))
+            self._coefficients[frame] = self._new_coef(frame)
         self._del_derived() # deletes the derived quantities
-        return self.coefficients[frame]
+        return self._coefficients[frame]
 
 
     def del_other_coef(self, frame=None):
@@ -340,16 +340,16 @@ class AffConnection(SageObject):
         Delete all the coefficients but those corresponding to ``frame``.
         
         """
-        if frame is None: frame = self.domain.def_frame
-        if frame not in self.coefficients:
+        if frame is None: frame = self._domain._def_frame
+        if frame not in self._coefficients:
             raise ValueError("The coefficients w.r.t. the vector frame " + 
                              frame + " have not been defined.")
         to_be_deleted = []
-        for other_frame in self.coefficients:
+        for other_frame in self._coefficients:
             if other_frame != frame:
                 to_be_deleted.append(other_frame)
         for other_frame in to_be_deleted:
-            del self.coefficients[other_frame]
+            del self._coefficients[other_frame]
 
     def __getitem__(self, indices):
         r"""
@@ -393,15 +393,15 @@ class AffConnection(SageObject):
         
         """
         # Does each object have components on the domain's default frame ? 
-        def_frame = self.domain.def_frame
-        if def_frame in self.coefficients and \
-           def_frame in other.components:
+        def_frame = self._domain._def_frame
+        if def_frame in self._coefficients and \
+           def_frame in other._components:
             frame = def_frame
         else:
             # Search for a common frame
             frame = None
-            for frame0 in self.coefficients:
-                if frame0 in other.components:
+            for frame0 in self._coefficients:
+                if frame0 in other._components:
                     frame = frame0
                     break
         return frame
@@ -422,9 +422,9 @@ class AffConnection(SageObject):
         from sage.tensor.modules.comp import Components, CompWithSym
         from scalarfield import ScalarField
         from utilities import format_unop_txt, format_unop_latex
-        manif = self.manifold
-        dom = self.domain
-        tdom = tensor.domain
+        manif = self._manifold
+        dom = self._domain
+        tdom = tensor._domain
         if not tdom.is_subdomain(dom):
             raise TypeError("The tensor field is not defined on the same " + 
                             "domain as the connection.")
@@ -434,21 +434,21 @@ class AffConnection(SageObject):
         if frame is None:
             raise ValueError("No common frame found for the computation.")
         # Component computation in the common frame:
-        tc = tensor.components[frame]
-        gam = self.coefficients[frame]
-        if tensor.sym == [] and tensor.antisym == []:
+        tc = tensor._components[frame]
+        gam = self._coefficients[frame]
+        if tensor._sym == [] and tensor._antisym == []:
             resc = Components(tdom.scalar_field_algebra(), frame,
-                              tensor.tensor_rank+1, 
-                              start_index=self.manifold.sindex,
+                              tensor._tensor_rank+1, 
+                              start_index=self._manifold._sindex,
                               output_formatter=ScalarField.function_chart)
         else:
             resc = CompWithSym(tdom.scalar_field_algebra(), frame,
-                              tensor.tensor_rank+1, 
-                              start_index=self.manifold.sindex,
+                              tensor._tensor_rank+1, 
+                              start_index=self._manifold._sindex,
                               output_formatter=ScalarField.function_chart,
-                              sym=tensor.sym, antisym=tensor.antisym)
-        n_con = tensor.tensor_type[0]
-        n_cov = tensor.tensor_type[1]
+                              sym=tensor._sym, antisym=tensor._antisym)
+        n_con = tensor._tensor_type[0]
+        n_cov = tensor._tensor_type[1]
         for ind in resc.non_redundant_index_generator():
             p = ind[-1]  # derivation index
             ind0 = ind[:-1]
@@ -460,7 +460,7 @@ class AffConnection(SageObject):
                     indk[k] = i  
                     rsum += gam[[ind0[k], i, p]] * tc[[indk]]
             # loop on covariant indices:
-            for k in range(n_con, tensor.tensor_rank): 
+            for k in range(n_con, tensor._tensor_rank): 
                 for i in manif.irange():
                     indk = list(ind0)
                     indk[k] = i  
@@ -469,9 +469,9 @@ class AffConnection(SageObject):
         # Resulting tensor field
         return tdom.vector_field_module().tensor_from_comp((n_con, n_cov+1),
                         resc, 
-                        name=format_unop_txt(self.name + ' ', tensor.name),
-                        latex_name=format_unop_latex(self.latex_name + ' ', 
-                                                        tensor.latex_name) )
+                        name=format_unop_txt(self._name + ' ', tensor._name),
+                        latex_name=format_unop_latex(self._latex_name + ' ', 
+                                                        tensor._latex_name) )
 
     def torsion(self, frame=None):
         r""" 
@@ -538,13 +538,13 @@ class AffConnection(SageObject):
   
         """
         if self._torsion is None:
-            manif = self.manifold
-            dom = self.domain
+            manif = self._manifold
+            dom = self._domain
             if frame is None:
-                if dom.def_frame in self.coefficients:
-                    frame = dom.def_frame
+                if dom._def_frame in self._coefficients:
+                    frame = dom._def_frame
                 else: # a random frame is picked
-                    frame = self.coefficients.items()[0][0]
+                    frame = self._coefficients.items()[0][0]
             gam = self.coef(frame)
             sc = frame.structure_coef()
             self._torsion = dom.tensor_field(1, 2, antisym=(1,2))   
@@ -608,13 +608,13 @@ class AffConnection(SageObject):
        
         """
         if self._riemann is None:
-            manif = self.manifold
-            dom = self.domain
+            manif = self._manifold
+            dom = self._domain
             if frame is None:
-                if dom.def_frame in self.coefficients:
-                    frame = dom.def_frame
+                if dom._def_frame in self._coefficients:
+                    frame = dom._def_frame
                 else: # a random frame is picked
-                    frame = self.coefficients.items()[0][0]
+                    frame = self._coefficients.items()[0][0]
             ev = frame
             gam = self.coef(frame)
             sc = ev.structure_coef()
@@ -790,20 +790,20 @@ class AffConnection(SageObject):
 
         """
         if frame is None:
-            frame = self.domain.def_frame
+            frame = self._domain._def_frame
         if frame not in self._connection_forms:
             forms = {}
-            frame_dom = frame.domain
-            for i1 in self.manifold.irange():
-                for j1 in self.manifold.irange():
-                    name = self.name + " connection 1-form (" + str(i1) + \
+            frame_dom = frame._domain
+            for i1 in self._manifold.irange():
+                for j1 in self._manifold.irange():
+                    name = self._name + " connection 1-form (" + str(i1) + \
                            "," + str(j1) + ")"
                     latex_name = r"\omega^" + str(i1) + r"_{\ \, " + str(j1) + \
                                  "}"
                     omega = frame_dom.one_form(name=name, 
                                                latex_name=latex_name)
                     comega = omega.set_comp(frame)
-                    for k in self.manifold.irange():
+                    for k in self._manifold.irange():
                         comega[k] = self.coef(frame)[[i1,j1,k]]
                     forms[(i1,j1)] = omega
             self._connection_forms[frame] = forms
@@ -891,17 +891,17 @@ class AffConnection(SageObject):
 
         """
         if frame is None:
-            frame = self.domain.def_frame
+            frame = self._domain._def_frame
         if frame not in self._torsion_forms:
             forms = {}
-            for i1 in self.manifold.irange():
-                name = self.name + " torsion 2-form (" + str(i1) + ")"
+            for i1 in self._manifold.irange():
+                name = self._name + " torsion 2-form (" + str(i1) + ")"
                 latex_name = r"\theta^" + str(i1)
-                theta = self.domain.diff_form(2, name=name, 
+                theta = self._domain.diff_form(2, name=name, 
                                               latex_name=latex_name)
                 ctheta = theta.set_comp(frame)
-                for k in self.manifold.irange():
-                    for l in self.manifold.irange(start=k+1):
+                for k in self._manifold.irange():
+                    for l in self._manifold.irange(start=k+1):
                         ctheta[k,l] = \
                             self.torsion(frame).comp(frame)[[i1,k,l]]
                 forms[i1] = theta
@@ -990,21 +990,21 @@ class AffConnection(SageObject):
             
         """
         if frame is None:
-            frame = self.domain.def_frame
+            frame = self._domain._def_frame
         if frame not in self._curvature_forms:
             forms = {}
-            frame_dom = frame.domain
-            for i1 in self.manifold.irange():
-                for j1 in self.manifold.irange():
-                    name = self.name + " curvature 2-form (" + str(i1) + \
+            frame_dom = frame._domain
+            for i1 in self._manifold.irange():
+                for j1 in self._manifold.irange():
+                    name = self._name + " curvature 2-form (" + str(i1) + \
                            "," + str(j1) + ")"
                     latex_name = r"\Omega^" + str(i1) + r"_{\ \, " + str(j1) + \
                                  "}"
                     omega = frame_dom.diff_form(2, name=name, 
                                                 latex_name=latex_name)
                     comega = omega.set_comp(frame)
-                    for k in self.manifold.irange():
-                        for l in self.manifold.irange(start=k+1):
+                    for k in self._manifold.irange():
+                        for l in self._manifold.irange(start=k+1):
                             comega[k,l] = \
                           self.riemann(frame).comp(frame)[[i1,j1,k,l]]
                     forms[(i1,j1)] = omega
@@ -1070,21 +1070,21 @@ class LeviCivitaConnection(AffConnection):
 
     """
     def __init__(self, metric, name, latex_name=None):
-        AffConnection.__init__(self, metric.domain, name, latex_name)
-        self.metric = metric
+        AffConnection.__init__(self, metric._domain, name, latex_name)
+        self._metric = metric
         # Initialization of the derived quantities:
         LeviCivitaConnection._init_derived(self)
         # Initialization of the Christoffel symbols in the domain's default chart:
-        self.coef(self.domain.def_chart._frame)
+        self.coef(self._domain._def_chart._frame)
         
     def _repr_(self):
         r"""
         Special Sage function for the string representation of the object.
         """
         description = "Levi-Civita connection"
-        if self.name is not None:
-            description += " '%s'" % self.name
-        description += " associated with the " + str(self.metric)
+        if self._name is not None:
+            description += " '%s'" % self._name
+        description += " associated with the " + str(self._metric)
         return description
 
     def _init_derived(self):
@@ -1184,20 +1184,20 @@ class LeviCivitaConnection(AffConnection):
         from scalarfield import ScalarField
         from vectorframe import CoordFrame
         if frame is None: 
-            frame = self.domain.def_frame
-        if frame not in self.coefficients:
+            frame = self._domain._def_frame
+        if frame not in self._coefficients:
             # the coefficients must be computed
-            manif = self.manifold
-            dom = self.domain
+            manif = self._manifold
+            dom = self._domain
             if isinstance(frame, CoordFrame):
                 # Christoffel symbols
-                chart = frame.chart
+                chart = frame._chart
                 gam = CompWithSym(dom.scalar_field_algebra(), frame, 3, 
-                                  start_index=self.manifold.sindex,
+                                  start_index=self._manifold._sindex,
                                   output_formatter=ScalarField.function_chart,
                                   sym=(1,2))
-                gg = self.metric.comp(frame)
-                ginv = self.metric.inverse().comp(frame)
+                gg = self._metric.comp(frame)
+                ginv = self._metric.inverse().comp(frame)
                 for ind in gam.non_redundant_index_generator():
                     i, j, k = ind
                     # The computation is performed at the FunctionChart level:
@@ -1208,11 +1208,11 @@ class LeviCivitaConnection(AffConnection):
                                           + gg[j,s, chart].diff(k)
                                           - gg[j,k, chart].diff(s) )
                     gam[i,j,k, chart] = rsum / 2
-                    self.coefficients[frame] = gam
+                    self._coefficients[frame] = gam
             else:
                 # Computation from the formula defining the connection coef.
                 return AffConnection.coef(self, frame)
-        return self.coefficients[frame]
+        return self._coefficients[frame]
 
     def torsion(self, frame=None):
         r""" 
@@ -1236,10 +1236,10 @@ class LeviCivitaConnection(AffConnection):
           
         """
         if self._torsion is None:
-            manif = self.manifold
-            dom = self.domain
+            manif = self._manifold
+            dom = self._domain
             if frame is None:
-                frame = dom.def_frame
+                frame = dom._def_frame
             self._torsion = dom.tensor_field(1, 2, antisym=(1,2))
             # Initialization of the frame components to zero: 
             self._torsion.set_comp(frame) 
@@ -1283,14 +1283,14 @@ class LeviCivitaConnection(AffConnection):
         if self._riemann is None:
             AffConnection.riemann(self, frame)
             if name is None:
-                self._riemann.name = "Riem(" + self.metric.name + ")"
+                self._riemann._name = "Riem(" + self._metric._name + ")"
             else:
-                self._riemann.name = name
+                self._riemann._name = name
             if latex_name is None:
-                self._riemann.latex_name = r"\mathrm{Riem}\left(" + \
-                                           self.metric.latex_name + r"\right)"
+                self._riemann._latex_name = r"\mathrm{Riem}\left(" + \
+                                           self._metric._latex_name + r"\right)"
             else:
-                self._riemann.latex_name = latex_name
+                self._riemann._latex_name = latex_name
         return self._riemann
             
 
@@ -1368,19 +1368,19 @@ class LeviCivitaConnection(AffConnection):
         from scalarfield import ScalarField
         from sage.tensor.modules.comp import CompFullySym
         if self._ricci is None:
-            manif = self.manifold
-            dom = self.domain
+            manif = self._manifold
+            dom = self._domain
             riem = self.riemann(frame)
             if frame is None:
-                if dom.def_frame in riem.components:
-                    frame = dom.def_frame
+                if dom._def_frame in riem._components:
+                    frame = dom._def_frame
                 else: # a random frame is picked
-                    frame = riem.components.items()[0][0]
-            criem = riem.components[frame]
+                    frame = riem._components.items()[0][0]
+            criem = riem._components[frame]
             cric = CompFullySym(dom.scalar_field_algebra(), frame, 2,
-                                start_index=self.manifold.sindex,
+                                start_index=self._manifold._sindex,
                                 output_formatter=ScalarField.function_chart)
-            si = manif.sindex
+            si = manif._sindex
             for i in manif.irange():
                 # symmetry of the Ricci tensor taken into account by j>=i: 
                 for j in manif.irange(start=i):  
@@ -1390,16 +1390,16 @@ class LeviCivitaConnection(AffConnection):
                     cric[i,j] = rsum
             self._ricci = dom.vector_field_module().tensor_from_comp((0,2), 
                                                                      cric)
-            self._ricci.domain = self.domain
+            self._ricci._domain = self._domain
             if name is None:
-                self._ricci.name = "Ric(" + self.metric.name + ")"
+                self._ricci._name = "Ric(" + self._metric._name + ")"
             else:
-                self._ricci.name = name
+                self._ricci._name = name
             if latex_name is None:
-                self._ricci.latex_name = r"\mathrm{Ric}\left(" + \
-                                         self.metric.latex_name + r"\right)"
+                self._ricci._latex_name = r"\mathrm{Ric}\left(" + \
+                                         self._metric._latex_name + r"\right)"
             else:
-                self._ricci.latex_name = latex_name
+                self._ricci._latex_name = latex_name
         return self._ricci 
 
     def ricci_scalar(self, frame=None, name=None, latex_name=None):
@@ -1450,12 +1450,12 @@ class LeviCivitaConnection(AffConnection):
 
         """
         if self._ricci_scalar is None:            
-            manif = self.manifold
+            manif = self._manifold
             ric = self.ricci(frame)
-            ig = self.metric.inverse()
+            ig = self._metric.inverse()
             frame = ig.common_basis(ric)
-            cric = ric.components[frame]
-            cig = ig.components[frame]
+            cric = ric._components[frame]
+            cig = ig._components[frame]
             rsum1 = 0
             for i in manif.irange():
                 rsum1 += cig[[i,i]] * cric[[i,i]]
@@ -1464,15 +1464,15 @@ class LeviCivitaConnection(AffConnection):
                 for j in manif.irange(start=i+1):
                     rsum2 += cig[[i,j]] * cric[[i,j]]
             self._ricci_scalar = rsum1 + 2*rsum2
-            self._ricci_scalar.domain = self.domain
+            self._ricci_scalar._domain = self._domain
             if name is None:
-                self._ricci_scalar.name = "r(" + self.metric.name + ")"
+                self._ricci_scalar._name = "r(" + self._metric._name + ")"
             else:
-                self._ricci_scalar.name = name
+                self._ricci_scalar._name = name
             if latex_name is None:
-                self._ricci_scalar.latex_name = r"\mathrm{r}\left(" + \
-                                            self.metric.latex_name + r"\right)"
+                self._ricci_scalar._latex_name = r"\mathrm{r}\left(" + \
+                                            self._metric._latex_name + r"\right)"
             else:
-                self._ricci_scalar.latex_name = latex_name
+                self._ricci_scalar._latex_name = latex_name
         return self._ricci_scalar 
 

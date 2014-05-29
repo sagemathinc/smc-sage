@@ -74,25 +74,25 @@ class VectorFieldModule(UniqueRepresentation, Module):
     Element = VectorField
     
     def __init__(self, domain, dest_map=None):
-        self.domain = domain
-        name = "X(" + domain.name
-        latex_name = r"\mathcal{X}\left(" + domain.latex_name
+        self._domain = domain
+        name = "X(" + domain._name
+        latex_name = r"\mathcal{X}\left(" + domain._latex_name
         if dest_map is None:
-            self.dest_map = None
-            self.ambient_domain = domain
+            self._dest_map = None
+            self._ambient_domain = domain
             name += ")" 
             latex_name += r"\right)"
         else:
-            self.dest_map = dest_map
-            self.ambient_domain = dest_map.codomain
-            name += "," + self.dest_map.name + ")" 
-            latex_name += "," + self.dest_map.latex_name + r"\right)"
-        self.name = name
-        self.latex_name = latex_name
-        # the member self.ring is created for efficiency (to avoid calls to 
+            self._dest_map = dest_map
+            self._ambient_domain = dest_map._codomain
+            name += "," + self._dest_map._name + ")" 
+            latex_name += "," + self._dest_map._latex_name + r"\right)"
+        self._name = name
+        self._latex_name = latex_name
+        # the member self._ring is created for efficiency (to avoid calls to 
         # self.base_ring()):
-        self.ring = domain.scalar_field_algebra() 
-        Module.__init__(self, self.ring)
+        self._ring = domain.scalar_field_algebra() 
+        Module.__init__(self, self._ring)
         # Dictionary of the tensor modules built on self 
         #   (dict. keys = (k,l) --the tensor type)
         self._tensor_modules = {(1,0): self} # self is considered as the set of
@@ -130,14 +130,14 @@ class VectorFieldModule(UniqueRepresentation, Module):
         String representation of the object.
         """
         description = "module "
-        if self.name is not None:
-            description += self.name + " "
+        if self._name is not None:
+            description += self._name + " "
         description += "of vector fields "
-        if self.dest_map is None:
-            description += "on the " + str(self.domain)
+        if self._dest_map is None:
+            description += "on the " + str(self._domain)
         else:
-            description += "along the " + str(self.domain) + \
-                           " mapped into the " + str(self.ambient_domain)
+            description += "along the " + str(self._domain) + \
+                           " mapped into the " + str(self._ambient_domain)
         return description
 
     def tensor_module(self, k, l):
@@ -276,23 +276,23 @@ class VectorFieldFreeModule(FiniteFreeModule):
     Element = VectorFieldParal
 
     def __init__(self, domain, dest_map=None):
-        self.domain = domain
-        name = "X(" + domain.name
-        latex_name = r"\mathcal{X}\left(" + domain.latex_name
+        self._domain = domain
+        name = "X(" + domain._name
+        latex_name = r"\mathcal{X}\left(" + domain._latex_name
         if dest_map is None:
-            self.dest_map = None
-            self.ambient_domain = domain
+            self._dest_map = None
+            self._ambient_domain = domain
             name += ")" 
             latex_name += r"\right)"
         else:
-            self.dest_map = dest_map
-            self.ambient_domain = dest_map.codomain
-            name += "," + self.dest_map.name + ")" 
-            latex_name += "," + self.dest_map.latex_name + r"\right)" 
-        manif = self.ambient_domain.manifold
+            self._dest_map = dest_map
+            self._ambient_domain = dest_map._codomain
+            name += "," + self._dest_map._name + ")" 
+            latex_name += "," + self._dest_map._latex_name + r"\right)" 
+        manif = self._ambient_domain._manifold
         FiniteFreeModule.__init__(self, domain.scalar_field_algebra(), 
-                                  manif.dim, name=name, latex_name=latex_name, 
-                                  start_index=manif.sindex,
+                                  manif._dim, name=name, latex_name=latex_name, 
+                                  start_index=manif._sindex,
                                   output_formatter=ScalarField.function_chart)
 
     #### Methods to be redefined by derived classes of FiniteFreeModule ####
@@ -302,14 +302,14 @@ class VectorFieldFreeModule(FiniteFreeModule):
         String representation of the object.
         """
         description = "free module "
-        if self.name is not None:
-            description += self.name + " "
+        if self._name is not None:
+            description += self._name + " "
         description += "of vector fields "
-        if self.dest_map is None:
-            description += "on the " + str(self.domain)
+        if self._dest_map is None:
+            description += "on the " + str(self._domain)
         else:
-            description += "along the " + str(self.domain) + \
-                           " mapped into the " + str(self.ambient_domain)
+            description += "along the " + str(self._domain) + \
+                           " mapped into the " + str(self._ambient_domain)
         return description
 
     def tensor_module(self, k, l):
@@ -374,11 +374,11 @@ class VectorFieldFreeModule(FiniteFreeModule):
         if symbol is None:
             return self.default_basis()
         else:
-            for other in self.known_bases:
-                if symbol == other.symbol:
+            for other in self._known_bases:
+                if symbol == other._symbol:
                     return other
-            return VectorFrame(self.domain, symbol=symbol, 
-                               latex_symbol=latex_symbol, dest_map=self.dest_map)
+            return VectorFrame(self._domain, symbol=symbol, 
+                               latex_symbol=latex_symbol, dest_map=self._dest_map)
 
     def tensor(self, tensor_type, name=None, latex_name=None, sym=None, 
                antisym=None):
@@ -477,13 +477,13 @@ class VectorFieldFreeModule(FiniteFreeModule):
                                                                CompFullyAntiSym
         #
         # 0/ Compatibility checks:
-        if comp.ring is not self.ring:
+        if comp._ring is not self._ring:
              raise TypeError("The components are not defined on the same" + 
                             " ring as the module.")           
-        if comp.frame not in self.known_bases:
+        if comp._frame not in self._known_bases:
             raise TypeError("The components are not defined on a basis of" + 
                             " the module.")
-        if comp.nid != tensor_type[0] + tensor_type[1]:
+        if comp._nid != tensor_type[0] + tensor_type[1]:
             raise TypeError("Number of component indices not compatible with "+
                             " the tensor type.")
         #
@@ -507,11 +507,11 @@ class VectorFieldFreeModule(FiniteFreeModule):
                                     latex_name=latex_name) 
             # Tensor symmetries deduced from those of comp:
             if isinstance(comp, CompWithSym):
-                resu.sym = comp.sym
-                resu.antisym = comp.antisym
+                resu._sym = comp._sym
+                resu._antisym = comp._antisym
         #
         # 2/ Tensor components set to comp:
-        resu.components[comp.frame] = comp
+        resu._components[comp._frame] = comp
         #
         return resu
 

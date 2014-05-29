@@ -77,7 +77,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: CU.an_element()
         scalar field on the open domain 'U' on the 2-dimensional manifold 'M'
         sage: CU.an_element().view()
-        (x, y) |--> 2
+        on U: (x, y) |--> 2
         sage: f = U.scalar_field(x + y^2, name='f')
         sage: f.parent()
         algebra of scalar fields on the open domain 'U' on the 2-dimensional manifold 'M'
@@ -89,7 +89,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: CU.zero()
         zero scalar field on the open domain 'U' on the 2-dimensional manifold 'M'
         sage: CU.zero().view()
-        (x, y) |--> 0
+        on U: (x, y) |--> 0
         sage: CU.zero() == CU(0)
         True
 
@@ -98,7 +98,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: CU.one()
         scalar field on the open domain 'U' on the 2-dimensional manifold 'M'
         sage: CU.one().view()
-        (x, y) |--> 1        
+        on U: (x, y) |--> 1        
         sage: CU.one() == CU(1)
         True
 
@@ -108,12 +108,12 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: g = CU(sin(x)) ; g  # coordinate expression in the default chart
         scalar field on the open domain 'U' on the 2-dimensional manifold 'M'
         sage: g.view()
-        (x, y) |--> sin(x)
+        on U: (x, y) |--> sin(x)
         sage: Y.<u,v> = U.chart()
         sage: g = CU({Y: exp(u+v)}) ; g  # coordinate expression in a non-default chart
         scalar field on the open domain 'U' on the 2-dimensional manifold 'M'
         sage: g.view(Y)
-        (u, v) |--> e^(u + v)
+        on U: (u, v) |--> e^(u + v)
      
     The algebra `C^\infty(U)` coerces to `C^\infty(V)` where `V` is any open 
     subset of `U`::
@@ -130,7 +130,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: f_V = CV(f) ; f_V
         scalar field on the open domain 'V' on the 2-dimensional manifold 'M'
         sage: f_V.view()
-        (x, y) |--> y^2 + x
+        on V: (x, y) |--> y^2 + x
 
     The coercion map allows for the addition of elements of `C^\infty(U)` 
     with elements of `C^\infty(V)`, the result being an element of 
@@ -144,7 +144,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: s.parent()
         algebra of scalar fields on the open domain 'V' on the 2-dimensional manifold 'M'
         sage: s.view()
-        (x, y) |--> x*y + y^2 + x
+        on V: (x, y) |--> x*y + y^2 + x
         sage: s == f_V + h
         True
         sage: s == h + f
@@ -156,7 +156,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
 
     def __init__(self, domain):
         Parent.__init__(self, base=SR, category=CommutativeAlgebras(SR))
-        self.domain = domain
+        self._domain = domain
         self._populate_coercion_lists_()
         
     #### Methods required for any Parent 
@@ -166,23 +166,23 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         Construct a scalarfield
         """
         if coord_expression == 0:
-            return ZeroScalarField(self.domain)
+            return ZeroScalarField(self._domain)
         if isinstance(coord_expression, ScalarField):
-            if self.domain.is_subdomain(coord_expression.domain):
-                # restriction of the scalar field to self.domain:
+            if self._domain.is_subdomain(coord_expression._domain):
+                # restriction of the scalar field to self._domain:
                 sexpress = {}
-                for chart, funct in coord_expression.express.items():
-                    for schart in self.domain._atlas:
-                        if schart in chart.subcharts:
+                for chart, funct in coord_expression._express.items():
+                    for schart in self._domain._atlas:
+                        if schart in chart._subcharts:
                             sexpress[schart] = funct.expr()
-                resu = self.element_class(self.domain, 
+                resu = self.element_class(self._domain, 
                                           coord_expression=sexpress, name=name, 
                                           latex_name=latex_name)
             else:
                 raise TypeError("Cannot coerce the " + str(coord_expression) +
-                                "to a scalar field on the " + str(self.domain))
+                                "to a scalar field on the " + str(self._domain))
         else:
-            resu = self.element_class(self.domain, 
+            resu = self.element_class(self._domain, 
                                       coord_expression=coord_expression, 
                                       name=name, latex_name=latex_name)
         return resu
@@ -191,7 +191,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         r"""
         Construct some (unamed) element of the module
         """
-        return self.element_class(self.domain, coord_expression=2)
+        return self.element_class(self._domain, coord_expression=2)
             
             
     def _coerce_map_from_(self, other):
@@ -206,7 +206,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         elif other is QQ:
             return True
         elif isinstance(other, ScalarFieldAlgebra):
-            return self.domain.is_subdomain(other.domain)
+            return self._domain.is_subdomain(other._domain)
         else:
             return False
 
@@ -216,10 +216,10 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         r"""
         String representation of the object.
         """
-        return "algebra of scalar fields on the " + str(self.domain)
+        return "algebra of scalar fields on the " + str(self._domain)
         
     def _latex_(self):
         r"""
         LaTeX representation of the object.
         """
-        return r"C^\infty("  + self.domain.latex_name + ")"
+        return r"C^\infty("  + self._domain._latex_name + ")"

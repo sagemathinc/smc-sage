@@ -89,7 +89,7 @@ class ScalarField(CommutativeAlgebraElement):
         sage: f = M.scalar_field(sin(th)*cos(ph), chart=c_spher, name='f') ; f
         scalar field 'f' on the 2-dimensional manifold 'S^2'
         sage: f.view(chart=c_spher)
-        f: (th, ph) |--> cos(ph)*sin(th)
+        f on U: (th, ph) |--> cos(ph)*sin(th)
         sage: f.expr(chart=c_spher)
         cos(ph)*sin(th)
 
@@ -99,7 +99,7 @@ class ScalarField(CommutativeAlgebraElement):
         sage: f = M.scalar_field(sin(th)*cos(ph),  name='f') ; f
         scalar field 'f' on the 2-dimensional manifold 'S^2'
         sage: f.view()
-        f: (th, ph) |--> cos(ph)*sin(th)
+        f on U: (th, ph) |--> cos(ph)*sin(th)
         sage: f.expr()
         cos(ph)*sin(th)
 
@@ -119,11 +119,11 @@ class ScalarField(CommutativeAlgebraElement):
     field::
     
         sage: f.view()
-        f: (th, ph) |--> cos(ph)*sin(th)
+        f on U: (th, ph) |--> cos(ph)*sin(th)
         sage: f.view(c_spher) # equivalent to above since c_spher is the default chart
-        f: (th, ph) |-->  cos(ph)*sin(th)
-        sage: latex(f.view()) # nice LaTeX formatting for the notebook
-        f :\ \left(\theta, \phi\right) \mapsto \cos\left(\phi\right) \sin\left(\theta\right)
+        f on U: (th, ph) |-->  cos(ph)*sin(th)
+        sage: latex(f.view(c_spher)) # nice LaTeX formatting for the notebook
+        f \ \mbox{on}\ U :\ \left(\theta, \phi\right) \mapsto \cos\left(\phi\right) \sin\left(\theta\right)
 
     A scalar field can also be defined by an unspecified function of the 
     coordinates::
@@ -295,27 +295,27 @@ class ScalarField(CommutativeAlgebraElement):
         sage: f.add_expr(u, c_uv)
         sage: g = M.scalar_field(2*v, c_uv)
         sage: g.add_expr(y, c_xy)
-        sage: f.express  # random (dictionary output)
+        sage: f._express  # random (dictionary output)
         {chart (U, (x, y)): x^2, chart (V, (u, v)): u}
-        sage: g.express  # random (dictionary output)
+        sage: g._express  # random (dictionary output)
         {chart (V, (u, v)): 2*v, chart (U, (x, y)): y}
         sage: s = f + g ; s
         scalar field on the 2-dimensional manifold 'M'
-        sage: s.express  # random (dictionary output)
+        sage: s._express  # random (dictionary output)
         {chart (U, (x, y)): x^2 + y, chart (V, (u, v)): u + 2*v}
         sage: g.set_expr(3*x, c_xy)
-        sage: g.express
+        sage: g._express
         {chart (U, (x, y)): 3*x}
         sage: s = f + g ; s
         scalar field on the 2-dimensional manifold 'M'
-        sage: s.express
+        sage: s._express
         {chart (U, (x, y)): x^2 + 3*x}
         sage: g = U.scalar_field(3*x)
-        sage: g.express
+        sage: g._express
         {chart (U, (x, y)): 3*x}
         sage: s = f + g ; s
         scalar field on the open domain 'U' on the 2-dimensional manifold 'M'
-        sage: s.express
+        sage: s._express
         {chart (U, (x, y)): x^2 + 3*x}
     
     Vanishing result::
@@ -331,30 +331,30 @@ class ScalarField(CommutativeAlgebraElement):
     def __init__(self, domain, coord_expression=None, name=None, 
                  latex_name=None):
         CommutativeAlgebraElement.__init__(self, domain.scalar_field_algebra())
-        self.manifold = domain.manifold
-        self.domain = domain
-        self.tensor_type = (0,0)
-        self.name = name
+        self._manifold = domain._manifold
+        self._domain = domain
+        self._tensor_type = (0,0)
+        self._name = name
         if latex_name is None:
-            self.latex_name = self.name
+            self._latex_name = self._name
         else:
-            self.latex_name = latex_name
-        self.express = {}
+            self._latex_name = latex_name
+        self._express = {}
         if coord_expression is not None:
             if isinstance(coord_expression, FunctionChart):
-                self.express[coord_expression.chart] = coord_expression
+                self._express[coord_expression._chart] = coord_expression
             elif isinstance(coord_expression, dict):
                 for chart, expression in coord_expression.items():
                     if isinstance(expression, FunctionChart):
-                        self.express[chart] = expression
+                        self._express[chart] = expression
                     else:
-                        self.express[chart] = FunctionChart(chart, expression)
+                        self._express[chart] = FunctionChart(chart, expression)
             elif coord_expression == 0:
-                for chart in self.domain._atlas:
-                    self.express[chart] = chart.zero_function
+                for chart in self._domain._atlas:
+                    self._express[chart] = chart._zero_function
             else:
-                for chart in self.domain._atlas:
-                    self.express[chart] = FunctionChart(chart, 
+                for chart in self._domain._atlas:
+                    self._express[chart] = FunctionChart(chart, 
                                                         coord_expression)
         self._init_derived()   # initialization of derived quantities
 
@@ -385,7 +385,7 @@ class ScalarField(CommutativeAlgebraElement):
 
         """
         res = True
-        for funct in self.express.values():
+        for funct in self._express.values():
             res = res and funct.is_zero()
         return not res
 
@@ -407,7 +407,7 @@ class ScalarField(CommutativeAlgebraElement):
                 other = self.parent()(other)    # conversion to a scalar field
             except TypeError:
                 return False
-        if other.domain != self.domain:
+        if other._domain != self._domain:
             return False
         if other.is_zero():
             return self.is_zero()
@@ -416,7 +416,7 @@ class ScalarField(CommutativeAlgebraElement):
             raise ValueError("No common chart for the comparison.")
         resu = True
         for chart in com_charts:
-            resu = resu and (self.express[chart] == other.express[chart])
+            resu = resu and (self._express[chart] == other._express[chart])
         return resu
 
     def __ne__(self, other):
@@ -431,7 +431,7 @@ class ScalarField(CommutativeAlgebraElement):
         r"""
         Initialize the derived quantities
         """
-        self._restrictions = {} # dict. of restrictions to subdomains of self.domain
+        self._restrictions = {} # dict. of restrictions to subdomains of self._domain
         self._exterior_derivative = None # differential
         self._lie_derivatives = {} # collection of Lie derivatives of self
 
@@ -451,26 +451,26 @@ class ScalarField(CommutativeAlgebraElement):
         String representation of the object.
         """
         description = "scalar field"
-        if self.name is not None:
-            description += " '%s'" % self.name
-        description += " on the " + str(self.domain)
+        if self._name is not None:
+            description += " '%s'" % self._name
+        description += " on the " + str(self._domain)
         return description
 
     def _latex_(self):
         r"""
         LaTeX representation of the object.
         """
-        if self.latex_name is None:
+        if self._latex_name is None:
             return r'\mbox{no symbol}'
         else:
-           return self.latex_name
+           return self._latex_name
 
     def _new_instance(self):
         r"""
         Create a :class:`ScalarField` instance on the same domain.
         
         """
-        return ScalarField(self.domain)        
+        return ScalarField(self._domain)        
 
     def copy(self):
         r"""
@@ -495,9 +495,9 @@ class ScalarField(CommutativeAlgebraElement):
             False
         
         """
-        result = ScalarField(self.domain)  #!# what about the name ?
-        for chart, funct in self.express.items():
-            result.express[chart] = funct.copy()
+        result = ScalarField(self._domain)  #!# what about the name ?
+        for chart, funct in self._express.items():
+            result._express[chart] = funct.copy()
         return result
 
     def function_chart(self, chart=None, from_chart=None):
@@ -512,7 +512,7 @@ class ScalarField(CommutativeAlgebraElement):
           domain's default chart will be used
         - ``from_chart`` -- (default: None) chart from which the
           required expression is computed if it is not known already in the 
-          chart ``chart``; if None, a chart is picked in ``self.express``
+          chart ``chart``; if None, a chart is picked in ``self._express``
 
         OUTPUT:
         
@@ -540,13 +540,13 @@ class ScalarField(CommutativeAlgebraElement):
             sage: c_uv.<u,v> = M.chart()
             sage: c_uv.coord_change(c_xy, u+v, u-v)
             coordinate change from chart (M, (u, v)) to chart (M, (x, y))
-            sage: f.express # at this stage, f is expressed only in terms of (x,y) coordinates
+            sage: f._express # at this stage, f is expressed only in terms of (x,y) coordinates
             {chart (M, (x, y)): x*y^2}
             sage: f.function_chart(c_uv) # forces the computation of the expression of f in terms of (u,v) coordinates
             u^3 - u^2*v - u*v^2 + v^3
             sage: f.function_chart(c_uv) == (u+v)*(u-v)^2  # check
             True
-            sage: f.express  # random (dict. output); f has now 2 coordinate expressions:
+            sage: f._express  # random (dict. output); f has now 2 coordinate expressions:
             {chart (M, (x, y)): x*y^2, chart (M, (u, v)): u^3 - u^2*v - u*v^2 + v^3}
 
         Usage in a physical context (simple Lorentz transformation - boost in 
@@ -571,38 +571,38 @@ class ScalarField(CommutativeAlgebraElement):
             # of a direct call to the unbound function (ScalarField.function_chart)
             return self.function_chart(chart) 
         if chart is None:
-            chart = self.domain.def_chart
+            chart = self._domain._def_chart
         else:
-            if chart not in self.domain._atlas:
+            if chart not in self._domain._atlas:
                 raise TypeError("The " + str(chart) + " has not " + \
-                      " been defined on the domain " + str(self.domain))
-        if chart not in self.express:
+                      " been defined on the domain " + str(self._domain))
+        if chart not in self._express:
             # Check whether chart corresponds to a subchart of a chart
             # where the expression of self is known:
-            for known_chart in self.express:
-                if chart in known_chart.subcharts:
-                    new_expr = self.express[known_chart].expr()
-                    self.express[chart] = FunctionChart(chart, new_expr)
-                    return self.express[chart]
+            for known_chart in self._express:
+                if chart in known_chart._subcharts:
+                    new_expr = self._express[known_chart].expr()
+                    self._express[chart] = FunctionChart(chart, new_expr)
+                    return self._express[chart]
             # If this point is reached, the expression must be computed 
             # from that in the chart from_chart, by means of a 
             # change-of-coordinates formula:
             if from_chart is None:
-                for known_chart in self.express:
-                    if (chart, known_chart) in self.domain.coord_changes:
+                for known_chart in self._express:
+                    if (chart, known_chart) in self._domain._coord_changes:
                         from_chart = known_chart
                         break
                 if from_chart is None:
                     raise ValueError("No starting chart could be found to " + 
                            "compute the expression in the " + str(chart))
-            change = self.domain.coord_changes[(chart, from_chart)]
+            change = self._domain._coord_changes[(chart, from_chart)]
             # old coordinates expressed in terms of the new ones:
-            coords = [ change.transf.functions[i].express 
-                       for i in range(self.manifold.dim) ]
-            new_expr = self.express[from_chart](*coords)
-            self.express[chart] = FunctionChart(chart, new_expr)
+            coords = [ change._transf._functions[i]._express 
+                       for i in range(self._manifold._dim) ]
+            new_expr = self._express[from_chart](*coords)
+            self._express[chart] = FunctionChart(chart, new_expr)
             self._del_derived()
-        return self.express[chart]
+        return self._express[chart]
 
 
     def expr(self, chart=None, from_chart=None):
@@ -617,7 +617,7 @@ class ScalarField(CommutativeAlgebraElement):
           chart will be used
         - ``from_chart`` -- (default: None) chart from which the
           required expression is computed if it is not known already in the 
-          chart ``chart``; if None, a chart is picked in ``self.express``
+          chart ``chart``; if None, a chart is picked in ``self._express``
           
         OUTPUT:
         
@@ -644,17 +644,17 @@ class ScalarField(CommutativeAlgebraElement):
             sage: c_uv.<u,v> = M.chart()
             sage: c_uv.coord_change(c_xy, u+v, u-v)
             coordinate change from chart (M, (u, v)) to chart (M, (x, y))
-            sage: f.express # at this stage, f is expressed only in terms of (x,y) coordinates
+            sage: f._express # at this stage, f is expressed only in terms of (x,y) coordinates
             {chart (M, (x, y)): x*y^2}
             sage: f.expr(c_uv) # forces the computation of the expression of f in terms of (u,v) coordinates
             u^3 - u^2*v - u*v^2 + v^3
             sage: bool( f.expr(c_uv) == (u+v)*(u-v)^2 ) # check
             True
-            sage: f.express  # random (dict. output); f has now 2 coordinate expressions:
+            sage: f._express  # random (dict. output); f has now 2 coordinate expressions:
             {chart (M, (x, y)): x*y^2, chart (M, (u, v)): u^3 - u^2*v - u*v^2 + v^3}
 
         """
-        return self.function_chart(chart, from_chart).express
+        return self.function_chart(chart, from_chart)._express
         
     def set_expr(self, coord_expression, chart=None):
         r"""
@@ -677,24 +677,24 @@ class ScalarField(CommutativeAlgebraElement):
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart()
             sage: f = M.scalar_field(x^2 + 2*x*y +1)
-            sage: f.express                         
+            sage: f._express                         
             {chart (M, (x, y)): x^2 + 2*x*y + 1}
             sage: f.set_expr(3*y)
-            sage: f.express  # the (x,y) expression has been changed:
+            sage: f._express  # the (x,y) expression has been changed:
             {chart (M, (x, y)): 3*y}
             sage: c_uv.<u,v> = M.chart()
             sage: f.set_expr(cos(u)-sin(v), c_uv)  
-            sage: f.express # the (x,y) expression has been lost:
+            sage: f._express # the (x,y) expression has been lost:
             {chart (M, (u, v)): cos(u) - sin(v)}
             sage: f.set_expr(3*y)    
-            sage: f.express # the (u,v) expression has been lost:                    
+            sage: f._express # the (u,v) expression has been lost:                    
             {chart (M, (x, y)): 3*y}
 
         """
         if chart is None:
-            chart = self.domain.def_chart
-        self.express.clear()
-        self.express[chart] = FunctionChart(chart, coord_expression)
+            chart = self._domain._def_chart
+        self._express.clear()
+        self._express[chart] = FunctionChart(chart, coord_expression)
         self._del_derived()
 
     def add_expr(self, coord_expression, chart=None):
@@ -724,20 +724,20 @@ class ScalarField(CommutativeAlgebraElement):
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart()
             sage: f = M.scalar_field(x^2 + 2*x*y +1)
-            sage: f.express
+            sage: f._express
             {chart (M, (x, y)): x^2 + 2*x*y + 1}             
             sage: f.add_expr(3*y)
-            sage: f.express  # the (x,y) expression has been changed:
+            sage: f._express  # the (x,y) expression has been changed:
             {chart (M, (x, y)): 3*y}
             sage: c_uv.<u,v> = M.chart()
             sage: f.add_expr(cos(u)-sin(v), c_uv)  
-            sage: f.express # random (dict. output); f has now 2 expressions:
+            sage: f._express # random (dict. output); f has now 2 expressions:
             {chart (M, (x, y)): 3*y, chart (M, (u, v)): cos(u) - sin(v)}
 
         """
         if chart is None:
-            chart = self.domain.def_chart
-        self.express[chart] = FunctionChart(chart, coord_expression)
+            chart = self._domain._def_chart
+        self._express[chart] = FunctionChart(chart, coord_expression)
         self._del_derived()
 
 
@@ -763,14 +763,14 @@ class ScalarField(CommutativeAlgebraElement):
             sage: c_xy.<x,y> = M.chart()
             sage: f = M.scalar_field(sqrt(x+1), name='f')
             sage: f.view()
-            f: (x, y) |--> sqrt(x + 1)
+            f on M: (x, y) |--> sqrt(x + 1)
             sage: latex(f.view())
-            f :\ \left(x, y\right) \mapsto \sqrt{x + 1}
+            \begin{array}{l} f \ \mbox{on}\ M :\ \left(x, y\right) \mapsto \sqrt{x + 1} \end{array}
             sage: g = M.scalar_field(function('G', x, y), name='g')
             sage: g.view() 
-            g: (x, y) |--> G(x, y)
+            g on M: (x, y) |--> G(x, y)
             sage: latex(g.view())
-            g :\ \left(x, y\right) \mapsto G\left(x, y\right)
+            \begin{array}{l} g \ \mbox{on}\ M :\ \left(x, y\right) \mapsto G\left(x, y\right) \end{array}
 
         """
         from sage.misc.latex import latex
@@ -779,7 +779,7 @@ class ScalarField(CommutativeAlgebraElement):
         if chart is None:
             result.txt = ""
             result.latex = r"\begin{array}{l}"
-            for chart1 in self.domain._atlas:
+            for chart1 in self._domain._atlas:
                 try:
                     result.txt += repr(self.view(chart1)) + "\n"
                     result.latex += latex(self.view(chart1)) + r"\\"
@@ -789,18 +789,18 @@ class ScalarField(CommutativeAlgebraElement):
             result.latex = result.latex[:-2] + r"\end{array}"
             return result
         expression = self.expr(chart)
-        if self.name is None:
-            result.txt = "on " + chart.domain.name + ": " + \
+        if self._name is None:
+            result.txt = "on " + chart._domain._name + ": " + \
                          repr(chart[:]) + " |--> " + repr(expression)
         else:
-            result.txt = self.name + " on " + chart.domain.name + ": " +  \
+            result.txt = self._name + " on " + chart._domain._name + ": " +  \
                          repr(chart[:]) + " |--> " + repr(expression)
-        if self.latex_name is None:
-            result.latex = r"\mbox{on}\ " + latex(chart.domain) + ":\ " + \
+        if self._latex_name is None:
+            result.latex = r"\mbox{on}\ " + latex(chart._domain) + ":\ " + \
                            latex(chart[:]) + r"\mapsto" + latex(expression)
         else:
             result.latex = latex(self) + r"\ \mbox{on}\ " + \
-                           latex(chart.domain) + ":\ " + latex(chart[:]) + \
+                           latex(chart._domain) + ":\ " + latex(chart[:]) + \
                            r"\mapsto" + latex(expression)
         return result
 
@@ -834,7 +834,7 @@ class ScalarField(CommutativeAlgebraElement):
             sage: latex(f_U)
             \left. f\right| _{U}
             sage: f_U.view()
-            f|_U: (x, y) |--> cos(x*y)
+            f|_U on U: (x, y) |--> cos(x*y)
             sage: f.parent()
             algebra of scalar fields on the 2-dimensional manifold 'M'
             sage: f_U.parent()
@@ -848,20 +848,20 @@ class ScalarField(CommutativeAlgebraElement):
             True
 
         """
-        if subdomain == self.domain:
+        if subdomain == self._domain:
             return self
         if subdomain not in self._restrictions:
-            if not subdomain.is_subdomain(self.domain):
+            if not subdomain.is_subdomain(self._domain):
                 raise ValueError("The specified domain is not a subdomain " + 
                                  "of the domain of definition of the scalar " + 
                                  "field.")
             # the restriction is obtained via coercion
             resu = subdomain.scalar_field_algebra()(self)
-            if self.name is not None:
-                resu.name = self.name + "|_" + subdomain.name
-            if self.latex_name is not None:
-                resu.latex_name = r"\left. " + self.latex_name + r"\right| _{" + \
-                                  subdomain.latex_name + r"}"
+            if self._name is not None:
+                resu._name = self._name + "|_" + subdomain._name
+            if self._latex_name is not None:
+                resu._latex_name = r"\left. " + self._latex_name + r"\right| _{" + \
+                                  subdomain._latex_name + r"}"
             self._restrictions[subdomain] = resu
         return self._restrictions[subdomain]
             
@@ -885,22 +885,22 @@ class ScalarField(CommutativeAlgebraElement):
             sage: c_uv.<u,v> = M.chart()
             sage: f =  M.scalar_field(x*y^2)
             sage: f.add_expr(u-v, c_uv)
-            sage: f.express # random (dict. output); f has expressions on two charts:
+            sage: f._express # random (dict. output); f has expressions on two charts:
             {chart (M, (x, y)): x*y^2, chart (M, (u, v)): u - v}
             sage: M.default_chart()
             chart (M, (x, y))
             sage: f.pick_a_chart()  # the domain's default chart (xy-coord) is privileged:
             chart (M, (x, y))
             sage: g = M.scalar_field(u+v, c_uv)
-            sage: g.express  # g has no expression on the domain's default chart:
+            sage: g._express  # g has no expression on the domain's default chart:
             {chart (M, (u, v)): u + v}
             sage: g.pick_a_chart()
             chart (M, (u, v))
         
         """
-        if self.domain.def_chart in self.express:
-            return self.domain.def_chart
-        return self.express.items()[0][0]  
+        if self._domain._def_chart in self._express:
+            return self._domain._def_chart
+        return self._express.items()[0][0]  
             
 
     def common_charts(self, other):
@@ -932,9 +932,9 @@ class ScalarField(CommutativeAlgebraElement):
             sage: f.common_charts(g)
             [chart (U, (x, y))]
             sage: g.add_expr(u, c_uv)
-            sage: f.express
+            sage: f._express
             {chart (U, (x, y)): x^2}
-            sage: g.express  # random (dictionary output)
+            sage: g._express  # random (dictionary output)
             {chart (U, (x, y)): x + y, chart (V, (u, v)): u}
             sage: f.common_charts(g)
             [chart (U, (x, y))]
@@ -944,73 +944,73 @@ class ScalarField(CommutativeAlgebraElement):
         `W = U\cap V`::
         
             sage: trans = c_xy.transition_map(c_uv, (x+y, x-y), 'W', x<0, u+v<0)
-            sage: c_xy_W = trans.chart1
-            sage: c_uv_W = trans.chart2
+            sage: c_xy_W = trans._chart1
+            sage: c_uv_W = trans._chart2
             sage: trans.inverse()
             coordinate change from chart (W, (u, v)) to chart (W, (x, y))
             sage: f.common_charts(g)
             [chart (U, (x, y))]
             sage: f.expr(c_xy_W)  
             x^2
-            sage: f.express  # random (dictionary output)
+            sage: f._express  # random (dictionary output)
             {chart (U, (x, y)): x^2, chart (W, (x, y)): x^2}
-            sage: g.express  # random (dictionary output)
+            sage: g._express  # random (dictionary output)
             {chart (U, (x, y)): x + y, chart (V, (u, v)): u}
             sage: g.common_charts(f)  # c_xy_W is not returned because it is subchart of 'xy'
             [chart (U, (x, y))]
             sage: f.expr(c_uv_W)
             1/4*u^2 + 1/2*u*v + 1/4*v^2
-            sage: f.express  # random (dictionary output)
+            sage: f._express  # random (dictionary output)
             {chart (U, (x, y)): x^2, chart (W, (x, y)): x^2, chart (W, (u, v)): 1/4*u^2 + 1/2*u*v + 1/4*v^2}
-            sage: g.express  # random (dictionary output)
+            sage: g._express  # random (dictionary output)
             {chart (U, (x, y)): x + y, chart (V, (u, v)): u}
             sage: f.common_charts(g)
             [chart (U, (x, y)), chart (W, (u, v))]
             sage: # the expressions have been updated on the subcharts
-            sage: g.express #  random (dictionary output)
+            sage: g._express #  random (dictionary output)
             {chart (U, (x, y)): x + y, chart (V, (u, v)): u, chart (W, (u, v)): u}
 
         Common charts found by computing some coordinate changes::
         
-            sage: W = M.domains['W']
+            sage: W = M._domains['W']
             sage: f = W.scalar_field(x^2, c_xy_W)
             sage: g = W.scalar_field(u+1, c_uv_W)
-            sage: f.express
+            sage: f._express
             {chart (W, (x, y)): x^2}
-            sage: g.express
+            sage: g._express
             {chart (W, (u, v)): u + 1}
             sage: f.common_charts(g)
             [chart (W, (u, v)), chart (W, (x, y))]
-            sage: f.express # random (dictionary output)
+            sage: f._express # random (dictionary output)
             {chart (W, (u, v)): 1/4*u^2 + 1/2*u*v + 1/4*v^2, chart (W, (x, y)): x^2}
-            sage: g.express # random (dictionary output)
+            sage: g._express # random (dictionary output)
             {chart (W, (u, v)): u + 1, chart (W, (x, y)): x + y + 1}
 
         """
         if not isinstance(other, ScalarField):
             raise TypeError("The second argument must be a scalar field.")
-        dom1 = self.domain
-        dom2 = other.domain
-        coord_changes = self.manifold.coord_changes
+        dom1 = self._domain
+        dom2 = other._domain
+        coord_changes = self._manifold._coord_changes
         resu = []
         #
         # 1/ Search for common charts among the existing expressions, i.e. 
         #    without performing any expression transformation. 
         #    -------------------------------------------------------------
-        for chart1 in self.express:
-            if chart1 in other.express:
+        for chart1 in self._express:
+            if chart1 in other._express:
                 resu.append(chart1)
         # Search for a subchart:
-        known_expr1 = self.express.copy()  
-        known_expr2 = other.express.copy()
+        known_expr1 = self._express.copy()  
+        known_expr2 = other._express.copy()
         for chart1 in known_expr1:
             if chart1 not in resu:
                 for chart2 in known_expr2:
                     if chart2 not in resu:
-                        if chart2 in chart1.subcharts:
+                        if chart2 in chart1._subcharts:
                             self.expr(chart2)
                             resu.append(chart2)
-                        if chart1 in chart2.subcharts:
+                        if chart1 in chart2._subcharts:
                             other.expr(chart1)
                             resu.append(chart1)
         #
@@ -1042,7 +1042,7 @@ class ScalarField(CommutativeAlgebraElement):
         - ``chart`` -- (default: None) chart in which the coordinates of p 
           are to be considered; if none is provided, a chart in which both p's 
           coordinates and the expression of ``self`` are known is searched, 
-          starting from the default chart of self.domain will be used
+          starting from the default chart of self._domain will be used
         
         OUTPUT:
 
@@ -1051,22 +1051,22 @@ class ScalarField(CommutativeAlgebraElement):
         EXAMPLES:
         
         """
-        if p not in self.manifold: 
+        if p not in self._manifold: 
             raise ValueError("The point " + str(p) +
-                             " does not belong to the " + str(self.manifold))
+                             " does not belong to the " + str(self._manifold))
         if chart is None: 
-            def_chart = self.domain.def_chart
-            if def_chart in p.coordinates and def_chart in self.express:
+            def_chart = self._domain._def_chart
+            if def_chart in p._coordinates and def_chart in self._express:
                 chart = def_chart
             else:
-                for chart_p in p.coordinates:
-                    if chart_p in self.express:
+                for chart_p in p._coordinates:
+                    if chart_p in self._express:
                         chart = chart_p
                         break
         if chart is None:
             raise ValueError("No common chart has been found to evaluate " \
                 "the action of " + str(self) + " on the " + str(p) + ".")
-        return self.express[chart](*(p.coordinates[chart]))
+        return self._express[chart](*(p._coordinates[chart]))
 
     def __pos__(self):
         r"""
@@ -1078,12 +1078,12 @@ class ScalarField(CommutativeAlgebraElement):
     
         """
         result = self._new_instance()
-        for chart in self.express:
-            result.express[chart] = + self.express[chart]
-        if self.name is not None:
-            result.name = '+' + self.name 
-        if self.latex_name is not None:
-            result.latex_name = '+' + self.latex_name
+        for chart in self._express:
+            result._express[chart] = + self._express[chart]
+        if self._name is not None:
+            result._name = '+' + self._name 
+        if self._latex_name is not None:
+            result._latex_name = '+' + self._latex_name
         return result
 
     def __neg__(self):
@@ -1096,12 +1096,12 @@ class ScalarField(CommutativeAlgebraElement):
     
         """
         result = self._new_instance()
-        for chart in self.express:
-            result.express[chart] = - self.express[chart]
-        if self.name is not None:
-            result.name = '-' + self.name 
-        if self.latex_name is not None:
-            result.latex_name = '-' + self.latex_name
+        for chart in self._express:
+            result._express[chart] = - self._express[chart]
+        if self._name is not None:
+            result._name = '-' + self._name 
+        if self._latex_name is not None:
+            result._latex_name = '-' + self._latex_name
         return result
 
 
@@ -1126,17 +1126,17 @@ class ScalarField(CommutativeAlgebraElement):
         com_charts = self.common_charts(other)
         if com_charts is None:
             raise ValueError("No common chart for the addition.")
-        dom = self.domain
+        dom = self._domain
         result = ScalarField(dom)
         for chart in com_charts:
             # FunctionChart addition:
-            result.express[chart] = self.express[chart] + other.express[chart]
+            result._express[chart] = self._express[chart] + other._express[chart]
         if result.is_zero():
-            return dom.zero_scalar_field
-        if self.name is not None and other.name is not None:
-            result.name = self.name + '+' + other.name
-        if self.latex_name is not None and other.latex_name is not None:
-            result.latex_name = self.latex_name + '+' + other.latex_name
+            return dom._zero_scalar_field
+        if self._name is not None and other._name is not None:
+            result._name = self._name + '+' + other._name
+        if self._latex_name is not None and other._latex_name is not None:
+            result._latex_name = self._latex_name + '+' + other._latex_name
         return result
 
     def _sub_(self, other):
@@ -1158,17 +1158,17 @@ class ScalarField(CommutativeAlgebraElement):
         com_charts = self.common_charts(other)
         if com_charts is None:
             raise ValueError("No common chart for the subtraction.")
-        dom = self.domain
+        dom = self._domain
         result = ScalarField(dom)
         for chart in com_charts:
             # FunctionChart subtraction:
-            result.express[chart] = self.express[chart] - other.express[chart]
+            result._express[chart] = self._express[chart] - other._express[chart]
         if result.is_zero():
-            return dom.zero_scalar_field
-        if self.name is not None and other.name is not None:
-            result.name = self.name + '-' + other.name
-        if self.latex_name is not None and other.latex_name is not None:
-            result.latex_name = self.latex_name + '-' + other.latex_name
+            return dom._zero_scalar_field
+        if self._name is not None and other._name is not None:
+            result._name = self._name + '-' + other._name
+        if self._latex_name is not None and other._latex_name is not None:
+            result._latex_name = self._latex_name + '-' + other._latex_name
         return result
 
 
@@ -1192,17 +1192,17 @@ class ScalarField(CommutativeAlgebraElement):
         com_charts = self.common_charts(other)
         if com_charts is None:
             raise ValueError("No common chart for the multiplication.")
-        dom = self.domain
+        dom = self._domain
         result = ScalarField(dom)
         for chart in com_charts:
             # FunctionChart multiplication:
-            result.express[chart] = self.express[chart] * other.express[chart]
+            result._express[chart] = self._express[chart] * other._express[chart]
         #!# the following 2 lines could be skipped:
         if result.is_zero():
-            return dom.zero_scalar_field
-        result.name = format_mul_txt(self.name, '*', other.name)
-        result.latex_name = format_mul_latex(self.latex_name, ' ', 
-                                             other.latex_name)        
+            return dom._zero_scalar_field
+        result._name = format_mul_txt(self._name, '*', other._name)
+        result._latex_name = format_mul_latex(self._latex_name, ' ', 
+                                             other._latex_name)        
         return result
 
     def _div_(self, other):
@@ -1225,17 +1225,17 @@ class ScalarField(CommutativeAlgebraElement):
         com_charts = self.common_charts(other)
         if com_charts is None:
             raise ValueError("No common chart for the division.")
-        dom = self.domain
+        dom = self._domain
         result = ScalarField(dom)
         for chart in com_charts:
             # FunctionChart division:
-            result.express[chart] = self.express[chart] / other.express[chart]
+            result._express[chart] = self._express[chart] / other._express[chart]
         #!# the following 2 lines could be skipped:
         if result.is_zero():
-            return dom.zero_scalar_field
-        result.name = format_mul_txt(self.name, '/', other.name)
-        result.latex_name = format_mul_latex(self.latex_name, '/', 
-                                             other.latex_name)
+            return dom._zero_scalar_field
+        result._name = format_mul_txt(self._name, '/', other._name)
+        result._latex_name = format_mul_latex(self._latex_name, '/', 
+                                             other._latex_name)
         return result
 
     def _lmul_(self, number):
@@ -1254,10 +1254,10 @@ class ScalarField(CommutativeAlgebraElement):
         
         """
         if number == 0:
-            return self.domain.zero_scalar_field
-        result = ScalarField(self.domain)
-        for chart, expr in self.express.items():
-            result.express[chart] = number * expr
+            return self._domain._zero_scalar_field
+        result = ScalarField(self._domain)
+        for chart, expr in self._express.items():
+            result._express[chart] = number * expr
         return result
 
     def _rmul_(self, number):
@@ -1310,7 +1310,7 @@ class ScalarField(CommutativeAlgebraElement):
             sage: g = M.scalar_field(u*v^2*w^3, c_uvw, name='g')
             sage: dg = g.exterior_der() ; dg
             1-form 'dg' on the 3-dimensional manifold 'M'
-            sage: dg.components
+            sage: dg._components
             {coordinate frame (M, (d/du,d/dv,d/dw)): 1-index components w.r.t. coordinate frame (M, (d/du,d/dv,d/dw))}
             sage: dg.comp(c_uvw.frame())[:, c_uvw]
             [v^2*w^3, 2*u*v*w^3, 3*u*v^2*w^2]
@@ -1336,13 +1336,13 @@ class ScalarField(CommutativeAlgebraElement):
         from utilities import format_unop_txt, format_unop_latex
         if self._exterior_derivative is None:
             # A new computation is necessary:
-            rname = format_unop_txt('d', self.name)
-            rlname = format_unop_latex(r'\mathrm{d}', self.latex_name)
-            self._exterior_derivative = self.domain.one_form(name=rname, 
+            rname = format_unop_txt('d', self._name)
+            rlname = format_unop_latex(r'\mathrm{d}', self._latex_name)
+            self._exterior_derivative = self._domain.one_form(name=rname, 
                                                              latex_name=rlname)
-            for chart in self.express:
-                f = self.express[chart]
-                for i in self.manifold.irange():
+            for chart in self._express:
+                f = self._express[chart]
+                for i in self._manifold.irange():
                     self._exterior_derivative.add_comp(chart._frame)[i, chart] \
                         = f.diff(i)
         return self._exterior_derivative
@@ -1480,15 +1480,15 @@ class ScalarField(CommutativeAlgebraElement):
             sage: ssf = sf.hodge_star(g) ; ssf
             scalar field '**f' on the 3-dimensional manifold 'M'
             sage: ssf.view()
-            **f: (x, y, z) |--> F(x, y, z)
+            **f on M: (x, y, z) |--> F(x, y, z)
             sage: ssf == f # must hold for a Riemannian metric
             True
         
         """
         from utilities import format_unop_txt, format_unop_latex
         resu = self * metric.volume_form()
-        resu.name = format_unop_txt('*', self.name)
-        resu.latex_name = format_unop_latex(r'\star ', self.latex_name)
+        resu._name = format_unop_txt('*', self._name)
+        resu._latex_name = format_unop_latex(r'\star ', self._latex_name)
         return resu
 
 
@@ -1525,11 +1525,11 @@ class ZeroScalarField(ScalarField):
 
     Each manifold has a predefined zero scalar field::
     
-        sage: M.zero_scalar_field
+        sage: M._zero_scalar_field
         zero scalar field on the 2-dimensional manifold 'M'
-        sage: M.zero_scalar_field(p)
+        sage: M._zero_scalar_field(p)
         0
-        sage: f == M.zero_scalar_field
+        sage: f == M._zero_scalar_field
         True
 
     Arithmetics with another instance of :class:`ZeroScalarField`::
@@ -1611,7 +1611,7 @@ class ZeroScalarField(ScalarField):
                 other = self.parent()(other)    # conversion to a scalar field
             except TypeError:
                 return False
-        if other.domain != self.domain:
+        if other._domain != self._domain:
             return False
         return other.is_zero()
     
@@ -1628,9 +1628,9 @@ class ZeroScalarField(ScalarField):
         Special Sage function for the string representation of the object.
         """
         description = "zero scalar field"
-        if self.name is not None:
-            description += " '%s'" % self.name
-        description += " on the " + str(self.domain)
+        if self._name is not None:
+            description += " '%s'" % self._name
+        description += " on the " + str(self._domain)
         return description
 
     def _new_instance(self):
@@ -1638,13 +1638,13 @@ class ZeroScalarField(ScalarField):
         Create a :class:`ZeroScalarField` instance on the same domain.
         
         """
-        return ZeroScalarField(self.domain)        
+        return ZeroScalarField(self._domain)        
 
     def copy(self):
         r"""
         Return an exact copy of ``self``.
         """
-        return ZeroScalarField(self.domain)
+        return ZeroScalarField(self._domain)
         
     def function_chart(self, chart=None):
         r""" 
@@ -1664,8 +1664,8 @@ class ZeroScalarField(ScalarField):
         
         """
         if chart is None:
-            chart = self.domain.def_chart
-        return chart.zero_function
+            chart = self._domain._def_chart
+        return chart._zero_function
  
     def expr(self, chart=None, from_chart=None):
         r""" 
@@ -1717,15 +1717,31 @@ class ZeroScalarField(ScalarField):
         from utilities import FormattedExpansion
         result = FormattedExpansion(self)
         if chart is None:
-            chart = self.domain.def_chart
-        if self.name is None:
-            result.txt = repr(chart[:]) + " |--> 0"
+            result.txt = ""
+            result.latex = r"\begin{array}{l}"
+            for chart1 in self._domain._atlas:
+                try:
+                    result.txt += repr(self.view(chart1)) + "\n"
+                    result.latex += latex(self.view(chart1)) + r"\\"
+                except (TypeError, ValueError):
+                    pass
+            result.txt = result.txt[:-1]
+            result.latex = result.latex[:-2] + r"\end{array}"
+            return result
+
+        if self._name is None:
+            result.txt = "on " + chart._domain._name + ": " + \
+                         repr(chart[:]) + " |--> 0"
         else:
-            result.txt = self.name + ": " + repr(chart[:]) + " |--> 0"
-        if self.latex_name is None:
-            result.latex = latex(chart[:]) + r"\mapsto 0"
+            result.txt = self._name + " on " + chart._domain._name + ": " +  \
+                         repr(chart[:]) + " |--> 0"
+        if self._latex_name is None:
+            result.latex = r"\mbox{on}\ " + latex(chart._domain) + ":\ " + \
+                           latex(chart[:]) + r"\mapsto 0"
         else:
-            result.latex = latex(self) + ":\ " + latex(chart[:]) + r"\mapsto 0"
+            result.latex = latex(self) + r"\ \mbox{on}\ " + \
+                           latex(chart._domain) + ":\ " + latex(chart[:]) + \
+                           r"\mapsto 0"
         return result
 
     def __call__(self, p):
@@ -1882,21 +1898,21 @@ class ZeroScalarField(ScalarField):
             # A new computation is necessary:
             if chart is None:
                 chart = self.pick_a_chart()
-            n = self.manifold.dim
-            si = self.manifold.sindex
+            n = self._manifold._dim
+            si = self._manifold._sindex
             dc = Components(chart._frame, 1)
             for i in range(n):      #!# Not necessary if the Components are  
                 dc[i+si] = 0        #!# initialized to zero
             
-            if self.name is None:
+            if self._name is None:
                 name_r = None
             else:
-                name_r = 'd' + self.name
-            if self.latex_name is None:
+                name_r = 'd' + self._name
+            if self._latex_name is None:
                 latex_name_r = None
             else:
-                latex_name_r = r'\mathrm{d}' + self.latex_name
-            self._exterior_derivative = OneForm(self.domain, name_r, latex_name_r)
-            self._exterior_derivative.components[chart._frame] = dc
+                latex_name_r = r'\mathrm{d}' + self._latex_name
+            self._exterior_derivative = OneForm(self._domain, name_r, latex_name_r)
+            self._exterior_derivative._components[chart._frame] = dc
         return self._exterior_derivative
 

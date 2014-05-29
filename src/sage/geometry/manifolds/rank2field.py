@@ -66,9 +66,9 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
     
         sage: t.parent()
         free module TF^(0,2)(M) of type-(0,2) tensors fields on the 3-dimensional manifold 'M'
-        sage: t.tensor_rank
+        sage: t._tensor_rank
         2
-        sage: t.tensor_type
+        sage: t._tensor_type
         (0, 2)
 
     The LaTeX symbol is deduced from the name or can be specified when creating
@@ -156,8 +156,8 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
         FreeModuleSymBilinForm.__init__(self, vector_field_module, name=name, 
                                         latex_name=latex_name)
         # TensorFieldParal attributes:
-        self.domain = vector_field_module.domain
-        self.ambient_domain = vector_field_module.ambient_domain
+        self._domain = vector_field_module._domain
+        self._ambient_domain = vector_field_module._ambient_domain
         # Initialization of derived quantities:
         TensorFieldParal._init_derived(self) 
 
@@ -166,15 +166,15 @@ class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
         String representation of the object.
         """
         description = "field of symmetric bilinear forms "
-        if self.name is not None:
-            description += "'%s' " % self.name
+        if self._name is not None:
+            description += "'%s' " % self._name
         return self._final_repr(description)
         
     def _new_instance(self):
         r"""
         Create a :class:`SymBilinFormFieldParal` instance on the same domain. 
         """
-        return SymBilinFormFieldParal(self.fmodule)
+        return SymBilinFormFieldParal(self._fmodule)
 
     def _del_derived(self):
         r"""
@@ -218,9 +218,9 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
     
         sage: t.parent()
         free module TF^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
-        sage: t.tensor_rank
+        sage: t._tensor_rank
         2
-        sage: t.tensor_type
+        sage: t._tensor_type
         (1, 1)
     
     Components with respect to a given frame::
@@ -263,8 +263,8 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
         FreeModuleEndomorphism.__init__(self, vector_field_module, name=name, 
                                         latex_name=latex_name)
         # TensorFieldParal attributes:
-        self.domain = vector_field_module.domain
-        self.ambient_domain = vector_field_module.ambient_domain
+        self._domain = vector_field_module._domain
+        self._ambient_domain = vector_field_module._ambient_domain
         # Initialization of derived quantities:
         TensorFieldParal._init_derived(self) 
 
@@ -273,15 +273,15 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
         String representation of the object.
         """
         description = "field of endomorphisms "
-        if self.name is not None:
-            description += "'%s' " % self.name
+        if self._name is not None:
+            description += "'%s' " % self._name
         return self._final_repr(description)
         
     def _new_instance(self):
         r"""
         Create a :class:`EndomorphismFieldParal` instance on the same domain.
         """
-        return EndomorphismFieldParal(self.fmodule)
+        return EndomorphismFieldParal(self._fmodule)
 
     def _del_derived(self):
         r"""
@@ -347,8 +347,8 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
         FreeModuleAutomorphism.__init__(self, vector_field_module, name=name, 
                                         latex_name=latex_name)
         # TensorFieldParal attributes:
-        self.domain = vector_field_module.domain
-        self.ambient_domain = vector_field_module.ambient_domain
+        self._domain = vector_field_module._domain
+        self._ambient_domain = vector_field_module._ambient_domain
         # Initialization of derived quantities:
         TensorFieldParal._init_derived(self) 
 
@@ -357,8 +357,8 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
         String representation of the object.
         """
         description = "field of tangent-space automorphisms "
-        if self.name is not None:
-            description += "'%s' " % self.name
+        if self._name is not None:
+            description += "'%s' " % self._name
         return self._final_repr(description)
         
     def _del_derived(self):
@@ -374,7 +374,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
         r"""
         Create a :class:`AutomorphismFieldParal` instance on the same domain.
         """
-        return AutomorphismFieldParal(self.fmodule)
+        return AutomorphismFieldParal(self._fmodule)
 
     def inverse(self):
         r"""
@@ -385,36 +385,36 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
         from vectorframe import CoordFrame
         from utilities import simplify_chain
         if self._inverse is None:
-            if self.name is None:
+            if self._name is None:
                 inv_name = None
             else:
-                inv_name = self.name  + '^(-1)'
-            if self.latex_name is None:
+                inv_name = self._name  + '^(-1)'
+            if self._latex_name is None:
                 inv_latex_name = None
             else:
-                inv_latex_name = self.latex_name + r'^{-1}'
-            fmodule = self.fmodule
-            si = fmodule.sindex ; nsi = fmodule._rank + si
+                inv_latex_name = self._latex_name + r'^{-1}'
+            fmodule = self._fmodule
+            si = fmodule._sindex ; nsi = fmodule._rank + si
             self._inverse = AutomorphismFieldParal(fmodule, name=inv_name, 
                                                    latex_name=inv_latex_name)
-            for frame in self.components:
+            for frame in self._components:
                 if isinstance(frame, CoordFrame):
-                    chart = frame.chart
+                    chart = frame._chart
                 else:
-                    chart = self.domain.def_chart #!# to be improved
+                    chart = self._domain._def_chart #!# to be improved
                 try:
                     mat_self = matrix(
-                              [[self.comp(frame)[i, j, chart].express
+                              [[self.comp(frame)[i, j, chart]._express
                               for j in range(si, nsi)] for i in range(si, nsi)])
                 except (KeyError, ValueError):
                     continue
                 mat_inv = mat_self.inverse()
-                cinv = Components(fmodule.ring, frame, 2, start_index=si,
-                                  output_formatter=fmodule.output_formatter)
+                cinv = Components(fmodule._ring, frame, 2, start_index=si,
+                                  output_formatter=fmodule._output_formatter)
                 for i in range(si, nsi):
                     for j in range(si, nsi):
                         cinv[i, j] = {chart: simplify_chain(mat_inv[i-si,j-si])}
-                self._inverse.components[frame] = cinv
+                self._inverse._components[frame] = cinv
         return self._inverse
 
 
@@ -516,8 +516,8 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         FreeModuleIdentityMap.__init__(self, vector_field_module, name=name, 
                                        latex_name=latex_name)
         # TensorFieldParal attributes:
-        self.domain = vector_field_module.domain
-        self.ambient_domain = vector_field_module.ambient_domain
+        self._domain = vector_field_module._domain
+        self._ambient_domain = vector_field_module._ambient_domain
         # Initialization of derived quantities:
         TensorFieldParal._init_derived(self) 
 
@@ -526,15 +526,15 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         String representation of the object.
         """
         description = "field of tangent-space identity maps "
-        if self.name is not None:
-            description += "'%s' " % self.name
+        if self._name is not None:
+            description += "'%s' " % self._name
         return self._final_repr(description)
 
     def _new_instance(self):
         r"""
         Create a :class:`IdentityMapParal` instance on the same domain.
         """
-        return IdentityMapParal(self.fmodule)
+        return IdentityMapParal(self._fmodule)
 
     def _del_derived(self):
         r"""

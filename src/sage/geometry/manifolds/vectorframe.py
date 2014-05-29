@@ -48,7 +48,7 @@ EXAMPLES:
 
     The elements of a vector frame are vector fields on the manifold::
     
-        sage: e.vec
+        sage: e._vec
         (vector field 'e_0' on the 3-dimensional manifold 'M', vector field 'e_1' on the 3-dimensional manifold 'M', vector field 'e_2' on the 3-dimensional manifold 'M')   
         
     Each element can be accessed by its index::
@@ -61,7 +61,7 @@ EXAMPLES:
         sage: M = Manifold(3, 'M', start_index=1)
         sage: c_xyz.<x,y,z> = M.chart()
         sage: e = M.vector_frame('e')              
-        sage: e.vec
+        sage: e._vec
         (vector field 'e_1' on the 3-dimensional manifold 'M', vector field 'e_2' on the 3-dimensional manifold 'M', vector field 'e_3' on the 3-dimensional manifold 'M')
         sage: e[1], e[2], e[3]
         (vector field 'e_1' on the 3-dimensional manifold 'M', vector field 'e_2' on the 3-dimensional manifold 'M', vector field 'e_3' on the 3-dimensional manifold 'M')
@@ -209,11 +209,11 @@ class VectorFrame(FreeModuleBasis):
     """
     def __init__(self, vector_field_module, symbol, latex_symbol=None,
                  from_frame=None):
-        self.domain = vector_field_module.domain
-        self.ambient_domain = vector_field_module.ambient_domain
-        self.dest_map = vector_field_module.dest_map
-        self.from_frame = from_frame
-        self.manifold = self.domain.manifold
+        self._domain = vector_field_module._domain
+        self._ambient_domain = vector_field_module._ambient_domain
+        self._dest_map = vector_field_module._dest_map
+        self._from_frame = from_frame
+        self._manifold = self._domain._manifold
         if symbol is None:
             if from_frame is None:
                 raise TypeError("Some frame symbol must be provided.") 
@@ -222,40 +222,40 @@ class VectorFrame(FreeModuleBasis):
                                  symbol, latex_symbol=latex_symbol)
         # Redefinition of the name and the LaTeX name:
         if from_frame is None:
-            self.name = "(" + self.domain.name + ", " + self.name + ")"
-            self.latex_name = r"\left(" + self.domain.latex_name + ", " + \
-                          self.latex_name + r"\right)"
+            self._name = "(" + self._domain._name + ", " + self._name + ")"
+            self._latex_name = r"\left(" + self._domain._latex_name + ", " + \
+                          self._latex_name + r"\right)"
         else:
-            if not from_frame.domain.is_subdomain(self.dest_map.codomain):
+            if not from_frame._domain.is_subdomain(self._dest_map._codomain):
                 raise ValueError("The domain of the frame 'from_frame' is " + 
                                  "not included in the codomain of the " + 
                                  "destination map.")
-            n = self.fmodule.rank()
+            n = self._fmodule.rank()
             for i in range(n):
-                self.vec[i].name = from_frame.vec[i].name
-                self.vec[i].latex_name = from_frame.vec[i].latex_name
-            self.name = "(" + self.domain.name + ", (" + \
-                        ",".join([self.vec[i].name for i in range(n)]) + "))"
-            self.latex_name = r"\left(" + self.domain.latex_name + \
+                self._vec[i]._name = from_frame._vec[i]._name
+                self._vec[i]._latex_name = from_frame._vec[i]._latex_name
+            self._name = "(" + self._domain._name + ", (" + \
+                        ",".join([self._vec[i]._name for i in range(n)]) + "))"
+            self._latex_name = r"\left(" + self._domain._latex_name + \
                         r" ,\left(" + \
-                        ",".join([self.vec[i].latex_name for i in range(n)])+ \
+                        ",".join([self._vec[i]._latex_name for i in range(n)])+ \
                         r"\right)\right)"
-            self.symbol = from_frame.symbol
-            self.latex_symbol = from_frame.latex_symbol
+            self._symbol = from_frame._symbol
+            self._latex_symbol = from_frame._latex_symbol
         # The frame is added to the domain's set of frames, as well as to all 
         # the superdomains' sets of frames; moreover the first defined frame 
         # is considered as the default one
-        for sd in self.domain.superdomains:
+        for sd in self._domain._superdomains:
             for other in sd._frames:
                 if repr(self) == repr(other):
                     raise ValueError("The " + str(self) + " already exist on" +
                                      " the " + str(sd))
             sd._frames.append(self)
-            if sd.def_frame is None: 
-                sd.def_frame = self
-        if self.dest_map is None:
+            if sd._def_frame is None: 
+                sd._def_frame = self
+        if self._dest_map is None:
             # The frame is added to the list of the domain's covering frames:
-            self.domain._set_covering_frame(self)
+            self._domain._set_covering_frame(self)
         #
         # Dual coframe 
         self._coframe = self.dual_basis()  # self._coframe = a shortcut for 
@@ -270,10 +270,10 @@ class VectorFrame(FreeModuleBasis):
         # restriction of:
         self.superframes = set([self]) 
         #
-        self.restrictions = {} # dict. of the restrictions of self to
-                               # subdomains of self.domain, with the 
+        self._restrictions = {} # dict. of the restrictions of self to
+                               # subdomains of self._domain, with the 
                                # subdomains as keys
-        # NB: set(self.restrictions.values()) is identical to self.subframes
+        # NB: set(self._restrictions.values()) is identical to self.subframes
         
 
     ###### Methods that must be redefined by derived classes of FreeModuleBasis ######
@@ -282,9 +282,9 @@ class VectorFrame(FreeModuleBasis):
         r"""
         String representation of the object.
         """
-        description = "vector frame " + self.name
-        if self.dest_map is not None:
-            description += " with values on the " + str(self.dest_map.codomain)
+        description = "vector frame " + self._name
+        if self._dest_map is not None:
+            description += " with values on the " + str(self._dest_map._codomain)
         return description
         
 
@@ -298,7 +298,7 @@ class VectorFrame(FreeModuleBasis):
           ``self``
         
         """
-        return CoFrame(self, self.symbol, latex_symbol=self.latex_symbol)
+        return CoFrame(self, self._symbol, latex_symbol=self._latex_symbol)
 
     def _new_instance(self, symbol, latex_symbol=None):
         r"""
@@ -318,7 +318,7 @@ class VectorFrame(FreeModuleBasis):
         - instance of :class:`VectorFrame`
                 
         """
-        return VectorFrame(self.fmodule, symbol, latex_symbol=latex_symbol)
+        return VectorFrame(self._fmodule, symbol, latex_symbol=latex_symbol)
         
     ###### End of methods redefined by derived classes ######
 
@@ -376,7 +376,7 @@ class VectorFrame(FreeModuleBasis):
             True
             sage: a is rot
             False
-            sage: a.components
+            sage: a._components
             {vector frame (R^2, (e_0,e_1)): 2-indices components w.r.t. vector frame (R^2, (e_0,e_1)),
             vector frame (R^2, (n_0,n_1)): 2-indices components w.r.t. vector frame (R^2, (n_0,n_1))}
             sage: a.comp(n)[:]
@@ -398,16 +398,16 @@ class VectorFrame(FreeModuleBasis):
         """
         the_new_frame = self.new_basis(change_of_frame, symbol, 
                                        latex_symbol=latex_symbol)
-        for sdom in self.domain.superdomains:
+        for sdom in self._domain._superdomains:
             sdom._frame_changes[(self, the_new_frame)] = \
-                              self.fmodule.basis_changes[(self, the_new_frame)]
+                              self._fmodule._basis_changes[(self, the_new_frame)]
             sdom._frame_changes[(the_new_frame, self)] = \
-                              self.fmodule.basis_changes[(the_new_frame, self)]
+                              self._fmodule._basis_changes[(the_new_frame, self)]
         return the_new_frame
         
     def restrict(self, subdomain):
         r"""
-        Return the restriction of ``self`` to some subdomain of ``self.domain``.
+        Return the restriction of ``self`` to some subdomain of ``self._domain``.
         
         If the restriction has not been defined yet, it is constructed here.
 
@@ -451,30 +451,30 @@ class VectorFrame(FreeModuleBasis):
             True
 
         """
-        if subdomain == self.domain:
+        if subdomain == self._domain:
             return self
-        if subdomain not in self.restrictions:
-            if not subdomain.is_subdomain(self.domain):
+        if subdomain not in self._restrictions:
+            if not subdomain.is_subdomain(self._domain):
                 raise ValueError("The provided domain is not a subdomain of " + 
                                  "the current frame's domain.")
-            if self.dest_map is None:
+            if self._dest_map is None:
                 sdest_map = None
             else:
-                sdest_map = self.dest_map.restrict(subdomain)
+                sdest_map = self._dest_map.restrict(subdomain)
             res = VectorFrame(subdomain.vector_field_module(sdest_map, 
                                                             force_free=True), 
-                              self.symbol, latex_symbol=self.latex_symbol)
-            n = self.fmodule.rank()
+                              self._symbol, latex_symbol=self._latex_symbol)
+            n = self._fmodule.rank()
             new_vectors = list()
             for i in range(n):
-                new_vectors.append( self.vec[i].restrict(subdomain) )
-            res.vec = tuple(new_vectors)
+                new_vectors.append( self._vec[i].restrict(subdomain) )
+            res._vec = tuple(new_vectors)
             # Update of superframes and subframes:
             res.superframes.update(self.superframes)
             for sframe in self.superframes:
                 sframe.subframes.add(res)
-                sframe.restrictions[subdomain] = res # includes sframe = self
-        return self.restrictions[subdomain]
+                sframe._restrictions[subdomain] = res # includes sframe = self
+        return self._restrictions[subdomain]
     
     def structure_coef(self):
         r"""
@@ -529,19 +529,19 @@ class VectorFrame(FreeModuleBasis):
         """
         from sage.tensor.modules.comp import CompWithSym
         if self._structure_coef is None:
-            fmodule = self.fmodule
-            self._structure_coef = CompWithSym(self.fmodule.ring, self, 3, 
-                                                    start_index=fmodule.sindex, 
-                                     output_formatter=fmodule.output_formatter,
+            fmodule = self._fmodule
+            self._structure_coef = CompWithSym(self._fmodule._ring, self, 3, 
+                                                    start_index=fmodule._sindex, 
+                                     output_formatter=fmodule._output_formatter,
                                                                  antisym=(1,2))
-            si = fmodule.sindex
+            si = fmodule._sindex
             nsi = si + fmodule.rank()
             for k in range(si,nsi):
-                ce_k = self._coframe.form[k-si]
+                ce_k = self._coframe._form[k-si]
                 for i in range(si, nsi):
-                    e_i = self.vec[i-si]
+                    e_i = self._vec[i-si]
                     for j in range(i+1, nsi):
-                        e_j = self.vec[j-si]
+                        e_j = self._vec[j-si]
                         self._structure_coef[[k,i,j]] = ce_k(e_j.lie_der(e_i))
         return self._structure_coef
             
@@ -583,26 +583,26 @@ class CoordFrame(VectorFrame):
         from chart import Chart
         if not isinstance(chart, Chart):
             raise TypeError("The first argument must be a chart.")
-        self.chart = chart
+        self._chart = chart
         VectorFrame.__init__(self, 
-                             chart.domain.vector_field_module(force_free=True), 
+                             chart._domain.vector_field_module(force_free=True), 
                              symbol='X') 
         # In the above:
         # - force_free=True ensures that a free module is constructed in case
-        #   it is the first call to the vector field module on chart.domain
+        #   it is the first call to the vector field module on chart._domain
         # - 'X' is a provisory symbol
-        n = self.manifold.dim
+        n = self._manifold._dim
         for i in range(n):
-            self.vec[i].name = "d/d" + str(self.chart.xx[i])
-            self.vec[i].latex_name = r"\frac{\partial}{\partial" + \
-                                     latex(self.chart.xx[i]) + r"}"
-        self.name = "(" + self.domain.name + ", (" + \
-                    ",".join([self.vec[i].name for i in range(n)]) + "))"
-        self.latex_name = r"\left(" + self.domain.latex_name + r" ,\left(" + \
-                       ",".join([self.vec[i].latex_name for i in range(n)])+ \
+            self._vec[i]._name = "d/d" + str(self._chart._xx[i])
+            self._vec[i]._latex_name = r"\frac{\partial}{\partial" + \
+                                     latex(self._chart._xx[i]) + r"}"
+        self._name = "(" + self._domain._name + ", (" + \
+                    ",".join([self._vec[i]._name for i in range(n)]) + "))"
+        self._latex_name = r"\left(" + self._domain._latex_name + r" ,\left(" + \
+                       ",".join([self._vec[i]._latex_name for i in range(n)])+ \
                        r"\right)\right)"
-        self.symbol = self.name
-        self.latex_symbol = self.latex_name
+        self._symbol = self._name
+        self._latex_symbol = self._latex_name
 
 
     ###### Methods that must be redefined by derived classes of FreeModuleBasis ######
@@ -611,7 +611,7 @@ class CoordFrame(VectorFrame):
         r"""
         String representation of the object.
         """
-        return "coordinate frame " + self.name
+        return "coordinate frame " + self._name
 
     def _init_dual_basis(self):
         r""" 
@@ -666,9 +666,9 @@ class CoordFrame(VectorFrame):
         """
         from sage.tensor.modules.comp import CompWithSym
         if self._structure_coef is None:
-            self._structure_coef = CompWithSym(self.fmodule.ring, self, 3, 
-                                               start_index=self.fmodule.sindex, 
-                                output_formatter=self.fmodule.output_formatter,
+            self._structure_coef = CompWithSym(self._fmodule._ring, self, 3, 
+                                               start_index=self._fmodule._sindex, 
+                                output_formatter=self._fmodule._output_formatter,
                                                                  antisym=(1,2))
             # A just created CompWithSym is zero
         return self._structure_coef
@@ -736,17 +736,17 @@ class CoFrame(FreeModuleCoBasis):
 
     """
     def __init__(self, frame, symbol, latex_symbol=None):
-        self.domain = frame.domain
-        self.manifold = self.domain.manifold
+        self._domain = frame._domain
+        self._manifold = self._domain._manifold
         FreeModuleCoBasis.__init__(self, frame, symbol, 
                                    latex_symbol=latex_symbol)
         # Redefinition of the name and the LaTeX name:
-        self.name = "(" + self.domain.name + ", " + self.name + ")"
-        self.latex_name = r"\left(" + self.domain.latex_name + ", " + \
-                          self.latex_name + r"\right)"
+        self._name = "(" + self._domain._name + ", " + self._name + ")"
+        self._latex_name = r"\left(" + self._domain._latex_name + ", " + \
+                          self._latex_name + r"\right)"
         # The coframe is added to the domain's set of coframes, as well as to 
         # all the superdomains' sets of coframes
-        for sd in self.domain.superdomains:
+        for sd in self._domain._superdomains:
             for other in sd._coframes:
                 if repr(self) == repr(other):
                     raise ValueError("The " + str(self) + " already exist on" +
@@ -758,7 +758,7 @@ class CoFrame(FreeModuleCoBasis):
         r"""
         String representation of the object.
         """
-        return "coframe " + self.name
+        return "coframe " + self._name
 
 
 #******************************************************************************
@@ -827,20 +827,20 @@ class CoordCoFrame(CoFrame):
         if not isinstance(coord_frame, CoordFrame):
             raise TypeError("The first argument must be a coordinate frame.")
         CoFrame.__init__(self, coord_frame, 'X') # 'X' = provisory symbol
-        self.chart = coord_frame.chart
-        n = self.manifold.dim
+        self._chart = coord_frame._chart
+        n = self._manifold._dim
         for i in range(n):
-            self.form[i].name = "d" + str(self.chart.xx[i])
-            self.form[i].latex_name = r"\mathrm{d}" + latex(self.chart.xx[i])
-        self.name = "(" + self.domain.name + ", (" + \
-                    ",".join([self.form[i].name for i in range(n)]) + "))"
-        self.latex_name = r"\left(" + self.domain.latex_name + \
+            self._form[i]._name = "d" + str(self._chart._xx[i])
+            self._form[i]._latex_name = r"\mathrm{d}" + latex(self._chart._xx[i])
+        self._name = "(" + self._domain._name + ", (" + \
+                    ",".join([self._form[i]._name for i in range(n)]) + "))"
+        self._latex_name = r"\left(" + self._domain._latex_name + \
                           r" ,\left(" + \
-                ",".join([self.form[i].latex_name for i in range(n)])+ \
+                ",".join([self._form[i]._latex_name for i in range(n)])+ \
                           r"\right)\right)"
 
     def _repr_(self):
         r"""
         String representation of the object.
         """
-        return "coordinate coframe " + self.name 
+        return "coordinate coframe " + self._name 

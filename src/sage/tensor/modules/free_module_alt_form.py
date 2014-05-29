@@ -54,10 +54,10 @@ class FreeModuleAltForm(FreeModuleTensor):
         String representation of the object.
         """
         description = "alternating form "
-        if self.name is not None:
-            description += self.name + " " 
-        description += "of degree " + str(self.tensor_rank) + " on the " + \
-                       str(self.fmodule)
+        if self._name is not None:
+            description += self._name + " " 
+        description += "of degree " + str(self._tensor_rank) + " on the " + \
+                       str(self._fmodule)
         return description
 
     def _init_derived(self):
@@ -78,7 +78,7 @@ class FreeModuleAltForm(FreeModuleTensor):
         the same degree.
         
         """
-        return FreeModuleAltForm(self.fmodule, self.tensor_rank)
+        return FreeModuleAltForm(self._fmodule, self._tensor_rank)
 
     def _new_comp(self, basis): 
         r"""
@@ -87,21 +87,21 @@ class FreeModuleAltForm(FreeModuleTensor):
         This method, which is already implemented in 
         :meth:`FreeModuleTensor._new_comp`, is redefined here for efficiency
         """
-        fmodule = self.fmodule  # the base free module
-        if self.tensor_rank == 1: 
-            return Components(fmodule.ring, basis, 1,
-                              start_index=fmodule.sindex,
-                              output_formatter=fmodule.output_formatter)
+        fmodule = self._fmodule  # the base free module
+        if self._tensor_rank == 1: 
+            return Components(fmodule._ring, basis, 1,
+                              start_index=fmodule._sindex,
+                              output_formatter=fmodule._output_formatter)
         else:
-            return CompFullyAntiSym(fmodule.ring, basis, self.tensor_rank, 
-                                    start_index=fmodule.sindex,
-                                    output_formatter=fmodule.output_formatter)
+            return CompFullyAntiSym(fmodule._ring, basis, self._tensor_rank, 
+                                    start_index=fmodule._sindex,
+                                    output_formatter=fmodule._output_formatter)
 
     def degree(self):
         r"""
         Return the degree of the alternating form. 
         """
-        return self.tensor_rank
+        return self._tensor_rank
 
 
     def view(self, basis=None, format_spec=None):
@@ -118,7 +118,7 @@ class FreeModuleAltForm(FreeModuleTensor):
           which the alternating form is expanded; if none is provided, the 
           module's default basis is assumed
         - ``format_spec`` -- (default: None) format specification passed to 
-          ``self.fmodule.output_formatter`` to format the output.
+          ``self._fmodule._output_formatter`` to format the output.
           
         EXAMPLES:
         
@@ -195,7 +195,7 @@ class FreeModuleAltForm(FreeModuleTensor):
         from sage.misc.latex import latex
         from format_utilities import is_atomic, FormattedExpansion
         if basis is None:
-            basis = self.fmodule.def_basis
+            basis = self._fmodule._def_basis
         cobasis = basis.dual_basis()
         comp = self.comp(basis)
         terms_txt = []
@@ -206,8 +206,8 @@ class FreeModuleAltForm(FreeModuleTensor):
             if coef != 0:
                 bases_txt = []
                 bases_latex = []
-                for k in range(self.tensor_rank):
-                    bases_txt.append(cobasis[ind[k]].name)
+                for k in range(self._tensor_rank):
+                    bases_txt.append(cobasis[ind[k]]._name)
                     bases_latex.append(latex(cobasis[ind[k]]))
                 basis_term_txt = "/\\".join(bases_txt)    
                 basis_term_latex = r"\wedge ".join(bases_latex)    
@@ -249,11 +249,11 @@ class FreeModuleAltForm(FreeModuleTensor):
                 else:
                     expansion_latex += "+" + term
         result = FormattedExpansion(self)            
-        if self.name is None:
+        if self._name is None:
             result.txt = expansion_txt
         else:
-            result.txt = self.name + " = " + expansion_txt
-        if self.latex_name is None:
+            result.txt = self._name + " = " + expansion_txt
+        if self._latex_name is None:
             result.latex = expansion_latex
         else:
             result.latex = latex(self) + " = " + expansion_latex
@@ -328,43 +328,43 @@ class FreeModuleAltForm(FreeModuleTensor):
         if not isinstance(other, FreeModuleAltForm):
             raise TypeError("The second argument for the exterior product " + 
                             "must be an alternating form.")
-        if other.tensor_rank == 0:
+        if other._tensor_rank == 0:
             return other*self
-        if self.tensor_rank == 0:
+        if self._tensor_rank == 0:
             return self*other
-        fmodule = self.fmodule
+        fmodule = self._fmodule
         basis = self.common_basis(other)
         if basis is None:
             raise ValueError("No common basis for the exterior product.")
-        rank_r = self.tensor_rank + other.tensor_rank
-        cmp_s = self.components[basis]
-        cmp_o = other.components[basis]
-        cmp_r = CompFullyAntiSym(fmodule.ring, basis, rank_r, 
-                                 start_index=fmodule.sindex,
-                                 output_formatter=fmodule.output_formatter)
+        rank_r = self._tensor_rank + other._tensor_rank
+        cmp_s = self._components[basis]
+        cmp_o = other._components[basis]
+        cmp_r = CompFullyAntiSym(fmodule._ring, basis, rank_r, 
+                                 start_index=fmodule._sindex,
+                                 output_formatter=fmodule._output_formatter)
         for ind_s, val_s in cmp_s._comp.items():
             for ind_o, val_o in cmp_o._comp.items():
                 ind_r = ind_s + ind_o
                 if len(ind_r) == len(set(ind_r)): # all indices are different
                     cmp_r[[ind_r]] += val_s * val_o
         result = fmodule.alternating_form(rank_r)
-        result.components[basis] = cmp_r
-        if self.name is not None and other.name is not None:
-            sname = self.name
-            oname = other.name
+        result._components[basis] = cmp_r
+        if self._name is not None and other._name is not None:
+            sname = self._name
+            oname = other._name
             if not is_atomic(sname):
                 sname = '(' + sname + ')'
             if not is_atomic(oname):
                 oname = '(' + oname + ')'
-            result.name = sname + '/\\' + oname
-        if self.latex_name is not None and other.latex_name is not None:
-            slname = self.latex_name
-            olname = other.latex_name
+            result._name = sname + '/\\' + oname
+        if self._latex_name is not None and other._latex_name is not None:
+            slname = self._latex_name
+            olname = other._latex_name
             if not is_atomic(slname):
                 slname = '(' + slname + ')'
             if not is_atomic(olname):
                 olname = '(' + olname + ')'
-            result.latex_name = slname + r'\wedge ' + olname
+            result._latex_name = slname + r'\wedge ' + olname
         return result
 
 
@@ -429,7 +429,7 @@ class FreeModuleLinForm(FreeModuleAltForm):
 
     As such, it is a tensor of type (0,1)::
 
-        sage: a.tensor_type
+        sage: a._tensor_type
         (0, 1)
 
     """
@@ -442,9 +442,9 @@ class FreeModuleLinForm(FreeModuleAltForm):
         String representation of the object.
         """
         description = "linear form "
-        if self.name is not None:
-            description += self.name + " " 
-        description += "on the " + str(self.fmodule)
+        if self._name is not None:
+            description += self._name + " " 
+        description += "on the " + str(self._fmodule)
         return description
 
     def _new_instance(self):
@@ -452,7 +452,7 @@ class FreeModuleLinForm(FreeModuleAltForm):
         Create a :class:`FreeModuleLinForm` instance on the same module. 
         
         """
-        return FreeModuleLinForm(self.fmodule)
+        return FreeModuleLinForm(self._fmodule)
 
 
     def _new_comp(self, basis): 
@@ -462,9 +462,9 @@ class FreeModuleLinForm(FreeModuleAltForm):
         This method, which is already implemented in 
         :meth:`FreeModuleAltForm._new_comp`, is redefined here for efficiency
         """
-        fmodule = self.fmodule  # the base free module
-        return Components(fmodule.ring, basis, 1, start_index=fmodule.sindex,
-                          output_formatter=fmodule.output_formatter)
+        fmodule = self._fmodule  # the base free module
+        return Components(fmodule._ring, basis, 1, start_index=fmodule._sindex,
+                          output_formatter=fmodule._output_formatter)
 
     def __call__(self, vector):
         r"""
@@ -485,19 +485,19 @@ class FreeModuleLinForm(FreeModuleAltForm):
         basis = self.common_basis(vector)
         if basis is None:
             raise ValueError("No common basis for the components.")
-        omega = self.components[basis]
-        vv = vector.components[basis]
+        omega = self._components[basis]
+        vv = vector._components[basis]
         resu = 0
-        for i in self.fmodule.irange():
+        for i in self._fmodule.irange():
             resu += omega[[i]]*vv[[i]]
         # Name and LaTeX symbol of the output:
-        if hasattr(resu, 'name'): 
-            if self.name is not None and vector.name is not None:
-                resu.name = self.name + "(" + vector.name + ")"
-        if hasattr(resu, 'latex_name'): 
-            if self.latex_name is not None and vector.latex_name is not None:
-                resu.latex_name = self.latex_name + r"\left(" + \
-                                  vector.latex_name + r"\right)"
+        if hasattr(resu, '_name'): 
+            if self._name is not None and vector._name is not None:
+                resu._name = self._name + "(" + vector._name + ")"
+        if hasattr(resu, '_latex_name'): 
+            if self._latex_name is not None and vector._latex_name is not None:
+                resu._latex_name = self._latex_name + r"\left(" + \
+                                  vector._latex_name + r"\right)"
         return resu
 
 

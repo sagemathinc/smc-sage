@@ -82,7 +82,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     
         sage: a.parent()
         free module TF^(0,2)(M) of type-(0,2) tensors fields on the 4-dimensional manifold 'M'
-        sage: a.tensor_type  
+        sage: a._tensor_type  
         (0, 2)
 
     It is antisymmetric, its components being instances of class 
@@ -242,8 +242,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         FreeModuleAltForm.__init__(self, vector_field_module, degree, 
                                    name=name, latex_name=latex_name)
         # TensorFieldParal attributes:
-        self.domain = vector_field_module.domain
-        self.ambient_domain = vector_field_module.ambient_domain
+        self._domain = vector_field_module._domain
+        self._ambient_domain = vector_field_module._ambient_domain
         # initialization of derived quantities:
         DiffFormParal._init_derived(self) 
 
@@ -251,9 +251,9 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         r"""
         Special Sage function for the string representation of the object.
         """
-        description = str(self.tensor_rank) + "-form "
-        if self.name is not None:
-            description += "'%s' " % self.name
+        description = str(self._tensor_rank) + "-form "
+        if self._name is not None:
+            description += "'%s' " % self._name
         return self._final_repr(description)
 
     def _new_instance(self):
@@ -261,7 +261,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         Create a :class:`DiffFormParal` instance of the same degree and on the
         same domain. 
         """
-        return DiffFormParal(self.fmodule, self.tensor_rank)
+        return DiffFormParal(self._fmodule, self._tensor_rank)
 
     def _init_derived(self):
         r"""
@@ -317,34 +317,34 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         from vectorframe import CoordFrame
         if self._exterior_derivative is None:
             # A new computation is necessary:
-            fmodule = self.fmodule # shortcut
-            rname = format_unop_txt('d', self.name)
-            rlname = format_unop_latex(r'\mathrm{d}', self.latex_name)
+            fmodule = self._fmodule # shortcut
+            rname = format_unop_txt('d', self._name)
+            rlname = format_unop_latex(r'\mathrm{d}', self._latex_name)
             self._exterior_derivative = DiffFormParal(fmodule, 
-                                                      self.tensor_rank+1, 
+                                                      self._tensor_rank+1, 
                                                       name=rname, 
                                                       latex_name=rlname)
             # 1/ List of all coordinate frames in which the components of self
             # are known
             coord_frames = []
-            for frame in self.components:
+            for frame in self._components:
                 if isinstance(frame, CoordFrame):
                     coord_frames.append(frame)
             if coord_frames == []:
                 # A coordinate frame is searched, at the price of a change of
                 # frame, priveleging the frame of the domain's default chart
-                dom = self.domain
-                def_coordf = dom.def_chart._frame
-                for frame in self.components:
+                dom = self._domain
+                def_coordf = dom._def_chart._frame
+                for frame in self._components:
                     if (frame, def_coordf) in dom._frame_changes:
                         self.comp(def_coordf, from_basis=frame)
                         coord_frames = [def_coordf]
                         break
                 if coord_frames == []:
                     for chart in dom._atlas:
-                        if chart != dom.def_chart: # the case def_chart is treated above
+                        if chart != dom._def_chart: # the case def_chart is treated above
                             coordf = chart._frame
-                            for frame in self.components:
+                            for frame in self._components:
                                 if (frame, coordf) in dom._frame_changes:
                                     self.comp(coordf, from_basis=frame)
                                     coord_frames[coordf]
@@ -353,12 +353,12 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
                                 break   
             # 2/ The computation:
             for frame in coord_frames:
-                chart = frame.chart
-                sc = self.components[frame]
-                dc = CompFullyAntiSym(fmodule.ring, frame, 
-                                      self.tensor_rank+1, 
-                                      start_index=fmodule.sindex,
-                                     output_formatter=fmodule.output_formatter)
+                chart = frame._chart
+                sc = self._components[frame]
+                dc = CompFullyAntiSym(fmodule._ring, frame, 
+                                      self._tensor_rank+1, 
+                                      start_index=fmodule._sindex,
+                                     output_formatter=fmodule._output_formatter)
                 for ind, val in sc._comp.items():
                     for i in fmodule.irange():
                         ind_d = (i,) + ind
@@ -366,7 +366,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
                             # all indices are different
                             dc[[ind_d]] += \
                                val.function_chart(chart).diff(i).scalar_field()
-                self._exterior_derivative.components[frame] = dc
+                self._exterior_derivative._components[frame] = dc
         return self._exterior_derivative
  
     def hodge_star(self, metric):
@@ -428,7 +428,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             sage: ssf = sf.hodge_star(g) ; ssf
             scalar field '**f' on the 3-dimensional manifold 'M'
             sage: ssf.view()
-            **f: (x, y, z) |--> F(x, y, z)
+            **f on M: (x, y, z) |--> F(x, y, z)
             sage: ssf == f # must hold for a Riemannian metric
             True
             
@@ -450,7 +450,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             sage: ssf = sf.hodge_star(g) ; ssf
             scalar field '**f' on the 4-dimensional manifold 'M'
             sage: ssf.view()
-            **f: (t, x, y, z) |--> -f0
+            **f on M: (t, x, y, z) |--> -f0
             sage: ssf == -f  # must hold for a Lorentzian metric             
             True
 
@@ -527,7 +527,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         """
         from sage.functions.other import factorial
         from utilities import format_unop_txt, format_unop_latex
-        p = self.tensor_rank
+        p = self._tensor_rank
         eps = metric.volume_form(p)
         if p == 0:
             resu = self * eps
@@ -538,8 +538,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             if p > 1:
                 resu = resu / factorial(p)
         # Name and LaTeX name of the result:
-        resu.name = format_unop_txt('*', self.name)
-        resu.latex_name = format_unop_latex(r'\star ', self.latex_name)
+        resu._name = format_unop_txt('*', self._name)
+        resu._latex_name = format_unop_latex(r'\star ', self._latex_name)
         return resu
         
         
@@ -579,7 +579,7 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
         True
         sage: om.parent()
         free module TF^(0,1)(M) of type-(0,1) tensors fields on the 3-dimensional manifold 'M'
-        sage: om.tensor_type
+        sage: om._tensor_type
         (0, 1)
         
     Setting the components w.r.t. the manifold's default frame::
@@ -597,7 +597,7 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
         sage: om(v)
         scalar field 'omega(V)' on the 3-dimensional manifold 'M'
         sage: om(v).view()
-        omega(V): (x, y, z) |--> 2*x*y + (5*x - 3*y)*z
+        omega(V) on M: (x, y, z) |--> 2*x*y + (5*x - 3*y)*z
         sage: latex(om(v))
         \omega\left(V\right)
 
@@ -638,8 +638,8 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
         FreeModuleLinForm.__init__(self, vector_field_module, name=name, 
                                    latex_name=latex_name)
         # TensorFieldParal attributes:
-        self.domain = vector_field_module.domain
-        self.ambient_domain = vector_field_module.ambient_domain
+        self._domain = vector_field_module._domain
+        self._ambient_domain = vector_field_module._ambient_domain
         # initialization of derived quantities:
         DiffFormParal._init_derived(self) 
         
@@ -648,13 +648,13 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
         String representation of the object.
         """
         description = "1-form "
-        if self.name is not None:
-            description += "'%s' " % self.name
+        if self._name is not None:
+            description += "'%s' " % self._name
         return self._final_repr(description)
 
     def _new_instance(self):
         r"""
         Create a :class:`OneForm` instance on the same domain. 
         """
-        return OneFormParal(self.fmodule)
+        return OneFormParal(self._fmodule)
 

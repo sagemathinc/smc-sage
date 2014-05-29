@@ -45,12 +45,12 @@ A tensor field of type (1,1) on a 2-dimensional manifold::
     sage: c_xy.<x,y> = M.chart()
     sage: t = M.tensor_field(1, 1, 'T') ; t
     tensor field 'T' of type (1,1) on the 2-dimensional manifold 'M'
-    sage: t.tensor_rank
+    sage: t._tensor_rank
     2
 
 A just-created tensor field has no components::
 
-    sage: t.components
+    sage: t._components
     {}
 
 Components w.r.t. the manifold's default frame are created by providing the
@@ -166,13 +166,13 @@ tensor in different vector frames, are stored in the dictionary
 :attr:`components`, each item being an instance of the class 
 :class:`~sage.tensor.modules.comp.Components`::
 
-    sage: t.components
+    sage: t._components
     {coordinate frame (M, (d/dx,d/dy)): 2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy))}
-    sage: print type(t.components[c_xy.frame()])
+    sage: print type(t._components[c_xy.frame()])
     <class 'sage.tensor.modules.comp.Components'>
     sage: print type(t.comp())
     <class 'sage.tensor.modules.comp.Components'>
-    sage: t.comp() is t.components[c_xy.frame()]
+    sage: t.comp() is t._components[c_xy.frame()]
     True
 
 To set the components in a vector frame different from the manifold's 
@@ -199,7 +199,7 @@ To avoid any insconstency between the various components, the method
 :meth:`set_comp` clears the components in other frames. 
 Accordingly, the components in the frame c_xy.frame() have been deleted::
 
-    sage: t.components
+    sage: t._components
     {vector frame (M, (e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_1,e_2))}
 
 To keep the other components, one must use the method :meth:`add_comp`::
@@ -208,7 +208,7 @@ To keep the other components, one must use the method :meth:`add_comp`::
     sage: t[:] = [[1, -x], [x*y, 2]]  # by first setting the components in the frame c_xy.frame()
     sage: # We now set the components in the frame e with add_comp:
     sage: t.add_comp(e)[:] = [[x+y, 0], [y, -3*x]]
-    sage: t.components  # Both set of components are present:
+    sage: t._components  # Both set of components are present:
     {coordinate frame (M, (d/dx,d/dy)): 2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy)), vector frame (M, (e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_1,e_2))}
 
 The expansion of the tensor field in a given frame is displayed via the 
@@ -243,7 +243,7 @@ A scalar field (rank-0 tensor field)::
 
     sage: f = M.scalar_field(x*y + 2, name='f') ; f 
     scalar field 'f' on the 2-dimensional manifold 'M'
-    sage: f.tensor_type
+    sage: f._tensor_type
     (0, 0)
     
 A scalar field acts on points on the manifold::
@@ -256,7 +256,7 @@ A vector field (rank-1 contravariant tensor field)::
 
     sage: v = M.vector_field('v') ; v
     vector field 'v' on the 2-dimensional manifold 'M'
-    sage: v.tensor_type
+    sage: v._tensor_type
     (1, 0)
     sage: v[1], v[2] = -x, y
     sage: v.view()
@@ -266,7 +266,7 @@ A field of symmetric bilinear forms::
 
     sage: q = M.sym_bilin_form_field('Q') ; q
     field of symmetric bilinear forms 'Q' on the 2-dimensional manifold 'M'
-    sage: q.tensor_type
+    sage: q._tensor_type
     (0, 2)
 
 The components of a symmetric bilinear form are dealt by the subclass 
@@ -377,20 +377,20 @@ class TensorField(ModuleElement):
                  latex_name=None, sym=None, antisym=None):
         ModuleElement.__init__(self, 
                                vector_field_module.tensor_module(*tensor_type))
-        self.vmodule = vector_field_module
-        self.tensor_type = tuple(tensor_type)
-        self.tensor_rank = self.tensor_type[0] + self.tensor_type[1]
-        self.name = name
+        self._vmodule = vector_field_module
+        self._tensor_type = tuple(tensor_type)
+        self._tensor_rank = self._tensor_type[0] + self._tensor_type[1]
+        self._name = name
         if latex_name is None:
-            self.latex_name = self.name
+            self._latex_name = self._name
         else:
-            self.latex_name = latex_name
-        self.domain = vector_field_module.domain
-        self.ambient_domain = vector_field_module.ambient_domain
-        self.restrictions = {} # dict. of restrictions of self on subdomains of 
-                               # self.domain, with the subdomains as keys
+            self._latex_name = latex_name
+        self._domain = vector_field_module._domain
+        self._ambient_domain = vector_field_module._ambient_domain
+        self._restrictions = {} # dict. of restrictions of self on subdomains of 
+                               # self._domain, with the subdomains as keys
         # Treatment of symmetry declarations:
-        self.sym = []
+        self._sym = []
         if sym is not None and sym != []:
             if isinstance(sym[0], (int, Integer)):  
                 # a single symmetry is provided as a tuple -> 1-item list:
@@ -398,11 +398,11 @@ class TensorField(ModuleElement):
             for isym in sym:
                 if len(isym) > 1:
                     for i in isym:
-                        if i<0 or i>self.tensor_rank-1:
+                        if i<0 or i>self._tensor_rank-1:
                             raise IndexError("Invalid position: " + str(i) +
-                                 " not in [0," + str(self.tensor_rank-1) + "]")
-                    self.sym.append(tuple(isym))       
-        self.antisym = []
+                                 " not in [0," + str(self._tensor_rank-1) + "]")
+                    self._sym.append(tuple(isym))       
+        self._antisym = []
         if antisym is not None and antisym != []:
             if isinstance(antisym[0], (int, Integer)):  
                 # a single antisymmetry is provided as a tuple -> 1-item list:
@@ -410,15 +410,15 @@ class TensorField(ModuleElement):
             for isym in antisym:
                 if len(isym) > 1:
                     for i in isym:
-                        if i<0 or i>self.tensor_rank-1:
+                        if i<0 or i>self._tensor_rank-1:
                             raise IndexError("Invalid position: " + str(i) +
-                                " not in [0," + str(self.tensor_rank-1) + "]")
-                    self.antisym.append(tuple(isym))
+                                " not in [0," + str(self._tensor_rank-1) + "]")
+                    self._antisym.append(tuple(isym))
         # Final consistency check:
         index_list = []
-        for isym in self.sym:
+        for isym in self._sym:
             index_list += isym
-        for isym in self.antisym:
+        for isym in self._antisym:
             index_list += isym
         if len(index_list) != len(set(index_list)):
             # There is a repeated index position:
@@ -459,7 +459,7 @@ class TensorField(ModuleElement):
 
         """
         resu = False
-        for rst in self.restrictions.values():
+        for rst in self._restrictions.values():
             resu = resu or rst.__nonzero__()
         return resu
                 
@@ -470,20 +470,20 @@ class TensorField(ModuleElement):
         String representation of the object.
         """
         description = "tensor field"
-        if self.name is not None:
-            description += " '%s'" % self.name
-        description += " of type (%s,%s) " % (str(self.tensor_type[0]), 
-                                             str(self.tensor_type[1]))
+        if self._name is not None:
+            description += " '%s'" % self._name
+        description += " of type (%s,%s) " % (str(self._tensor_type[0]), 
+                                             str(self._tensor_type[1]))
         return self._final_repr(description)
 
     def _latex_(self):
         r"""
         LaTeX representation of the object.
         """
-        if self.latex_name is None:
+        if self._latex_name is None:
             return r'\mbox{' + str(self) + r'}'
         else:
-           return self.latex_name
+           return self._latex_name
 
     def _new_instance(self):
         r"""
@@ -494,18 +494,18 @@ class TensorField(ModuleElement):
         :class:`TensorField`.
         
         """
-        return TensorField(self.vmodule, self.tensor_type, sym=self.sym, 
-                           antisym=self.antisym)
+        return TensorField(self._vmodule, self._tensor_type, sym=self._sym, 
+                           antisym=self._antisym)
 
     def _final_repr(self, description):
         r"""
         Part of string representation common to all tensor fields.
         """
-        if self.domain == self.ambient_domain:
-            description += "on the " + str(self.domain)
+        if self._domain == self._ambient_domain:
+            description += "on the " + str(self._domain)
         else:
-            description += "along the " + str(self.domain) + \
-                           " with values on the " + str(self.ambient_domain)
+            description += "along the " + str(self._domain) + \
+                           " with values on the " + str(self._ambient_domain)
         return description
 
     def _init_derived(self):
@@ -530,32 +530,32 @@ class TensorField(ModuleElement):
         INPUT:
         
         - ``rst`` -- tensor field of the same type and symmetries as ``self``, 
-          defined on a subdomain of ``self.domain`` (must be an instance of
+          defined on a subdomain of ``self._domain`` (must be an instance of
           :class:`TensorField`)
           
         """
         if not isinstance(rst, TensorField):
             raise TypeError("The argument must be a tensor field.")
-        if not rst.domain.is_subdomain(self.domain):
+        if not rst._domain.is_subdomain(self._domain):
             raise ValueError("The domain of the declared restriction is not " +
                              "a subdomain of the current field's domain.")
-        if not rst.ambient_domain.is_subdomain(self.ambient_domain):
+        if not rst._ambient_domain.is_subdomain(self._ambient_domain):
             raise ValueError("The ambient domain of the declared " + 
                              "restriction is not a subdomain of the current " + 
                              "field's ambient domain.")
-        if rst.tensor_type != self.tensor_type:
+        if rst._tensor_type != self._tensor_type:
             raise ValueError("The declared restriction has not the same " + 
                              "tensor type as the current tensor field.")
-        if rst.tensor_type != self.tensor_type:
+        if rst._tensor_type != self._tensor_type:
             raise ValueError("The declared restriction has not the same " + 
                              "tensor type as the current tensor field.")
-        if rst.sym != self.sym:
+        if rst._sym != self._sym:
             raise ValueError("The declared restriction has not the same " +
                              "symmetries as the current tensor field.")
-        if rst.antisym != self.antisym:
+        if rst._antisym != self._antisym:
             raise ValueError("The declared restriction has not the same " +
                              "antisymmetries as the current tensor field.")
-        self.restrictions[rst.domain] = rst
+        self._restrictions[rst._domain] = rst
 
     def restrict(self, subdomain, dest_map=None):
         r"""
@@ -565,13 +565,13 @@ class TensorField(ModuleElement):
 
         INPUT:
         
-        - ``subdomain`` -- open subset `U` of ``self.domain`` (must be an 
+        - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an 
           instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
         - ``dest_map`` -- (default: None) destination map 
           `\Phi:\ U \rightarrow V`, where `V` is a subdomain of 
-          ``self.codomain``
+          ``self._codomain``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
-          If None, the restriction of ``self.vmodule.dest_map`` to `U` is 
+          If None, the restriction of ``self._vmodule._dest_map`` to `U` is 
           used.
           
         OUTPUT:
@@ -635,32 +635,32 @@ class TensorField(ModuleElement):
             True
 
         """
-        if subdomain == self.domain:
+        if subdomain == self._domain:
             return self
-        if subdomain not in self.restrictions:
-            if not subdomain.is_subdomain(self.domain):
+        if subdomain not in self._restrictions:
+            if not subdomain.is_subdomain(self._domain):
                 raise ValueError("The provided domain is not a subdomain of " + 
                                  "the current field's domain.")
             if dest_map is None:
-                if self.vmodule.dest_map is not None:
-                    dest_map = self.vmodule.dest_map.restrict(subdomain)
-            elif not dest_map.codomain.is_subdomain(self.ambient_domain):
+                if self._vmodule._dest_map is not None:
+                    dest_map = self._vmodule._dest_map.restrict(subdomain)
+            elif not dest_map._codomain.is_subdomain(self._ambient_domain):
                 raise ValueError("Argument dest_map not compatible with " + 
-                                 "self.ambient_domain")
+                                 "self._ambient_domain")
             # First one tries to derive the restriction from a tighter domain:
-            for dom, rst in self.restrictions.items():
+            for dom, rst in self._restrictions.items():
                 if subdomain.is_subdomain(dom):
-                    self.restrictions[subdomain] = rst.restrict(subdomain)
+                    self._restrictions[subdomain] = rst.restrict(subdomain)
                     break
             # If this fails, the restriction is created from scratch:
             else:
                 smodule = subdomain.vector_field_module(dest_map=dest_map)
-                self.restrictions[subdomain] = smodule.tensor(self.tensor_type, 
-                                                    name=self.name, 
-                                                    latex_name=self.latex_name, 
-                                                    sym=self.sym, 
-                                                    antisym=self.antisym)
-        return self.restrictions[subdomain]
+                self._restrictions[subdomain] = smodule.tensor(self._tensor_type, 
+                                                    name=self._name, 
+                                                    latex_name=self._latex_name, 
+                                                    sym=self._sym, 
+                                                    antisym=self._antisym)
+        return self._restrictions[subdomain]
 
     def set_comp(self, basis=None):
         r"""
@@ -691,9 +691,9 @@ class TensorField(ModuleElement):
         if self is self.parent().zero(): #!# this is maybe not very efficient
             raise ValueError("The zero tensor field cannot be changed.")
         if basis is None: 
-            basis = self.domain.def_frame
+            basis = self._domain._def_frame
         self._del_derived() # deletes the derived quantities
-        rst = self.restrict(basis.domain, dest_map=basis.dest_map)
+        rst = self.restrict(basis._domain, dest_map=basis._dest_map)
         return rst.set_comp(basis)
 
     def add_comp(self, basis=None):
@@ -724,9 +724,9 @@ class TensorField(ModuleElement):
         if self is self.parent().zero(): #!# this is maybe not very efficient
             raise ValueError("The zero tensor field cannot be changed.")
         if basis is None: 
-            basis = self.domain.def_frame
+            basis = self._domain._def_frame
         self._del_derived() # deletes the derived quantities
-        rst = self.restrict(basis.domain, dest_map=basis.dest_map)
+        rst = self.restrict(basis._domain, dest_map=basis._dest_map)
         return rst.add_comp(basis)
 
 
@@ -799,8 +799,8 @@ class TensorField(ModuleElement):
 
         """
         if basis is None: 
-            basis = self.domain.def_frame
-        rst = self.restrict(basis.domain, dest_map=basis.dest_map)
+            basis = self._domain._def_frame
+        rst = self.restrict(basis._domain, dest_map=basis._dest_map)
         return rst.comp(basis=basis, from_basis=from_basis)
 
     def view(self, basis=None, chart=None):
@@ -867,8 +867,8 @@ class TensorField(ModuleElement):
 
         """
         if basis is None: 
-            basis = self.domain.def_frame
-        rst = self.restrict(basis.domain, dest_map=basis.dest_map)
+            basis = self._domain._def_frame
+        rst = self.restrict(basis._domain, dest_map=basis._dest_map)
         return rst.view(basis, chart)
 
 
@@ -889,15 +889,15 @@ class TensorField(ModuleElement):
                 frame = args[0]
                 args = args[1:]
             else:
-                frame = self.domain.def_frame
+                frame = self._domain._def_frame
         else:
             if isinstance(args, (int, Integer, slice)):
-                frame = self.domain.def_frame
+                frame = self._domain._def_frame
             elif not isinstance(args[0], (int, Integer, slice)):
                 frame = args[0]
                 args = args[1:]
             else:
-                frame = self.domain.def_frame
+                frame = self._domain._def_frame
         return self.comp(frame)[args]
 
     def __setitem__(self, args, value):
@@ -918,15 +918,15 @@ class TensorField(ModuleElement):
                 frame = args[0]
                 args = args[1:]
             else:
-                frame = self.domain.def_frame
+                frame = self._domain._def_frame
         else:
             if isinstance(args, (int, Integer, slice)):
-                frame = self.domain.def_frame
+                frame = self._domain._def_frame
             elif not isinstance(args[0], (int, Integer, slice)):
                 frame = args[0]
                 args = args[1:]
             else:
-                frame = self.domain.def_frame
+                frame = self._domain._def_frame
         self.set_comp(frame)[args] = value
 
 
@@ -942,18 +942,18 @@ class TensorField(ModuleElement):
         
         """
         resu = self._new_instance()
-        for dom, rst in self.restrictions.items():
-            resu.restrictions[dom] = rst.copy()
+        for dom, rst in self._restrictions.items():
+            resu._restrictions[dom] = rst.copy()
         return resu
 
     def _common_subdomains(self, other):
         r"""
-        Returns the list of subdomains of self.domain on which both ``self``
+        Returns the list of subdomains of self._domain on which both ``self``
         and ``other`` have known restrictions.
         """
         resu = []
-        for dom in self.restrictions:
-            if dom in other.restrictions:
+        for dom in self._restrictions:
+            if dom in other._restrictions:
                 resu.append(dom)
         return resu
 
@@ -978,14 +978,14 @@ class TensorField(ModuleElement):
         elif not isinstance(other, TensorField):
             return False
         else: # other is another tensor field
-            if other.vmodule != self.vmodule:
+            if other._vmodule != self._vmodule:
                 return False
-            if other.tensor_type != self.tensor_type:
+            if other._tensor_type != self._tensor_type:
                 return False
             resu = True
-            for dom, rst in self.restrictions.items():
-                if dom in other.restrictions:
-                    resu = resu and bool(rst == other.restrictions[dom])
+            for dom, rst in self._restrictions.items():
+                if dom in other._restrictions:
+                    resu = resu and bool(rst == other._restrictions[dom])
             return resu
 
     def __ne__(self, other):
@@ -1013,12 +1013,12 @@ class TensorField(ModuleElement):
     
         """
         resu = self._new_instance()
-        for dom, rst in self.restrictions.items():
-            resu.restrictions[dom] = + rst
-        if self.name is not None:
-            resu.name = '+' + self.name 
-        if self.latex_name is not None:
-            resu.latex_name = '+' + self.latex_name
+        for dom, rst in self._restrictions.items():
+            resu._restrictions[dom] = + rst
+        if self._name is not None:
+            resu._name = '+' + self._name 
+        if self._latex_name is not None:
+            resu._latex_name = '+' + self._latex_name
         return resu
 
     def __neg__(self):
@@ -1031,12 +1031,12 @@ class TensorField(ModuleElement):
     
         """
         resu = self._new_instance()
-        for dom, rst in self.restrictions.items():
-            resu.restrictions[dom] = - rst
-        if self.name is not None:
-            resu.name = '-' + self.name 
-        if self.latex_name is not None:
-            resu.latex_name = '-' + self.latex_name
+        for dom, rst in self._restrictions.items():
+            resu._restrictions[dom] = - rst
+        if self._name is not None:
+            resu._name = '-' + self._name 
+        if self._latex_name is not None:
+            resu._latex_name = '-' + self._latex_name
         return resu
 
     ######### ModuleElement arithmetic operators ########
@@ -1058,24 +1058,24 @@ class TensorField(ModuleElement):
             return +self
         if not isinstance(other, TensorField):
             raise TypeError("For the addition, other must be a tensor field.")
-        if other.vmodule != self.vmodule:
+        if other._vmodule != self._vmodule:
             raise ValueError("The two tensor fields do not belong to the " + 
                              "same module.")
-        if other.tensor_type != self.tensor_type:
+        if other._tensor_type != self._tensor_type:
             raise TypeError("The two tensor fields are not of the same type.")
         resu_rst = {}
         for dom in self._common_subdomains(other):
-            resu_rst[dom] = self.restrictions[dom] + other.restrictions[dom]
+            resu_rst[dom] = self._restrictions[dom] + other._restrictions[dom]
         some_rst = resu_rst.values()[0]
-        resu_sym = some_rst.sym
-        resu_antisym = some_rst.antisym
-        resu = self.vmodule.tensor(self.tensor_type, sym=resu_sym, 
+        resu_sym = some_rst._sym
+        resu_antisym = some_rst._antisym
+        resu = self._vmodule.tensor(self._tensor_type, sym=resu_sym, 
                                    antisym=resu_antisym)
-        resu.restrictions = resu_rst
-        if self.name is not None and other.name is not None:
-            resu.name = self.name + '+' + other.name
-        if self.latex_name is not None and other.latex_name is not None:
-            resu.latex_name = self.latex_name + '+' + other.latex_name
+        resu._restrictions = resu_rst
+        if self._name is not None and other._name is not None:
+            resu._name = self._name + '+' + other._name
+        if self._latex_name is not None and other._latex_name is not None:
+            resu._latex_name = self._latex_name + '+' + other._latex_name
         return resu
 
     def _sub_(self, other):
@@ -1097,24 +1097,24 @@ class TensorField(ModuleElement):
         if not isinstance(other, TensorField):
             raise TypeError("For the subtraction, other must be a tensor " + 
                             "field.")
-        if other.vmodule != self.vmodule:
+        if other._vmodule != self._vmodule:
             raise ValueError("The two tensor fields do not belong to the " + 
                              "same module.")
-        if other.tensor_type != self.tensor_type:
+        if other._tensor_type != self._tensor_type:
             raise TypeError("The two tensor fields are not of the same type.")
         resu_rst = {}
         for dom in self._common_subdomains(other):
-            resu_rst[dom] = self.restrictions[dom] - other.restrictions[dom]
+            resu_rst[dom] = self._restrictions[dom] - other._restrictions[dom]
         some_rst = resu_rst.values()[0]
-        resu_sym = some_rst.sym
-        resu_antisym = some_rst.antisym
-        resu = self.vmodule.tensor(self.tensor_type, sym=resu_sym, 
+        resu_sym = some_rst._sym
+        resu_antisym = some_rst._antisym
+        resu = self._vmodule.tensor(self._tensor_type, sym=resu_sym, 
                                    antisym=resu_antisym)
-        resu.restrictions = resu_rst
-        if self.name is not None and other.name is not None:
-            resu.name = self.name + '-' + other.name
-        if self.latex_name is not None and other.latex_name is not None:
-            resu.latex_name = self.latex_name + '-' + other.latex_name
+        resu._restrictions = resu_rst
+        if self._name is not None and other._name is not None:
+            resu._name = self._name + '-' + other._name
+        if self._latex_name is not None and other._latex_name is not None:
+            resu._latex_name = self._latex_name + '-' + other._latex_name
         return resu
 
     def _rmul_(self, other):
@@ -1127,8 +1127,8 @@ class TensorField(ModuleElement):
             raise NotImplementedError("Left tensor product not implemented.")
         # Left multiplication by a scalar field: 
         resu = self._new_instance()
-        for dom, rst in self.restrictions.items():
-            resu.restrictions[dom] = other.restrict(dom) * rst
+        for dom, rst in self._restrictions.items():
+            resu._restrictions[dom] = other.restrict(dom) * rst
         return resu
 
     ######### End of ModuleElement arithmetic operators ########
@@ -1252,16 +1252,16 @@ class TensorField(ModuleElement):
 
         """
         from sage.rings.integer import Integer
-        n_con = self.tensor_type[0] # number of contravariant indices = k 
+        n_con = self._tensor_type[0] # number of contravariant indices = k 
         if pos is None:
             result = self
-            for p in range(n_con, self.tensor_rank):
-                k = result.tensor_type[0]
+            for p in range(n_con, self._tensor_rank):
+                k = result._tensor_type[0]
                 result = result.up(metric, k)
             return result
         if not isinstance(pos, (int, Integer)):
             raise TypeError("The argument 'pos' must be an integer.")
-        if pos<n_con or pos>self.tensor_rank-1:
+        if pos<n_con or pos>self._tensor_rank-1:
             print "pos = ", pos
             raise ValueError("Position out of range.")
         return self.contract(pos, metric.inverse(), 0)
@@ -1371,11 +1371,11 @@ class TensorField(ModuleElement):
  
         """
         from sage.rings.integer import Integer
-        n_con = self.tensor_type[0] # number of contravariant indices = k 
+        n_con = self._tensor_type[0] # number of contravariant indices = k 
         if pos is None:
             result = self
             for p in range(0, n_con):
-                k = result.tensor_type[0]
+                k = result._tensor_type[0]
                 result = result.down(metric, k-1)
             return result
         if not isinstance(pos, (int, Integer)):
@@ -1489,7 +1489,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
     :meth:`set_comp` deletes the components in other frames. 
     Accordingly, the components in the frame e have been deleted::
     
-        sage: t.components
+        sage: t._components
         {vector frame (M, (f_0,f_1,f_2)): 2-indices components w.r.t. vector frame (M, (f_0,f_1,f_2))}
 
     To keep the other components, one must use the method :meth:`add_comp`::
@@ -1499,7 +1499,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         sage: # We now set the components in the frame f with add_comp:
         sage: t.add_comp(f)[0,0] = -3
         sage: # The components w.r.t. frame e have been kept: 
-        sage: t.components
+        sage: t._components
         {vector frame (M, (e_0,e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_0,e_1,e_2)), vector frame (M, (f_0,f_1,f_2)): 2-indices components w.r.t. vector frame (M, (f_0,f_1,f_2))}
 
     The basic attributes of :class:`TensorField` are :attr:`domain`, 
@@ -1507,13 +1507,13 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
     and :attr:`components` (the dictionary of the components w.r.t. various 
     frames)::
 
-        sage: t.domain
+        sage: t._domain
         3-dimensional manifold 'M'
-        sage: t.tensor_type
+        sage: t._tensor_type
         (2, 0)
-        sage: t.tensor_rank
+        sage: t._tensor_rank
         2
-        sage: t.components
+        sage: t._components
         {vector frame (M, (e_0,e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_0,e_1,e_2)), vector frame (M, (f_0,f_1,f_2)): 2-indices components w.r.t. vector frame (M, (f_0,f_1,f_2))}
 
     Symmetries and antisymmetries are declared via the keywords ``sym`` and
@@ -1631,10 +1631,10 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
                                   name=name, latex_name=latex_name,
                                   sym=sym, antisym=antisym)
         # TensorField attributes:
-        self.vmodule = vector_field_module
-        self.domain = vector_field_module.domain
-        self.ambient_domain = vector_field_module.ambient_domain
-        self.restrictions = {} # dict. of restrictions on subdomains of self.domain        
+        self._vmodule = vector_field_module
+        self._domain = vector_field_module._domain
+        self._ambient_domain = vector_field_module._ambient_domain
+        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # Initialization of derived quantities:
         self._init_derived() 
 
@@ -1653,8 +1653,8 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         :class:`TensorFieldParal`.
         
         """
-        return TensorFieldParal(self.fmodule, self.tensor_type, sym=self.sym, 
-                                antisym=self.antisym)
+        return TensorFieldParal(self._fmodule, self._tensor_type, sym=self._sym, 
+                                antisym=self._antisym)
 
     def _init_derived(self):
         r"""
@@ -1680,7 +1680,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         If the current components of ``self`` and ``other`` are all relative to
         different frames, a common frame is searched by performing a component
         transformation, via the transformations listed in 
-        ``self.domain._frame_changes``, still privileging transformations to 
+        ``self._domain._frame_changes``, still privileging transformations to 
         the domain's default frame.
         
         INPUT:
@@ -1697,27 +1697,27 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         # Compatibility checks:
         if not isinstance(other, TensorFieldParal):
             raise TypeError("The argument must be of type TensorFieldParal.")
-        dom = self.domain
-        def_frame = dom.def_frame
+        dom = self._domain
+        def_frame = dom._def_frame
         #
         # 1/ Search for a common frame among the existing components, i.e. 
         #    without performing any component transformation. 
         #    -------------------------------------------------------------
         # 1a/ Direct search
-        if def_frame in self.components and \
-           def_frame in other.components and \
-           isinstance(dom.def_frame, CoordFrame):
+        if def_frame in self._components and \
+           def_frame in other._components and \
+           isinstance(dom._def_frame, CoordFrame):
             return def_frame # the domain's default frame is privileged
-        for frame1 in self.components:
-            if frame1 in other.components and \
+        for frame1 in self._components:
+            if frame1 in other._components and \
                isinstance(frame1, CoordFrame):
                 return frame1
         # 1b/ Search involving subframes
-        dom2 = other.domain
-        for frame1 in self.components:
+        dom2 = other._domain
+        for frame1 in self._components:
             if not isinstance(frame1, CoordFrame):
                 continue
-            for frame2 in other.components:
+            for frame2 in other._components:
                 if not isinstance(frame2, CoordFrame):
                     continue
                 if frame2 in frame1.subframes:
@@ -1731,23 +1731,23 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         #    ----------------------------------------------------------
         # If this point is reached, it is indeed necessary to perform at least 
         # one component transformation to get a common frame
-        if isinstance(dom.def_frame, CoordFrame):
-            if def_frame in self.components:
-                for oframe in other.components:
+        if isinstance(dom._def_frame, CoordFrame):
+            if def_frame in self._components:
+                for oframe in other._components:
                     if (oframe, def_frame) in dom._frame_changes:
                         other.comp(def_frame, from_frame=oframe)
                         return def_frame
-            if def_frame in other.components:
-                for sframe in self.components:
+            if def_frame in other._components:
+                for sframe in self._components:
                     if (sframe, def_frame) in dom._frame_changes:
                         self.comp(def_frame, from_frame=sframe)
                         return def_frame
         # If this point is reached, then def_frame cannot be a common frame
         # via a single component transformation
-        for sframe in self.components:
+        for sframe in self._components:
             if not instance(sframe, CoordFrame):
                 continue
-            for oframe in other.components:
+            for oframe in other._components:
                 if not instance(oframe, CoordFrame):
                     continue
                 if (oframe, sframe) in dom._frame_changes:
@@ -1761,8 +1761,8 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         #    -----------------------------------------------------------
         # If this point is reached, it is indeed necessary to perform at two
         # component transformation to get a common frame
-        for sframe in self.components:
-            for oframe in other.components:
+        for sframe in self._components:
+            for oframe in other._components:
                 if (sframe, def_frame) in dom._frame_changes and \
                    (oframe, def_frame) in dom._frame_changes and \
                    isinstance(def_frame, CoordFrame):
@@ -1825,7 +1825,8 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
             sage: f = M.scalar_field(x^3 + x*y^2)
             sage: w.lie_der(v)(f).view()
-            (x, y) |--> -(x + 2)*y^3 + 3*x^3 - x*y^2 + 5*(x^3 - 2*x^2)*y
+            on M: (x, y) |--> -(x + 2)*y^3 + 3*x^3 - x*y^2 + 5*(x^3 - 2*x^2)*y
+            on M: (u, v) |--> 1/4*u^4 - 1/4*(3*u - 7)*v^3 - 1/4*v^4 - 5/4*u^3 + 7/4*u*v^2 + 3/4*(u^3 + u^2)*v
             sage: w.lie_der(v)(f) == v(w(f)) - w(v(f))  # rhs = commutator [v,w] acting on f
             True
             
@@ -1854,15 +1855,15 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             coord_frame = self.common_coord_frame(vector)
             if coord_frame is None:
                 raise TypeError("No common coordinate frame found.")
-            chart = coord_frame.chart
+            chart = coord_frame._chart
             #
             # 2/ Component computation:
-            tc = self.components[coord_frame]
-            vc = vector.components[coord_frame]
+            tc = self._components[coord_frame]
+            vc = vector._components[coord_frame]
             # the result has the same tensor type and same symmetries as self:
             resc = self._new_comp(coord_frame) 
-            n_con = self.tensor_type[0]
-            vf_module = vector.fmodule
+            n_con = self._tensor_type[0]
+            vf_module = vector._fmodule
             for ind in resc.non_redundant_index_generator():
                 rsum = 0
                 for i in vf_module.irange():
@@ -1876,7 +1877,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
                         rsum -= tc[[indk]].function_chart(chart) * \
                                 vc[[ind[k]]].function_chart(chart).diff(i)
                 # loop on covariant indices:
-                for k in range(n_con, self.tensor_rank): 
+                for k in range(n_con, self._tensor_rank): 
                     for i in vf_module.irange():
                         indk = list(ind)
                         indk[k] = i  
@@ -1885,7 +1886,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
                 resc[[ind]] = rsum.scalar_field()
             #
             # 3/ Final result (the tensor)
-            res = vf_module.tensor_from_comp(self.tensor_type, resc)
+            res = vf_module.tensor_from_comp(self._tensor_type, resc)
             self._lie_derivatives[id(vector)] = (vector, res)
             vector._lie_der_along_self[id(self)] = self
         return self._lie_derivatives[id(vector)][1]
@@ -1898,13 +1899,13 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
         INPUT:
         
-        - ``subdomain`` -- open subset `U` of ``self.domain`` (must be an 
+        - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an 
           instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
         - ``dest_map`` -- (default: None) destination map 
           `\Phi:\ U \rightarrow V`, where `V` is a subdomain of 
-          ``self.codomain``
+          ``self._codomain``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
-          If None, the restriction of ``self.vmodule.dest_map`` to `U` is 
+          If None, the restriction of ``self._vmodule._dest_map`` to `U` is 
           used.
           
         OUTPUT:
@@ -1951,52 +1952,33 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             True
 
         """
-        if subdomain == self.domain:
+        if subdomain == self._domain:
             return self
-        if subdomain not in self.restrictions:
-            if not subdomain.is_subdomain(self.domain):
+        if subdomain not in self._restrictions:
+            if not subdomain.is_subdomain(self._domain):
                 raise ValueError("The provided domain is not a subdomain of " + 
                                  "the current field's domain.")
             if dest_map is None:
-                if self.fmodule.dest_map is not None:
-                    dest_map = self.fmodule.dest_map.restrict(subdomain)
-            elif not dest_map.codomain.is_subdomain(self.ambient_domain):
+                if self._fmodule._dest_map is not None:
+                    dest_map = self._fmodule._dest_map.restrict(subdomain)
+            elif not dest_map._codomain.is_subdomain(self._ambient_domain):
                 raise ValueError("Argument dest_map not compatible with " + 
-                                 "self.ambient_domain")
+                                 "self._ambient_domain")
             smodule = subdomain.vector_field_module(dest_map=dest_map)
-            resu = smodule.tensor(self.tensor_type, name=self.name, 
-                                  latex_name=self.latex_name, sym=self.sym, 
-                                  antisym=self.antisym)
-            for frame in self.components:
-                for sframe in subdomain.covering_frames:
+            resu = smodule.tensor(self._tensor_type, name=self._name, 
+                                  latex_name=self._latex_name, sym=self._sym, 
+                                  antisym=self._antisym)
+            for frame in self._components:
+                for sframe in subdomain._covering_frames:
                     if sframe in frame.subframes:
-                        comp_store = self.components[frame]._comp
+                        comp_store = self._components[frame]._comp
                         scomp = resu._new_comp(sframe)
                         scomp_store = scomp._comp
                         # the components of the restriction are evaluated 
                         # index by index:
                         for ind, value in comp_store.iteritems():
                             scomp_store[ind] = value.restrict(subdomain)
-                        resu.components[sframe] = scomp
-            self.restrictions[subdomain] = resu
-        return self.restrictions[subdomain]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                        resu._components[sframe] = scomp
+            self._restrictions[subdomain] = resu
+        return self._restrictions[subdomain]
 

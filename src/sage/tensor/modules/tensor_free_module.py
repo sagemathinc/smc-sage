@@ -197,33 +197,33 @@ class TensorFreeModule(FiniteFreeModule):
     Element = FreeModuleTensor
     
     def __init__(self, fmodule, tensor_type, name=None, latex_name=None):
-        self.fmodule = fmodule
-        self.tensor_type = tuple(tensor_type)
+        self._fmodule = fmodule
+        self._tensor_type = tuple(tensor_type)
         rank = pow(fmodule._rank, tensor_type[0] + tensor_type[1])
         self._zero_element = 0 # provisory (to avoid infinite recursion in what
                                # follows)
         if tensor_type == (0,1):  # case of the dual
-            if name is None and fmodule.name is not None:
-                name = fmodule.name + '*'
-            if latex_name is None and fmodule.latex_name is not None:
-                latex_name = fmodule.latex_name + r'^*'
-        FiniteFreeModule.__init__(self, fmodule.ring, rank, name=name, 
+            if name is None and fmodule._name is not None:
+                name = fmodule._name + '*'
+            if latex_name is None and fmodule._latex_name is not None:
+                latex_name = fmodule._latex_name + r'^*'
+        FiniteFreeModule.__init__(self, fmodule._ring, rank, name=name, 
                                   latex_name=latex_name, 
-                                  start_index=fmodule.sindex,
-                                  output_formatter=fmodule.output_formatter)
+                                  start_index=fmodule._sindex,
+                                  output_formatter=fmodule._output_formatter)
         # Unique representation:
-        if self.tensor_type in self.fmodule._tensor_modules:
+        if self._tensor_type in self._fmodule._tensor_modules:
             raise TypeError("The module of tensors of type" + 
-                            str(self.tensor_type) + 
+                            str(self._tensor_type) + 
                             " has already been created.")
         else:
-            self.fmodule._tensor_modules[self.tensor_type] = self
+            self._fmodule._tensor_modules[self._tensor_type] = self
         # Zero element 
         self._zero_element = self._element_constructor_(name='zero', 
                                                         latex_name='0')
-        def_basis = self.fmodule.def_basis
+        def_basis = self._fmodule._def_basis
         if def_basis is not None:
-            self._zero_element.components[def_basis] = \
+            self._zero_element._components[def_basis] = \
                                         self._zero_element._new_comp(def_basis)
             # (since new components are initialized to zero)
     
@@ -235,7 +235,7 @@ class TensorFreeModule(FiniteFreeModule):
         """
         if comp == 0:
             return self._zero_element
-        resu = self.element_class(self.fmodule, self.tensor_type, name=name, 
+        resu = self.element_class(self._fmodule, self._tensor_type, name=name, 
                                   latex_name=latex_name, sym=sym, 
                                   antisym=antisym)
         if comp != []:
@@ -246,11 +246,11 @@ class TensorFreeModule(FiniteFreeModule):
         r"""
         Construct some (unamed) tensor
         """
-        resu = self.element_class(self.fmodule, self.tensor_type)
-        if self.fmodule.def_basis is not None:
-            sindex = self.fmodule.sindex
-            ind = [sindex for i in range(resu.tensor_rank)]
-            resu.set_comp()[ind] = self.fmodule.ring.an_element()
+        resu = self.element_class(self._fmodule, self._tensor_type)
+        if self._fmodule._def_basis is not None:
+            sindex = self._fmodule._sindex
+            ind = [sindex for i in range(resu._tensor_rank)]
+            resu.set_comp()[ind] = self._fmodule._ring.an_element()
         return resu
             
     #### End of methods required for any Parent 
@@ -259,15 +259,15 @@ class TensorFreeModule(FiniteFreeModule):
         r"""
         String representation of the object.
         """
-        if self.tensor_type == (0,1):
-            return "dual of the " + str(self.fmodule)
+        if self._tensor_type == (0,1):
+            return "dual of the " + str(self._fmodule)
         else:
             description = "free module "
-            if self.name is not None:
-                description += self.name + " "
+            if self._name is not None:
+                description += self._name + " "
             description += "of type-(%s,%s)" % \
-                           (str(self.tensor_type[0]), str(self.tensor_type[1]))
-            description += " tensors on the " + str(self.fmodule)
+                           (str(self._tensor_type[0]), str(self._tensor_type[1]))
+            description += " tensors on the " + str(self._fmodule)
             return description
 
     def base_module(self):
@@ -289,5 +289,5 @@ class TensorFreeModule(FiniteFreeModule):
             rank-3 free module M over the Integer Ring
 
         """
-        return self.fmodule
+        return self._fmodule
 

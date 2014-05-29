@@ -50,30 +50,30 @@ class TensorFieldModule(UniqueRepresentation, Module):
     Element = TensorField
 
     def __init__(self, vector_field_module, tensor_type):
-        domain = vector_field_module.domain
-        dest_map = vector_field_module.dest_map
+        domain = vector_field_module._domain
+        dest_map = vector_field_module._dest_map
         kcon = tensor_type[0]
         lcov = tensor_type[1]
-        name = "TF^(" + str(kcon) + "," + str(lcov) + ")(" + domain.name
+        name = "TF^(" + str(kcon) + "," + str(lcov) + ")(" + domain._name
         latex_name = "TF^(" + str(kcon) + "," + str(lcov) + r")\left(" + \
-                     domain.latex_name
+                     domain._latex_name
         if dest_map is None:
             name += ")" 
             latex_name += r"\right)" 
         else:
-            name += "," + dest_map.name + ")" 
-            latex_name += "," + dest_map.latex_name + r"\right)" 
-        self.vmodule = vector_field_module
-        self.tensor_type = tensor_type
-        self.name = name
-        self.latex_name = latex_name
-        # the member self.ring is created for efficiency (to avoid calls to 
+            name += "," + dest_map._name + ")" 
+            latex_name += "," + dest_map._latex_name + r"\right)" 
+        self._vmodule = vector_field_module
+        self._tensor_type = tensor_type
+        self._name = name
+        self._latex_name = latex_name
+        # the member self._ring is created for efficiency (to avoid calls to 
         # self.base_ring()):
-        self.ring = domain.scalar_field_algebra() 
-        Module.__init__(self, self.ring)
-        self.domain = domain
-        self.dest_map = dest_map
-        self.ambient_domain = vector_field_module.ambient_domain
+        self._ring = domain.scalar_field_algebra() 
+        Module.__init__(self, self._ring)
+        self._domain = domain
+        self._dest_map = dest_map
+        self._ambient_domain = vector_field_module._ambient_domain
         # NB: self._zero_element is not constructed here, since no element 
         # can be constructed here, to avoid some infinite recursion. 
 
@@ -89,7 +89,7 @@ class TensorFieldModule(UniqueRepresentation, Module):
                 self._zero_element = self._element_constructor_(name='zero', 
                                                                 latex_name='0')
             return self._zero_element
-        resu = self.element_class(self.vmodule, self.tensor_type, name=name, 
+        resu = self.element_class(self._vmodule, self._tensor_type, name=name, 
                                   latex_name=latex_name, sym=sym, 
                                   antisym=antisym)
         if comp != []:
@@ -100,7 +100,7 @@ class TensorFieldModule(UniqueRepresentation, Module):
         r"""
         Construct some (unamed) tensor field
         """
-        resu = self.element_class(self.vmodule, self.tensor_type)
+        resu = self.element_class(self._vmodule, self._tensor_type)
         return resu
             
     #### End of methods required for any Parent 
@@ -110,16 +110,16 @@ class TensorFieldModule(UniqueRepresentation, Module):
         String representation of the object.
         """
         description = "module "
-        if self.name is not None:
-            description += self.name + " "
+        if self._name is not None:
+            description += self._name + " "
         description += "of type-(%s,%s)" % \
-                           (str(self.tensor_type[0]), str(self.tensor_type[1]))
+                           (str(self._tensor_type[0]), str(self._tensor_type[1]))
         description += " tensors fields "
-        if self.dest_map is None:
-            description += "on the " + str(self.domain)
+        if self._dest_map is None:
+            description += "on the " + str(self._domain)
         else:
-            description += "along the " + str(self.domain) + \
-                           " mapped into the " + str(self.ambient_domain)
+            description += "along the " + str(self._domain) + \
+                           " mapped into the " + str(self._ambient_domain)
         return description
 
 
@@ -151,39 +151,39 @@ class TensorFieldFreeModule(TensorFreeModule):
     Element = TensorFieldParal
 
     def __init__(self, vector_field_module, tensor_type):
-        domain = vector_field_module.domain
-        dest_map = vector_field_module.dest_map
+        domain = vector_field_module._domain
+        dest_map = vector_field_module._dest_map
         kcon = tensor_type[0]
         lcov = tensor_type[1]
-        name = "TF^(" + str(kcon) + "," + str(lcov) + ")(" + domain.name
+        name = "TF^(" + str(kcon) + "," + str(lcov) + ")(" + domain._name
         latex_name = "TF^(" + str(kcon) + "," + str(lcov) + r")\left(" + \
-                     domain.latex_name
+                     domain._latex_name
         if dest_map is None:
             name += ")" 
             latex_name += r"\right)" 
         else:
-            name += "," + dest_map.name + ")" 
-            latex_name += "," + dest_map.latex_name + r"\right)" 
+            name += "," + dest_map._name + ")" 
+            latex_name += "," + dest_map._latex_name + r"\right)" 
         TensorFreeModule.__init__(self, vector_field_module, tensor_type, 
                                   name=name, latex_name=latex_name)
-        self.domain = domain
-        self.dest_map = dest_map
-        self.ambient_domain = vector_field_module.ambient_domain
+        self._domain = domain
+        self._dest_map = dest_map
+        self._ambient_domain = vector_field_module._ambient_domain
 
     def _repr_(self):
         r"""
         String representation of the object.
         """
         description = "free module "
-        if self.name is not None:
-            description += self.name + " "
+        if self._name is not None:
+            description += self._name + " "
         description += "of type-(%s,%s)" % \
-                           (str(self.tensor_type[0]), str(self.tensor_type[1]))
+                           (str(self._tensor_type[0]), str(self._tensor_type[1]))
         description += " tensors fields "
-        if self.dest_map is None:
-            description += "on the " + str(self.domain)
+        if self._dest_map is None:
+            description += "on the " + str(self._domain)
         else:
-            description += "along the " + str(self.domain) + \
-                           " mapped into the " + str(self.ambient_domain)
+            description += "along the " + str(self._domain) + \
+                           " mapped into the " + str(self._ambient_domain)
         return description
 
