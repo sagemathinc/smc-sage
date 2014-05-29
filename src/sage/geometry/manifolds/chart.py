@@ -842,12 +842,12 @@ class Chart(UniqueRepresentation, SageObject):
             sage: trans = cU.transition_map(cV, 1/x, 'W', x!=0, y!=0)
             sage: trans
             coordinate change from chart (W, (x,)) to chart (W, (y,))
-            sage: M._domains # the domain W, intersection of U and V, has been created by transition_map()
-            {'V': open domain 'V' on the 1-dimensional manifold 'S^1', 
-             'U': open domain 'U' on the 1-dimensional manifold 'S^1', 
-             'W': open domain 'W' on the 1-dimensional manifold 'S^1', 
-             'S^1': 1-dimensional manifold 'S^1'}
-            sage: W = M._domains['W']
+            sage: M.domains() # the domain W, intersection of U and V, has been created by transition_map()
+            [1-dimensional manifold 'S^1',
+             open domain 'U' on the 1-dimensional manifold 'S^1',
+             open domain 'V' on the 1-dimensional manifold 'S^1',
+             open domain 'W' on the 1-dimensional manifold 'S^1']
+            sage: W = M.domains()[3]
             sage: W is U.intersection(V)
             True
             sage: M.atlas()
@@ -864,9 +864,9 @@ class Chart(UniqueRepresentation, SageObject):
                                                  restrictions2=(y!=0, x<0))
             sage: trans
             coordinate change from chart (U, (r, phi)) to chart (U, (x, y))
-            sage: M._domains # in this case, no new domain has been created since U inter M = U
-            {'R^2': 2-dimensional manifold 'R^2',
-             'U': open domain 'U' on the 2-dimensional manifold 'R^2'}
+            sage: M.domains() # in this case, no new domain has been created since U inter M = U
+            [2-dimensional manifold 'R^2',
+            open domain 'U' on the 2-dimensional manifold 'R^2']
             sage: M.atlas() # ...but a new chart has been created: (U, (x, y))
             [chart (R^2, (x, y)), chart (U, (r, phi)), chart (U, (x, y))]
         

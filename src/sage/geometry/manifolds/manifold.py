@@ -28,7 +28,9 @@ EXAMPLES:
         sage: M = Manifold(2, 'S^2')
         sage: M
         2-dimensional manifold 'S^2'
-        
+        sage: M.dim()
+        2
+
     Let us consider the complement of the North pole; it is an open domain
     of `S^2`, which we call U::
         
@@ -97,11 +99,11 @@ EXAMPLES:
            
     At this stage, we have four open domains on `S^2`::
         
-        sage: M._domains
-        {'U': open domain 'U' on the 2-dimensional manifold 'S^2', 
-         'S^2': 2-dimensional manifold 'S^2', 
-         'W': open domain 'W' on the 2-dimensional manifold 'S^2', 
-         'V': open domain 'V' on the 2-dimensional manifold 'S^2'}
+        sage: M.domains()
+        [2-dimensional manifold 'S^2',
+         open domain 'U' on the 2-dimensional manifold 'S^2',
+         open domain 'V' on the 2-dimensional manifold 'S^2',
+         open domain 'W' on the 2-dimensional manifold 'S^2']
 
     W is the open domain that is the complement of the two poles::
     
@@ -289,7 +291,7 @@ class Manifold(OpenDomain):
         self._dim = n
         OpenDomain.__init__(self, self, name, latex_name)
         self._sindex = start_index
-        self._domains = {self._name: self}
+        self._domains = [self]
         
     def _repr_(self):
         r"""
@@ -303,18 +305,39 @@ class Manifold(OpenDomain):
         """
         return self._latex_name
 
-    def dimension(self):
+    def dim(self):
         r"""
         Return the dimension of the manifold.
         
         EXAMPLE::
         
             sage: M = Manifold(2, 'M')
-            sage: M.dimension()
+            sage: M.dim()
             2
 
         """
         return self._dim
+
+    def domains(self):
+        r"""
+        Return the list of subdomains that have been defined on the manifold.
+        
+        EXAMPLE:
+        
+        Domains on a 2-dimensional manifold::
+        
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U')
+            sage: V = M.domain('V')
+            sage: M.domains()
+            [2-dimensional manifold 'M',
+             open domain 'U' on the 2-dimensional manifold 'M',
+             domain 'V' on the 2-dimensional manifold 'M']
+            sage: U is M.domains()[1]
+            True
+
+        """
+        return self._domains
 
 
     def irange(self, start=None):
@@ -479,11 +502,11 @@ class RealLineManifold(Manifold, UniqueRepresentation):
         sage: type(RealLine)
         <class 'sage.geometry.manifolds.manifold.RealLineManifold_with_category'>
 
-    It is a manifold endoved with a canonical chart::
+    It is a 1-dimensional manifold endowed with a canonical chart::
     
         sage: isinstance(RealLine, Manifold)
         True
-        sage: RealLine.dimension()
+        sage: RealLine.dim()
         1
         sage: RealLine.atlas()
         [chart (field R, (x_realline,))]

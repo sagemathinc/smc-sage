@@ -80,10 +80,8 @@ class Submanifold(Manifold):
     The constructed submanifolds are automatically added to the subdomains of 
     the ambient manifold::
     
-        sage: M._domains
-        {'R^3': 3-dimensional manifold 'R^3', 
-         'H': domain 'H' on the 3-dimensional manifold 'R^3',
-         'S^2': domain 'S^2' on the 3-dimensional manifold 'R^3'}
+        sage: M.domains()
+        [3-dimensional manifold 'R^3', domain 'S^2' on the 3-dimensional manifold 'R^3', domain 'H' on the 3-dimensional manifold 'R^3']
 
     Pullback of 1-forms defined on `\RR^3` to `S^2`::
     

@@ -27,10 +27,10 @@ Two domains on a manifold::
     domain 'A' on the 2-dimensional manifold 'M'
     sage: b = M.domain('B') ; b
     domain 'B' on the 2-dimensional manifold 'M'
-    sage: M._domains
-    {'A': domain 'A' on the 2-dimensional manifold 'M',
-     'B': domain 'B' on the 2-dimensional manifold 'M',
-     'M': 2-dimensional manifold 'M'}
+    sage: M.domains()
+    [2-dimensional manifold 'M',
+     domain 'A' on the 2-dimensional manifold 'M',
+     domain 'B' on the 2-dimensional manifold 'M']
 
 The intersection of the two domains::
 
@@ -44,12 +44,12 @@ Their union::
 
 State of various data members after the above operations::
 
-    sage: M._domains
-    {'A': domain 'A' on the 2-dimensional manifold 'M', 
-     'A_inter_B': domain 'A_inter_B' on the 2-dimensional manifold 'M',
-     'B': domain 'B' on the 2-dimensional manifold 'M', 
-     'M': 2-dimensional manifold 'M', 
-     'A_union_B': domain 'A_union_B' on the 2-dimensional manifold 'M'}
+    sage: M.domains()
+    [2-dimensional manifold 'M',
+     domain 'A' on the 2-dimensional manifold 'M',
+     domain 'B' on the 2-dimensional manifold 'M',
+     domain 'A_inter_B' on the 2-dimensional manifold 'M',
+     domain 'A_union_B' on the 2-dimensional manifold 'M']
     sage: a._subdomains  # random (set output)
     set([domain 'A' on the 2-dimensional manifold 'M',
          domain 'A_inter_B' on the 2-dimensional manifold 'M'])
@@ -92,7 +92,6 @@ from point import Point
 
 
 class Domain(UniqueRepresentation, Parent):
-#class Domain(Parent):
     r"""
     Subset of a differentiable manifold over `\RR`.
     
@@ -124,10 +123,10 @@ class Domain(UniqueRepresentation, Parent):
         
         sage: B = M.domain('B', latex_name=r'\mathcal{B}') ; B
         domain 'B' on the 2-dimensional manifold 'M'
-        sage: M._domains
-        {'A': domain 'A' on the 2-dimensional manifold 'M',
-         'B': domain 'B' on the 2-dimensional manifold 'M',
-         'M': 2-dimensional manifold 'M'}
+        sage: M.domains()
+        [2-dimensional manifold 'M',
+         domain 'A' on the 2-dimensional manifold 'M',
+         domain 'B' on the 2-dimensional manifold 'M']
 
     The manifold is itself a domain::
     
@@ -166,15 +165,16 @@ class Domain(UniqueRepresentation, Parent):
         Parent.__init__(self, category=Sets())
         self._manifold = manifold
         if self != manifold:
-            if name not in manifold._domains:
-                self._name = name
-                manifold._domains[name] = self
-                manifold._subdomains.add(self)
-                # set of domains containing self:
-                self._superdomains = set([manifold, self]) 
-            else:
-                raise ValueError("The name '" + name + "' is already used for "
-                                 + "another domain on " + str(manifold))
+            for dom in manifold._domains:
+                if name == dom._name:
+                    raise ValueError("The name '" + name + 
+                                     "' is already used for " +
+                                     "another domain on the " + str(manifold))
+            self._name = name
+            manifold._domains.append(self)
+            manifold._subdomains.add(self)
+            # set of domains containing self:
+            self._superdomains = set([manifold, self]) 
         else: # case where the domain is the full manifold
             self._name = name
             self._superdomains = set([self])
@@ -1033,10 +1033,10 @@ class OpenDomain(Domain):
         
         sage: B = M.open_domain('B', latex_name=r'\mathcal{B}') ; B
         open domain 'B' on the 2-dimensional manifold 'M'
-        sage: M._domains
-        {'A': open domain 'A' on the 2-dimensional manifold 'M',
-         'B': open domain 'B' on the 2-dimensional manifold 'M',
-         'M': 2-dimensional manifold 'M'}
+        sage: M.domains()
+        [2-dimensional manifold 'M',
+         open domain 'A' on the 2-dimensional manifold 'M',
+         open domain 'B' on the 2-dimensional manifold 'M']
          
     The manifold is itself an open domain (by definition!)::
     
@@ -1086,9 +1086,7 @@ class OpenDomain(Domain):
         # algebra of scalar fields defined on self (not contructed yet) 
         self._scalar_field_algebra = None 
         # The zero scalar field is constructed:
-        if self._name != 'field R':  
-            #!# to avoid circular import of RealLine
-            self._zero_scalar_field = ZeroScalarField(self)
+        self._zero_scalar_field = ZeroScalarField(self)
         # dict. of vector field modules along self:
         self._vector_field_modules = {}
         # dict. of tensor field modules along self: 

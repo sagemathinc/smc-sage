@@ -944,8 +944,10 @@ class ScalarField(CommutativeAlgebraElement):
         `W = U\cap V`::
         
             sage: trans = c_xy.transition_map(c_uv, (x+y, x-y), 'W', x<0, u+v<0)
-            sage: c_xy_W = trans._chart1
-            sage: c_uv_W = trans._chart2
+            sage: M.atlas()
+            [chart (U, (x, y)), chart (V, (u, v)), chart (W, (x, y)), chart (W, (u, v))]
+            sage: c_xy_W = M.atlas()[2]
+            sage: c_uv_W = M.atlas()[3]
             sage: trans.inverse()
             coordinate change from chart (W, (u, v)) to chart (W, (x, y))
             sage: f.common_charts(g)
@@ -972,7 +974,7 @@ class ScalarField(CommutativeAlgebraElement):
 
         Common charts found by computing some coordinate changes::
         
-            sage: W = M._domains['W']
+            sage: W = U.intersection(V)
             sage: f = W.scalar_field(x^2, c_xy_W)
             sage: g = W.scalar_field(u+1, c_uv_W)
             sage: f._express
