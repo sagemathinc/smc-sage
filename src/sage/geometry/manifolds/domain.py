@@ -1611,7 +1611,6 @@ class OpenDomain(Domain):
         
         """
         from sage.symbolic.expression import Expression
-        from scalarfield import ScalarField
         if isinstance(coord_expression, dict):
             # check validity of entry
             for chart in coord_expression:
@@ -1624,8 +1623,9 @@ class OpenDomain(Domain):
                 if chart is None:
                     chart = self._def_chart
                 coord_expression = {chart: coord_expression}
-        return ScalarField(self, coord_expression=coord_expression, 
-                           name=name, latex_name=latex_name) 
+        return self.scalar_field_algebra()._element_constructor_(
+                                            coord_expression=coord_expression, 
+                                            name=name, latex_name=latex_name) 
 
 
     def vector_field(self, name=None, latex_name=None, dest_map=None):

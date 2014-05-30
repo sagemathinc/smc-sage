@@ -830,11 +830,9 @@ class ScalarField(CommutativeAlgebraElement):
             sage: X_U = X.restrict(U, x^2+y^2 < 1)  # U is the unit open disc
             sage: f = M.scalar_field(cos(x*y), name='f')
             sage: f_U = f.restrict(U) ; f_U
-            scalar field 'f|_U' on the open domain 'U' on the 2-dimensional manifold 'M'
-            sage: latex(f_U)
-            \left. f\right| _{U}
+            scalar field 'f' on the open domain 'U' on the 2-dimensional manifold 'M'
             sage: f_U.view()
-            f|_U on U: (x, y) |--> cos(x*y)
+            f on U: (x, y) |--> cos(x*y)
             sage: f.parent()
             algebra of scalar fields on the 2-dimensional manifold 'M'
             sage: f_U.parent()
@@ -857,11 +855,8 @@ class ScalarField(CommutativeAlgebraElement):
                                  "field.")
             # the restriction is obtained via coercion
             resu = subdomain.scalar_field_algebra()(self)
-            if self._name is not None:
-                resu._name = self._name + "|_" + subdomain._name
-            if self._latex_name is not None:
-                resu._latex_name = r"\left. " + self._latex_name + r"\right| _{" + \
-                                  subdomain._latex_name + r"}"
+            resu._name = self._name
+            resu._latex_name = self._latex_name
             self._restrictions[subdomain] = resu
         return self._restrictions[subdomain]
             
@@ -1429,9 +1424,6 @@ class ScalarField(CommutativeAlgebraElement):
             zero scalar field on the 2-dimensional manifold 'M'
 
         """
-#        from vectorfield import VectorField
-#!#        if not isinstance(vector, VectorField):
-#            raise TypeError("The argument must be a vector field.")
         if id(vector) not in self._lie_derivatives:
             # A new computation must be performed
             res = vector(self)
@@ -1877,44 +1869,25 @@ class ZeroScalarField(ScalarField):
 
     #########  End of CommutativeAlgebraElement arithmetic operators ########
 
-
-    #!# TO BE REWRITTEN:
-    def exterior_der(self, chart=None):
+    def exterior_der(self):
         r"""
         Return the exterior derivative of the scalar field, which is zero in 
         the present case. 
-        
-        INPUT:
-        
-        - ``chart`` -- (default: None) name of the chart used for the
-          computation.
-        
+                
         OUTPUT:
         
-        - the 1-form exterior derivative of ``self``. 
+        - the (vanishing) 1-form exterior derivative of ``self``. 
                 
         """
-        from component import Components
-        from diffform import OneForm
+        from utilities import format_unop_txt, format_unop_latex
         if self._exterior_derivative is None:
             # A new computation is necessary:
-            if chart is None:
-                chart = self.pick_a_chart()
-            n = self._manifold._dim
-            si = self._manifold._sindex
-            dc = Components(chart._frame, 1)
-            for i in range(n):      #!# Not necessary if the Components are  
-                dc[i+si] = 0        #!# initialized to zero
-            
-            if self._name is None:
-                name_r = None
-            else:
-                name_r = 'd' + self._name
-            if self._latex_name is None:
-                latex_name_r = None
-            else:
-                latex_name_r = r'\mathrm{d}' + self._latex_name
-            self._exterior_derivative = OneForm(self._domain, name_r, latex_name_r)
-            self._exterior_derivative._components[chart._frame] = dc
+            rname = format_unop_txt('d', self._name)
+            rlname = format_unop_latex(r'\mathrm{d}', self._latex_name)
+            self._exterior_derivative = self._domain.one_form(name=rname, 
+                                                             latex_name=rlname)
+            for chart in self._domain._atlas:
+                self._exterior_derivative.add_comp(chart._frame) # since a newly
+                                            # created set of components is zero
         return self._exterior_derivative
 
