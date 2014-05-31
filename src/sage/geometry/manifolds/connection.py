@@ -132,7 +132,7 @@ class AffConnection(SageObject):
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
         description = "affine connection"
         if self._name is not None:
@@ -142,10 +142,10 @@ class AffConnection(SageObject):
 
     def _latex_(self):
         r"""
-        Special Sage function for the LaTeX representation of the object.
+        LaTeX representation of the object.
         """
         if self._latex_name is None:
-            return r'\mbox{no symbol}'
+            return r'\mbox{' + str(self) + r'}'
         else:
            return self._latex_name
 

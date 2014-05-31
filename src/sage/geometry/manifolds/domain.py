@@ -964,6 +964,21 @@ class Domain(UniqueRepresentation, Parent):
             sage: M.frame_change(c_uv.frame(), c_xy.frame()) ==  M.frame_change(c_xy.frame(), c_uv.frame()).inverse()
             True            
 
+        In the present example, the manifold M is parallelizable, so that the
+        module X(M) of vector fields on M is free. A change of frame on M is
+        then identical to a change of basis in X(M)::
+        
+            sage: XM = M.vector_field_module() ; XM
+            free module X(M) of vector fields on the 2-dimensional manifold 'M'
+            sage: XM.view_bases()
+            Bases defined on the free module X(M) of vector fields on the 2-dimensional manifold 'M':
+             - (M, (d/dx,d/dy)) (default basis)
+             - (M, (d/du,d/dv))
+            sage: XM.basis_change(c_xy.frame(), c_uv.frame())
+            field of tangent-space automorphisms on the 2-dimensional manifold 'M'
+            sage: M.frame_change(c_xy.frame(), c_uv.frame()) is XM.basis_change(c_xy.frame(), c_uv.frame())
+            True
+                    
         """
         if (frame1, frame2) not in self._frame_changes:
             raise TypeError("The change of frame from '" + repr(frame1) + 

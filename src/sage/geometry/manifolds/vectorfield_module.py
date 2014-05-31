@@ -19,7 +19,7 @@ AUTHORS:
 
 from sage.modules.module import Module
 from sage.structure.unique_representation import UniqueRepresentation
-from sage.tensor.modules.finite_free_module import FiniteFreeModule
+from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule
 from scalarfield import ScalarField
 from vectorfield import VectorField, VectorFieldParal
 
@@ -229,7 +229,7 @@ class VectorFieldModule(UniqueRepresentation, Module):
 
 #******************************************************************************
 
-class VectorFieldFreeModule(FiniteFreeModule):
+class VectorFieldFreeModule(FiniteRankFreeModule):
     r"""
     Module of vector fields along an open subset `U` of some manifold `S`
     with values in a parallelizable open subset `V` of a manifold `M`. 
@@ -290,12 +290,12 @@ class VectorFieldFreeModule(FiniteFreeModule):
             name += "," + self._dest_map._name + ")" 
             latex_name += "," + self._dest_map._latex_name + r"\right)" 
         manif = self._ambient_domain._manifold
-        FiniteFreeModule.__init__(self, domain.scalar_field_algebra(), 
+        FiniteRankFreeModule.__init__(self, domain.scalar_field_algebra(), 
                                   manif._dim, name=name, latex_name=latex_name, 
                                   start_index=manif._sindex,
                                   output_formatter=ScalarField.function_chart)
 
-    #### Methods to be redefined by derived classes of FiniteFreeModule ####
+    #### Methods to be redefined by derived classes of FiniteRankFreeModule ####
 
     def _repr_(self):
         r"""
@@ -704,5 +704,5 @@ class VectorFieldFreeModule(FiniteFreeModule):
         from rank2field import SymBilinFormFieldParal
         return SymBilinFormFieldParal(self, name=name, latex_name=latex_name)
 
-    #### End of methods to be redefined by derived classes of FiniteFreeModule ####
+    #### End of methods to be redefined by derived classes of FiniteRankFreeModule ####
 

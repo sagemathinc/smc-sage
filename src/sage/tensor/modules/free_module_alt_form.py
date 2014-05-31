@@ -27,7 +27,7 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from free_module_tensor import FreeModuleTensor, FiniteFreeModuleElement
+from free_module_tensor import FreeModuleTensor, FiniteRankFreeModuleElement
 from comp import Components, CompFullyAntiSym
 
 class FreeModuleAltForm(FreeModuleTensor):
@@ -37,7 +37,7 @@ class FreeModuleAltForm(FreeModuleTensor):
     INPUT:
     
     - ``fmodule`` -- free module `M` of finite rank over a commutative ring `R` 
-      (must be an instance of :class:`FiniteFreeModule`)
+      (must be an instance of :class:`FiniteRankFreeModule`)
     - ``degree`` -- the degree of the alternating form (i.e. its tensor rank)
     - ``name`` -- (default: None) name given to the alternating form
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the alternating 
@@ -125,7 +125,7 @@ class FreeModuleAltForm(FreeModuleTensor):
         Display of an alternating form of degree 1 (linear form) on a rank-3 
         free module::
         
-            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
             sage: a = M.linear_form('a', latex_name=r'\alpha')
             sage: a[:] = [1,-3,4]
@@ -178,7 +178,7 @@ class FreeModuleAltForm(FreeModuleTensor):
         The output format can be set via the argument ``output_formatter`` 
         passed at the module construction::
 
-            sage: N = FiniteFreeModule(QQ, 3, name='N', start_index=1, output_formatter=Rational.numerical_approx)
+            sage: N = FiniteRankFreeModule(QQ, 3, name='N', start_index=1, output_formatter=Rational.numerical_approx)
             sage: e = N.basis('e')
             sage: b = N.alternating_form(2, 'b')
             sage: b[1,2], b[1,3], b[2,3] = 1/3, 5/2, 4
@@ -277,7 +277,7 @@ class FreeModuleAltForm(FreeModuleTensor):
         
         Exterior product of two linear forms::
         
-            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
             sage: a = M.linear_form('A')
             sage: a[:] = [1,-3,4]
@@ -379,7 +379,7 @@ class FreeModuleLinForm(FreeModuleAltForm):
     INPUT:
     
     - ``fmodule`` -- free module `M` of finite rank over a commutative ring `R` 
-      (must be an instance of :class:`FiniteFreeModule`)
+      (must be an instance of :class:`FiniteRankFreeModule`)
     - ``name`` -- (default: None) name given to the linear form
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the linear 
       form; if none is provided, the LaTeX symbol is set to ``name``
@@ -388,7 +388,7 @@ class FreeModuleLinForm(FreeModuleAltForm):
     
     Linear form on a rank-3 free module::
     
-        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
         sage: e = M.basis('e')
         sage: a = M.linear_form('A') ; a
         linear form A on the rank-3 free module M over the Integer Ring
@@ -429,7 +429,7 @@ class FreeModuleLinForm(FreeModuleAltForm):
 
     As such, it is a tensor of type (0,1)::
 
-        sage: a._tensor_type
+        sage: a.tensor_type()
         (0, 1)
 
     """
@@ -473,14 +473,14 @@ class FreeModuleLinForm(FreeModuleAltForm):
         INPUT:
         
         - ``vector`` -- an element of the module (instance of 
-          :class:`FiniteFreeModuleElement`)
+          :class:`FiniteRankFreeModuleElement`)
         
         OUTPUT:
         
         - ring element `\langle \omega, v \rangle`
           
         """
-        if not isinstance(vector, FiniteFreeModuleElement):
+        if not isinstance(vector, FiniteRankFreeModuleElement):
             raise TypeError("The argument must be a free module element.")
         basis = self.common_basis(vector)
         if basis is None:

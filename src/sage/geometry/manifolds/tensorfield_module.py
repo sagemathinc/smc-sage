@@ -122,6 +122,21 @@ class TensorFieldModule(UniqueRepresentation, Module):
                            " mapped into the " + str(self._ambient_domain)
         return description
 
+    def base_module(self):
+        r""" 
+        Return the vector field module on which ``self`` is constructed.
+        
+        OUTPUT:
+        
+        - instance of class 
+          :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`
+          representing the module on which the tensor module is defined. 
+        
+        EXAMPLE:
+
+        """
+        return self._vmodule
+
 
 #******************************************************************************
 

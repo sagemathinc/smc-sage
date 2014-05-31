@@ -20,7 +20,7 @@ where `R` is the commutative ring over which the free module `M` is defined and
 Various derived classes of :class:`FreeModuleTensor` are devoted to specific 
 tensors:
 
-* :class:`FiniteFreeModuleElement` for elements of `M`, considered as 
+* :class:`FiniteRankFreeModuleElement` for elements of `M`, considered as 
   type-(1,0) tensors thanks to the canonical identification `M^{**}=M`, which
   holds since `M` is a free module of finite rank
 
@@ -54,7 +54,7 @@ EXAMPLES:
 
     A tensor of type (1,1) on a rank-3 free module over `\ZZ`::
     
-        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
         sage: t = M.tensor((1,1), name='t') ; t
         endomorphism t on the rank-3 free module M over the Integer Ring
         sage: t.parent()
@@ -177,7 +177,7 @@ class FreeModuleTensor(ModuleElement):
     INPUT:
     
     - ``fmodule`` -- free module `M` over a commutative ring `R` (must be an 
-      instance of :class:`FiniteFreeModule`)
+      instance of :class:`FiniteRankFreeModule`)
     - ``tensor_type`` -- pair (k,l) with k being the contravariant rank and l 
       the covariant rank
     - ``name`` -- (default: None) name given to the tensor
@@ -199,7 +199,7 @@ class FreeModuleTensor(ModuleElement):
 
     A tensor of type (1,1) on a rank-3 free module over `\ZZ`::
     
-        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
         sage: t = M.tensor((1,1), name='t') ; t
         endomorphism t on the rank-3 free module M over the Integer Ring
 
@@ -307,6 +307,89 @@ class FreeModuleTensor(ModuleElement):
         """
         pass # no derived quantities
 
+    #### Simple accessors ####
+    
+    def tensor_type(self):
+        r"""
+        Return the tensor type of ``self``. 
+        
+        OUTPUT:
+        
+        - pair (k,l), where k is the contravariant rank and l is the covariant 
+          rank
+        
+        EXAMPLES::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3)
+            sage: M.an_element().tensor_type()
+            (1, 0)
+            sage: t = M.tensor((2,1))
+            sage: t.tensor_type()
+            (2, 1)
+   
+        """
+        return self._tensor_type
+
+    def tensor_rank(self):
+        r"""
+        Return the tensor rank of ``self``. 
+        
+        OUTPUT:
+        
+        - integer k+l, where k is the contravariant rank and l is the covariant 
+          rank
+        
+        EXAMPLES::
+
+            sage: M = FiniteRankFreeModule(ZZ, 3)
+            sage: M.an_element().tensor_rank()
+            1
+            sage: t = M.tensor((2,1))
+            sage: t.tensor_rank()
+            3
+
+        """
+        return self._tensor_rank
+
+    def symmetries(self):
+        r"""
+        Print the list of symmetries and antisymmetries.
+        
+        EXAMPLES:
+        
+        Various symmetries / antisymmetries for a rank-4 tensor::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: t = M.tensor((4,0), name='T') # no symmetry declared
+            sage: t.symmetries()
+            no symmetry;  no antisymmetry
+            sage: t = M.tensor((4,0), name='T', sym=(0,1))
+            sage: t.symmetries()
+            symmetry: (0, 1);  no antisymmetry
+            sage: t = M.tensor((4,0), name='T', sym=[(0,1), (2,3)])
+            sage: t.symmetries()
+            symmetries: [(0, 1), (2, 3)];  no antisymmetry
+            sage: t = M.tensor((4,0), name='T', sym=(0,1), antisym=(2,3))
+            sage: t.symmetries()
+            symmetry: (0, 1);  antisymmetry: (2, 3)
+            
+        """
+        if len(self._sym) == 0:
+            s = "no symmetry; "
+        elif len(self._sym) == 1:
+            s = "symmetry: " + str(self._sym[0]) + "; "
+        else:
+            s = "symmetries: " + str(self._sym) + "; " 
+        if len(self._antisym) == 0:
+            a = "no antisymmetry"
+        elif len(self._antisym) == 1:
+            a = "antisymmetry: " + str(self._antisym[0])
+        else:
+            a = "antisymmetries: " + str(self._antisym)   
+        print s, a
+    
+    #### End of simple accessors #####
+
     def view(self, basis=None, format_spec=None):
         r"""
         Displays the tensor in terms of its expansion onto a given basis.
@@ -326,7 +409,7 @@ class FreeModuleTensor(ModuleElement):
         
         Display of a module element (type-(1,0) tensor)::
         
-            sage: M = FiniteFreeModule(QQ, 2, name='M', start_index=1)
+            sage: M = FiniteRankFreeModule(QQ, 2, name='M', start_index=1)
             sage: e = M.basis('e')
             sage: v = M([1/3,-2], name='v')
             sage: v.view()
@@ -369,7 +452,7 @@ class FreeModuleTensor(ModuleElement):
         The output format can be set via the argument ``output_formatter`` 
         passed at the module construction::
 
-            sage: N = FiniteFreeModule(QQ, 2, name='N', start_index=1, output_formatter=Rational.numerical_approx)
+            sage: N = FiniteRankFreeModule(QQ, 2, name='N', start_index=1, output_formatter=Rational.numerical_approx)
             sage: e = N.basis('e')
             sage: v = N([1/3,-2], name='v')
             sage: v.view()  # default format (53 bits of precision)
@@ -454,44 +537,7 @@ class FreeModuleTensor(ModuleElement):
         else:
             result.latex = latex(self) + " = " + expansion_latex
         return result
-    
-    def symmetries(self):
-        r"""
-        Print the list of symmetries and antisymmetries.
-        
-        EXAMPLES:
-        
-        Various symmetries / antisymmetries for a rank-4 tensor::
-        
-            sage: M = FiniteFreeModule(ZZ, 3, name='M')
-            sage: t = M.tensor((4,0), name='T') # no symmetry declared
-            sage: t.symmetries()
-            no symmetry;  no antisymmetry
-            sage: t = M.tensor((4,0), name='T', sym=(0,1))
-            sage: t.symmetries()
-            symmetry: (0, 1);  no antisymmetry
-            sage: t = M.tensor((4,0), name='T', sym=[(0,1), (2,3)])
-            sage: t.symmetries()
-            symmetries: [(0, 1), (2, 3)];  no antisymmetry
-            sage: t = M.tensor((4,0), name='T', sym=(0,1), antisym=(2,3))
-            sage: t.symmetries()
-            symmetry: (0, 1);  antisymmetry: (2, 3)
-            
-        """
-        if len(self._sym) == 0:
-            s = "no symmetry; "
-        elif len(self._sym) == 1:
-            s = "symmetry: " + str(self._sym[0]) + "; "
-        else:
-            s = "symmetries: " + str(self._sym) + "; " 
-        if len(self._antisym) == 0:
-            a = "no antisymmetry"
-        elif len(self._antisym) == 1:
-            a = "antisymmetry: " + str(self._antisym[0])
-        else:
-            a = "antisymmetries: " + str(self._antisym)   
-        print s, a
-         
+             
     def set_name(self, name, latex_name=None):
         r"""
         Set (or change) the text name and LaTeX name of the tensor.
@@ -580,7 +626,7 @@ class FreeModuleTensor(ModuleElement):
         
         Components of a tensor of type-(1,1)::
         
-            sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M', start_index=1)
             sage: e = M.basis('e')
             sage: t = M.tensor((1,1), name='t')
             sage: t[1,2] = -3 ; t[3,3] = 2
@@ -695,7 +741,7 @@ class FreeModuleTensor(ModuleElement):
         
         Setting components of a type-(1,1) tensor::
         
-            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
             sage: t = M.tensor((1,1), name='t')
             sage: t.set_comp()[0,1] = -3
@@ -721,8 +767,7 @@ class FreeModuleTensor(ModuleElement):
         
             sage: a = M.automorphism()
             sage: a[:] = [[0,0,1], [1,0,0], [0,-1,0]]
-            sage: M._basis_changes[(e,f)] = a
-            sage: M._basis_changes[(f,e)] = a.inverse()
+            sage: M.set_basis_change(e, f, a)
             sage: t.view(e)
             t = -4 e_1*e^2
             sage: t._components.keys()  # random output (dictionary keys)
@@ -773,7 +818,7 @@ class FreeModuleTensor(ModuleElement):
         
         Setting components of a type-(1,1) tensor::
         
-            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
             sage: t = M.tensor((1,1), name='t')
             sage: t.add_comp()[0,1] = -3
@@ -824,7 +869,7 @@ class FreeModuleTensor(ModuleElement):
         
         Deleting components of a module element::
         
-            sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M', start_index=1)
             sage: e = M.basis('e')
             sage: u = M([2,1,-5])
             sage: f = M.basis('f')
@@ -932,7 +977,7 @@ class FreeModuleTensor(ModuleElement):
         
         Copy of a tensor of type (1,1)::
         
-            sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M', start_index=1)
             sage: e = M.basis('e')
             sage: t = M.tensor((1,1), name='t')
             sage: t[1,2] = -3 ; t[3,3] = 2
@@ -987,7 +1032,7 @@ class FreeModuleTensor(ModuleElement):
         
         Common basis for the components of two module elements::
         
-            sage: M = FiniteFreeModule(ZZ, 3, name='M', start_index=1)
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M', start_index=1)
             sage: e = M.basis('e')
             sage: u = M([2,1,-5])
             sage: f = M.basis('f')
@@ -1007,8 +1052,7 @@ class FreeModuleTensor(ModuleElement):
         
             sage: a = M.automorphism()
             sage: a[:] = [[0,0,1], [1,0,0], [0,-1,0]]
-            sage: M._basis_changes[(e,f)] = a
-            sage: M._basis_changes[(f,e)] = a.inverse()
+            sage: M.set_basis_change(e, f, a)
             sage: u.common_basis(v)
             basis (e_1,e_2,e_3) on the rank-3 free module M over the Integer Ring
 
@@ -1341,7 +1385,7 @@ class FreeModuleTensor(ModuleElement):
                 raise TypeError("The argument no. " + str(i+1) + 
                                 " must be a linear form.")
         for i in range(self._tensor_type[0],p):
-            if not isinstance(args[i], FiniteFreeModuleElement):
+            if not isinstance(args[i], FiniteRankFreeModuleElement):
                 raise TypeError("The argument no. " + str(i+1) + 
                                 " must be a module element.")
         fmodule = self._fmodule
@@ -1431,7 +1475,7 @@ class FreeModuleTensor(ModuleElement):
         
         Contraction on the two slots of a type-(1,1) tensor::
 
-            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e') ; e
             basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
             sage: a = M.tensor((1,1), name='a') ; a
@@ -1525,7 +1569,7 @@ class FreeModuleTensor(ModuleElement):
         
         Contraction of a tensor of type (0,1) with a tensor of type (1,0)::
         
-            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
             sage: a = M.linear_form()  # tensor of type (0,1) is a linear form
             sage: a[:] = [-3,2,1]
@@ -1714,7 +1758,7 @@ class FreeModuleTensor(ModuleElement):
         
         Symmetrization of a tensor of type (2,0)::
         
-            sage: M = FiniteFreeModule(QQ, 3, name='M')
+            sage: M = FiniteRankFreeModule(QQ, 3, name='M')
             sage: e = M.basis('e')
             sage: t = M.tensor((2,0))
             sage: t[:] = [[2,1,-3],[0,-4,5],[-1,4,2]]
@@ -1884,7 +1928,7 @@ class FreeModuleTensor(ModuleElement):
                 
         Antisymmetrization of a tensor of type (2,0)::
         
-            sage: M = FiniteFreeModule(QQ, 3, name='M')
+            sage: M = FiniteRankFreeModule(QQ, 3, name='M')
             sage: e = M.basis('e')
             sage: t = M.tensor((2,0))
             sage: t[:] = [[1,-2,3], [4,5,6], [7,8,-9]]
@@ -2066,11 +2110,11 @@ class FreeModuleTensor(ModuleElement):
 #         ...
 
 
-class FiniteFreeModuleElement(FreeModuleTensor):
+class FiniteRankFreeModuleElement(FreeModuleTensor):
     r"""
     Element of a free module of finite rank over a commutative ring.
     
-    The class :class:`FiniteFreeModuleElement` inherits from 
+    The class :class:`FiniteRankFreeModuleElement` inherits from 
     :class:`FreeModuleTensor` because the elements of a free module `M` of 
     finite rank over a commutative ring `R` are identified with tensors of 
     type (1,0) on `M` via the canonical map
@@ -2089,7 +2133,7 @@ class FiniteFreeModuleElement(FreeModuleTensor):
     INPUT:
     
     - ``fmodule`` -- free module `M` over a commutative ring `R` (must be an 
-      instance of :class:`FiniteFreeModule`)
+      instance of :class:`FiniteRankFreeModule`)
     - ``name`` -- (default: None) name given to the element
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the element; 
       if none is provided, the LaTeX symbol is set to ``name``
@@ -2098,7 +2142,7 @@ class FiniteFreeModuleElement(FreeModuleTensor):
     
     Let us consider a rank-3 free module over `\ZZ`::
     
-        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
         sage: e = M.basis('e') ; e
         basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
         
@@ -2114,8 +2158,8 @@ class FiniteFreeModuleElement(FreeModuleTensor):
 
     The second way is by a direct call to the class constructor::
     
-        sage: from sage.tensor.modules.free_module_tensor import FiniteFreeModuleElement
-        sage: v2 = FiniteFreeModuleElement(M, name='v')
+        sage: from sage.tensor.modules.free_module_tensor import FiniteRankFreeModuleElement
+        sage: v2 = FiniteRankFreeModuleElement(M, name='v')
         sage: v2[0], v2[2] = 2, -1 # setting the nonzero components in the default basis (e)
         sage: v2
         element v of the rank-3 free module M over the Integer Ring
@@ -2164,7 +2208,7 @@ class FiniteFreeModuleElement(FreeModuleTensor):
     
     Addition::
     
-        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
         sage: e = M.basis('e') ; e
         basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
         sage: a = M([0,1,3], name='a') ; a
@@ -2248,9 +2292,9 @@ class FiniteFreeModuleElement(FreeModuleTensor):
 
     def _new_instance(self):
         r"""
-        Create a :class:`FiniteFreeModuleElement` instance.
+        Create a :class:`FiniteRankFreeModuleElement` instance.
         
         """
-        return FiniteFreeModuleElement(self._fmodule)
+        return FiniteRankFreeModuleElement(self._fmodule)
 
         

@@ -160,7 +160,7 @@ class Point(Element):
         Special Sage function for the LaTeX representation of the object.
         """
         if self._latex_name is None:
-            return r'\mbox{no symbol}'
+            return r'\mbox{' + str(self) + r'}'
         else:
            return self._latex_name
 

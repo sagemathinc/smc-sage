@@ -21,7 +21,7 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from sage.tensor.modules.free_module_tensor import FiniteFreeModuleElement
+from sage.tensor.modules.free_module_tensor import FiniteRankFreeModuleElement
 from tensorfield import TensorField, TensorFieldParal
 
 class VectorField(TensorField):
@@ -92,7 +92,7 @@ class VectorField(TensorField):
 
 #******************************************************************************
 
-class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
+class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorField):
     r"""
     Vector field on an open set of a differentiable manifold, 
     with values on parallelizable open subset of a differentiable manifold. 
@@ -215,7 +215,7 @@ class VectorFieldParal(FiniteFreeModuleElement, TensorFieldParal, VectorField):
 
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
-        FiniteFreeModuleElement.__init__(self, vector_field_module, name=name, 
+        FiniteRankFreeModuleElement.__init__(self, vector_field_module, name=name, 
                                          latex_name=latex_name)
         # TensorFieldParal attributes:
         self._domain = vector_field_module._domain

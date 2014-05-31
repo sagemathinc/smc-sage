@@ -43,7 +43,7 @@ class FreeModuleEndomorphism(FreeModuleTensor):
     INPUT:
     
     - ``fmodule`` -- free module `M` over a commutative ring `R` 
-      (must be an instance of :class:`FiniteFreeModule`)
+      (must be an instance of :class:`FiniteRankFreeModule`)
     - ``name`` -- (default: None) name given to the endomorphism
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
       endomorphism; if none is provided, the LaTeX symbol is set to ``name``
@@ -52,7 +52,7 @@ class FreeModuleEndomorphism(FreeModuleTensor):
     
     Endomorphism on a rank-3 module::
     
-        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
         sage: t = M.endomorphism('T') ; t
         endomorphism T on the rank-3 free module M over the Integer Ring
 
@@ -60,13 +60,13 @@ class FreeModuleEndomorphism(FreeModuleTensor):
 
         sage: t.parent()
         free module of type-(1,1) tensors on the rank-3 free module M over the Integer Ring
-        sage: t._tensor_type
+        sage: t.tensor_type()
         (1, 1)
-        sage: t._tensor_rank
+        sage: t.tensor_rank()
         2
 
     Consequently, an endomorphism can also be created by the module method 
-    :meth:`~sage.tensor.modules.finite_free_module.FiniteFreeModule.tensor`::
+    :meth:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule.tensor`::
     
         sage: t = M.tensor((1,1), name='T') ; t
         endomorphism T on the rank-3 free module M over the Integer Ring
@@ -124,7 +124,7 @@ class FreeModuleEndomorphism(FreeModuleTensor):
         Redefinition of :meth:`FreeModuleTensor.__call__` to allow for a single 
         argument (module element). 
         """
-        from free_module_tensor import FiniteFreeModuleElement
+        from free_module_tensor import FiniteRankFreeModuleElement
         if len(arg) > 1:
             # the endomorphism acting as a type (1,1) tensor on a pair 
             # (linear form, module element), returning a scalar:
@@ -132,7 +132,7 @@ class FreeModuleEndomorphism(FreeModuleTensor):
         # the endomorphism acting as such, on a module element, returning a
         # module element:
         vector = arg[0]
-        if not isinstance(vector, FiniteFreeModuleElement):
+        if not isinstance(vector, FiniteRankFreeModuleElement):
             raise TypeError("The argument must be an element of a free module.")
         basis = self.common_basis(vector)
         t = self._components[basis]
@@ -164,7 +164,7 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
     INPUT:
     
     - ``fmodule`` -- free module `M` over a commutative ring `R` 
-      (must be an instance of :class:`FiniteFreeModule`)
+      (must be an instance of :class:`FiniteRankFreeModule`)
     - ``name`` -- (default: None) name given to the automorphism
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
       automorphism; if none is provided, the LaTeX symbol is set to ``name``
@@ -173,7 +173,7 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
     
     Automorphism on a rank-2 free module (vector space) on `\QQ`::
     
-        sage: M = FiniteFreeModule(QQ, 2, name='M')
+        sage: M = FiniteRankFreeModule(QQ, 2, name='M')
         sage: a = M.automorphism('A') ; a
         automorphism A on the rank-2 free module M over the Rational Field
 
@@ -181,9 +181,9 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
     
         sage: a.parent()
         free module of type-(1,1) tensors on the rank-2 free module M over the Rational Field
-        sage: a._tensor_type
+        sage: a.tensor_type()
         (1, 1)
-        sage: a._tensor_rank
+        sage: a.tensor_rank()
         2
 
     Setting the components in a basis::
@@ -255,7 +255,7 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
         
         Inverse of an automorphism on a rank-3 free module::
         
-            sage: M = FiniteFreeModule(QQ, 3, name='M')
+            sage: M = FiniteRankFreeModule(QQ, 3, name='M')
             sage: a = M.automorphism('A')
             sage: e = M.basis('e')
             sage: a[:] = [[1,0,-1], [0,3,0], [0,0,2]]
@@ -321,7 +321,7 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
     INPUT:
     
     - ``fmodule`` -- free module `M` over a commutative ring `R` 
-      (must be an instance of :class:`FiniteFreeModule`)
+      (must be an instance of :class:`FiniteRankFreeModule`)
     - ``name`` -- (default: 'Id') name given to the identity map. 
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity 
       map; if none is provided, the LaTeX symbol is set to ``name``
@@ -330,7 +330,7 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
     
     Identity map on a rank-3 free module::
     
-        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
         sage: e = M.basis('e')
         sage: a = M.identity_map() ; a
         identity map on the rank-3 free module M over the Integer Ring
@@ -347,9 +347,9 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
     
         sage: a.parent()
         free module of type-(1,1) tensors on the rank-3 free module M over the Integer Ring
-        sage: a._tensor_type
+        sage: a.tensor_type()
         (1, 1)
-        sage: a._tensor_rank
+        sage: a.tensor_rank()
         2
 
     Its components are Kronecker deltas in any basis::
@@ -470,7 +470,7 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
 
         Components of the identity map on a rank-3 free module::
     
-            sage: M = FiniteFreeModule(ZZ, 3, name='M')
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
             sage: a = M.identity_map()
             sage: a.comp(basis=e) 
@@ -514,12 +514,12 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
         r"""
         Redefinition of :meth:`FreeModuleEndomorphism.__call__`.
         """
-        from free_module_tensor import FiniteFreeModuleElement
+        from free_module_tensor import FiniteRankFreeModuleElement
         from free_module_alt_form import FreeModuleLinForm
         if len(arg) == 1:
             # the identity map acting as such, on a module element:
             vector = arg[0]
-            if not isinstance(vector, FiniteFreeModuleElement):
+            if not isinstance(vector, FiniteRankFreeModuleElement):
                 raise TypeError("The argument must be a module element.")
             return vector
             #!# should it be return vector.copy() instead ? 
@@ -530,7 +530,7 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
             if not isinstance(linform, FreeModuleLinForm):
                 raise TypeError("The first argument must be a linear form.")
             vector = arg[1]
-            if not isinstance(vector, FiniteFreeModuleElement):
+            if not isinstance(vector, FiniteRankFreeModuleElement):
                 raise TypeError("The second argument must be a module element.")
             return linform(vector)
         else:
@@ -547,7 +547,7 @@ class FreeModuleSymBilinForm(FreeModuleTensor):
     INPUT:
     
     - ``fmodule`` -- free module `M` over a commutative ring `R` 
-      (must be an instance of :class:`FiniteFreeModule`)
+      (must be an instance of :class:`FiniteRankFreeModule`)
     - ``name`` -- (default: None) name given to the symmetric bilinear form
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the symmetric 
       bilinear form; if none is provided, the LaTeX symbol is set to ``name``
@@ -556,7 +556,7 @@ class FreeModuleSymBilinForm(FreeModuleTensor):
     
     Symmetric bilinear form on a rank-3 free module::
     
-        sage: M = FiniteFreeModule(ZZ, 3, name='M')
+        sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
         sage: a = M.sym_bilinear_form('A') ; a
         symmetric bilinear form A on the rank-3 free module M over the Integer Ring
         
@@ -564,9 +564,9 @@ class FreeModuleSymBilinForm(FreeModuleTensor):
     
         sage: a.parent()
         free module of type-(0,2) tensors on the rank-3 free module M over the Integer Ring
-        sage: a._tensor_type
+        sage: a.tensor_type()
         (0, 2)
-        sage: a._tensor_rank
+        sage: a.tensor_rank()
         2
         sage: a.symmetries()
         symmetry: (0, 1);  no antisymmetry

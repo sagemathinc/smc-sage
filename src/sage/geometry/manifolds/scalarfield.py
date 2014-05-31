@@ -461,7 +461,7 @@ class ScalarField(CommutativeAlgebraElement):
         LaTeX representation of the object.
         """
         if self._latex_name is None:
-            return r'\mbox{no symbol}'
+            return r'\mbox{' + str(self) + r'}'
         else:
            return self._latex_name
 
@@ -471,6 +471,46 @@ class ScalarField(CommutativeAlgebraElement):
         
         """
         return ScalarField(self._domain)        
+
+    def domain(self):
+        r"""
+        Return the domain on which the scalar field is defined.
+        
+        OUTPUT:
+        
+        - instance of class :class:`~sage.geometry.manifolds.domain.OpenDomain` 
+          representing the manifold's open subset on which ``self`` is defined. 
+        
+        EXAMPLES::
+        
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart()
+            sage: f = M.scalar_field(x+2*y)
+            sage: f.domain()
+            2-dimensional manifold 'M'
+            sage: U = M.open_domain('U', coord_def={c_xy: x<0})
+            sage: g = f.restrict(U)
+            sage: g.domain()
+            open domain 'U' on the 2-dimensional manifold 'M'
+        
+        """
+        return self._domain
+
+    def tensor_type(self):
+        r"""
+        Return the tensor type of ``self``, i.e. (0,0), when ``self`` is 
+        considered as a tensor field on the manifold.
+        
+        EXAMPLE::
+        
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart()
+            sage: f = M.scalar_field(x+2*y)
+            sage: f.tensor_type()
+            (0, 0)
+        
+        """
+        return self._tensor_type
 
     def copy(self):
         r"""

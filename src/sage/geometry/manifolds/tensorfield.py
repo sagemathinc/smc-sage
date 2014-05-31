@@ -243,7 +243,7 @@ A scalar field (rank-0 tensor field)::
 
     sage: f = M.scalar_field(x*y + 2, name='f') ; f 
     scalar field 'f' on the 2-dimensional manifold 'M'
-    sage: f._tensor_type
+    sage: f.tensor_type()
     (0, 0)
     
 A scalar field acts on points on the manifold::
@@ -256,7 +256,7 @@ A vector field (rank-1 contravariant tensor field)::
 
     sage: v = M.vector_field('v') ; v
     vector field 'v' on the 2-dimensional manifold 'M'
-    sage: v._tensor_type
+    sage: v.tensor_type()
     (1, 0)
     sage: v[1], v[2] = -x, y
     sage: v.view()
@@ -266,7 +266,7 @@ A field of symmetric bilinear forms::
 
     sage: q = M.sym_bilin_form_field('Q') ; q
     field of symmetric bilinear forms 'Q' on the 2-dimensional manifold 'M'
-    sage: q._tensor_type
+    sage: q.tensor_type()
     (0, 2)
 
 The components of a symmetric bilinear form are dealt by the subclass 
@@ -523,6 +523,106 @@ class TensorField(ModuleElement):
             del val[0]._lie_der_along_self[id(self)]
         self._lie_derivatives.clear()
 
+    #### Simple accessors ####
+    
+    def domain(self):
+        r"""
+        Return the domain on which the tensor field is defined.
+        
+        OUTPUT:
+        
+        - instance of class :class:`~sage.geometry.manifolds.domain.OpenDomain` 
+          representing the manifold's open subset on which ``self`` is defined. 
+        
+        EXAMPLES::
+        
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart()
+            sage: t = M.tensor_field(1,2)
+            sage: t.domain()
+            2-dimensional manifold 'M'
+            sage: U = M.open_domain('U', coord_def={c_xy: x<0})
+            sage: h = t.restrict(U)
+            sage: h.domain()
+            open domain 'U' on the 2-dimensional manifold 'M'
+        
+        """
+        return self._domain
+
+    def tensor_type(self):
+        r"""
+        Return the tensor type of ``self``. 
+        
+        OUTPUT:
+        
+        - pair (k,l), where k is the contravariant rank and l is the covariant 
+          rank
+        
+        EXAMPLE::
+        
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart()
+            sage: t = M.tensor_field(1,2)
+            sage: t.tensor_type()
+            (1, 2)
+            sage: v = M.vector_field()
+            sage: v.tensor_type()
+            (1, 0)
+        
+        """
+        return self._tensor_type
+
+    def tensor_rank(self):
+        r"""
+        Return the tensor rank of ``self``. 
+        
+        OUTPUT:
+        
+        - integer k+l, where k is the contravariant rank and l is the covariant 
+          rank
+        
+        EXAMPLE::
+
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart()
+            sage: t = M.tensor_field(1,2)
+            sage: t.tensor_rank()
+            3
+            sage: v = M.vector_field()
+            sage: v.tensor_rank()
+            1
+                
+        """
+        return self._tensor_rank
+
+    def symmetries(self):
+        r"""
+        Print the list of symmetries and antisymmetries.
+        
+        EXAMPLES:
+        
+        Various symmetries / antisymmetries for a rank-4 tensor
+        
+        """
+        if len(self._sym) == 0:
+            s = "no symmetry; "
+        elif len(self._sym) == 1:
+            s = "symmetry: " + str(self._sym[0]) + "; "
+        else:
+            s = "symmetries: " + str(self._sym) + "; " 
+        if len(self._antisym) == 0:
+            a = "no antisymmetry"
+        elif len(self._antisym) == 1:
+            a = "antisymmetry: " + str(self._antisym[0])
+        else:
+            a = "antisymmetries: " + str(self._antisym)   
+        print s, a
+
+    #### End of simple accessors #####
+
+
     def set_restriction(self, rst):
         r"""
         Define a restriction of ``self`` to some subdomain.
@@ -755,6 +855,7 @@ class TensorField(ModuleElement):
         
         Components of a type-(1,1) tensor field defined on two open domains::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: U = M.open_domain('U')
             sage: c_xy.<x, y> = U.chart()
@@ -1502,17 +1603,16 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         sage: t._components
         {vector frame (M, (e_0,e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_0,e_1,e_2)), vector frame (M, (f_0,f_1,f_2)): 2-indices components w.r.t. vector frame (M, (f_0,f_1,f_2))}
 
-    The basic attributes of :class:`TensorField` are :attr:`domain`, 
-    :attr:`tensor_type` (the pair (k,l)), :attr:`tensor_rank` (the integer k+l),  
-    and :attr:`components` (the dictionary of the components w.r.t. various 
-    frames)::
+    The basic properties of a tensor field are:: 
 
-        sage: t._domain
+        sage: t.domain()
         3-dimensional manifold 'M'
-        sage: t._tensor_type
+        sage: t.tensor_type()
         (2, 0)
-        sage: t._tensor_rank
-        2
+
+    Internally, the components w.r.t. various vector frames are stored in the
+    dictionary :attr:`_components`::
+
         sage: t._components
         {vector frame (M, (e_0,e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_0,e_1,e_2)), vector frame (M, (f_0,f_1,f_2)): 2-indices components w.r.t. vector frame (M, (f_0,f_1,f_2))}
 
@@ -1826,7 +1926,6 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: f = M.scalar_field(x^3 + x*y^2)
             sage: w.lie_der(v)(f).view()
             on M: (x, y) |--> -(x + 2)*y^3 + 3*x^3 - x*y^2 + 5*(x^3 - 2*x^2)*y
-            on M: (u, v) |--> 1/4*u^4 - 1/4*(3*u - 7)*v^3 - 1/4*v^4 - 5/4*u^3 + 7/4*u*v^2 + 3/4*(u^3 + u^2)*v
             sage: w.lie_der(v)(f) == v(w(f)) - w(v(f))  # rhs = commutator [v,w] acting on f
             True
             
