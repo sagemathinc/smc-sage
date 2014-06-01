@@ -156,6 +156,7 @@ EXAMPLES:
 #******************************************************************************
 
 from sage.tensor.modules.free_module_basis import FreeModuleBasis, FreeModuleCoBasis
+from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule
 
 class VectorFrame(FreeModuleBasis):
     r"""
@@ -209,6 +210,7 @@ class VectorFrame(FreeModuleBasis):
     """
     def __init__(self, vector_field_module, symbol, latex_symbol=None,
                  from_frame=None):
+        from sage.geometry.manifolds.domain import OpenDomain
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
         self._dest_map = vector_field_module._dest_map
@@ -245,6 +247,10 @@ class VectorFrame(FreeModuleBasis):
         # The frame is added to the domain's set of frames, as well as to all 
         # the superdomains' sets of frames; moreover the first defined frame 
         # is considered as the default one
+        if self._dest_map is None:
+            dest_map_name = 'Id'
+        else:
+            dest_map_name = self._dest_map._name
         for sd in self._domain._superdomains:
             for other in sd._frames:
                 if repr(self) == repr(other):
@@ -253,6 +259,14 @@ class VectorFrame(FreeModuleBasis):
             sd._frames.append(self)
             if sd._def_frame is None: 
                 sd._def_frame = self
+            if isinstance(sd, OpenDomain):
+                # Initialization of the zero elements of tensor field modules:
+                if dest_map_name in sd._vector_field_modules:
+                    xsd = sd._vector_field_modules[dest_map_name] #!# to be improved
+                    if not isinstance(xsd, FiniteRankFreeModule):
+                        for t in xsd._tensor_modules.values():
+                            t(0).add_comp(self)
+                            # (since new components are initialized to zero)
         if self._dest_map is None:
             # The frame is added to the list of the domain's covering frames:
             self._domain._set_covering_frame(self)

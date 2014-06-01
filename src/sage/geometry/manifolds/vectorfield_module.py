@@ -1,6 +1,13 @@
 r"""
 Vector field module
 
+The set of vector fields along an open subset `U` of some manifold `S`
+with values in a open subset `V` of a manifold `M` (possibly `S=M` and `U=V`)
+is a module over the algebra `C^\infty(U)` of differentiable scalar fields 
+on `U`. If `V` is parallelizable, it is a free module and is represented 
+by the class :class:`VectorFieldFreeModule`, while if `V` is not
+parallelizable, it is represented by class :class:`VectorFieldModule`. 
+
 
 AUTHORS:
 
@@ -52,9 +59,8 @@ class VectorFieldModule(UniqueRepresentation, Module):
         \forall p \in U,\ v(p) \in T_{\Phi(p)}M
         
     
-    Since `V` is parallelizable, the `\mathcal{X}(U,\Phi)` is a free module 
-    over `C^\infty(U)`, the ring (algebra) of differentiable scalar fields on 
-    `U`. Its rank is the dimension of `M`. 
+    The set `\mathcal{X}(U,\Phi)` is a module over `C^\infty(U)`, the ring 
+    (algebra) of differentiable scalar fields on `U`. 
     
     The standard case of vector fields *on* a manifold corresponds to `S=M`, 
     `U=V` and `\Phi = \mathrm{Id}`. 
@@ -69,6 +75,80 @@ class VectorFieldModule(UniqueRepresentation, Module):
       if none is provided, the identity is assumed (case of vector fields *on* 
       `U`)
     
+    EXAMPLE:
+    
+    Module of vector fields on the 2-sphere::
+    
+        sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
+        sage: U = M.open_domain('U') # complement of the North pole
+        sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+        sage: V = M.open_domain('V') # complement of the South pole
+        sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+        sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
+                                             intersection_name='W', restrictions1= x^2+y^2!=0, \
+                                             restrictions2= u^2+v^2!=0)
+        sage: uv_to_xy = xy_to_uv.inverse()
+        sage: XM = M.vector_field_module() ; XM
+        module X(M) of vector fields on the 2-dimensional manifold 'M'
+        
+    `\mathcal{X}(M)` is a module over the algebra `C^\infty(M)`::
+    
+        sage: XM.category()
+        Category of modules over algebra of scalar fields on the 2-dimensional manifold 'M'
+        sage: XM.base_ring() is M.scalar_field_algebra()
+        True
+    
+    `\mathcal{X}(M)` is not a free module::
+    
+        sage: isinstance(XM, FiniteRankFreeModule)
+        False
+
+    because `M = S^2` is not parallelizable::
+    
+        sage: M.is_manifestly_parallelizable()
+        False
+        
+    On the contrary, the module of vector fields on `U` is a free module,
+    since `U` is parallelizable (being a coordinate domain)::
+    
+        sage: isinstance(U.vector_field_module(), FiniteRankFreeModule)
+        True
+        sage: U.is_manifestly_parallelizable()
+        True
+
+    The zero element of the module::
+
+        sage: z = XM.zero() ; z
+        vector field 'zero' on the 2-dimensional manifold 'M'
+        sage: z.view(c_xy.frame())
+        zero = 0
+        sage: z.view(c_uv.frame())
+        zero = 0
+        
+    Sage test suite for modules is passed::
+    
+        sage: TestSuite(XM).run(verbose=True)
+        running ._test_additive_associativity() . . . pass
+        running ._test_an_element() . . . pass
+        running ._test_category() . . . pass
+        running ._test_elements() . . .
+          Running the test suite of self.an_element()
+          running ._test_category() . . . pass
+          running ._test_eq() . . . pass
+          running ._test_nonzero_equal() . . . pass
+          running ._test_not_implemented_methods() . . . pass
+          running ._test_pickling() . . . pass
+          pass
+        running ._test_elements_eq_reflexive() . . . pass
+        running ._test_elements_eq_symmetric() . . . pass
+        running ._test_elements_eq_transitive() . . . pass
+        running ._test_elements_neq() . . . pass
+        running ._test_eq() . . . pass
+        running ._test_not_implemented_methods() . . . pass
+        running ._test_pickling() . . . pass
+        running ._test_some_elements() . . . pass
+        running ._test_zero() . . . pass
+
     """
 
     Element = VectorField
@@ -101,7 +181,15 @@ class VectorFieldModule(UniqueRepresentation, Module):
         if not hasattr(self, '_zero_element'):
             self._zero_element = self._element_constructor_(name='zero', 
                                                             latex_name='0')
-
+            for frame in self._domain._frames:
+                if frame._dest_map is None and self._dest_map is None: 
+                    self._zero_element.add_comp(frame)
+                    # (since new components are initialized to zero)
+                elif frame._dest_map is not None and self._dest_map is not None:
+                    if frame._dest_map._name == self._dest_map._name: #!# to be improved
+                        self._zero_element.add_comp(frame)
+                        # (since new components are initialized to zero)
+                    
     #### Methods required for any Parent 
 
     def _element_constructor_(self, comp=[], frame=None, name=None, 
@@ -254,7 +342,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         \forall p \in U,\ v(p) \in T_{\Phi(p)}M
         
     
-    Since `V` is parallelizable, the `\mathcal{X}(U,\Phi)` is a free module 
+    Since `V` is parallelizable, the set `\mathcal{X}(U,\Phi)` is a free module 
     over `C^\infty(U)`, the ring (algebra) of differentiable scalar fields on 
     `U`. Its rank is the dimension of `M`. 
     

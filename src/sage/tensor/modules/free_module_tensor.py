@@ -775,8 +775,6 @@ class FreeModuleTensor(ModuleElement):
              basis (f_0,f_1,f_2) on the rank-3 free module M over the Integer Ring]
 
         """
-        if self is self.parent()._zero_element: #!# this is maybe not very efficient
-            raise ValueError("The zero element cannot be changed.")
         if basis is None: 
             basis = self._fmodule._def_basis
         if basis not in self._components:

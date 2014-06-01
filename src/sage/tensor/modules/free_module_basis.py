@@ -110,16 +110,16 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
             v.set_comp(self)[i] = fmodule._ring.one()
             vl.append(v)
         self._vec = tuple(vl)
-        # The first defined basis is considered as the default one
-        # and is used to initialize the components of the zero elements of 
-        # all tensor modules constructed up to now (including the base module 
-        # itself, since it is considered as a type-(1,0) tensor module)
+        # The first defined basis is considered as the default one:
         if fmodule._def_basis is None:
             fmodule._def_basis = self
-            for t in fmodule._tensor_modules.values():
-                t._zero_element._components[self] = \
-                                                t._zero_element._new_comp(self)
-                # (since new components are initialized to zero)
+        # Initialization of the components w.r.t the current basis of the zero 
+        # elements of all tensor modules constructed up to now (including the 
+        # base module itself, since it is considered as a type-(1,0) tensor 
+        # module)        
+        for t in fmodule._tensor_modules.values():
+            t._zero_element._components[self] = t._zero_element._new_comp(self)
+                               # (since new components are initialized to zero)
         # The dual basis:
         self._dual_basis = self._init_dual_basis() 
 

@@ -788,8 +788,6 @@ class TensorField(ModuleElement):
           
 
         """
-        if self is self.parent().zero(): #!# this is maybe not very efficient
-            raise ValueError("The zero tensor field cannot be changed.")
         if basis is None: 
             basis = self._domain._def_frame
         self._del_derived() # deletes the derived quantities
@@ -821,8 +819,6 @@ class TensorField(ModuleElement):
           
 
         """
-        if self is self.parent().zero(): #!# this is maybe not very efficient
-            raise ValueError("The zero tensor field cannot be changed.")
         if basis is None: 
             basis = self._domain._def_frame
         self._del_derived() # deletes the derived quantities
@@ -1769,6 +1765,113 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         """
         FreeModuleTensor._del_derived(self) 
         TensorField._del_derived(self)
+
+    def set_comp(self, basis=None):
+        r"""
+        Return the components of the tensor field in a given vector frame 
+        for assignment.
+        
+        The components with respect to other frames on the same domain are 
+        deleted, in order to avoid any inconsistency. To keep them, use the 
+        method :meth:`add_comp` instead.
+        
+        INPUT:
+        
+        - ``basis`` -- (default: None) vector frame in which the components are
+          defined; if none is provided, the components are assumed to refer to 
+          the tensor field domain's default frame.
+         
+        OUTPUT: 
+        
+        - components in the given frame, as an instance of the 
+          class :class:`~sage.tensor.modules.comp.Components`; if such 
+          components did not exist previously, they are created.  
+        
+        EXAMPLES:
+                  
+
+        """
+        if basis is None: 
+            basis = self._fmodule._def_basis
+        if basis._domain == self._domain:
+            return FreeModuleTensor.set_comp(self, basis=basis)
+        else:
+            # setting components on a subdomain:
+            self._del_derived() # deletes the derived quantities
+            rst = self.restrict(basis._domain, dest_map=basis._dest_map)
+            return rst.set_comp(basis=basis)
+
+    def add_comp(self, basis=None):
+        r"""
+        Return the components of the tensor field in a given vector frame 
+        for assignment.
+        
+        The components with respect to other frames on the same domain are 
+        kept. To delete them them, use the method :meth:`set_comp` instead.
+        
+        INPUT:
+        
+        - ``basis`` -- (default: None) vector frame in which the components are
+          defined; if none is provided, the components are assumed to refer to 
+          the tensor field domain's default frame.
+         
+        OUTPUT: 
+        
+        - components in the given frame, as an instance of the 
+          class :class:`~sage.tensor.modules.comp.Components`; if such 
+          components did not exist previously, they are created.  
+        
+        EXAMPLES:
+        
+          
+
+        """
+        if basis is None: 
+            basis = self._fmodule._def_basis
+        if basis._domain == self._domain:
+            return FreeModuleTensor.add_comp(self, basis=basis)
+        else:
+            # adding components on a subdomain:
+            self._del_derived() # deletes the derived quantities
+            rst = self.restrict(basis._domain, dest_map=basis._dest_map)
+            return rst.add_comp(basis=basis)
+
+
+    def comp(self, basis=None, from_basis=None):
+        r"""
+        Return the components in a given vector frame.
+        
+        If the components are not known already, they are computed by the tensor
+        change-of-basis formula from components in another vector frame. 
+        
+        INPUT:
+        
+        - ``basis`` -- (default: None) vector frame in which the components are 
+          required; if none is provided, the components are assumed to refer to
+          the tensor field domain's default frame
+        - ``from_basis`` -- (default: None) vector frame from which the
+          required components are computed, via the tensor change-of-basis 
+          formula, if they are not known already in the basis ``basis``
+          
+        OUTPUT: 
+        
+        - components in the vector frame ``basis``, as an instance of the 
+          class :class:`~sage.tensor.modules.comp.Components` 
+
+        EXAMPLE:
+        
+ 
+        """
+        if basis is None: 
+            basis = self._fmodule._def_basis
+        if basis._domain == self._domain:
+            return FreeModuleTensor.comp(self, basis=basis, 
+                                         from_basis=from_basis)
+        else:
+            # components on a subdomain:
+            rst = self.restrict(basis._domain, dest_map=basis._dest_map)
+            return rst.comp(basis=basis, from_basis=from_basis)
+
 
     def common_coord_frame(self, other):
         r"""
