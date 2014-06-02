@@ -358,7 +358,94 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
       (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`); 
       if none is provided, the identity is assumed (case of vector fields *on* 
       `U`)
+
+    EXAMPLES:
+
+    Module of vector fields on the circle `S^1`: we start by constructing 
+    the `S^1` manifold::
     
+        sage: M = Manifold(1, 'S^1')
+        sage: U = M.open_domain('U')  # the complement of one point 
+        sage: c_t.<t> =  U.chart('t:(0,2*pi)') # the standard angle coordinate
+        sage: V = M.open_domain('V') # the complement of the point t=pi
+        sage: c_u.<u> = V.chart('u:(0,2*pi)') # the angle t-pi
+        sage: t_to_u = c_t.transition_map(c_u, (t-pi,), intersection_name='W', restrictions1 = t!=pi, restrictions2 = u!=pi)
+        sage: u_to_t = t_to_u.inverse()
+        sage: W = U.intersection(V)
+
+    `S^1` cannot be covered by a single chart, so it cannot be covered by
+    a coordinate frame. It is however parallelizable and we introduce a global
+    vector frame as follows. We notice that on their common subdomain, `W`,
+    the coordinate vectors `\partial/\partial t` and `\partial/\partial u`
+    coincide, as we can check explicitely::
+    
+        sage: c_t.frame()[0].view(c_u.frame().restrict(W))
+        d/dt = d/du
+
+    Therefore, we can extend `\partial/\partial t` to all `V` and hence to all 
+    `S^1`, to form a vector field on `S^1` whose components w.r.t. both 
+    `\partial/\partial t` and `\partial/\partial u` are 1::
+    
+        sage: e = M.vector_frame('e')
+        sage: e0 = e[0] ; e0
+        vector field 'e_0' on the 1-dimensional manifold 'S^1'
+        sage: e0[c_t.frame(), 0] = 1 
+        sage: e0[c_u.frame(), 0] = 1 
+        sage: e0.view(c_t.frame())
+        e_0 = d/dt
+        sage: e0.view(c_u.frame())
+        e_0 = d/du
+
+    Equipped with the frame `e`, the manifold `S^1` is manifestly 
+    parallelizable::
+    
+        sage: M.is_manifestly_parallelizable()
+        True
+    
+    Consequently, the module of vector fields on `S^1` is a free module::
+    
+        sage: XM = M.vector_field_module() ; XM
+        free module X(S^1) of vector fields on the 1-dimensional manifold 'S^1'
+        sage: isinstance(XM, FiniteRankFreeModule)
+        True
+        sage: XM.category()
+        Category of modules over algebra of scalar fields on the 1-dimensional manifold 'S^1'
+        sage: XM.base_ring() is M.scalar_field_algebra()
+        True
+
+    The zero element::
+    
+        sage: z = XM.zero() ; z
+        vector field 'zero' on the 1-dimensional manifold 'S^1'
+        sage: z.view()
+        zero = 0
+        sage: z.view(c_t.frame())
+        zero = 0
+
+    Sage test suite for modules is passed::
+    
+        sage: TestSuite(XM).run(verbose=True)
+        running ._test_additive_associativity() . . . pass
+        running ._test_an_element() . . . pass
+        running ._test_category() . . . pass
+        running ._test_elements() . . .
+          Running the test suite of self.an_element()
+          running ._test_category() . . . pass
+          running ._test_eq() . . . pass
+          running ._test_nonzero_equal() . . . pass
+          running ._test_not_implemented_methods() . . . pass
+          running ._test_pickling() . . . pass
+          pass
+        running ._test_elements_eq_reflexive() . . . pass
+        running ._test_elements_eq_symmetric() . . . pass
+        running ._test_elements_eq_transitive() . . . pass
+        running ._test_elements_neq() . . . pass
+        running ._test_eq() . . . pass
+        running ._test_not_implemented_methods() . . . pass
+        running ._test_pickling() . . . pass
+        running ._test_some_elements() . . . pass
+        running ._test_zero() . . . pass
+
     """
     
     Element = VectorFieldParal
@@ -382,6 +469,16 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                                   manif._dim, name=name, latex_name=latex_name, 
                                   start_index=manif._sindex,
                                   output_formatter=ScalarField.function_chart)
+        # Initialization of the components of the zero element:
+        for frame in self._domain._frames:
+            if frame._dest_map is None and self._dest_map is None: 
+                self._zero_element.add_comp(frame)
+                # (since new components are initialized to zero)
+            elif frame._dest_map is not None and self._dest_map is not None:
+                if frame._dest_map._name == self._dest_map._name: #!# to be improved
+                    self._zero_element.add_comp(frame)
+                    # (since new components are initialized to zero)
+
 
     #### Methods to be redefined by derived classes of FiniteRankFreeModule ####
 

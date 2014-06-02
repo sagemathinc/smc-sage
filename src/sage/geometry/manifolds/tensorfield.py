@@ -2166,21 +2166,28 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             elif not dest_map._codomain.is_subdomain(self._ambient_domain):
                 raise ValueError("Argument dest_map not compatible with " + 
                                  "self._ambient_domain")
-            smodule = subdomain.vector_field_module(dest_map=dest_map)
-            resu = smodule.tensor(self._tensor_type, name=self._name, 
-                                  latex_name=self._latex_name, sym=self._sym, 
-                                  antisym=self._antisym)
-            for frame in self._components:
-                for sframe in subdomain._covering_frames:
-                    if sframe in frame.subframes:
-                        comp_store = self._components[frame]._comp
-                        scomp = resu._new_comp(sframe)
-                        scomp_store = scomp._comp
-                        # the components of the restriction are evaluated 
-                        # index by index:
-                        for ind, value in comp_store.iteritems():
-                            scomp_store[ind] = value.restrict(subdomain)
-                        resu._components[sframe] = scomp
-            self._restrictions[subdomain] = resu
+            # First one tries to derive the restriction from a tighter domain:
+            for dom, rst in self._restrictions.items():
+                if subdomain.is_subdomain(dom):
+                    self._restrictions[subdomain] = rst.restrict(subdomain)
+                    break
+            # If this fails, the restriction is created from scratch:
+            else:
+                smodule = subdomain.vector_field_module(dest_map=dest_map)
+                resu = smodule.tensor(self._tensor_type, name=self._name, 
+                                      latex_name=self._latex_name, sym=self._sym, 
+                                      antisym=self._antisym)
+                for frame in self._components:
+                    for sframe in subdomain._covering_frames:
+                        if sframe in frame.subframes:
+                            comp_store = self._components[frame]._comp
+                            scomp = resu._new_comp(sframe)
+                            scomp_store = scomp._comp
+                            # the components of the restriction are evaluated 
+                            # index by index:
+                            for ind, value in comp_store.iteritems():
+                                scomp_store[ind] = value.restrict(subdomain)
+                            resu._components[sframe] = scomp
+                self._restrictions[subdomain] = resu
         return self._restrictions[subdomain]
 
