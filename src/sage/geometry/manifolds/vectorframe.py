@@ -414,9 +414,9 @@ class VectorFrame(FreeModuleBasis):
                                        latex_symbol=latex_symbol)
         for sdom in self._domain._superdomains:
             sdom._frame_changes[(self, the_new_frame)] = \
-                              self._fmodule._basis_changes[(self, the_new_frame)]
+                            self._fmodule._basis_changes[(self, the_new_frame)]
             sdom._frame_changes[(the_new_frame, self)] = \
-                              self._fmodule._basis_changes[(the_new_frame, self)]
+                            self._fmodule._basis_changes[(the_new_frame, self)]
         return the_new_frame
         
     def restrict(self, subdomain):
@@ -481,7 +481,11 @@ class VectorFrame(FreeModuleBasis):
             n = self._fmodule.rank()
             new_vectors = list()
             for i in range(n):
-                new_vectors.append( self._vec[i].restrict(subdomain) )
+                vrest = self._vec[i].restrict(subdomain)
+                for j in self._fmodule.irange():
+                    vrest.add_comp(res)[j] = 0
+                vrest.add_comp(res)[i] = 1
+                new_vectors.append(vrest)
             res._vec = tuple(new_vectors)
             # Update of superframes and subframes:
             res.superframes.update(self.superframes)

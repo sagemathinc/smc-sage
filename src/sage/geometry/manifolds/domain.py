@@ -2381,3 +2381,64 @@ class OpenDomain(Domain):
         from connection import AffConnection
         return AffConnection(self, name, latex_name)
 
+    def set_frame_change(self, frame1, frame2, change_of_frame, 
+                         compute_inverse=True):
+        r"""
+        Relates two vector frames by an automorphism.
+        
+        This updates the internal dictionary ``self._frame_changes``. 
+        
+        INPUT:
+        
+        - ``frame1`` -- frame 1, denoted `(e_i)`  below
+        - ``frame2`` -- frame 2, denoted `(f_i)`  below
+        - ``change_of_frame`` -- instance of class 
+          :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal`
+          describing the automorphism `P` that relates the basis `(e_i)` to 
+          the basis `(f_i)` according to `f_i = P(e_i)`
+        - ``compute_inverse`` (default: True) -- if set to True, the inverse
+          automorphism is computed and the change from basis `(f_i)` to `(e_i)`
+          is set to it in the internal dictionary ``self._frame_changes``
+        
+        EXAMPLE:
+        
+        Connecting two vector frames on a 2-dimensional manifold::
+        
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart()
+            sage: e = M.vector_frame('e')
+            sage: f = M.vector_frame('f')
+            sage: a = M.automorphism_field()
+            sage: a[e,:] = [[1,2],[0,3]]
+            sage: M.set_frame_change(e, f, a)
+            sage: f[0].view(e)
+            f_0 = e_0
+            sage: f[1].view(e)
+            f_1 = 2 e_0 + 3 e_1
+            sage: e[0].view(f)
+            e_0 = f_0
+            sage: e[1].view(f)
+            e_1 = -2/3 f_0 + 1/3 f_1
+            sage: M.frame_change(e,f)[e,:]
+            [1 2]
+            [0 3]
+        
+        """
+        from rank2field import AutomorphismFieldParal
+        fmodule = frame1._fmodule
+        if frame2._fmodule != fmodule:
+            raise ValueError("The two frames are not defined on the same " + 
+                             "vector field module.")
+        if not isinstance(change_of_frame, AutomorphismFieldParal):
+            raise TypeError("The argument change_of_frame must be some " +
+                            "instance of AutomorphismFieldParal.")
+        fmodule.set_basis_change(frame1, frame2, change_of_frame, 
+                                 compute_inverse=compute_inverse)
+        for sdom in self._superdomains:
+            sdom._frame_changes[(frame1, frame2)] = change_of_frame
+        if compute_inverse:
+            if (frame2, frame1) not in self._frame_changes:
+                for sdom in self._superdomains:
+                    sdom._frame_changes[(frame2, frame1)] = \
+                                                      change_of_frame.inverse()
+

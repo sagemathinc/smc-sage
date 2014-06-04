@@ -361,6 +361,33 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
     EXAMPLES:
 
+    Module of vector fields on `\RR^2`::
+    
+        sage: M = Manifold(2, 'R^2')
+        sage: cart.<x,y> = M.chart()  # Cartesian coordinates on R^2
+        sage: XM = M.vector_field_module() ; XM
+        free module X(R^2) of vector fields on the 2-dimensional manifold 'R^2'
+        sage: XM.category()
+        Category of modules over algebra of scalar fields on the 2-dimensional manifold 'R^2'
+        sage: XM.base_ring() is M.scalar_field_algebra()
+        True
+        
+    Since `\RR^2` is obviously parallelizable, XM is a free module::
+    
+        sage: isinstance(XM, FiniteRankFreeModule)
+        True
+
+    Some elements::
+    
+        sage: XM.an_element().view()
+        2 d/dx + 2 d/dy
+        sage: XM.zero().view()
+        zero = 0
+        sage: v = XM([-y,x]) ; v
+        vector field on the 2-dimensional manifold 'R^2'
+        sage: v.view()
+        -y d/dx + x d/dy
+
     Module of vector fields on the circle `S^1`: we start by constructing 
     the `S^1` manifold::
     
@@ -387,13 +414,11 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
     `\partial/\partial t` and `\partial/\partial u` are 1::
     
         sage: e = M.vector_frame('e')
-        sage: e0 = e[0] ; e0
-        vector field 'e_0' on the 1-dimensional manifold 'S^1'
-        sage: e0[c_t.frame(), 0] = 1 
-        sage: e0[c_u.frame(), 0] = 1 
-        sage: e0.view(c_t.frame())
+        sage: U.set_frame_change(e.restrict(U), c_t.frame(), U.identity_map())
+        sage: V.set_frame_change(e.restrict(V), c_u.frame(), V.identity_map())
+        sage: e[0].view(c_t.frame())
         e_0 = d/dt
-        sage: e0.view(c_u.frame())
+        sage: e[0].view(c_u.frame())
         e_0 = d/du
 
     Equipped with the frame `e`, the manifold `S^1` is manifestly 
