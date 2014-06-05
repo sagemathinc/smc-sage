@@ -2209,8 +2209,8 @@ class OpenDomain(Domain):
             raise NotImplementedError("OneForm not implemented yet")
 
 
-    def diff_mapping(self, domain, coord_functions=None, chart_from=None, 
-                     chart_to=None, name=None, latex_name=None):
+    def diff_mapping(self, codomain, coord_functions=None, chart1=None, 
+                     chart2=None, name=None, latex_name=None):
         r"""
         Define a differentiable mapping between the current domain and another
         domain (possibly on another manifold). 
@@ -2220,18 +2220,19 @@ class OpenDomain(Domain):
         
         INPUT:
 
-        - ``domain`` -- domain on the arrival manifold 
+        - ``codomain`` -- mapping's codomain (the arrival manifold or some 
+          subset of it)
         - ``coord_functions`` -- (default: None) the coordinate symbolic expression 
           of the mapping: list (or tuple) of the coordinates of the image expressed 
           in terms of the coordinates of the considered point; if the dimension of 
           the arrival manifold is 1, a single expression is expected 
           (not a list with a single element)
-        - ``chart_from`` -- (default: None) chart in which the 
+        - ``chart1`` -- (default: None) chart in which the 
           coordinates are given on the domain being mapped; if none is provided, 
           the coordinates are assumed to refer to domain's default chart
-        - ``chart_to`` -- (default: None) chart in which the 
-          coordinates are given on the image domain; if none is provided, the coordinates 
-          are assumed to refer to the domain's default chart
+        - ``chart2`` -- (default: None) chart in which the 
+          coordinates are given on the codomain; if none is provided, the coordinates 
+          are assumed to refer to the codomain's default chart
         - ``name`` -- (default: None) name given to the differentiable mapping
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
           differentiable mapping; if none is provided, the LaTeX symbol is set to 
@@ -2260,12 +2261,13 @@ class OpenDomain(Domain):
 
         """
         from diffmapping import DiffMapping
-        return DiffMapping(self, domain, coord_functions, chart_from, 
-                           chart_to, name, latex_name)
+        return DiffMapping(self, codomain, coord_functions=coord_functions, 
+                           chart1=chart1, chart2=chart2, name=name, 
+                           latex_name=latex_name)
 
 
-    def diffeomorphism(self, domain, coord_functions=None, chart_from=None, 
-                       chart_to=None, name=None, latex_name=None):
+    def diffeomorphism(self, codomain, coord_functions=None, chart1=None, 
+                       chart2=None, name=None, latex_name=None):
         r"""
         Define a diffeomorphism between the current domain and another
         domain (possibly on another manifold). 
@@ -2275,19 +2277,20 @@ class OpenDomain(Domain):
 
         INPUT:
 
-        - ``domain`` -- domain on the arrival manifold 
+        - ``codomain`` -- mapping's codomain (the arrival manifold or some 
+          subset of it)
         - ``coord_functions`` -- the coordinate symbolic expression of the mapping: 
           list (or tuple) of the coordinates of the image expressed in terms of the
           coordinates of the considered point
-        - ``chart_from`` -- (default: None) chart in which the
+        - ``chart1`` -- (default: None) chart in which the 
           coordinates are given on the domain being mapped; if none is provided, 
-          the coordinates are assumed to refer to the domain's default chart
-        - ``chart_to`` -- (default: None) chart in which the
-          coordinates are given on the image domain; if none is provided, the coordinates 
-          are assumed to refer to the domain's default chart
-        - ``name`` -- (default: None) name given to the differentiable mapping
+          the coordinates are assumed to refer to domain's default chart
+        - ``chart2`` -- (default: None) chart in which the 
+          coordinates are given on the codomain; if none is provided, the coordinates 
+          are assumed to refer to the codomain's default chart
+        - ``name`` -- (default: None) name given to the diffeomorphism
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
-          differentiable mapping; if none is provided, the LaTeX symbol is set to 
+          diffeomorphism; if none is provided, the LaTeX symbol is set to 
           ``name``
 
         OUTPUT:
@@ -2314,9 +2317,9 @@ class OpenDomain(Domain):
 
         """
         from diffmapping import Diffeomorphism
-        return Diffeomorphism(self, domain, coord_functions, chart_from, 
-                              chart_to, name, latex_name)
-
+        return Diffeomorphism(self, codomain, coord_functions=coord_functions,
+                              chart1=chart1, chart2=chart2, name=name, 
+                              latex_name=latex_name)
 
     def identity_mapping(self, name=None, latex_name=None):
         r"""

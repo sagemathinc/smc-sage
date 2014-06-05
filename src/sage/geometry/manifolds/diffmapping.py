@@ -9,67 +9,13 @@ manifold `\mathcal{N}`:
 
     \Phi: U\subset \mathcal{M} \longrightarrow \mathcal{N}
     
-In what follows, `\mathcal{M}` is called the *start manifold* and `\mathcal{N}`
-the *arrival manifold*. The case `\mathcal{N}=\mathcal{M}` is allowed. 
-
 The special case of *diffeomorphisms*, i.e. of invertible mappings such that
 both `\Phi` and `\Phi^{-1}` are differentiable, is implemented through the 
-class :class:`Diffeomorphism`, which inherits from :class:`DiffMapping`.
+subclass :class:`Diffeomorphism`.
 
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
-
-EXAMPLES: 
-
-    A mapping between the sphere `S^2` and `\RR^3`::
-
-        sage: M = Manifold(2, 'S^2')
-        sage: U = M.open_domain('U') # the subdomain of S^2 covered by regular spherical coordinates
-        sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
-        sage: N = Manifold(3, 'R^3', r'\RR^3')
-        sage: c_cart.<x,y,z> = N.chart()  # Cartesian coord. on R^3
-        sage: Phi = U.diff_mapping(N, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
-        sage: Phi.view()
-        Phi: U --> R^3, (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
-        
-    The mapping acting on a point::
-       
-        sage: p = U.point((pi/2,pi/2), name='P')
-        sage: q = Phi(p) ; q
-        point 'Phi(P)' on 3-dimensional manifold 'R^3'
-        sage: q.coord()
-        (0, 1, 0)
-        sage: (u, v) = var('u v')
-        sage: a = U.point((u,v)) # a (unnamed) point defined by a symbolic expression
-        sage: Phi(a)
-        point on 3-dimensional manifold 'R^3'
-        sage: Phi(a).coord()
-        (cos(v)*sin(u), sin(u)*sin(v), cos(u))
-        
-    An example of diffeomorphism: a rotation in the Euclidean plane::
-
-        sage: M = Manifold(2, 'R^2', r'\RR^2')
-        sage: c_cart.<x,y> = M.chart() # Cartesian coordinates
-        sage: # A pi/3 rotation around the origin:
-        sage: rot = M.diffeomorphism(M, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
-        sage: p = M.point((1,2), name='p')
-        sage: q = rot(p) ; q
-        point 'R(p)' on 2-dimensional manifold 'R^2'
-        sage: q.coord()
-        (-sqrt(3) + 1/2, 1/2*sqrt(3) + 1)
- 
-    The inverse diffeormorphism::
-
-        sage: rot.inverse() 
-        diffeomorphism 'R^(-1)' on the 2-dimensional manifold 'R^2'
-        sage: rot.inverse().view()
-        R^(-1): R^2 --> R^2, (x, y) |--> (1/2*sqrt(3)*y + 1/2*x, -1/2*sqrt(3)*x + 1/2*y)
-        sage: p1 = rot.inverse()(q)
-        sage: p1
-        point 'R^(-1)(R(p))' on 2-dimensional manifold 'R^2'
-        sage: p1 == p 
-        True
         
 """
 
@@ -109,73 +55,124 @@ class DiffMapping(SageObject):
       manifold)
     - ``codomain`` -- mapping's codomain (the arrival manifold or some subset
       of it)
-    - ``coord_functions`` -- (default: None) the coordinate symbolic expression 
-      of the mapping in some pair of charts: list (or tuple) of the 
-      coordinates of the image expressed in terms of the coordinates of 
-      the considered point; if the dimension of the arrival manifold is 1, 
-      a single expression is expected (not a list with a single element)
+    - ``coord_functions`` -- (default: None) either 
+    
+      - (i) a dictionary of 
+        the coordinate expressions (as lists (or tuples) of the 
+        coordinates of the image expressed in terms of the coordinates of 
+        the considered point) with the pairs of charts (chart1, chart2)
+        as keys (chart1 being a chart on `U` and chart2 a chart on `\mathcal{N}`)
+      - (ii) a single coordinate expression in a given pair of charts, the
+        latter being provided by the arguments ``chart1`` and ``chart2``
+        
+      In both cases, if the dimension of the arrival manifold is 1, 
+      a single coordinate expression is expected (not a list or tuple with a 
+      single element)
     - ``chart1`` -- (default: None) chart on domain `U` in which the 
-      coordinates are given for ``coord_functions``; if none is provided, the 
-      coordinates are assumed to refer to domain's default chart
+      coordinates are given for ``coord_functions`` in the case (ii) above; 
+      if none is provided, the coordinates are assumed to refer to domain's 
+      default chart
     - ``chart2`` -- (default: None) chart on the codomain for the coordinates
-      on the arrival manifold for ``coord_functions``; if none is provided, the 
-      coordinates are assumed to refer to the codomain's default chart
+      on the arrival manifold for ``coord_functions`` in the case (ii) above; 
+      if none is provided, the coordinates are assumed to refer to the 
+      codomain's default chart
     - ``name`` -- (default: None) name given to the differentiable mapping
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
       differentiable mapping; if none is provided, the LaTeX symbol is set to 
       ``name``
     
-    .. NOTE:
+    .. NOTE::
     
-        If ``chart1`` does not cover the entire domain `U`, the argument
-        ``coord_functions` is not not sufficient to fully specify the 
-        differential mapping; further coordinate expressions, in other charts,
-        can be subsequently added by means of the method :meth:`add_expr`
+        If the information passed by means of the argument ``coord_functions``
+        is not sufficient to fully specify the differential mapping (for 
+        instance case (ii) with ``chart1`` not covering the entire domain `U`), 
+        further coordinate expressions, in other charts, can be subsequently 
+        added by means of the method :meth:`add_expr`
     
     EXAMPLES:
     
-    A mapping between the sphere `S^2` and `\RR^3`::
+    The standard embedding of the sphere `S^2` into `\RR^3`::
 
-        sage: M = Manifold(2, 'S^2')
-        sage: U = M.open_domain('U') # the subdomain of S^2 covered by regular spherical coordinates
-        sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
-        sage: N = Manifold(3, 'R^3', r'\RR^3')
-        sage: c_cart.<x,y,z> = N.chart()  # Cartesian coord. on R^3
-        sage: Phi = U.diff_mapping(N, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
-        sage: Phi
-        differentiable mapping 'Phi' from open domain 'U' on the 2-dimensional manifold 'S^2' to 3-dimensional manifold 'R^3'
+        sage: M = Manifold(2, 'S^2') # the 2-dimensional sphere S^2
+        sage: U = M.open_domain('U') # complement of the North pole
+        sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+        sage: V = M.open_domain('V') # complement of the South pole
+        sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+        sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
+                                             intersection_name='W', restrictions1= x^2+y^2!=0, \
+                                             restrictions2= u^2+v^2!=0)
+        sage: uv_to_xy = xy_to_uv.inverse()
+        sage: N = Manifold(3, 'R^3', r'\RR^3')  # R^3
+        sage: c_cart.<X,Y,Z> = N.chart()  # Cartesian coordinates on R^3
+        sage: Phi = M.diff_mapping(N, \
+        ....: {(c_xy, c_cart): [2*x/(1+x^2+y^2), 2*y/(1+x^2+y^2), (x^2+y^2-1)/(1+x^2+y^2)],  \
+        ....:  (c_uv, c_cart): [2*u/(1+u^2+v^2), 2*v/(1+u^2+v^2), (1-u^2-v^2)/(1+u^2+v^2)]}, \
+        ....: name='Phi', latex_name=r'\Phi')
         sage: type(Phi)
         <class 'sage.geometry.manifolds.diffmapping.DiffMapping'>
         sage: Phi.view()
-        Phi: U --> R^3, (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
-        
-    The mapping acting on a point::
-       
-        sage: p = U.point((pi/2,pi/2), name='P')
-        sage: q = Phi(p) ; q
-        point 'Phi(P)' on 3-dimensional manifold 'R^3'
-        sage: q.coord()
-        (0, 1, 0)
-        sage: (u, v) = var('u v')
-        sage: a = U.point((u,v)) # a point defined by a symbolic expression
-        sage: Phi(a).coord()
-        (cos(v)*sin(u), sin(u)*sin(v), cos(u))
+        Phi: S^2 --> R^3
+        on U: (x, y) |--> (X, Y, Z) = (2*x/(x^2 + y^2 + 1), 2*y/(x^2 + y^2 + 1), (x^2 + y^2 - 1)/(x^2 + y^2 + 1))
+        on V: (u, v) |--> (X, Y, Z) = (2*u/(u^2 + v^2 + 1), 2*v/(u^2 + v^2 + 1), -(u^2 + v^2 - 1)/(u^2 + v^2 + 1))
 
-    If the arrival manifold is 1-dimensional, the mapping is defined by a
-    single symbolic expression and not a list with a single element::
+    The mapping can be initialized only in a single pair of charts: the 
+    argument ``coord_functions`` is then a mere list of coordinate expressions
+    (and not a dictionary) and the arguments ``chart1`` and ``chart2`` have
+    to be provided if the charts differ from the default ones::
+
+        sage: Phi1 = M.diff_mapping(N, [2*x/(1+x^2+y^2), 2*y/(1+x^2+y^2), (x^2+y^2-1)/(1+x^2+y^2)], \
+        chart1=c_xy, chart2=c_cart, name='Phi', latex_name=r'\Phi')
+
+    Since c_xy and c_cart are the default charts on respectively M and N, they
+    can be omitted, so that the above declaration is equivalent to::
+
+        sage: Phi1 = M.diff_mapping(N, [2*x/(1+x^2+y^2), 2*y/(1+x^2+y^2), (x^2+y^2-1)/(1+x^2+y^2)], \
+        ....: name='Phi', latex_name=r'\Phi')
+
+    With such a declaration, the differential mapping is only partially defined
+    on the manifold `S^2`, being known in only one chart::
+
+        sage: Phi1.view()
+        Phi: S^2 --> R^3
+        on U: (x, y) |--> (X, Y, Z) = (2*x/(x^2 + y^2 + 1), 2*y/(x^2 + y^2 + 1), (x^2 + y^2 - 1)/(x^2 + y^2 + 1))
+
+    The definition can be completed by means of the method :meth:`add_expr`::
+
+        sage: Phi1.add_expr(c_uv, c_cart, [2*u/(1+u^2+v^2), 2*v/(1+u^2+v^2), (1-u^2-v^2)/(1+u^2+v^2)])
+        sage: Phi1.view()
+        Phi: S^2 --> R^3
+        on U: (x, y) |--> (X, Y, Z) = (2*x/(x^2 + y^2 + 1), 2*y/(x^2 + y^2 + 1), (x^2 + y^2 - 1)/(x^2 + y^2 + 1))
+        on V: (u, v) |--> (X, Y, Z) = (2*u/(u^2 + v^2 + 1), 2*v/(u^2 + v^2 + 1), -(u^2 + v^2 - 1)/(u^2 + v^2 + 1))
+
+    At this stage, Phi1 and Phi are fully equivalent. 
+        
+    The mapping acts on points::
+    
+        sage: np = M.point((0,0), chart=c_uv)  # the North pole
+        sage: Phi(np)
+        point on 3-dimensional manifold 'R^3'
+        sage: Phi(np).coord()
+        (0, 0, 1)
+        sage: sp = M.point((0,0), chart=c_xy)  # the South pole
+        sage: Phi(sp).coord()
+        (0, 0, -1)
+
+    If the arrival manifold is 1-dimensional, the mapping must be defined by a
+    single symbolic expression for each pair of charts, and not by a list 
+    with a single element::
 
         sage: N = Manifold(1, 'N')
-        sage: chart_n = N.chart('x')
-        sage: Phi = M.diff_mapping(N, sin(th)*cos(ph)) # and not ...,(sin(th)*cos(ph),))
+        sage: c_N = N.chart('X')
+        sage: Phi = M.diff_mapping(N, {(c_xy, c_N): x^2+y^2, \
+        ....: (c_uv, c_N): 1/(u^2+v^2)})  # not ...[x^2+y^2] or [1/(u^2+v^2)]
         
     If the arrival manifold is the field of real numbers `\RR` (the Sage object
     :data:`RealLine`), the action on a point returns a real number, i.e. the 
     canonical coordinate of the image point, and not the image point itself::
 
-        sage: Phi = M.diff_mapping(RealLine, sin(th)*cos(ph))
-        sage: p = U.point((pi/2,pi))
-        sage: Phi(p)      
-        -1
+        sage: Phi = M.diff_mapping(RealLine, x^2+y^2)
+        sage: Phi(M.point((1,2)))
+        5
 
     """
     def __init__(self, domain, codomain, coord_functions=None, chart1=None, 
@@ -186,29 +183,32 @@ class DiffMapping(SageObject):
             raise TypeError("The argument codomain must be a domain.")
         self._domain = domain
         self._codomain = codomain
+        self._coord_expression = {}
         if coord_functions is not None:
-            if chart1 is None: chart1 = domain._def_chart
-            if chart2 is None: chart2 = codomain._def_chart
-            if chart1 not in self._domain._atlas:
-                raise ValueError("The " + str(chart1) +
-                                    " has not been defined on the " + 
-                                    str(self._domain))
-            if chart2 not in self._codomain._atlas:
-                raise ValueError("The " + str(chart2) +
-                                    " has not been defined on the " + 
-                                    str(self._codomain))
-            n2 = self._codomain._manifold._dim
-            if n2 > 1:
-                if len(coord_functions) != n2:
-                    raise ValueError(str(n2) + 
-                                     " coordinate function must be provided.")
-                self._coord_expression = {(chart1, chart2): 
-                                        MultiFunctionChart(chart1, *coord_functions)}
-            else:
-                self._coord_expression = {(chart1, chart2): 
-                                        MultiFunctionChart(chart1, coord_functions)}
-        else: # case coord_functions is None:
-            self._coord_expression = {}
+            if not isinstance(coord_functions, dict):
+                # Turn coord_functions into a dictionary:
+                if chart1 is None: chart1 = domain._def_chart
+                if chart2 is None: chart2 = codomain._def_chart
+                if chart1 not in self._domain._atlas:
+                    raise ValueError("The " + str(chart1) +
+                                     " has not been defined on the " + 
+                                      str(self._domain))
+                if chart2 not in self._codomain._atlas:
+                    raise ValueError("The " + str(chart2) +
+                                     " has not been defined on the " + 
+                                     str(self._codomain))
+                coord_functions = {(chart1, chart2): coord_functions}
+            for chart_pair, expression in coord_functions.items():
+                n2 = self._codomain._manifold._dim
+                if n2 > 1:
+                    if len(expression) != n2:
+                        raise ValueError(str(n2) + 
+                                         " coordinate function must be provided.")
+                    self._coord_expression[chart_pair] = \
+                                 MultiFunctionChart(chart_pair[0], *expression)
+                else:
+                    self._coord_expression[chart_pair] = \
+                                  MultiFunctionChart(chart_pair[0], expression)
         self._name = name
         if latex_name is None:
             self._latex_name = self._name
@@ -249,6 +249,29 @@ class DiffMapping(SageObject):
         """
         self._restrictions.clear()
 
+    def _display_expression(self, chart1, chart2, result):
+        r"""
+        Helper function for :meth:`view`.
+        """
+        from sage.misc.latex import latex
+        try:
+            expression = self.expr(chart1, chart2)
+            result.txt += "on " + chart1._domain._name + ": " + \
+                          repr(chart1[:]) + " |--> "
+            result.latex += r"\mbox{on}\ " + \
+                           latex(chart1._domain) + r": & " + \
+                         latex(chart1[:]) + r"& \longmapsto & " 
+            if chart2 == chart1:
+                result.txt += repr(expression) + "\n"
+                result.latex += latex(expression) + r"\\"
+            else:
+                result.txt += repr(chart2[:]) + " = " + \
+                              repr(expression) + "\n"
+                result.latex += latex(chart2[:]) + " = " + \
+                                latex(expression) + r"\\"
+        except (TypeError, ValueError):
+            pass
+        
     def view(self, chart1=None, chart2=None):
         r""" 
         Display the expression of the differentiable mapping in a given 
@@ -271,48 +294,51 @@ class DiffMapping(SageObject):
         
         Standard embedding of the sphere `S^2` in `\RR^3`::
     
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2')
             sage: c_spher.<th,ph> = M.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: N = Manifold(3, 'R^3', r'\RR^3')
             sage: c_cart.<x,y,z> = N.chart()
             sage: Phi = M.diff_mapping(N, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
             sage: Phi.view()
-            Phi: S^2 --> R^3, (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
+            Phi: S^2 --> R^3
+            on S^2: (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
             sage: latex(Phi.view())
-            \begin{array}{llcl} \Phi:& S^2 & \longrightarrow & \RR^3 \\ & \left(\theta, \phi\right) & \longmapsto & \left(x, y, z\right) = \left(\cos\left(\phi\right) \sin\left(\theta\right), \sin\left(\phi\right) \sin\left(\theta\right), \cos\left(\theta\right)\right) \end{array}
+            \begin{array}{llcl} \Phi:& S^2 & \longrightarrow & \RR^3 \\ \mbox{on}\ S^2 : & \left(\theta, \phi\right) & \longmapsto & \left(x, y, z\right) = \left(\cos\left(\phi\right) \sin\left(\theta\right), \sin\left(\phi\right) \sin\left(\theta\right), \cos\left(\theta\right)\right) \end{array}
 
         """
         from sage.misc.latex import latex
         from utilities import FormattedExpansion
         result = FormattedExpansion(self)
-        if chart1 is None:
-            chart1 = self._domain._def_chart
-        if chart2 is None:
-            chart2 = self._codomain._def_chart
-        expression = self.expr(chart1, chart2)
         if self._name is None:
             symbol = ""
         else:
             symbol = self._name + ": "
         result.txt = symbol + self._domain._name + " --> " + \
-                     self._codomain._name + ", " + repr(chart1[:]) + " |--> " 
-        if chart2 == chart1:
-            result.txt += repr(expression)
-        else:
-            result.txt += repr(chart2[:]) + " = " + repr(expression)
+                     self._codomain._name + "\n"
         if self._latex_name is None:
             symbol = ""
         else:
             symbol = self._latex_name + ":"
         result.latex = r"\begin{array}{llcl} " + symbol + r"&" + \
                        latex(self._domain) + r"& \longrightarrow & " + \
-                       latex(self._codomain) + r"\\ &" + latex(chart1[:]) + \
-                       r"& \longmapsto & " 
-        if chart2 == chart1:
-            result.latex += latex(expression) + r"\end{array}"
+                       latex(self._codomain) + r"\\"
+        if chart1 is None:
+            if chart2 is None:
+                for ch1 in self._domain._atlas:
+                    for ch2 in self._codomain._atlas:
+                        self._display_expression(ch1, ch2, result)
+            else:
+                for ch1 in self._domain._atlas:
+                    self._display_expression(ch1, chart2, result)
         else:
-            result.latex += latex(chart2[:]) + " = " + latex(expression) + \
-                            r"\end{array}"
+            if chart2 is None:
+                for ch2 in self._codomain._atlas:
+                    self._display_expression(chart1, ch2, result)
+            else:
+                self._display_expression(chart1, chart2, result)             
+        result.txt = result.txt[:-1]
+        result.latex = result.latex[:-2] + r"\end{array}"
         return result
 
     def multi_function_chart(self, chart1=None, chart2=None):
@@ -347,7 +373,8 @@ class DiffMapping(SageObject):
             sage: c_xyz.<x,y,z> = N.chart()
             sage: Phi = M.diff_mapping(N, (u*v, u/v, u+v), name='Phi', latex_name=r'\Phi')
             sage: Phi.view()
-            Phi: M --> N, (u, v) |--> (x, y, z) = (u*v, u/v, u + v)
+            Phi: M --> N
+            on M: (u, v) |--> (x, y, z) = (u*v, u/v, u + v)
             sage: Phi.multi_function_chart(c_uv, c_xyz)
             functions (u*v, u/v, u + v) on the chart (M, (u, v))
             sage: Phi.multi_function_chart() # equivalent to above since 'uv' and 'xyz' are default charts
@@ -489,7 +516,8 @@ class DiffMapping(SageObject):
             sage: c_xyz.<x,y,z> = N.chart()
             sage: Phi = M.diff_mapping(N, (u*v, u/v, u+v), name='Phi', latex_name=r'\Phi')
             sage: Phi.view()
-            Phi: M --> N, (u, v) |--> (x, y, z) = (u*v, u/v, u + v)
+            Phi: M --> N
+            on M: (u, v) |--> (x, y, z) = (u*v, u/v, u + v)
             sage: Phi.expr(c_uv, c_xyz)
             (u*v, u/v, u + v)
             sage: Phi.expr()  # equivalent to above since 'uv' and 'xyz' are default charts
@@ -868,15 +896,15 @@ class DiffMapping(SageObject):
                                  "of the codomain of the diff. mapping.")
             resu = DiffMapping(subdomain, subcodomain, name=self._name, 
                                latex_name=self._latex_name)
-            for charts in self._coord_expressions:
+            for charts in self._coord_expression:
                 for ch1 in charts[0]._subcharts:
                     if ch1._domain == subdomain:
                         for ch2 in charts[1]._subcharts:
                             if ch2._domain == subcodomain:
                                 coord_functions = \
-                                          self._coord_expressions[charts].expr()
-                                resu._coord_expressions[(ch1, ch2)] = \
-                                       MultiFunctionChart(ch1, coord_functions)
+                                          self._coord_expression[charts].expr()
+                                resu._coord_expression[(ch1, ch2)] = \
+                                      MultiFunctionChart(ch1, *coord_functions)
             self._restrictions[(subdomain, subcodomain)] = resu
         return self._restrictions[(subdomain, subcodomain)]
 
@@ -1085,10 +1113,10 @@ class Diffeomorphism(DiffMapping):
       diffeomorphism; if none is provided, the LaTeX symbol is set to 
       ``name``
     
-    .. NOTE:
+    .. NOTE::
     
         If ``chart1`` does not cover the entire domain `U`, the argument
-        ``coord_functions` is not not sufficient to fully specify the 
+        ``coord_functions`` is not not sufficient to fully specify the 
         diffeomorphism; further coordinate expressions, in other charts,
         can be subsequently added by means of the method :meth:`add_expr`
     
@@ -1154,6 +1182,7 @@ class Diffeomorphism(DiffMapping):
         
         The inverse of a rotation in the Euclidean plane::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2', r'\RR^2')
             sage: c_cart.<x,y> = M.chart()
             sage: # A pi/3 rotation around the origin:
@@ -1161,7 +1190,8 @@ class Diffeomorphism(DiffMapping):
             sage: rot.inverse() 
             diffeomorphism 'R^(-1)' on the 2-dimensional manifold 'R^2'
             sage: rot.inverse().view()
-            R^(-1): R^2 --> R^2, (x, y) |--> (1/2*sqrt(3)*y + 1/2*x, -1/2*sqrt(3)*x + 1/2*y)
+            R^(-1): R^2 --> R^2
+            on R^2: (x, y) |--> (1/2*sqrt(3)*y + 1/2*x, -1/2*sqrt(3)*x + 1/2*y)
 
         Checking that applying successively the diffeomorphism and its 
         inverse results in the identity::
@@ -1267,7 +1297,8 @@ class IdentityMapping(Diffeomorphism):
     The coordinate expression of the identity mapping::
     
         sage: i.view()
-        Id_U: U --> U, (x, y) |--> (x, y)
+        Id_U: U --> U
+        on U: (x, y) |--> (x, y)
 
     """
     def __init__(self, domain, name=None, latex_name=None):

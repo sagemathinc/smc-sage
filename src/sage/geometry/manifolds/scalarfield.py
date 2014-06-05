@@ -788,8 +788,9 @@ class ScalarField(CommutativeAlgebraElement):
         INPUT:
         
         - ``chart`` -- (default: None) chart with respect to which the 
-          coordinate expression is to be displayed; if None, the domain's 
-          default chart will be used
+          coordinate expression is to be displayed; if None, the dispplay is
+          performed in all charts in which the coordinate expression is 
+          known. 
           
         The output is either text-formatted (console mode) or LaTeX-formatted
         (notebook mode). 
