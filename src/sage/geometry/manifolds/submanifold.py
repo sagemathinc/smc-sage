@@ -64,18 +64,20 @@ class Submanifold(Manifold):
         sage: S
         2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
         sage: S._embedding.view()
-        i: U --> R^3, (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
+        i: U --> R^3
+           (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
 
     A helix as a submanifold of `\RR^3`::
     
         sage: H = M.submanifold(1, 'H')
-        sage: c_param.<t> = H.chart('t')
+        sage: c_param.<t> = H.chart()
         sage: emb = H.diff_mapping(M, [cos(t), sin(t), t], name='i', latex_name=r'\iota')
         sage: H.def_embedding(emb)
         sage: H
         1-dimensional submanifold 'H' of the 3-dimensional manifold 'R^3'
         sage: H._embedding.view()
-        i: H --> R^3, (t,) |--> (x, y, z) = (cos(t), sin(t), t)
+         i: H --> R^3
+            t |--> (x, y, z) = (cos(t), sin(t), t)
 
     The constructed submanifolds are automatically added to the subdomains of 
     the ambient manifold::
@@ -184,7 +186,7 @@ class Submanifold(Manifold):
         Plot of a helix embedded in `\RR^3`::
             
             sage: H = M.submanifold(1, 'H')
-            sage: c_param.<t> = H.chart('t')
+            sage: c_param.<t> = H.chart()
             sage: H.def_embedding(H.diff_mapping(M, [cos(t), sin(t), t]))
             sage: H.plot([0,20])
            
@@ -193,7 +195,7 @@ class Submanifold(Manifold):
             sage: M = Manifold(2, 'R^2', r'\RR^2')
             sage: c_cart.<x,y> = M.chart()
             sage: S = M.submanifold(1, 'S')
-            sage: c_param.<t> = S.chart('t')
+            sage: c_param.<t> = S.chart()
             sage: S.def_embedding(S.diff_mapping(M, [t*cos(t), t*sin(t)]))
             sage: S.plot([0,40])
 
@@ -262,7 +264,7 @@ class Submanifold(Manifold):
         Pushforward of a tangent vector to a helix, submanifold of `\RR^3`::
         
             sage: H = M.submanifold(1, 'H')
-            sage: c_t.<t> = H.chart('t')
+            sage: c_t.<t> = H.chart()
             sage: H.def_embedding( H.diff_mapping(M, [cos(t), sin(t), t], name='iH') )
             sage: u = H.vector_field(name='u')
             sage: u[0] = 1 ; u.view() # tangent vector to the helix

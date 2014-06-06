@@ -315,24 +315,10 @@ class Chart(UniqueRepresentation, SageObject):
                 else:
                     # prop1 is the coordinate's LaTeX symbol
                     coord_latex = prop1
-            # Construction of the coordinate as a Sage's symbolic variable:
+            # Construction of the coordinate as some Sage's symbolic variable:
             coord_var = SR.var(coord_symb, domain='real', 
                                latex_name=coord_latex)
-
-            #!# To avoid the warning message
-            #       Resolving lazy import maxima during startup
-            #       Calling stack:
-            #       ...
-            # at Sage's startup, one checks that the manifold is not
-            # the field R (object RealLine constructed at Sage's startup)
-            # before invoking the function assume
-            # cf. http://trac.sagemath.org/ticket/14187
-            # This is triggered by the lazy import
-            #   from sage.calculus.calculus import maxima
-            # in line 112 of the file /sage/symbolic/assumptions.py
-            if self._domain._name != 'field R':
-                assume(coord_var, 'real')
-
+            assume(coord_var, 'real')
             if xmin != -Infinity:
                 if xmin_included:
                     assume(coord_var >= xmin)
@@ -362,10 +348,8 @@ class Chart(UniqueRepresentation, SageObject):
         # The chart is added to the list of the domain's covering charts:
         self._domain._covering_charts.append(self)
         # Construction of the coordinate frame associated to the chart:
-        if self._domain._name != 'field R':      
-            #!# to avoid circular import of RealLine
-            self._frame = CoordFrame(self)
-            self._coframe = self._frame._coframe
+        self._frame = CoordFrame(self)
+        self._coframe = self._frame._coframe
         # The null function of the coordinates:
         self._zero_function = ZeroFunctionChart(self)
         # Initialization of the set of charts that are restrictions of the
@@ -478,13 +462,15 @@ class Chart(UniqueRepresentation, SageObject):
             sage: ey = c_xy.frame()[1] ; ey
             vector field 'd/dy' on the 2-dimensional manifold 'M'
             sage: ex(M.scalar_field(x)).view()
-            on M: (x, y) |--> 1
+            M --> R
+            (x, y) |--> 1
             sage: ex(M.scalar_field(y)).view()
             on M: (x, y) |--> 0
             sage: ey(M.scalar_field(x)).view()
             on M: (x, y) |--> 0
             sage: ey(M.scalar_field(y)).view()
-            on M: (x, y) |--> 1
+            M --> R
+            (x, y) |--> 1
 
         """
         return self._frame
@@ -523,13 +509,15 @@ class Chart(UniqueRepresentation, SageObject):
             sage: ey = c_xy.frame()[1] ; ey
             vector field 'd/dy' on the 2-dimensional manifold 'M'
             sage: dx(ex).view()
-            dx(d/dx) on M: (x, y) |--> 1
+             dx(d/dx): M --> R
+               (x, y) |--> 1
             sage: dx(ey).view()
             dx(d/dy) on M: (x, y) |--> 0
             sage: dy(ex).view()
             dy(d/dx) on M: (x, y) |--> 0
             sage: dy(ey).view()
-            dy(d/dy) on M: (x, y) |--> 1
+            dy(d/dy): M --> R
+               (x, y) |--> 1
 
         """
         return self._coframe
@@ -836,9 +824,9 @@ class Chart(UniqueRepresentation, SageObject):
         
             sage: M = Manifold(1, 'S^1')
             sage: U = M.open_domain('U') # Complement of the North pole
-            sage: cU.<x> = U.chart('x') # Stereographic chart from the North pole
+            sage: cU.<x> = U.chart() # Stereographic chart from the North pole
             sage: V = M.open_domain('V') # Complement of the South pole
-            sage: cV.<y> = V.chart('y') # Stereographic chart from the South pole
+            sage: cV.<y> = V.chart() # Stereographic chart from the South pole
             sage: trans = cU.transition_map(cV, 1/x, 'W', x!=0, y!=0)
             sage: trans
             coordinate change from chart (W, (x,)) to chart (W, (y,))
@@ -1659,7 +1647,8 @@ class FunctionChart(SageObject):
             sage: f = fc.scalar_field() ; f
             scalar field on the 2-dimensional manifold 'M'
             sage: f.view()
-            on M: (x, y) |--> 2*y^3 + x
+            M --> R
+            (x, y) |--> 2*y^3 + x
             sage: f.function_chart(c_xy) is fc
             True
 
@@ -1982,7 +1971,7 @@ class ZeroFunctionChart(FunctionChart):
         INPUT: 
         
         - ``name`` -- (default: None) unused 
-        - ``latex_name`` -- (default: None) unsued 
+        - ``latex_name`` -- (default: None) unused 
         
         OUTPUT:
         

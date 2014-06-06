@@ -89,7 +89,8 @@ class ScalarField(CommutativeAlgebraElement):
         sage: f = M.scalar_field(sin(th)*cos(ph), chart=c_spher, name='f') ; f
         scalar field 'f' on the 2-dimensional manifold 'S^2'
         sage: f.view(chart=c_spher)
-        f on U: (th, ph) |--> cos(ph)*sin(th)
+        f: S^2 --> R
+        on U: (th, ph) |--> cos(ph)*sin(th)
         sage: f.expr(chart=c_spher)
         cos(ph)*sin(th)
 
@@ -99,7 +100,8 @@ class ScalarField(CommutativeAlgebraElement):
         sage: f = M.scalar_field(sin(th)*cos(ph),  name='f') ; f
         scalar field 'f' on the 2-dimensional manifold 'S^2'
         sage: f.view()
-        f on U: (th, ph) |--> cos(ph)*sin(th)
+        f: S^2 --> R
+        on U: (th, ph) |--> cos(ph)*sin(th)
         sage: f.expr()
         cos(ph)*sin(th)
 
@@ -119,11 +121,13 @@ class ScalarField(CommutativeAlgebraElement):
     field::
     
         sage: f.view()
-        f on U: (th, ph) |--> cos(ph)*sin(th)
+        f: S^2 --> R
+        on U: (th, ph) |--> cos(ph)*sin(th)
         sage: f.view(c_spher) # equivalent to above since c_spher is the default chart
-        f on U: (th, ph) |-->  cos(ph)*sin(th)
+        f: S^2 --> R
+        on U: (th, ph) |--> cos(ph)*sin(th)
         sage: latex(f.view(c_spher)) # nice LaTeX formatting for the notebook
-        f \ \mbox{on}\ U :\ \left(\theta, \phi\right) \mapsto \cos\left(\phi\right) \sin\left(\theta\right)
+        \begin{array}{llcl} f:& S^2 & \longrightarrow & \RR \\ \mbox{on}\ U : & \left(\theta, \phi\right) & \longmapsto & \cos\left(\phi\right) \sin\left(\theta\right) \end{array}
 
     A scalar field can also be defined by an unspecified function of the 
     coordinates::
@@ -594,8 +598,8 @@ class ScalarField(CommutativeAlgebraElement):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: o1.<t,x> = M.chart('t x')
-            sage: o2.<T,X> = M.chart('T X')
+            sage: o1.<t,x> = M.chart()
+            sage: o2.<T,X> = M.chart()
             sage: f = M.scalar_field(x^2 - t^2)
             sage: f.function_chart(o1)
             -t^2 + x^2
@@ -780,6 +784,28 @@ class ScalarField(CommutativeAlgebraElement):
         self._express[chart] = FunctionChart(chart, coord_expression)
         self._del_derived()
 
+    def _display_expression(self, chart, result):
+        r"""
+        Helper function for :meth:`view`.
+        """
+        from sage.misc.latex import latex
+        try:
+            expression = self.expr(chart)
+            coords = chart[:]
+            if len(coords) == 1:
+                coords = coords[0]
+            if chart._domain == self._domain:
+                if self._name is not None:
+                    result.txt += "   " 
+                result.latex += " & " 
+            else:
+                result.txt += "on " + chart._domain._name + ": " 
+                result.latex += r"\mbox{on}\ " + latex(chart._domain) + r": & " 
+            result.txt += repr(coords) + " |--> " + repr(expression) + "\n"
+            result.latex += latex(coords) + r"& \longmapsto & " + \
+                            latex(expression) + r"\\"
+        except (TypeError, ValueError):
+            pass
 
     def view(self, chart=None):
         r""" 
@@ -804,45 +830,39 @@ class ScalarField(CommutativeAlgebraElement):
             sage: c_xy.<x,y> = M.chart()
             sage: f = M.scalar_field(sqrt(x+1), name='f')
             sage: f.view()
-            f on M: (x, y) |--> sqrt(x + 1)
+            f: M --> R
+               (x, y) |--> sqrt(x + 1)
             sage: latex(f.view())
-            \begin{array}{l} f \ \mbox{on}\ M :\ \left(x, y\right) \mapsto \sqrt{x + 1} \end{array}
+            \begin{array}{llcl} f:& M & \longrightarrow & \RR \\ & \left(x, y\right) & \longmapsto & \sqrt{x + 1} \end{array}
             sage: g = M.scalar_field(function('G', x, y), name='g')
-            sage: g.view() 
-            g on M: (x, y) |--> G(x, y)
+            sage: g.view()
+            g: M --> R
+               (x, y) |--> G(x, y)
             sage: latex(g.view())
-            \begin{array}{l} g \ \mbox{on}\ M :\ \left(x, y\right) \mapsto G\left(x, y\right) \end{array}
+            \begin{array}{llcl} g:& M & \longrightarrow & \RR \\ & \left(x, y\right) & \longmapsto & G\left(x, y\right) \end{array}
 
         """
         from sage.misc.latex import latex
         from utilities import FormattedExpansion
         result = FormattedExpansion(self)
-        if chart is None:
-            result.txt = ""
-            result.latex = r"\begin{array}{l}"
-            for chart1 in self._domain._atlas:
-                try:
-                    result.txt += repr(self.view(chart1)) + "\n"
-                    result.latex += latex(self.view(chart1)) + r"\\"
-                except (TypeError, ValueError):
-                    pass
-            result.txt = result.txt[:-1]
-            result.latex = result.latex[:-2] + r"\end{array}"
-            return result
-        expression = self.expr(chart)
         if self._name is None:
-            result.txt = "on " + chart._domain._name + ": " + \
-                         repr(chart[:]) + " |--> " + repr(expression)
+            symbol = ""
         else:
-            result.txt = self._name + " on " + chart._domain._name + ": " +  \
-                         repr(chart[:]) + " |--> " + repr(expression)
+            symbol = self._name + ": "
+        result.txt = symbol + self._domain._name + " --> R\n"
         if self._latex_name is None:
-            result.latex = r"\mbox{on}\ " + latex(chart._domain) + ":\ " + \
-                           latex(chart[:]) + r"\mapsto" + latex(expression)
+            symbol = ""
         else:
-            result.latex = latex(self) + r"\ \mbox{on}\ " + \
-                           latex(chart._domain) + ":\ " + latex(chart[:]) + \
-                           r"\mapsto" + latex(expression)
+            symbol = self._latex_name + ":"
+        result.latex = r"\begin{array}{llcl} " + symbol + r"&" + \
+                       latex(self._domain) + r"& \longrightarrow & \RR \\"
+        if chart is None:
+            for ch in self._domain._atlas:
+                self._display_expression(ch, result)
+        else:
+            self._display_expression(chart, result)             
+        result.txt = result.txt[:-1]
+        result.latex = result.latex[:-2] + r"\end{array}"
         return result
 
     def restrict(self, subdomain):
@@ -873,7 +893,8 @@ class ScalarField(CommutativeAlgebraElement):
             sage: f_U = f.restrict(U) ; f_U
             scalar field 'f' on the open domain 'U' on the 2-dimensional manifold 'M'
             sage: f_U.view()
-            f on U: (x, y) |--> cos(x*y)
+            f: U --> R
+               (x, y) |--> cos(x*y)
             sage: f.parent()
             algebra of scalar fields on the 2-dimensional manifold 'M'
             sage: f_U.parent()
@@ -1344,7 +1365,7 @@ class ScalarField(CommutativeAlgebraElement):
             
         Exterior derivative computed on a chart that is not the default one::
         
-            sage: c_uvw.<u,v,w> = M.chart('u v w')
+            sage: c_uvw.<u,v,w> = M.chart()
             sage: g = M.scalar_field(u*v^2*w^3, c_uvw, name='g')
             sage: dg = g.exterior_der() ; dg
             1-form 'dg' on the 3-dimensional manifold 'M'
@@ -1515,7 +1536,8 @@ class ScalarField(CommutativeAlgebraElement):
             sage: ssf = sf.hodge_star(g) ; ssf
             scalar field '**f' on the 3-dimensional manifold 'M'
             sage: ssf.view()
-            **f on M: (x, y, z) |--> F(x, y, z)
+            **f: M --> R
+               (x, y, z) |--> F(x, y, z)
             sage: ssf == f # must hold for a Riemannian metric
             True
         

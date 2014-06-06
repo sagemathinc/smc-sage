@@ -14,8 +14,8 @@ and is declared to belong to the category of sets (Sage category
 The corresponding Sage :class:`~sage.structure.element.Element`'s are 
 implemented via the class :class:`~sage.geometry.manifolds.point.Point`. 
 
-The derived class :class:`RealLineManifold`  implements the real line `\RR` 
-as a manifold of dimension one. The unique instance of it is :data:`RealLine`.
+The derived class :class:`RealLine` implements the field of real numbers
+`\RR` as a manifold of dimension one. 
 
 AUTHORS:
 
@@ -481,61 +481,147 @@ class Manifold(OpenDomain):
        
 #******************************************************************************
 
-class RealLineManifold(Manifold, UniqueRepresentation):
+class RealLine(Manifold):
     r"""  
-    Field of real numbers, as a manifold of dimension 1.
-    
-    This class is a of singleton type. 
-    
+    Field of real numbers, as a manifold of dimension 1 (real line) with a
+    canonical coordinate. 
+        
     INPUT: 
-    
-    - None
+
+    - ``coordinate`` -- (default: None) string defining the symbol of the 
+      canonical coordinate set on the real line; if none is provided and 
+      ``names`` is none, the symbol 't' is used
+    - ``name`` -- (default: 'R') name given to the real line
+    - ``latex_name`` -- (default: r'\\RR') LaTeX symbol to denote the real line
+    - ``start_index`` -- (default: 0) unique value of the index for vectors and
+      forms on the real line. 
+    - ``names`` -- (default: None) used only when ``coordinate`` is None: it 
+      must be a single-element tuple containing the canonical coordinate
+      symbol (this is guaranted if the shortcut operator <,> is used, see
+      examples below). 
     
     EXAMPLES:
                 
-    The pre-defined instance is :data:`RealLine`::
+    Constructing the real line without any argument::
     
-        sage: RealLine
+        sage: R = RealLine() ; R
         field R of real numbers
-        sage: latex(RealLine)
+        sage: latex(R)
         \RR
-        sage: type(RealLine)
-        <class 'sage.geometry.manifolds.manifold.RealLineManifold_with_category'>
 
-    It is a 1-dimensional manifold endowed with a canonical chart::
+    R is a 1-dimensional manifold::
     
-        sage: isinstance(RealLine, Manifold)
+        sage: isinstance(R, Manifold)
         True
-        sage: RealLine.dim()
+        sage: R.dim()
         1
-        sage: RealLine.atlas()
-        [chart (field R, (x_realline,))]
+    
+    It is endowed with a default chart (canonical coordinate)::
+    
+        sage: R.default_chart()
+        chart (R, (t,))
+        sage: R.atlas()
+        [chart (R, (t,))]
 
-    The instance is unique (singleton pattern)::
+    The instance is unique (as long as the constructor arguments are the same)::
     
-        sage: from sage.geometry.manifolds.manifold import RealLineManifold
-        sage: myRealLine = RealLineManifold()
-        sage: myRealLine == RealLine
+        sage: R is RealLine()
         True
-        sage: myRealLine is RealLine
-        True
+        sage: R is RealLine(latex_name='R')
+        False
+
+    The canonical coordinate is returned by the method 
+    :meth:`canonical_coordinate`::
+    
+        sage: R.canonical_coordinate()
+        t
+        sage: t = R.canonical_coordinate()
+        sage: type(t)
+        <type 'sage.symbolic.expression.Expression'>
+
+    However, it can be obtained in the same step as the real line construction
+    by means of the shortcut operator <>::
+    
+        sage: R.<t> = RealLine()
+        sage: t
+        t
+        sage: type(t)
+        <type 'sage.symbolic.expression.Expression'>
+
+    The trick is performed by Sage preparser::
+    
+        sage: preparse("R.<t> = RealLine()")
+        "R = RealLine(names=('t',)); (t,) = R._first_ngens(1)"
+
+    In particular the <> operator is to be used to set a canonical 
+    coordinate symbol different from 't'::
+    
+        sage: R.<u> = RealLine()
+        sage: R.atlas()
+        [chart (R, (u,))]
+        sage: R.canonical_coordinate()
+        u        
+    
+    The LaTeX symbol of the canonical coordinate can be adjusted via the same
+    syntax as a chart declaration (see 
+    :class:`~sage.geometry.manifolds.chart.Chart`)::
+    
+        sage: R.<x> = RealLine(coordinate=r'x:\xi')
+        sage: latex(x)
+        \xi
+        sage: latex(R.default_chart())
+        (\RR,(\xi))
+
+    The LaTeX symbol of the real line itself can also be customized::
+    
+        sage: R.<x> = RealLine(latex_name=r'\mathbb{R}')
+        sage: latex(R)
+        \mathbb{R}
         
-    
     """
-    def __init__(self):
+    def __init__(self, coordinate=None, name='R', latex_name=r'\RR', 
+                 start_index=0, names=None):
         from chart import Chart
-        Manifold.__init__(self, 1, name="field R", latex_name=r"\RR") 
-        Chart(self, 'x_realline')
+        Manifold.__init__(self, 1, name, latex_name=latex_name, 
+                          start_index=start_index)
+        if coordinate is None:
+            if names is None:
+                coordinate = 't'
+            else:
+                coordinate = names[0]
+        Chart(self, coordinates=coordinate)
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
-        return "field R of real numbers"
+        return "field " + self._name + " of real numbers"
 
-r"""
-.. :data:: 
-        The field of real numbers as the single instance of 
-        :class:`RealLineManifold`.
-"""
-RealLine = RealLineManifold() 
+    def _first_ngens(self, n):
+        r"""
+        Return the coordinate of the default chart
+        
+        This is useful only for the use of Sage preparser:
+
+        """
+        return self._def_chart[:]
+
+    def canonical_coordinate(self):
+        r""" 
+        Return the canonical coordinate defined on ``self``. 
+        
+        EXAMPLES::
+        
+            sage: R = RealLine()
+            sage: R.canonical_coordinate()
+            t
+            sage: type(R.canonical_coordinate())
+            <type 'sage.symbolic.expression.Expression'>
+            sage: R.canonical_coordinate().is_real()
+            True
+            sage: R.<x> = RealLine()
+            sage: R.canonical_coordinate()
+            x
+
+        """
+        return self._def_chart._xx[0]

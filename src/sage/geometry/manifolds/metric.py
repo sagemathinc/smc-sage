@@ -1017,7 +1017,7 @@ class LorentzMetric(Metric):
     Metric of Minkowski spacetime::
     
         sage: M = Manifold(4, 'M')
-        sage: c_cart = M.chart('t x y z')
+        sage: c_cart.<t,x,y,z> = M.chart()
         sage: g = M.lorentz_metric('g') ; g
         Lorentzian metric 'g' on the 4-dimensional manifold 'M'
         sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1

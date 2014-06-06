@@ -90,6 +90,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: CM.an_element()
         scalar field on the 2-dimensional manifold 'M'
         sage: CM.an_element().view()  # this sample element is a constant field
+        M --> R
         on U: (x, y) |--> 2
         on V: (u, v) |--> 2
         on W: (x, y) |--> 2
@@ -100,8 +101,9 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: CW.an_element()
         scalar field on the open domain 'W' on the 2-dimensional manifold 'M'
         sage: CW.an_element().view()  # this sample element is a constant field
-        on W: (x, y) |--> 2
-        on W: (u, v) |--> 2
+        W --> R
+        (x, y) |--> 2
+        (u, v) |--> 2
 
     The zero element::
     
@@ -126,6 +128,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: CM.one()
         scalar field on the 2-dimensional manifold 'M'
         sage: CM.one().view()
+        M --> R
         on U: (x, y) |--> 1
         on V: (u, v) |--> 1
         on W: (x, y) |--> 1
@@ -136,8 +139,9 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: CW.one()
         scalar field on the open domain 'W' on the 2-dimensional manifold 'M'
         sage: CW.one().view()
-        on W: (x, y) |--> 1
-        on W: (u, v) |--> 1
+        W --> R
+        (x, y) |--> 1
+        (u, v) |--> 1
 
     A generic element can be constructed as for any parent in Sage, namely 
     by means of the __call__ operator on the parent (here with the dictionary
@@ -146,6 +150,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: f = CM({c_xy: atan(x^2+y^2), c_uv: pi/2 - atan(u^2+v^2)}) ; f
         scalar field on the 2-dimensional manifold 'M'
         sage: f.view()
+        M --> R
         on U: (x, y) |--> arctan(x^2 + y^2)
         on V: (u, v) |--> 1/2*pi - arctan(u^2 + v^2)
         on W: (x, y) |--> arctan(x^2 + y^2)
@@ -195,8 +200,9 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: fW = CW(f) ; fW
         scalar field on the open domain 'W' on the 2-dimensional manifold 'M'
         sage: fW.view()
-        on W: (x, y) |--> arctan(x^2 + y^2)
-        on W: (u, v) |--> 1/2*pi - arctan(u^2 + v^2)
+        W --> R
+        (x, y) |--> arctan(x^2 + y^2)
+        (u, v) |--> 1/2*pi - arctan(u^2 + v^2)
 
     ::
     
@@ -211,8 +217,9 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: s.parent()
         algebra of scalar fields on the open domain 'W' on the 2-dimensional manifold 'M'
         sage: s.view()
-        on W: (x, y) |--> 2*arctan(x^2 + y^2)
-        on W: (u, v) |--> pi - 2*arctan(u^2 + v^2)
+        W --> R
+        (x, y) |--> 2*arctan(x^2 + y^2)
+        (u, v) |--> pi - 2*arctan(u^2 + v^2)
 
     Other coercions are those from the rational field, leading to constant
     scalar fields::
@@ -220,6 +227,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: h = CM(2/3) ; h
         scalar field on the 2-dimensional manifold 'M'
         sage: h.view()
+        M --> R
         on U: (x, y) |--> 2/3
         on V: (u, v) |--> 2/3
         on W: (x, y) |--> 2/3
@@ -230,6 +238,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: h = CM(pi*sqrt(2)) ; h
         scalar field on the 2-dimensional manifold 'M'
         sage: h.view()
+        M --> R
         on U: (x, y) |--> sqrt(2)*pi
         on V: (u, v) |--> sqrt(2)*pi
         on W: (x, y) |--> sqrt(2)*pi
@@ -242,6 +251,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: s = f + h ; s
         scalar field on the 2-dimensional manifold 'M'
         sage: s.view()
+        M --> R
         on U: (x, y) |--> sqrt(2)*pi + arctan(x^2 + y^2)
         on V: (u, v) |--> 1/2*pi*(2*sqrt(2) + 1) - arctan(u^2 + v^2)
         on W: (x, y) |--> sqrt(2)*pi + arctan(x^2 + y^2)
@@ -252,6 +262,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: s = f - h ; s 
         scalar field on the 2-dimensional manifold 'M'
         sage: s.view()
+        M --> R
         on U: (x, y) |--> -sqrt(2)*pi + arctan(x^2 + y^2)
         on V: (u, v) |--> -1/2*pi*(2*sqrt(2) - 1) - arctan(u^2 + v^2)
         on W: (x, y) |--> -sqrt(2)*pi + arctan(x^2 + y^2)
@@ -262,6 +273,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: s = f*h ; s
         scalar field on the 2-dimensional manifold 'M'
         sage: s.view()
+        M --> R
         on U: (x, y) |--> sqrt(2)*pi*arctan(x^2 + y^2)
         on V: (u, v) |--> 1/2*sqrt(2)*(pi^2 - 2*pi*arctan(u^2 + v^2))
         on W: (x, y) |--> sqrt(2)*pi*arctan(x^2 + y^2)
@@ -272,6 +284,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: s = f/h ; s
         scalar field on the 2-dimensional manifold 'M'
         sage: s.view()
+        M --> R
         on U: (x, y) |--> 1/2*sqrt(2)*arctan(x^2 + y^2)/pi
         on V: (u, v) |--> 1/4*sqrt(2)*(pi - 2*arctan(u^2 + v^2))/pi
         on W: (x, y) |--> 1/2*sqrt(2)*arctan(x^2 + y^2)/pi
@@ -291,8 +304,9 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: s = f*fW ; s
         scalar field on the open domain 'W' on the 2-dimensional manifold 'M'
         sage: s.view()
-        on W: (x, y) |--> arctan(x^2 + y^2)^2
-        on W: (u, v) |--> 1/4*pi^2 - pi*arctan(u^2 + v^2) + arctan(u^2 + v^2)^2
+        W --> R
+        (x, y) |--> arctan(x^2 + y^2)^2
+        (u, v) |--> 1/4*pi^2 - pi*arctan(u^2 + v^2) + arctan(u^2 + v^2)^2
         sage: s/f == fW
         True
 
@@ -301,6 +315,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: s = 2*f ; s
         scalar field on the 2-dimensional manifold 'M'
         sage: s.view()
+        M --> R
         on U: (x, y) |--> 2*arctan(x^2 + y^2)
         on V: (u, v) |--> pi - 2*arctan(u^2 + v^2)
         on W: (x, y) |--> 2*arctan(x^2 + y^2)

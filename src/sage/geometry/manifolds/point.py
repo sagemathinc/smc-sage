@@ -221,7 +221,7 @@ class Point(Element):
 
         Coordinates of P in a third chart::
         
-            sage: c_wz.<w,z> = M.chart('w z')
+            sage: c_wz.<w,z> = M.chart()
             sage: ch_uv_wz = c_uv.coord_change(c_wz, u^3, v^3)   
             sage: p.coord(c_wz, old_chart=c_uv)
             (a^3 - 3*a^2*b + 3*a*b^2 - b^3, a^3 + 3*a^2*b + 3*a*b^2 + b^3)

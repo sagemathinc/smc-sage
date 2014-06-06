@@ -1614,7 +1614,8 @@ class OpenDomain(Domain):
             sage: f = U.scalar_field(sin(x)*cos(y) + z, name='F'); f
             scalar field 'F' on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: f.view()
-            F on U: (x, y, z) |--> cos(y)*sin(x) + z
+            F: U --> R
+               (x, y, z) |--> cos(y)*sin(x) + z
             sage: f.parent()
             algebra of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: f in U.scalar_field_algebra()
@@ -2093,7 +2094,7 @@ class OpenDomain(Domain):
     
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(4, 'M')
-            sage: c_cart = M.chart('t x y z')
+            sage: c_cart.<t,x,y,z> = M.chart()
             sage: #!# g = M.lorentz_metric('g'); g
             Lorentzian metric 'g' on the 4-dimensional manifold 'M'
             sage: #!# g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
@@ -2145,7 +2146,7 @@ class OpenDomain(Domain):
             sage: M = Manifold(4, 'M')
             sage: A = M.open_domain('A', latex_name=r'\mathcal{A}'); A 
             open domain 'A' on the 4-dimensional manifold 'M'
-            sage: c_xyzt.<x,y,z,t> = A.chart('x y z t')
+            sage: c_xyzt.<x,y,z,t> = A.chart()
             sage: f = A.diff_form(2, 'F'); f
             2-form 'F' on the open domain 'A' on the 4-dimensional manifold 'M'
 

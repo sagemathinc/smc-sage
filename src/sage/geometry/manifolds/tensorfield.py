@@ -2028,7 +2028,8 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
             sage: f = M.scalar_field(x^3 + x*y^2)
             sage: w.lie_der(v)(f).view()
-            on M: (x, y) |--> -(x + 2)*y^3 + 3*x^3 - x*y^2 + 5*(x^3 - 2*x^2)*y
+            M --> R
+            (x, y) |--> -(x + 2)*y^3 + 3*x^3 - x*y^2 + 5*(x^3 - 2*x^2)*y
             sage: w.lie_der(v)(f) == v(w(f)) - w(v(f))  # rhs = commutator [v,w] acting on f
             True
             

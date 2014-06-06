@@ -74,7 +74,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     A 2-form on a 4-dimensional manifold::
     
         sage: M = Manifold(4, 'M')
-        sage: c_txyz = M.chart('t x y z')
+        sage: c_txyz.<t,x,y,z> = M.chart()
         sage: a = M.diff_form(2, 'a') ; a
         2-form 'a' on the 4-dimensional manifold 'M'
         
@@ -291,7 +291,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         Exterior derivative of a 1-form on a 4-dimensional manifold::
         
             sage: M = Manifold(4, 'M')
-            sage: c_txyz.<t,x,y,z> = M.chart('t x y z')           
+            sage: c_txyz.<t,x,y,z> = M.chart()           
             sage: a = M.one_form('A')
             sage: a[:] = (t*x*y*z, z*y**2, x*z**2, x**2 + y**2)
             sage: da = a.exterior_der() ; da
@@ -428,14 +428,15 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             sage: ssf = sf.hodge_star(g) ; ssf
             scalar field '**f' on the 3-dimensional manifold 'M'
             sage: ssf.view()
-            **f on M: (x, y, z) |--> F(x, y, z)
+            **f: M --> R
+               (x, y, z) |--> F(x, y, z)
             sage: ssf == f # must hold for a Riemannian metric
             True
             
         Hodge star of a 0-form in Minkowksi spacetime::
         
             sage: M = Manifold(4, 'M')
-            sage: X = M.chart('t x y z')
+            sage: X.<t,x,y,z> = M.chart()
             sage: g = M.metric('g', signature=2)
             sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
             sage: g.view()  # Minkowski metric
@@ -450,7 +451,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             sage: ssf = sf.hodge_star(g) ; ssf
             scalar field '**f' on the 4-dimensional manifold 'M'
             sage: ssf.view()
-            **f on M: (t, x, y, z) |--> -f0
+            **f: M --> R
+               (t, x, y, z) |--> -f0
             sage: ssf == -f  # must hold for a Lorentzian metric             
             True
 
@@ -597,7 +599,8 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
         sage: om(v)
         scalar field 'omega(V)' on the 3-dimensional manifold 'M'
         sage: om(v).view()
-        omega(V) on M: (x, y, z) |--> 2*x*y + (5*x - 3*y)*z
+        omega(V): M --> R
+           (x, y, z) |--> 2*x*y + (5*x - 3*y)*z
         sage: latex(om(v))
         \omega\left(V\right)
 
