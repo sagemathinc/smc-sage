@@ -114,10 +114,11 @@ class FreeModuleEndomorphism(FreeModuleTensor):
 
     def _new_instance(self):
         r"""
-        Create a :class:`FreeModuleEndomorphism` instance. 
+        Create an instance of the same class as ``self``. 
         
         """
-        return FreeModuleEndomorphism(self._fmodule)
+        return self.__class__(self._fmodule)
+#old#        return FreeModuleEndomorphism(self._fmodule)
 
     def __call__(self, *arg):
         r"""
@@ -228,9 +229,11 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
 
     def _new_instance(self):
         r"""
-        Create a :class:`FreeModuleAutomorphism` instance. 
+        Create an instance of the same class as ``self``.
+        
         """
-        return FreeModuleAutomorphism(self._fmodule)
+        return self.__class__(self._fmodule)
+#old#        return FreeModuleAutomorphism(self._fmodule)
         
     def _del_derived(self):
         r"""
@@ -293,8 +296,8 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
                 inv_latex_name = self._latex_name + r'^{-1}'
             fmodule = self._fmodule
             si = fmodule._sindex ; nsi = fmodule._rank + si
-            self._inverse = FreeModuleAutomorphism(fmodule, inv_name, 
-                                                   inv_latex_name)
+            self._inverse = self.__class__(fmodule, inv_name, inv_latex_name)
+#old#       self._inverse = FreeModuleAutomorphism(fmodule, inv_name, 
             for basis in self._components:
                 try:    
                     mat_self = matrix(
@@ -436,10 +439,11 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
 
     def _new_instance(self):
         r"""
-        Create a :class:`FreeModuleIdentityMap` instance. 
+        Create an instance of the same class as ``self``. 
         
         """
-        return FreeModuleIdentityMap(self._fmodule)
+        return self.__class__(self._fmodule)
+#old#        return FreeModuleIdentityMap(self._fmodule)
         
     def _new_comp(self, basis): 
         r"""
@@ -643,10 +647,11 @@ class FreeModuleSymBilinForm(FreeModuleTensor):
 
     def _new_instance(self):
         r"""
-        Create a :class:`FreeModuleSymBilinForm` instance. 
-        
+        Create an instance of the same class as ``self``. 
+
         """
-        return FreeModuleSymBilinForm(self._fmodule)
+        return self.__class__(self._fmodule)
+#old#        return FreeModuleSymBilinForm(self._fmodule)
 
     def _new_comp(self, basis): 
         r"""

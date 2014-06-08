@@ -74,11 +74,12 @@ class FreeModuleAltForm(FreeModuleTensor):
 
     def _new_instance(self):
         r"""
-        Create a :class:`FreeModuleAltForm` instance on the same module and of
-        the same degree.
+        Create an instance of the same class as ``self``, on the same module 
+        and of the same degree.
         
         """
-        return FreeModuleAltForm(self._fmodule, self._tensor_rank)
+        return self.__class__(self._fmodule, self._tensor_rank)
+#old#        return FreeModuleAltForm(self._fmodule, self._tensor_rank)
 
     def _new_comp(self, basis): 
         r"""
@@ -449,10 +450,12 @@ class FreeModuleLinForm(FreeModuleAltForm):
 
     def _new_instance(self):
         r"""
-        Create a :class:`FreeModuleLinForm` instance on the same module. 
+        Create an instance of the same class as ``self`` and on the same 
+        module. 
         
         """
-        return FreeModuleLinForm(self._fmodule)
+        return self.__class__(self._fmodule)
+#old#        return FreeModuleLinForm(self._fmodule)
 
 
     def _new_comp(self, basis): 

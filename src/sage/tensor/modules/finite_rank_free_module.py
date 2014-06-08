@@ -629,7 +629,11 @@ class FiniteRankFreeModule(UniqueRepresentation, Module):
                                                         FreeModuleSymBilinForm
         from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
         if tensor_type==(1,0):
-            return FiniteRankFreeModuleElement(self, name=name, latex_name=latex_name)
+            return self.element_class(self, name=name, latex_name=latex_name)
+            #!# the above is preferable to 
+            # return FiniteRankFreeModuleElement(self, name=name, latex_name=latex_name)
+            # because self.element_class is a (dynamically created) derived
+            # class of FiniteRankFreeModuleElement            
         elif tensor_type==(0,1):
             return FreeModuleLinForm(self, name=name, latex_name=latex_name)
         elif tensor_type==(1,1):
@@ -643,13 +647,19 @@ class FiniteRankFreeModule(UniqueRepresentation, Module):
                 return FreeModuleAltForm(self, tensor_type[1], name=name, 
                                          latex_name=latex_name)
             else:
-                return FreeModuleTensor(self, tensor_type, name=name, 
+                return self.tensor_module(*tensor_type).element_class(self, 
+                                        tensor_type, name=name, 
                                         latex_name=latex_name, sym=sym, 
                                         antisym=antisym)
+#old#           return FreeModuleTensor(self, tensor_type, name=name, 
+
         else:
-            return FreeModuleTensor(self, tensor_type, name=name, 
+            return self.tensor_module(*tensor_type).element_class(self,
+                                    tensor_type, name=name, 
                                     latex_name=latex_name, sym=sym, 
                                     antisym=antisym) 
+#old#       return FreeModuleTensor(self, tensor_type, name=name, 
+
     
     def tensor_from_comp(self, tensor_type, comp, name=None, latex_name=None):
         r"""
@@ -733,7 +743,11 @@ class FiniteRankFreeModule(UniqueRepresentation, Module):
         #
         # 1/ Construction of the tensor:
         if tensor_type == (1,0):
-            resu = FiniteRankFreeModuleElement(self, name=name, latex_name=latex_name)
+            resu = self.element_class(self, name=name, latex_name=latex_name)
+            #!# the above is preferable to 
+            # resu = FiniteRankFreeModuleElement(self, name=name, latex_name=latex_name)
+            # because self.element_class is a (dynamically created) derived
+            # class of FiniteRankFreeModuleElement
         elif tensor_type == (0,1):
             resu = FreeModuleLinForm(self, name=name, latex_name=latex_name)
         elif tensor_type == (1,1):
@@ -747,8 +761,9 @@ class FiniteRankFreeModule(UniqueRepresentation, Module):
             resu = FreeModuleAltForm(self, tensor_type[1], name=name, 
                                      latex_name=latex_name)
         else:
-            resu = FreeModuleTensor(self, tensor_type, name=name, 
-                                    latex_name=latex_name) 
+            resu = self.tensor_module(*tensor_type).element_class(self, 
+                                 tensor_type, name=name, latex_name=latex_name) 
+#old#       resu = FreeModuleTensor(self, tensor_type, name=name, 
             # Tensor symmetries deduced from those of comp:
             if isinstance(comp, CompWithSym):
                 resu._sym = comp._sym

@@ -557,15 +557,14 @@ class FreeModuleTensor(ModuleElement):
        
     def _new_instance(self):
         r"""
-        Create a :class:`FreeModuleTensor` instance of the same tensor type and 
-        with the same symmetries.
+        Create a tensor of the same tensor type and with the same symmetries 
+        as ``self``. 
 
-        This method must be redefined by derived classes of 
-        :class:`FreeModuleTensor`.
-        
         """
-        return FreeModuleTensor(self._fmodule, self._tensor_type, sym=self._sym, 
-                                antisym=self._antisym)
+        return self.__class__(self._fmodule, self._tensor_type, sym=self._sym, 
+                              antisym=self._antisym)
+#old#        return FreeModuleTensor(self._fmodule, self._tensor_type, sym=self._sym, 
+#                                antisym=self._antisym)
 
     def _new_comp(self, basis): 
         r"""
@@ -2144,7 +2143,7 @@ class FiniteRankFreeModuleElement(FreeModuleTensor):
         sage: e = M.basis('e') ; e
         basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
         
-    There are four ways to construct an element of the free module M: the first 
+    There are three ways to construct an element of the free module M: the first 
     one (recommended) is via the operator __call__ acting on the free module::
     
         sage: v = M([2,0,-1], basis=e, name='v') ; v
@@ -2154,38 +2153,27 @@ class FiniteRankFreeModuleElement(FreeModuleTensor):
         sage: v.parent() is M
         True
 
-    The second way is by a direct call to the class constructor::
+
+    The second way is to construct a tensor of type (1,0) on `M` (cf. the
+    canonical identification `M^{**}=M` recalled above)::
     
-        sage: from sage.tensor.modules.free_module_tensor import FiniteRankFreeModuleElement
-        sage: v2 = FiniteRankFreeModuleElement(M, name='v')
-        sage: v2[0], v2[2] = 2, -1 # setting the nonzero components in the default basis (e)
-        sage: v2
+        sage: v2 = M.tensor((1,0), name='v')
+        sage: v2[0], v2[2] = 2, -1 ; v2
         element v of the rank-3 free module M over the Integer Ring
         sage: v2.view()
         v = 2 e_0 - e_2
         sage: v2 == v
         True
-
-    The third way is to construct a tensor of type (1,0) on `M` (cf. the
-    canonical identification `M^{**}=M` recalled above)::
+        
+    Finally, the third way is via some linear combination of the basis 
+    elements::
     
-        sage: v3 = M.tensor((1,0), name='v')
-        sage: v3[0], v3[2] = 2, -1 ; v3
+        sage: v3 = 2*e[0] - e[2]
+        sage: v3.set_name('v') ; v3 # in this case, the name has to be set separately
         element v of the rank-3 free module M over the Integer Ring
         sage: v3.view()
         v = 2 e_0 - e_2
         sage: v3 == v
-        True
-        
-    Finally, the fourth way is via some linear combination of the basis 
-    elements::
-    
-        sage: v4 = 2*e[0] - e[2]
-        sage: v4.set_name('v') ; v4 # in this case, the name has to be set separately
-        element v of the rank-3 free module M over the Integer Ring
-        sage: v4.view()
-        v = 2 e_0 - e_2
-        sage: v4 == v
         True
     
     The canonical identification `M^{**}=M` is implemented by letting the
@@ -2290,9 +2278,10 @@ class FiniteRankFreeModuleElement(FreeModuleTensor):
 
     def _new_instance(self):
         r"""
-        Create a :class:`FiniteRankFreeModuleElement` instance.
+        Create an instance of the same class as ``self``. 
         
         """
-        return FiniteRankFreeModuleElement(self._fmodule)
+        return self.__class__(self._fmodule)
+        #old# return FiniteRankFreeModuleElement(self._fmodule)
 
         
