@@ -15,6 +15,11 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
 
+TODO:
+
+* Implement these tensors as elements of a parent class for alternating forms
+  (in the category of graded algebras), with coercion to tensor modules 
+  of type (0,p). 
 
 """
 #******************************************************************************

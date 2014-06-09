@@ -23,8 +23,8 @@ Tensor fields
    :undoc-members:
    :show-inheritance:
   
-Rank-2 tensor fields
---------------------
+Tensor fields of type (1,1)
+---------------------------
 
 .. automodule:: sage.geometry.manifolds.rank2field
    :members:

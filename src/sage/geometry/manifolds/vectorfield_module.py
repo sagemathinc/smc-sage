@@ -292,7 +292,7 @@ class VectorFieldModule(UniqueRepresentation, Module):
                 
         """
         from tensorfield import TensorField
-#        from rank2field import EndomorphismField, SymBilinFormField
+#        from rank2field import EndomorphismField
 #        from diffform import DiffForm, OneForm
         if tensor_type==(1,0):
             return VectorField(self, name=name, latex_name=latex_name)
@@ -300,8 +300,6 @@ class VectorFieldModule(UniqueRepresentation, Module):
             return OneForm(self, name=name, latex_name=latex_name)
         elif tensor_type==(1,1):
             return EndomorphismField(self, name=name, latex_name=latex_name)
-        elif tensor_type==(0,2) and sym==(0,1):
-            return SymBilinFormField(self, name=name, latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
             if len(antisym)==tensor_type[1]:
                 return DiffForm(self, tensor_type[1], name=name, 
@@ -628,7 +626,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                 
         """
         from tensorfield import TensorFieldParal
-        from rank2field import EndomorphismFieldParal, SymBilinFormFieldParal
+        from rank2field import EndomorphismFieldParal
         from diffform import DiffFormParal, OneFormParal
         if tensor_type==(1,0):
             return VectorFieldParal(self, name=name, latex_name=latex_name)
@@ -636,9 +634,6 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
             return OneFormParal(self, name=name, latex_name=latex_name)
         elif tensor_type==(1,1):
             return EndomorphismFieldParal(self, name=name, 
-                                                         latex_name=latex_name)
-        elif tensor_type==(0,2) and sym==(0,1):
-            return SymBilinFormFieldParal(self, name=name, 
                                                          latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
             if len(antisym)==tensor_type[1]:
@@ -681,7 +676,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                         
         """
         from tensorfield import TensorFieldParal
-        from rank2field import EndomorphismFieldParal, SymBilinFormFieldParal
+        from rank2field import EndomorphismFieldParal
         from diffform import DiffFormParal, OneFormParal
         from sage.tensor.modules.comp import CompWithSym, CompFullySym, \
                                                                CompFullyAntiSym
@@ -704,9 +699,6 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
             resu = OneFormParal(self, name=name, latex_name=latex_name)
         elif tensor_type == (1,1):
             resu = EndomorphismFieldParal(self, name=name, 
-                                          latex_name=latex_name)
-        elif tensor_type == (0,2) and isinstance(comp, CompFullySym):
-            resu = SymBilinFormFieldParal(self, name=name, 
                                           latex_name=latex_name)
         elif tensor_type[0] == 0 and tensor_type[1] > 1 and \
                                         isinstance(comp, CompFullyAntiSym):
@@ -901,18 +893,13 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         OUTPUT:
         
         - instance of 
-          :class:`~sage.geometry.manifolds.rank2field.SymBilinFormFieldParal`
+          :class:`~sage.geometry.manifolds.tensorfield.TensorFieldParal` of
+          tensor type (0,2) and symmetric
           
-        EXAMPLES:
-
-   
-        See 
-        :class:`~sage.geometry.manifolds.rank2field.SymBilinFormFieldParal` 
-        for further documentation. 
-
         """
-        from rank2field import SymBilinFormFieldParal
-        return SymBilinFormFieldParal(self, name=name, latex_name=latex_name)
+        from tensorfield import TensorFieldParal
+        return TensorFieldParal(self, (0,2), name=name, latex_name=latex_name,
+                                sym=(0,1))
 
     #### End of methods to be redefined by derived classes of FiniteRankFreeModule ####
 

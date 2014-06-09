@@ -1,27 +1,24 @@
 """
-Specific rank-2 tensors on free modules
+Type-(1,1) tensors on free modules
 
-Four derived classes of 
+Three derived classes of 
 :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor` are devoted 
-to rank-2 tensors:
+to type-(1,1) tensors:
 
-* :class:`FreeModuleEndomorphism` for endomorphisms (type-(1,1) tensors)
+* :class:`FreeModuleEndomorphism` for endomorphisms (generic type-(1,1) tensors)
 
   * :class:`FreeModuleAutomorphism` for invertible endomorphisms
 
     * :class:`FreeModuleIdentityMap` for the identity map on a free module
 
-* :class:`FreeModuleSymBilinForm` for symmetric bilinear forms (symmetric 
-  type-(0,2) tensors)
-  
-Antisymmetric bilinear forms are dealt with by the class
-:class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm`.
-
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
 
-EXAMPLES:
+TODO:
+
+* Implement these specific tensors as elements of a parent class for free 
+  module endomorphisms, with coercion to the module of type-(1,1) tensors. 
 
 """
 #******************************************************************************
@@ -539,128 +536,4 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
             return linform(vector)
         else:
             raise TypeError("Bad number of arguments.")
-
-
-#******************************************************************************
-
-class FreeModuleSymBilinForm(FreeModuleTensor):
-    r"""
-    Symmetric bilinear form (considered as a type-(0,2) tensor) on a free 
-    module.
-
-    INPUT:
-    
-    - ``fmodule`` -- free module `M` over a commutative ring `R` 
-      (must be an instance of :class:`FiniteRankFreeModule`)
-    - ``name`` -- (default: None) name given to the symmetric bilinear form
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the symmetric 
-      bilinear form; if none is provided, the LaTeX symbol is set to ``name``
-    
-    EXAMPLES:
-    
-    Symmetric bilinear form on a rank-3 free module::
-    
-        sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-        sage: a = M.sym_bilinear_form('A') ; a
-        symmetric bilinear form A on the rank-3 free module M over the Integer Ring
-        
-    A symmetric bilinear form is a type-(0,2) tensor that is symmetric::
-    
-        sage: a.parent()
-        free module of type-(0,2) tensors on the rank-3 free module M over the Integer Ring
-        sage: a.tensor_type()
-        (0, 2)
-        sage: a.tensor_rank()
-        2
-        sage: a.symmetries()
-        symmetry: (0, 1);  no antisymmetry
-    
-    Components with respect to a given basis::
-    
-        sage: e = M.basis('e')
-        sage: a[0,0], a[0,1], a[0,2] = 1, 2, 3
-        sage: a[1,1], a[1,2] = 4, 5
-        sage: a[2,2] = 6
-            
-    Only independent components have been set; the other ones are deduced by 
-    symmetry::
-        
-        sage: a[1,0], a[2,0], a[2,1]
-        (2, 3, 5)
-        sage: a[:]
-        [1 2 3]
-        [2 4 5]
-        [3 5 6]
-       
-    A symmetric bilinear form acts on pairs of module elements::
-    
-        sage: u = M([2,-1,3]) ; v = M([-2,4,1])
-        sage: a(u,v)
-        61
-        sage: a(v,u) == a(u,v)
-        True
-    
-    The sum of two symmetric bilinear forms is another symmetric bilinear 
-    form::
-
-        sage: b = M.sym_bilinear_form('B')
-        sage: b[0,0], b[0,1], b[1,2] = -2, 1, -3
-        sage: s = a + b ; s
-        symmetric bilinear form A+B on the rank-3 free module M over the Integer Ring
-        sage: a[:], b[:], s[:]
-        (
-        [1 2 3]  [-2  1  0]  [-1  3  3]
-        [2 4 5]  [ 1  0 -3]  [ 3  4  2]
-        [3 5 6], [ 0 -3  0], [ 3  2  6]
-        )
-        
-    Adding a symmetric bilinear from with a non-symmetric one results in a 
-    generic type-(0,2) tensor::
-    
-        sage: c = M.tensor((0,2), name='C')
-        sage: c[0,1] = 4
-        sage: s = a + c ; s
-        type-(0,2) tensor A+C on the rank-3 free module M over the Integer Ring
-        sage: s.symmetries()
-        no symmetry;  no antisymmetry
-        sage: s[:]
-        [1 6 3]
-        [2 4 5]
-        [3 5 6]
-        
-
-
-    """
-    def __init__(self, fmodule, name=None, latex_name=None):
-        FreeModuleTensor.__init__(self, fmodule, (0,2), name=name, 
-                                  latex_name=latex_name, sym=(0,1))
-                                  
-    def _repr_(self):
-        r"""
-        String representation of the object.
-        """
-        description = "symmetric bilinear form "
-        if self._name is not None:
-            description += self._name + " " 
-        description += "on the " + str(self._fmodule)
-        return description
-
-    def _new_instance(self):
-        r"""
-        Create an instance of the same class as ``self``. 
-
-        """
-        return self.__class__(self._fmodule)
-#old#        return FreeModuleSymBilinForm(self._fmodule)
-
-    def _new_comp(self, basis): 
-        r"""
-        Create some components in the given basis. 
-                
-        """
-        from comp import CompFullySym
-        fmodule = self._fmodule  # the base free module
-        return CompFullySym(fmodule._ring, basis, 2, start_index=fmodule._sindex,
-                            output_formatter=fmodule._output_formatter)
-
 

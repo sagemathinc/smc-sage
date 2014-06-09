@@ -28,8 +28,6 @@ fields:
   covariant tensor fields)
 * :class:`~sage.geometry.manifolds.rank2field.EndomorphismField` for fields of 
   endomorphisms (type (1,1) tensor fields)
-* :class:`~sage.geometry.manifolds.rank2field.SymBilinFormField` for fields of 
-  symmetric bilinear forms (rank-2 symmetric covariant tensor fields)
 * :class:`~sage.geometry.manifolds.diffform.DiffForm` for differential forms 
   (fully antisymmetric covariant tensor fields)
 
@@ -469,11 +467,18 @@ class TensorField(ModuleElement):
         r"""
         String representation of the object.
         """
-        description = "tensor field"
-        if self._name is not None:
-            description += " '%s'" % self._name
-        description += " of type (%s,%s) " % (str(self._tensor_type[0]), 
-                                             str(self._tensor_type[1]))
+        # Special cases
+        if self._tensor_type == (0,2) and self._sym == [(0,1)]:
+            description = "field of symmetric bilinear forms "
+            if self._name is not None:
+                description += "'%s' " % self._name
+        else:
+        # Generic case
+            description = "tensor field"
+            if self._name is not None:
+                description += " '%s'" % self._name
+            description += " of type (%s,%s) " % (str(self._tensor_type[0]), 
+                                                     str(self._tensor_type[1]))
         return self._final_repr(description)
 
     def _latex_(self):

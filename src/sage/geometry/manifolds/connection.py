@@ -1327,7 +1327,8 @@ class LeviCivitaConnection(AffConnection):
         OUTPUT:
         
         - the Ricci tensor `Ric`, as an instance of 
-          :class:`~sage.geometry.manifolds.rank2field.SymBilinFormField`
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField` of tensor
+          type (0,2) and symmetric
         
         EXAMPLES:
         

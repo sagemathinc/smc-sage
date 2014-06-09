@@ -1120,7 +1120,6 @@ class DiffMapping(SageObject):
         from scalarfield import ScalarField
         from vectorframe import CoordFrame
         from diffform import OneFormParal, DiffFormParal
-        from rank2field import SymBilinFormFieldParal
         from tensorfield import TensorFieldParal
         from sage.tensor.modules.comp import Components, CompWithSym, \
                                                  CompFullySym, CompFullyAntiSym
@@ -1172,13 +1171,10 @@ class DiffMapping(SageObject):
             elif isinstance(tensor, DiffFormParal):
                 resu = DiffFormParal(fmodule1, ncov, name=resu_name, 
                                                     latex_name=resu_latex_name)
-            elif isinstance(tensor, SymBilinFormFieldParal):
-                resu = SymBilinFormFieldParal(fmodule1, name=resu_name, 
-                                                    latex_name=resu_latex_name)                
             else:
                 resu = TensorFieldParal(fmodule1, (0,ncov), name=resu_name, 
-                                    latex_name=resu_latex_name, sym=tensor.sym,
-                                    antisym=tensor.antisym)
+                                    latex_name=resu_latex_name, 
+                                    sym=tensor._sym, antisym=tensor._antisym)
             for frame2 in tensor._components:
                 if isinstance(frame2, CoordFrame):
                     chart2 = frame2._chart

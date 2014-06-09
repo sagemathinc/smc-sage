@@ -39,9 +39,6 @@ tensors:
     * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityMap` 
       for the identity map on a free module
 
-* :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleSymBilinForm` 
-  for symmetric type-(0,2) tensors (symmetric bilinear forms)
-
 :class:`FreeModuleTensor` is a Sage *element* class, the corresponding *parent*
 class being :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule`. 
 
@@ -279,8 +276,13 @@ class FreeModuleTensor(ModuleElement):
         r"""
         String representation of the object.
         """
-        description = "type-(%s,%s) tensor" % \
-                           (str(self._tensor_type[0]), str(self._tensor_type[1]))
+        # Special cases
+        if self._tensor_type == (0,2) and self._sym == [(0,1)]:
+            description = "symmetric bilinear form "
+        else:
+        # Generic case
+            description = "type-(%s,%s) tensor" % \
+                         (str(self._tensor_type[0]), str(self._tensor_type[1]))
         if self._name is not None:
             description += " " + self._name
         description += " on the " + str(self._fmodule)

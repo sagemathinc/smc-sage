@@ -624,9 +624,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Module):
         for more examples and documentation.
                 
         """
-        from free_module_tensor import FreeModuleTensor, FiniteRankFreeModuleElement
-        from free_module_tensor_spec import FreeModuleEndomorphism, \
-                                                        FreeModuleSymBilinForm
+        from free_module_tensor_spec import FreeModuleEndomorphism
         from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
         if tensor_type==(1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
@@ -638,9 +636,6 @@ class FiniteRankFreeModule(UniqueRepresentation, Module):
             return FreeModuleLinForm(self, name=name, latex_name=latex_name)
         elif tensor_type==(1,1):
             return FreeModuleEndomorphism(self, name=name, 
-                                                         latex_name=latex_name)
-        elif tensor_type==(0,2) and sym==(0,1):
-            return FreeModuleSymBilinForm(self, name=name, 
                                                          latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
             if len(antisym)==tensor_type[1]:
@@ -724,9 +719,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Module):
             4 e^0/\e^1 + 5 e^1/\e^2
                 
         """
-        from free_module_tensor import FreeModuleTensor, FiniteRankFreeModuleElement
-        from free_module_tensor_spec import FreeModuleEndomorphism, \
-                                                        FreeModuleSymBilinForm
+        from free_module_tensor_spec import FreeModuleEndomorphism
         from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
         from comp import CompWithSym, CompFullySym, CompFullyAntiSym
         #
@@ -752,9 +745,6 @@ class FiniteRankFreeModule(UniqueRepresentation, Module):
             resu = FreeModuleLinForm(self, name=name, latex_name=latex_name)
         elif tensor_type == (1,1):
             resu = FreeModuleEndomorphism(self, name=name, 
-                                          latex_name=latex_name)
-        elif tensor_type == (0,2) and isinstance(comp, CompFullySym):
-            resu = FreeModuleSymBilinForm(self, name=name, 
                                           latex_name=latex_name)
         elif tensor_type[0] == 0 and tensor_type[1] > 1 and \
                                         isinstance(comp, CompFullyAntiSym):
@@ -1039,7 +1029,8 @@ class FiniteRankFreeModule(UniqueRepresentation, Module):
         OUTPUT:
         
         - instance of 
-          :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleSymBilinForm`
+          :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`
+          of tensor type (0,2) and symmetric
           
         EXAMPLES:
     
@@ -1055,16 +1046,70 @@ class FiniteRankFreeModule(UniqueRepresentation, Module):
             free module of type-(0,2) tensors on the rank-3 free module M over the Integer Ring
             sage: a.tensor_type()
             (0, 2)
+            sage: a.tensor_rank()
+            2
             sage: a.symmetries()
             symmetry: (0, 1);  no antisymmetry
+        
+        Components with respect to a given basis::
+        
+            sage: e = M.basis('e')
+            sage: a[0,0], a[0,1], a[0,2] = 1, 2, 3
+            sage: a[1,1], a[1,2] = 4, 5
+            sage: a[2,2] = 6
+                
+        Only independent components have been set; the other ones are deduced by 
+        symmetry::
+            
+            sage: a[1,0], a[2,0], a[2,1]
+            (2, 3, 5)
+            sage: a[:]
+            [1 2 3]
+            [2 4 5]
+            [3 5 6]
+           
+        A symmetric bilinear form acts on pairs of module elements::
+        
+            sage: u = M([2,-1,3]) ; v = M([-2,4,1])
+            sage: a(u,v)
+            61
+            sage: a(v,u) == a(u,v)
+            True
+        
+        The sum of two symmetric bilinear forms is another symmetric bilinear 
+        form::
+    
+            sage: b = M.sym_bilinear_form('B')
+            sage: b[0,0], b[0,1], b[1,2] = -2, 1, -3
+            sage: s = a + b ; s
+            symmetric bilinear form A+B on the rank-3 free module M over the Integer Ring
+            sage: a[:], b[:], s[:]
+            (
+            [1 2 3]  [-2  1  0]  [-1  3  3]
+            [2 4 5]  [ 1  0 -3]  [ 3  4  2]
+            [3 5 6], [ 0 -3  0], [ 3  2  6]
+            )
+            
+        Adding a symmetric bilinear from with a non-symmetric one results in a 
+        generic type-(0,2) tensor::
+        
+            sage: c = M.tensor((0,2), name='C')
+            sage: c[0,1] = 4
+            sage: s = a + c ; s
+            type-(0,2) tensor A+C on the rank-3 free module M over the Integer Ring
+            sage: s.symmetries()
+            no symmetry;  no antisymmetry
+            sage: s[:]
+            [1 6 3]
+            [2 4 5]
+            [3 5 6]
 
-        See 
-        :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleSymBilinForm` 
-        for further documentation. 
+        See :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor` 
+        for more documentation.
  
         """
-        from free_module_tensor_spec import FreeModuleSymBilinForm
-        return FreeModuleSymBilinForm(self, name=name, latex_name=latex_name)
+        return self.tensor_module(0,2).element_class(self, (0,2), name=name, 
+                                              latex_name=latex_name, sym=(0,1)) 
 
     #### End of methods to be redefined by derived classes ####
         

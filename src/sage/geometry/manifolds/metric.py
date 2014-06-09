@@ -24,11 +24,11 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from rank2field import SymBilinFormFieldParal
+from tensorfield import TensorFieldParal
 from sage.rings.integer import Integer
 
-#!# Provisory: SymBilinFormFieldParal must be replaced by SymBilinFormField:
-class Metric(SymBilinFormFieldParal):
+#!# Provisory: TensorFieldParal must be replaced by TensorField:
+class Metric(TensorFieldParal):
     r"""
     Base class for pseudo-Riemannian metrics on a differentiable manifold.
 
@@ -112,9 +112,9 @@ class Metric(SymBilinFormFieldParal):
 
     """
     def __init__(self, domain, name, signature=None, latex_name=None):
-        #!# Provisory: must be replaced by SymBilinFormField.__init__ :
-        SymBilinFormFieldParal.__init__(self, domain.vector_field_module(), 
-                                        name=name, latex_name=latex_name)
+        #!# Provisory: must be replaced by TensorField.__init__ :
+        TensorFieldParal.__init__(self, domain.vector_field_module(), (0,2), 
+                                  name=name, latex_name=latex_name, sym=(0,1))
         # signature:
         ndim = self._ambient_domain._manifold._dim
         if signature is None:
@@ -155,8 +155,8 @@ class Metric(SymBilinFormFieldParal):
         Initialize the derived quantities
         """
         # Initialization of quantities pertaining to the mother class:
-        #!# Provisory: SymBilinFormFieldParal must be replaced by SymBilinFormField:
-        SymBilinFormFieldParal._init_derived(self) 
+        #!# Provisory: TensorFieldParal must be replaced by TensorField:
+        TensorFieldParal._init_derived(self) 
         # inverse metric:
         inv_name = 'inv_' + self._name
         inv_latex_name = self._latex_name + r'^{-1}'
@@ -174,8 +174,8 @@ class Metric(SymBilinFormFieldParal):
         Delete the derived quantities
         """
         # First the derived quantities from the mother class are deleted:
-        #!# Provisory: SymBilinFormFieldParal must be replaced by SymBilinFormField:
-        SymBilinFormFieldParal._del_derived(self)
+        #!# Provisory: TensorFieldParal must be replaced by TensorField:
+        TensorFieldParal._del_derived(self)
         # The inverse metric is cleared: 
         self._inverse._components.clear()
         self._inverse._del_derived()
@@ -224,9 +224,13 @@ class Metric(SymBilinFormFieldParal):
         - ``symbiform`` -- field of symmetric bilinear forms
 
         """
-        #!# Provisory: SymBilinFormFieldParal must be replaced by SymBilinFormField:
-        if not isinstance(symbiform, SymBilinFormFieldParal):
-            raise TypeError("The argument must be a symmetric bilinear form.")
+        #!# Provisory: TensorFieldParal must be replaced by TensorField:
+        if not isinstance(symbiform, TensorFieldParal):
+            raise TypeError("The argument must be a tensor field.")
+        if not symbiform._tensor_type != (0,2):
+            raise TypeError("The argument must be of tensor type (0,2).")
+        if not symbiform._sym != [(0,1)]:
+            raise TypeError("The argument must be symmetric.")
         if symbiform._domain != self._domain:
             raise TypeError("The symmetric bilinear form and the metric are " + 
                             "not defined on the same domain.")
@@ -508,7 +512,8 @@ class Metric(SymBilinFormFieldParal):
         OUTPUT:
         
         - the Ricci tensor `Ric`, as an instance of 
-          :class:`~sage.geometry.manifolds.rank2field.SymBilinFormField`
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField` of tensor
+          type (0,2) and symmetric
         
         EXAMPLES:
         

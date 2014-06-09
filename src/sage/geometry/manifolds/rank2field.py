@@ -1,17 +1,18 @@
 r"""
-Rank-2 tensor fields
+Tensor fields of type (1,1)
 
 Three derived classes of 
 :class:`~sage.geometry.manifolds.tensorfield.TensorField` 
-devoted to rank-2 tensor are implemented:
+devoted to type-(1,1) tensor fields are implemented:
 
 
 * :class:`EndomorphismField` for fields of endomorphisms 
   (type (1,1) tensor fields)
-* :class:`AutomorphismField` for fields of invertible endomorphisms
-* :class:`IdentityMap` for the identity map on tangent spaces
-* :class:`SymBilinFormField` for fields of symmetric bilinear forms 
-  (type (0,2) tensor fields)
+
+  * :class:`AutomorphismField` for fields of invertible endomorphisms
+
+    * :class:`IdentityMap` for the identity map on tangent spaces
+
 
 AUTHORS:
 
@@ -29,159 +30,11 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from sage.tensor.modules.free_module_tensor_spec import FreeModuleSymBilinForm, \
+from sage.tensor.modules.free_module_tensor import FreeModuleTensor
+from sage.tensor.modules.free_module_tensor_spec import \
     FreeModuleEndomorphism, FreeModuleAutomorphism, FreeModuleIdentityMap
 from tensorfield import TensorFieldParal
 from vectorfield import VectorFieldParal
-
-class SymBilinFormFieldParal(FreeModuleSymBilinForm, TensorFieldParal):
-    r"""
-    Field of symmetric bilinear forms with values in a parallelizable open
-    subset of a differentiable manifold. 
-    
-    An instance of this class is a field of symmetric bilinear forms along an 
-    open subset `U` of some immersed  submanifold `S` of a manifold `M` with 
-    values in a parallelizable open subset `V` of `M`. 
-    The standard case of symmetric bilinear forms *on* a manifold corresponds 
-    to `U=V` (and hence `S=M`).
-    
-    INPUT:
-    
-    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector 
-      fields along `U` with values on `V`
-    - ``name`` -- (default: None) name given to the field
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
-      if none is provided, the LaTeX symbol is set to ``name``
-
-    EXAMPLES:
-
-    A field of symmetric bilinear forms on a 3-dimensional manifold::
-    
-        sage: M = Manifold(3, 'M')
-        sage: c_xyz.<x,y,z> = M.chart()
-        sage: t = M.sym_bilin_form_field('T') ; t
-        field of symmetric bilinear forms 'T' on the 3-dimensional manifold 'M'
-    
-    Such a object is a tensor field of rank 2 and type (0,2)::
-    
-        sage: t.parent()
-        free module TF^(0,2)(M) of type-(0,2) tensors fields on the 3-dimensional manifold 'M'
-        sage: t._tensor_rank
-        2
-        sage: t._tensor_type
-        (0, 2)
-
-    The LaTeX symbol is deduced from the name or can be specified when creating
-    the object::
-
-        sage: latex(t)
-        T
-        sage: om = M.sym_bilin_form_field('Omega', r'\Omega')
-        sage: latex(om)
-        \Omega
-
-    Components with respect to some vector frame::
-        
-        sage: e = M.vector_frame('e') ; M.set_default_frame(e)
-        sage: t.set_comp()
-        fully symmetric 2-indices components w.r.t. vector frame (M, (e_0,e_1,e_2))
-        sage: type(t.comp())
-        <class 'sage.tensor.modules.comp.CompFullySym'>
-           
-    For the domain's default frame, the components are accessed with the square brackets::
-
-        sage: t[0,0], t[0,1], t[0,2] = (1, 2, 3)
-        sage: t[1,1], t[1,2] = (4, 5)
-        sage: t[2,2] = 6
-            
-    The other components are deduced by symmetry::
-        
-        sage: t[1,0], t[2,0], t[2,1]
-        (2, 3, 5)
-        sage: t[:]
-        [1 2 3]
-        [2 4 5]
-        [3 5 6]
-       
-    A symmetric bilinear form acts on vector pairs::
-    
-        sage: M = Manifold(2, 'M')
-        sage: c_xy.<x,y> = M.chart()
-        sage: t = M.sym_bilin_form_field('T')
-        sage: t[0,0], t[0,1], t[1,1] = (-1, x, y*x)
-        sage: v1 = M.vector_field('V_1')
-        sage: v1[:] = (y,x)  
-        sage: v2 = M.vector_field('V_2')
-        sage: v2[:] = (x+y,2)
-        sage: s = t(v1,v2) ; s
-        scalar field 'T(V_1,V_2)' on the 2-dimensional manifold 'M'
-        sage: s.expr()
-        x^3 + (3*x^2 + x)*y - y^2
-        sage: s.expr() - t[0,0]*v1[0]*v2[0] - t[0,1]*(v1[0]*v2[1]+v1[1]*v2[0]) - t[1,1]*v1[1]*v2[1]
-        0
-        sage: latex(s)
-        T\left(V_1,V_2\right)
-    
-    Adding two symmetric bilinear forms results in another symmetric bilinear
-    form::
-
-        sage: a = M.sym_bilin_form_field()          
-        sage: a[0,0], a[0,1], a[1,1] = (1,2,3)  
-        sage: b = M.sym_bilin_form_field()          
-        sage: b[0,0], b[0,1], b[1,1] = (-1,4,5)
-        sage: s = a + b ; s
-        field of symmetric bilinear forms on the 2-dimensional manifold 'M'
-        sage: s[:]
-        [0 6]
-        [6 8]
-
-    But adding a symmetric bilinear from with a non-symmetric bilinear form 
-    results in a generic type (0,2) tensor::
-    
-        sage: c = M.tensor_field(0,2)            
-        sage: c[:] = [[-2, -3], [1,7]]            
-        sage: s1 = a + c ; s1
-        tensor field of type (0,2) on the 2-dimensional manifold 'M'
-        sage: s1[:]
-        [-1 -1]
-        [ 3 10]
-        sage: s2 = c + a ; s2
-        tensor field of type (0,2) on the 2-dimensional manifold 'M'
-        sage: s2[:] 
-        [-1 -1]
-        [ 3 10]
-        
-    """
-    def __init__(self, vector_field_module, name=None, latex_name=None):
-        FreeModuleSymBilinForm.__init__(self, vector_field_module, name=name, 
-                                        latex_name=latex_name)
-        # TensorFieldParal attributes:
-        self._domain = vector_field_module._domain
-        self._ambient_domain = vector_field_module._ambient_domain
-        # Initialization of derived quantities:
-        TensorFieldParal._init_derived(self) 
-
-    def _repr_(self):
-        r"""
-        String representation of the object.
-        """
-        description = "field of symmetric bilinear forms "
-        if self._name is not None:
-            description += "'%s' " % self._name
-        return self._final_repr(description)
-        
-    def _new_instance(self):
-        r"""
-        Create a :class:`SymBilinFormFieldParal` instance on the same domain. 
-        """
-        return SymBilinFormFieldParal(self._fmodule)
-
-    def _del_derived(self):
-        r"""
-        Delete the derived quantities
-        """
-        TensorFieldParal._del_derived(self)
-
 
 #******************************************************************************
 
