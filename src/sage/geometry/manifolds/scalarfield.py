@@ -471,10 +471,10 @@ class ScalarField(CommutativeAlgebraElement):
 
     def _new_instance(self):
         r"""
-        Create a :class:`ScalarField` instance on the same domain.
+        Create an instance of the same class as ``self`` and on the same domain.
         
         """
-        return ScalarField(self._domain)        
+        return self.__class__(self._domain)        
 
     def domain(self):
         r"""
@@ -530,7 +530,7 @@ class ScalarField(CommutativeAlgebraElement):
             sage: f = M.scalar_field(x*y^2)
             sage: g = f.copy()
             sage: print type(g)
-            <class 'sage.geometry.manifolds.scalarfield.ScalarField'>
+            <class 'sage.geometry.manifolds.scalarfield.ScalarFieldAlgebra_with_category.element_class'>
             sage: g.expr()
             x*y^2
             sage: g == f
@@ -539,7 +539,7 @@ class ScalarField(CommutativeAlgebraElement):
             False
         
         """
-        result = ScalarField(self._domain)  #!# what about the name ?
+        result = self.__class__(self._domain)  #!# what about the name ?
         for chart, funct in self._express.items():
             result._express[chart] = funct.copy()
         return result
@@ -1186,7 +1186,7 @@ class ScalarField(CommutativeAlgebraElement):
         if com_charts is None:
             raise ValueError("No common chart for the addition.")
         dom = self._domain
-        result = ScalarField(dom)
+        result = self.__class__(dom)
         for chart in com_charts:
             # FunctionChart addition:
             result._express[chart] = self._express[chart] + other._express[chart]
@@ -1218,7 +1218,7 @@ class ScalarField(CommutativeAlgebraElement):
         if com_charts is None:
             raise ValueError("No common chart for the subtraction.")
         dom = self._domain
-        result = ScalarField(dom)
+        result = self.__class__(dom)
         for chart in com_charts:
             # FunctionChart subtraction:
             result._express[chart] = self._express[chart] - other._express[chart]
@@ -1252,7 +1252,7 @@ class ScalarField(CommutativeAlgebraElement):
         if com_charts is None:
             raise ValueError("No common chart for the multiplication.")
         dom = self._domain
-        result = ScalarField(dom)
+        result = self.__class__(dom)
         for chart in com_charts:
             # FunctionChart multiplication:
             result._express[chart] = self._express[chart] * other._express[chart]
@@ -1285,7 +1285,7 @@ class ScalarField(CommutativeAlgebraElement):
         if com_charts is None:
             raise ValueError("No common chart for the division.")
         dom = self._domain
-        result = ScalarField(dom)
+        result = self.__class__(dom)
         for chart in com_charts:
             # FunctionChart division:
             result._express[chart] = self._express[chart] / other._express[chart]
@@ -1314,7 +1314,7 @@ class ScalarField(CommutativeAlgebraElement):
         """
         if number == 0:
             return self._domain._zero_scalar_field
-        result = ScalarField(self._domain)
+        result = self.__class__(self._domain)
         for chart, expr in self._express.items():
             result._express[chart] = number * expr
         return result
@@ -1756,50 +1756,6 @@ class ZeroScalarField(ScalarField):
         Not valid for a :class:`ZeroScalarField` object. 
         """
         raise TypeError("add_expr() has no meaning for a zero scalar field.")
-
-    def view(self, chart=None):
-        r""" 
-        Display the expression of the scalar field. 
-        
-        INPUT:
-        
-        - ``chart`` -- (default: None) chart for the  coordinate expression 
-          of the scalar field
-          
-        The output is either text-formatted (console mode) or LaTeX-formatted
-        (notebook mode). 
-        
-        """
-        from sage.misc.latex import latex
-        from utilities import FormattedExpansion
-        result = FormattedExpansion(self)
-        if chart is None:
-            result.txt = ""
-            result.latex = r"\begin{array}{l}"
-            for chart1 in self._domain._atlas:
-                try:
-                    result.txt += repr(self.view(chart1)) + "\n"
-                    result.latex += latex(self.view(chart1)) + r"\\"
-                except (TypeError, ValueError):
-                    pass
-            result.txt = result.txt[:-1]
-            result.latex = result.latex[:-2] + r"\end{array}"
-            return result
-
-        if self._name is None:
-            result.txt = "on " + chart._domain._name + ": " + \
-                         repr(chart[:]) + " |--> 0"
-        else:
-            result.txt = self._name + " on " + chart._domain._name + ": " +  \
-                         repr(chart[:]) + " |--> 0"
-        if self._latex_name is None:
-            result.latex = r"\mbox{on}\ " + latex(chart._domain) + ":\ " + \
-                           latex(chart[:]) + r"\mapsto 0"
-        else:
-            result.latex = latex(self) + r"\ \mbox{on}\ " + \
-                           latex(chart._domain) + ":\ " + latex(chart[:]) + \
-                           r"\mapsto 0"
-        return result
 
     def __call__(self, p):
         r"""

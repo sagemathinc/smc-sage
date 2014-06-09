@@ -465,9 +465,11 @@ class Chart(UniqueRepresentation, SageObject):
             M --> R
             (x, y) |--> 1
             sage: ex(M.scalar_field(y)).view()
-            on M: (x, y) |--> 0
+            M --> R
+            (x, y) |--> 0
             sage: ey(M.scalar_field(x)).view()
-            on M: (x, y) |--> 0
+            M --> R
+            (x, y) |--> 0
             sage: ey(M.scalar_field(y)).view()
             M --> R
             (x, y) |--> 1
@@ -512,9 +514,11 @@ class Chart(UniqueRepresentation, SageObject):
              dx(d/dx): M --> R
                (x, y) |--> 1
             sage: dx(ey).view()
-            dx(d/dy) on M: (x, y) |--> 0
+            dx(d/dy): M --> R
+               (x, y) |--> 0
             sage: dy(ex).view()
-            dy(d/dx) on M: (x, y) |--> 0
+            dy(d/dx): M --> R
+               (x, y) |--> 0
             sage: dy(ey).view()
             dy(d/dy): M --> R
                (x, y) |--> 1
@@ -1653,9 +1657,8 @@ class FunctionChart(SageObject):
             True
 
         """
-        from scalarfield import ScalarField
-        result = ScalarField(self._chart._domain, name=name, 
-                             latex_name=latex_name)
+        result = self._chart._domain.scalar_field_algebra().element_class(
+                         self._chart._domain, name=name, latex_name=latex_name)
         result._express = {self._chart: self}
         return result
 

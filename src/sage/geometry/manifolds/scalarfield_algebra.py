@@ -110,6 +110,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: CM.zero()
         zero scalar field on the 2-dimensional manifold 'M'
         sage: CM.zero().view()
+        M --> R
         on U: (x, y) |--> 0
         on V: (u, v) |--> 0
         on W: (x, y) |--> 0
@@ -120,8 +121,9 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: CW.zero()
         zero scalar field on the open domain 'W' on the 2-dimensional manifold 'M'
         sage: CW.zero().view()
-        on W: (x, y) |--> 0
-        on W: (u, v) |--> 0
+        W --> R
+        (x, y) |--> 0
+        (u, v) |--> 0
 
     The unit element::
     

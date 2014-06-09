@@ -17,9 +17,11 @@ AUTHORS:
 
 TODO:
 
-* Implement these tensors as elements of a parent class for alternating forms
-  (in the category of graded algebras), with coercion to tensor modules 
-  of type (0,p). 
+* Implement a specific parent for alternating forms of a fixed degree p>1, with
+  element :class:`FreeModuleAltForm` and with coercion to tensor modules of 
+  type (0,p). 
+* Implement a specific parent for linear forms, with element
+  :class:`FreeModuleLinForm` and with coercion to tensor modules of type (0,1). 
 
 """
 #******************************************************************************

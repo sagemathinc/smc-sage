@@ -115,7 +115,7 @@ the manifold's default chart)::
     sage: print type(t[1,1])    # single bracket --> FunctionChart
     <class 'sage.geometry.manifolds.chart.FunctionChart'>
     sage: print type(t[[1,1]])  # double bracket --> ScalarField
-    <class 'sage.geometry.manifolds.scalarfield.ScalarField'>
+    <class 'sage.geometry.manifolds.scalarfield.ScalarFieldAlgebra_with_category.element_class'>
 
 Expressions in a chart different from the manifold's default one are 
 obtained by specifying the chart as the last argument inside the
@@ -492,15 +492,12 @@ class TensorField(ModuleElement):
 
     def _new_instance(self):
         r"""
-        Create a :class:`TensorField` instance of the same tensor type, 
-        with the same symmetries and on the same domain.
-
-        This method must be redefined by derived classes of 
-        :class:`TensorField`.
+        Create an instance of the same class as ``self`` on the same 
+        vector field module, with the same tensor type and same symmetries
         
         """
-        return TensorField(self._vmodule, self._tensor_type, sym=self._sym, 
-                           antisym=self._antisym)
+        return self.__class__(self._vmodule, self._tensor_type, sym=self._sym, 
+                                antisym=self._antisym)
 
     def _final_repr(self, description):
         r"""
@@ -1747,14 +1744,11 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         
     def _new_instance(self):
         r"""
-        Create a :class:`TensorFieldParal` instance of the same tensor type, 
-        with the same symmetries and on the same domain.
-
-        This method must be redefined by derived classes of 
-        :class:`TensorFieldParal`.
+        Create an instance of the same class as ``self`` on the same 
+        vector field module, with the same tensor type and same symmetries
         
         """
-        return TensorFieldParal(self._fmodule, self._tensor_type, sym=self._sym, 
+        return self.__class__(self._fmodule, self._tensor_type, sym=self._sym, 
                                 antisym=self._antisym)
 
     def _init_derived(self):

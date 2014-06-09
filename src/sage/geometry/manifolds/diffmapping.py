@@ -1117,15 +1117,11 @@ class DiffMapping(SageObject):
             Phi_*(A) = 0
 
         """
-        from scalarfield import ScalarField
         from vectorframe import CoordFrame
         from diffform import OneFormParal, DiffFormParal
         from tensorfield import TensorFieldParal
         from sage.tensor.modules.comp import Components, CompWithSym, \
                                                  CompFullySym, CompFullyAntiSym
-
-        #!# if not isinstance(tensor, TensorField):
-        #    raise TypeError("The argument 'tensor' must be a tensor field.")
         dom1 = self._domain
         dom2 = self._codomain
         if not tensor._domain.is_subdomain(dom2):
@@ -1143,8 +1139,8 @@ class DiffMapping(SageObject):
         if ncov == 0:
             # Case of a scalar field
             # ----------------------
-            resu = ScalarField(dom1, name=resu_name, 
-                               latex_name=resu_latex_name)
+            resu = dom1.scalar_field_algebra().element_class(dom1, 
+                                    name=resu_name, latex_name=resu_latex_name)
             for chart2 in tensor._express:
                 for chart1 in dom1._atlas:
                     if (chart1, chart2) in self._coord_expression:
@@ -1172,9 +1168,11 @@ class DiffMapping(SageObject):
                 resu = DiffFormParal(fmodule1, ncov, name=resu_name, 
                                                     latex_name=resu_latex_name)
             else:
-                resu = TensorFieldParal(fmodule1, (0,ncov), name=resu_name, 
-                                    latex_name=resu_latex_name, 
-                                    sym=tensor._sym, antisym=tensor._antisym)
+                tensor_field_class = dom1.tensor_field_module((0,ncov), 
+                                    dest_map=fmodule1._dest_map).element_class
+                resu = tensor_field_class(fmodule1, (0,ncov), name=resu_name, 
+                                          latex_name=resu_latex_name, 
+                                      sym=tensor._sym, antisym=tensor._antisym)
             for frame2 in tensor._components:
                 if isinstance(frame2, CoordFrame):
                     chart2 = frame2._chart

@@ -24,14 +24,13 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from sage.modules.module import Module
 from sage.structure.unique_representation import UniqueRepresentation
+from sage.structure.parent import Parent
+from sage.categories.modules import Modules
 from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule
-from scalarfield import ScalarField
 from vectorfield import VectorField, VectorFieldParal
 
-
-class VectorFieldModule(UniqueRepresentation, Module):
+class VectorFieldModule(UniqueRepresentation, Parent):
     r"""
     Module of vector fields along an open subset `U` of some manifold `S`
     with values in a open subset `V` of a manifold `M`. 
@@ -172,7 +171,7 @@ class VectorFieldModule(UniqueRepresentation, Module):
         # the member self._ring is created for efficiency (to avoid calls to 
         # self.base_ring()):
         self._ring = domain.scalar_field_algebra() 
-        Module.__init__(self, self._ring)
+        Parent.__init__(self, base=self._ring, category=Modules(self._ring))
         # Dictionary of the tensor modules built on self 
         #   (dict. keys = (k,l) --the tensor type)
         self._tensor_modules = {(1,0): self} # self is considered as the set of
@@ -291,11 +290,10 @@ class VectorFieldModule(UniqueRepresentation, Module):
                     
                 
         """
-        from tensorfield import TensorField
 #        from rank2field import EndomorphismField
 #        from diffform import DiffForm, OneForm
         if tensor_type==(1,0):
-            return VectorField(self, name=name, latex_name=latex_name)
+            return self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type==(0,1):
             return OneForm(self, name=name, latex_name=latex_name)
         elif tensor_type==(1,1):
@@ -305,13 +303,13 @@ class VectorFieldModule(UniqueRepresentation, Module):
                 return DiffForm(self, tensor_type[1], name=name, 
                                                          latex_name=latex_name)
             else:
-                return TensorField(self, tensor_type, name=name, 
-                                   latex_name=latex_name, sym=sym, 
-                                    antisym=antisym)
+                return self.tensor_module(*tensor_type).element_class(self, 
+                                 tensor_type, name=name, latex_name=latex_name, 
+                                 sym=sym, antisym=antisym)
         else:
-            return TensorField(self, tensor_type, name=name, 
-                               latex_name=latex_name, sym=sym, antisym=antisym) 
-
+            return self.tensor_module(*tensor_type).element_class(self, 
+                                 tensor_type, name=name, latex_name=latex_name, 
+                                 sym=sym, antisym=antisym)
 
 #******************************************************************************
 
@@ -474,6 +472,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
     Element = VectorFieldParal
 
     def __init__(self, domain, dest_map=None):
+        from scalarfield import ScalarField
         self._domain = domain
         name = "X(" + domain._name
         latex_name = r"\mathcal{X}\left(" + domain._latex_name
@@ -625,11 +624,10 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                     
                 
         """
-        from tensorfield import TensorFieldParal
         from rank2field import EndomorphismFieldParal
         from diffform import DiffFormParal, OneFormParal
         if tensor_type==(1,0):
-            return VectorFieldParal(self, name=name, latex_name=latex_name)
+            return self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type==(0,1):
             return OneFormParal(self, name=name, latex_name=latex_name)
         elif tensor_type==(1,1):
@@ -640,13 +638,13 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                 return DiffFormParal(self, tensor_type[1], name=name, 
                                                          latex_name=latex_name)
             else:
-                return TensorFieldParal(self, tensor_type, name=name, 
-                                        latex_name=latex_name, sym=sym, 
-                                        antisym=antisym)
+                return self.tensor_module(*tensor_type).element_class(self, 
+                                 tensor_type, name=name, latex_name=latex_name, 
+                                 sym=sym, antisym=antisym)
         else:
-            return TensorFieldParal(self, tensor_type, name=name, 
-                                    latex_name=latex_name, sym=sym, 
-                                    antisym=antisym) 
+            return self.tensor_module(*tensor_type).element_class(self, 
+                                 tensor_type, name=name, latex_name=latex_name, 
+                                 sym=sym, antisym=antisym)
 
     def tensor_from_comp(self, tensor_type, comp, name=None, latex_name=None):
         r"""
@@ -675,7 +673,6 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         EXAMPLES:
                         
         """
-        from tensorfield import TensorFieldParal
         from rank2field import EndomorphismFieldParal
         from diffform import DiffFormParal, OneFormParal
         from sage.tensor.modules.comp import CompWithSym, CompFullySym, \
@@ -694,7 +691,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         #
         # 1/ Construction of the tensor:
         if tensor_type == (1,0):
-            resu = VectorFieldParal(self, name=name, latex_name=latex_name)
+            resu = self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type == (0,1):
             resu = OneFormParal(self, name=name, latex_name=latex_name)
         elif tensor_type == (1,1):
@@ -705,8 +702,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
             resu = DiffFormParal(self, tensor_type[1], name=name, 
                                                          latex_name=latex_name)
         else:
-            resu = TensorFieldParal(self, tensor_type, name=name, 
-                                    latex_name=latex_name) 
+            resu = self.tensor_module(*tensor_type).element_class(self, 
+                                 tensor_type, name=name, latex_name=latex_name) 
             # Tensor symmetries deduced from those of comp:
             if isinstance(comp, CompWithSym):
                 resu._sym = comp._sym
@@ -897,9 +894,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
           tensor type (0,2) and symmetric
           
         """
-        from tensorfield import TensorFieldParal
-        return TensorFieldParal(self, (0,2), name=name, latex_name=latex_name,
-                                sym=(0,1))
+        return self.tensor((0,2), name=name, latex_name=latex_name, sym=(0,1))
 
     #### End of methods to be redefined by derived classes of FiniteRankFreeModule ####
 

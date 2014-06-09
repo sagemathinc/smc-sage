@@ -69,11 +69,10 @@ class VectorField(TensorField):
 
     def _new_instance(self):
         r"""
-        Create a :class:`VectorField` instance on the same domain and 
-        with the same destination map.
+        Create an instance of the same class as ``self`` on the same module.
         
         """
-        return VectorField(self._vmodule)
+        return self.__class__(self._vmodule)
 
     def _init_dependencies(self):
         r"""
@@ -238,10 +237,10 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
 
     def _new_instance(self):
         r"""
-        Create a :class:`VectorFieldParal` instance. 
+        Create an instance of the same class as ``self`` on the same module.
         
         """
-        return VectorFieldParal(self._fmodule)
+        return self.__class__(self._fmodule)
 
     def _del_derived(self):
         r"""
