@@ -54,23 +54,8 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from sage.modules.module import Module
 from finite_rank_free_module import FiniteRankFreeModule
 from free_module_tensor import FreeModuleTensor, FiniteRankFreeModuleElement
-
-
-# From sage/modules/module.pyx:
-# ----------------------------
-### The new Module class that should be the base of all Modules
-### The derived Module class must implement the element
-### constructor:
-#
-# class MyModule(sage.modules.module.Module):
-#     Element = MyElement
-#     def _element_constructor_(self, x):
-#         return self.element_class(x)
-#
-
 
 class TensorFreeModule(FiniteRankFreeModule):
     r"""

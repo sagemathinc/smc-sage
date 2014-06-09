@@ -30,11 +30,10 @@ module element has then various representations over the various bases.
     to the new coercion model) since this class is devoted to modules with a 
     distinguished basis. 
 
-For the above reasons, the class :class:`FiniteRankFreeModule` inherits directly from 
-the generic class :class:`~sage.modules.module.Module` and each instance of 
-:class:`FiniteRankFreeModule` belongs to the category  
-:class:`~sage.categories.modules.Modules`
-and not to the category 
+For the above reasons, the class :class:`FiniteRankFreeModule` inherits 
+directly from the generic class :class:`~sage.structure.parent.Parent`
+with the category set to :class:`~sage.categories.modules.Modules`
+and not to 
 :class:`~sage.categories.modules_with_basis.ModulesWithBasis`.
 
 TODO:
@@ -174,29 +173,14 @@ As such, we can form its tensor product with t, yielding a tensor of type (3,1):
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from sage.modules.module import Module
-from free_module_tensor import FiniteRankFreeModuleElement
 from sage.structure.unique_representation import UniqueRepresentation
+from sage.structure.parent import Parent
+from sage.categories.modules import Modules
+from free_module_tensor import FiniteRankFreeModuleElement
 
-# From sage/modules/module.pyx:
-# ----------------------------
-### The new Module class that should be the base of all Modules
-### The derived Module class must implement the element
-### constructor:
-#
-# class MyModule(sage.modules.module.Module):
-#     Element = MyElement
-#     def _element_constructor_(self, x):
-#         return self.element_class(x)
-#
-
-
-class FiniteRankFreeModule(UniqueRepresentation, Module):
+class FiniteRankFreeModule(UniqueRepresentation, Parent):
     r"""
     Free module of finite rank over a commutative ring `R`.
-
-    This class inherits from the generic class 
-    :class:`~sage.modules.module.Module`. 
     
     .. NOTE::
     
@@ -208,8 +192,16 @@ class FiniteRankFreeModule(UniqueRepresentation, Module):
         from the class :class:`CombinatorialFreeModule` since the latter is
         devoted to modules *with a basis*. 
 
-    The class :class:`FiniteRankFreeModule` is a Sage *Parent* class whose elements 
-    belong to the class 
+    .. NOTE::
+
+        Following the recommendation exposed in 
+        `trac ticket 16427 <http://trac.sagemath.org/ticket/16427>`_
+        the class :class:`FiniteRankFreeModule` inherits directly from 
+        :class:`~sage.structure.parent.Parent` and not from the Cython class
+        :class:`~sage.modules.module.Module`. 
+        
+    The class :class:`FiniteRankFreeModule` is a Sage *Parent* class whose 
+    elements belong to the class 
     :class:`~sage.tensor.modules.free_module_tensor.FiniteRankFreeModuleElement`. 
 
     INPUT:
@@ -386,7 +378,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Module):
                  output_formatter=None):
         if not ring.is_commutative():
             raise TypeError("The module base ring must be commutative.")
-        Module.__init__(self, ring)
+        Parent.__init__(self, base=ring, category=Modules(ring))
         self._ring = ring # same as self._base
         self._rank = rank 
         self._name = name
