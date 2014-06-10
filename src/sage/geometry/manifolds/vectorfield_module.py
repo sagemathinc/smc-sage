@@ -110,7 +110,8 @@ class VectorFieldModule(UniqueRepresentation, Parent):
     On the contrary, the module of vector fields on `U` is a free module,
     since `U` is parallelizable (being a coordinate domain)::
     
-        sage: isinstance(U.vector_field_module(), FiniteRankFreeModule)
+        sage: XU = U.vector_field_module()
+        sage: isinstance(XU, FiniteRankFreeModule)
         True
         sage: U.is_manifestly_parallelizable()
         True
@@ -123,7 +124,20 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         zero = 0
         sage: z.view(c_uv.frame())
         zero = 0
-        
+    
+    The module `\mathcal{X}(M)` coerces to any module of vector fields defined
+    on a subdomain of `M`, for instance `\mathcal{X}(U)`::
+    
+        sage: XU.has_coerce_map_from(XM)
+        True
+        sage: XU.coerce_map_from(XM)
+        Conversion map:
+          From: module X(M) of vector fields on the 2-dimensional manifold 'M'
+          To:   free module X(U) of vector fields on the open domain 'U' on the 2-dimensional manifold 'M'
+    
+    The conversion map is actually the restriction of vector fields defined 
+    on `M` to `U`. 
+
     Sage test suite for modules is passed::
     
         sage: TestSuite(XM).run(verbose=True)
@@ -459,6 +473,21 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         zero = 0
         sage: z.view(c_t.frame())
         zero = 0
+
+    The module `\mathcal{X}(S^1)` coerces to any module of vector fields 
+    defined on a subdomain of `S^1`, for instance `\mathcal{X}(U)`::
+
+        sage: XU = U.vector_field_module() ; XU
+        free module X(U) of vector fields on the open domain 'U' on the 1-dimensional manifold 'S^1'
+        sage: XU.has_coerce_map_from(XM)
+        True
+        sage: XU.coerce_map_from(XM)
+        Conversion map:
+          From: free module X(S^1) of vector fields on the 1-dimensional manifold 'S^1'
+          To:   free module X(U) of vector fields on the open domain 'U' on the 1-dimensional manifold 'S^1'
+
+    The conversion map is actually the restriction of vector fields defined 
+    on `S^1` to `U`. 
 
     Sage test suite for modules is passed::
     

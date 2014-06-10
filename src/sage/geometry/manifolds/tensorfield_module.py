@@ -45,6 +45,69 @@ class TensorFieldModule(UniqueRepresentation, Module):
     - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank and 
       `l` the covariant rank
     
+    EXAMPLE:
+    
+    Module of type-(2,0) tensor fields on the 2-sphere::
+    
+        sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
+        sage: U = M.open_domain('U') # complement of the North pole
+        sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+        sage: V = M.open_domain('V') # complement of the South pole
+        sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+        sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
+                                             intersection_name='W', restrictions1= x^2+y^2!=0, \
+                                             restrictions2= u^2+v^2!=0)
+        sage: uv_to_xy = xy_to_uv.inverse()
+        sage: T20 = M.tensor_field_module((2,0)) ; T20
+        module TF^(2,0)(M) of type-(2,0) tensors fields on the 2-dimensional manifold 'M'
+        
+    `T^{(2,0)}(M)` is a module over the algebra `C^\infty(M)`::
+    
+        sage: T20.category()
+        Category of modules over algebra of scalar fields on the 2-dimensional manifold 'M'
+        sage: T20.base_ring() is M.scalar_field_algebra()
+        True
+    
+    `T^{(2,0)}(M)` is not a free module::
+    
+        sage: isinstance(T20, FiniteRankFreeModule)
+        False
+
+    because `M = S^2` is not parallelizable::
+    
+        sage: M.is_manifestly_parallelizable()
+        False
+        
+    On the contrary, the module of type-(2,0) tensor fields on `U` is a free 
+    module, since `U` is parallelizable (being a coordinate domain)::
+    
+        sage: T20U = U.tensor_field_module((2,0))
+        sage: isinstance(T20U, FiniteRankFreeModule)
+        True
+        sage: U.is_manifestly_parallelizable()
+        True
+
+    The module `T^{(2,0)}(M)` coerces to any module of type-(2,0) tensor fields 
+    defined on some subdomain of `M`, for instance `T^{(2,0)}(M)`::
+    
+        sage: T20U.has_coerce_map_from(T20)
+        True
+
+    The reverse is not true::
+    
+        sage: T20.has_coerce_map_from(T20U)
+        False
+        
+    The coercion::
+    
+        sage: T20U.coerce_map_from(T20)
+        Conversion map:
+          From: module TF^(2,0)(M) of type-(2,0) tensors fields on the 2-dimensional manifold 'M'
+          To:   free module TF^(2,0)(U) of type-(2,0) tensors fields on the open domain 'U' on the 2-dimensional manifold 'M'
+
+    The conversion map is actually the *restriction* of tensor fields defined 
+    on `M` to `U`. 
+
     """
     
     Element = TensorField
@@ -89,6 +152,14 @@ class TensorFieldModule(UniqueRepresentation, Module):
                 self._zero_element = self._element_constructor_(name='zero', 
                                                                 latex_name='0')
             return self._zero_element
+        if isinstance(comp, TensorField):
+            if self._tensor_type == comp._tensor_type and \
+               self._domain.is_subdomain(comp._domain) and \
+               self._ambient_domain.is_subdomain(comp._ambient_domain):
+                return comp.restrict(self._domain)
+            else:
+                raise TypeError("Cannot coerce the " + str(comp) +
+                                "to a tensor field in " + str(self))
         resu = self.element_class(self._vmodule, self._tensor_type, name=name, 
                                   latex_name=latex_name, sym=sym, 
                                   antisym=antisym)
@@ -104,6 +175,17 @@ class TensorFieldModule(UniqueRepresentation, Module):
         return resu
             
     #### End of methods required for any Parent 
+
+    def _coerce_map_from_(self, other):
+        r"""
+        Determine whether coercion to self exists from other parent
+        """
+        if isinstance(other, (TensorFieldModule, TensorFieldFreeModule)):
+            return self._tensor_type == other._tensor_type and \
+                   self._domain.is_subdomain(other._domain) and \
+                   self._ambient_domain.is_subdomain(other._ambient_domain)
+        else:
+            return False
 
     def _repr_(self):
         r"""
@@ -184,6 +266,39 @@ class TensorFieldFreeModule(TensorFreeModule):
         self._domain = domain
         self._dest_map = dest_map
         self._ambient_domain = vector_field_module._ambient_domain
+
+    def _element_constructor_(self, comp=[], basis=None, name=None, 
+                              latex_name=None, sym=None, antisym=None):
+        r"""
+        Construct a tensor
+        """
+        if comp == 0:
+            return self._zero_element
+        if isinstance(comp, TensorField):
+            if self._tensor_type == comp._tensor_type and \
+               self._domain.is_subdomain(comp._domain) and \
+               self._ambient_domain.is_subdomain(comp._ambient_domain):
+                return comp.restrict(self._domain)
+            else:
+                raise TypeError("Cannot coerce the " + str(comp) +
+                                "to a tensor field in " + str(self))
+        resu = self.element_class(self._fmodule, self._tensor_type, name=name, 
+                                  latex_name=latex_name, sym=sym, 
+                                  antisym=antisym)
+        if comp != []:
+            resu.set_comp(basis)[:] = comp
+        return resu
+
+    def _coerce_map_from_(self, other):
+        r"""
+        Determine whether coercion to self exists from other parent
+        """
+        if isinstance(other, (TensorFieldModule, TensorFieldFreeModule)):
+            return self._tensor_type == other._tensor_type and \
+                   self._domain.is_subdomain(other._domain) and \
+                   self._ambient_domain.is_subdomain(other._ambient_domain)
+        else:
+            return False
 
     def _repr_(self):
         r"""
