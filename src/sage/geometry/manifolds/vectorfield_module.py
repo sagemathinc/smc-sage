@@ -198,6 +198,13 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         """
         if comp == 0:
             return self._zero_element
+        if isinstance(comp, VectorField):
+            if self._domain.is_subdomain(comp._domain) and \
+                       self._ambient_domain.is_subdomain(comp._ambient_domain):
+                return comp.restrict(self._domain)
+            else:
+                raise TypeError("Cannot coerce the " + str(comp) +
+                                "to a vector field in " + str(self))
         resu = self.element_class(self, name=name, latex_name=latex_name)
         if comp != []:
             resu.set_comp(frame)[:] = comp
@@ -209,8 +216,18 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         """
         resu = self.element_class(self)
         return resu
-            
+
     #### End of methods required for any Parent 
+
+    def _coerce_map_from_(self, other):
+        r"""
+        Determine whether coercion to self exists from other parent
+        """
+        if isinstance(other, (VectorFieldModule, VectorFieldFreeModule)):
+            return self._domain.is_subdomain(other._domain) and \
+                   self._ambient_domain.is_subdomain(other._ambient_domain)
+        else:
+            return False
 
     def _repr_(self):
         r"""
@@ -501,6 +518,34 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                     self._zero_element.add_comp(frame)
                     # (since new components are initialized to zero)
 
+    def _element_constructor_(self, comp=[], basis=None, name=None, 
+                              latex_name=None):
+        r"""
+        Construct an element of the module
+        """
+        if comp == 0:
+            return self._zero_element
+        if isinstance(comp, VectorField):
+            if self._domain.is_subdomain(comp._domain) and \
+                       self._ambient_domain.is_subdomain(comp._ambient_domain):
+                return comp.restrict(self._domain)
+            else:
+                raise TypeError("Cannot coerce the " + str(comp) +
+                                "to a vector field in " + str(self))
+        resu = self.element_class(self, name=name, latex_name=latex_name)
+        if comp != []:
+            resu.set_comp(basis)[:] = comp
+        return resu
+
+    def _coerce_map_from_(self, other):
+        r"""
+        Determine whether coercion to self exists from other parent
+        """
+        if isinstance(other, (VectorFieldModule, VectorFieldFreeModule)):
+            return self._domain.is_subdomain(other._domain) and \
+                   self._ambient_domain.is_subdomain(other._ambient_domain)
+        else:
+            return False
 
     #### Methods to be redefined by derived classes of FiniteRankFreeModule ####
 
