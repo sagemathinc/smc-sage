@@ -87,8 +87,21 @@ class TensorFieldModule(UniqueRepresentation, Module):
         sage: U.is_manifestly_parallelizable()
         True
 
+    The zero element::
+    
+        sage: z = T20.zero() ; z
+        tensor field 'zero' of type (2,0) on the 2-dimensional manifold 'M'
+        sage: z is T20(0)
+        True
+        sage: z[c_xy.frame(),:]
+        [0 0]
+        [0 0]
+        sage: z[c_uv.frame(),:]
+        [0 0]
+        [0 0]
+
     The module `T^{(2,0)}(M)` coerces to any module of type-(2,0) tensor fields 
-    defined on some subdomain of `M`, for instance `T^{(2,0)}(M)`::
+    defined on some subdomain of `M`, for instance `T^{(2,0)}(U)`::
     
         sage: T20U.has_coerce_map_from(T20)
         True
@@ -151,6 +164,14 @@ class TensorFieldModule(UniqueRepresentation, Module):
             if not hasattr(self, '_zero_element'):
                 self._zero_element = self._element_constructor_(name='zero', 
                                                                 latex_name='0')
+                for frame in self._domain._frames:
+                    if frame._dest_map is None and self._dest_map is None: 
+                        self._zero_element.add_comp(frame)
+                        # (since new components are initialized to zero)
+                    elif frame._dest_map is not None and self._dest_map is not None:
+                        if frame._dest_map._name == self._dest_map._name: #!# to be improved
+                            self._zero_element.add_comp(frame)
+                            # (since new components are initialized to zero)
             return self._zero_element
         if isinstance(comp, TensorField):
             if self._tensor_type == comp._tensor_type and \
@@ -241,10 +262,70 @@ class TensorFieldFreeModule(TensorFreeModule):
       fields along `U` associated with the mapping `\Phi:\; U \rightarrow V`. 
     - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank and 
       `l` the covariant rank
+      
+    EXAMPLE:
+    
+    Module of type-(2,0) tensor fields on `\RR^3`::
+    
+        sage: M = Manifold(3, 'R^3')
+        sage: c_xyz.<x,y,z> = M.chart()  # Cartesian coordinates 
+        sage: T20 = M.tensor_field_module((2,0)) ; T20
+        free module TF^(2,0)(R^3) of type-(2,0) tensors fields on the 3-dimensional manifold 'R^3'
+
+    `T^{(2,0)}(\RR^3)` is a module over the algebra `C^\infty(\RR^3)`::
+
+        sage: T20.category()
+        Category of modules over algebra of scalar fields on the 3-dimensional manifold 'R^3'
+        sage: T20.base_ring() is M.scalar_field_algebra()
+        True
+ 
+    `T^{(2,0)}(\RR^3)` is a free module::
+    
+        sage: isinstance(T20, FiniteRankFreeModule)
+        True
+        
+    because `M = R^3` is parallelizable::
+    
+        sage: M.is_manifestly_parallelizable()
+        True
+    
+    The zero element::
+    
+        sage: z = T20.zero() ; z
+        tensor field 'zero' of type (2,0) on the 3-dimensional manifold 'R^3'
+        sage: z[:]
+        [0 0 0]
+        [0 0 0]
+        [0 0 0]
+
+    A random element::
+    
+        sage: t = T20.an_element() ; t
+        tensor field of type (2,0) on the 3-dimensional manifold 'R^3'
+        sage: t[:]
+        [2 0 0]
+        [0 0 0]
+        [0 0 0]
+
+    The module `T^{(2,0)}(\RR^3)` coerces to any module of type-(2,0) tensor fields 
+    defined on some subdomain of `\RR^3`::
+
+        sage: U = M.open_domain('U', coord_def={c_xyz: x>0})
+        sage: T20U = U.tensor_field_module((2,0))
+        sage: T20U.has_coerce_map_from(T20)
+        True
+        sage: T20.has_coerce_map_from(T20U)  # the reverse is not true
+        False
+        sage: T20U.coerce_map_from(T20)
+        Conversion map:
+          From: free module TF^(2,0)(R^3) of type-(2,0) tensors fields on the 3-dimensional manifold 'R^3'
+          To:   free module TF^(2,0)(U) of type-(2,0) tensors fields on the open domain 'U' on the 3-dimensional manifold 'R^3'
+        
+    The conversion map is actually the *restriction* of tensor fields defined 
+    on `\RR^3` to `U`. 
     
     """
 
-    
     Element = TensorFieldParal
 
     def __init__(self, vector_field_module, tensor_type):

@@ -206,10 +206,9 @@ class TensorFreeModule(FiniteRankFreeModule):
         # Zero element 
         self._zero_element = self._element_constructor_(name='zero', 
                                                         latex_name='0')
-        def_basis = self._fmodule._def_basis
-        if def_basis is not None:
-            self._zero_element._components[def_basis] = \
-                                        self._zero_element._new_comp(def_basis)
+        for basis in self._fmodule._known_bases:
+            self._zero_element._components[basis] = \
+                                            self._zero_element._new_comp(basis)
             # (since new components are initialized to zero)
     
     #### Methods required for any Parent 
