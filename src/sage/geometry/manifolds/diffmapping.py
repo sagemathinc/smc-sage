@@ -14,7 +14,7 @@ Subclasses of :class:`DiffMapping` are devoted to specific cases:
 * :class:`Diffeomorphism` for *diffeomorphisms*, i.e. of invertible mappings 
   such that both `\Phi` and `\Phi^{-1}` are differentiable
   
-  * :class:`IdentityMapping` for the identity mapping of an open set. 
+  * :class:`IdentityMap` for the identity map of an open set. 
 
 
 AUTHORS:
@@ -1451,15 +1451,15 @@ class Diffeomorphism(DiffMapping):
         
 #******************************************************************************
 
-class IdentityMapping(Diffeomorphism):
+class IdentityMap(Diffeomorphism):
     r"""
-    Class for identity mapping on an open subset of some differentiable 
+    Class for identity map on an open subset of some differentiable 
     manifold.
 
     INPUT:
     
     - ``domain`` -- open subset of some differentiable manifold
-    - ``name`` -- (default: None) name given to the identity mapping; if None,
+    - ``name`` -- (default: None) name given to the identity map; if None,
       it is set to 'Id_U', where 'U' is the domain's name.
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity 
       mapping; if None, it is set to `\mathrm{Id}_U`, where `U` is the symbol
@@ -1467,17 +1467,17 @@ class IdentityMapping(Diffeomorphism):
       
     EXAMPLES:
     
-    Identity mapping on a open subset of a 2-dimensional manifold::
+    Identity map on a open subset of a 2-dimensional manifold::
     
         sage: M = Manifold(2, 'M')
         sage: U = M.open_domain('U')
         sage: c_xy.<x, y> = U.chart()
-        sage: i = U.identity_mapping() ; i
-        identity mapping 'Id_U' on the open domain 'U' on the 2-dimensional manifold 'M'
+        sage: i = U.identity_map() ; i
+        identity map 'Id_U' on the open domain 'U' on the 2-dimensional manifold 'M'
         sage: latex(i)
         \mathrm{Id}_{U}
 
-    The identity mapping acting on a point::
+    The identity map acting on a point::
     
         sage: p = U.point((1,-2), name='p')
         sage: i(p)
@@ -1487,7 +1487,7 @@ class IdentityMapping(Diffeomorphism):
         sage: i(p) is p
         True
     
-    The coordinate expression of the identity mapping::
+    The coordinate expression of the identity map::
     
         sage: i.view()
         Id_U: U --> U
@@ -1511,7 +1511,7 @@ class IdentityMapping(Diffeomorphism):
         r"""
         String representation of the object.
         """
-        description = "identity mapping '%s'" % self._name
+        description = "identity map '%s'" % self._name
         description += " on the " + str(self._domain)
         return description
 
@@ -1526,7 +1526,7 @@ class IdentityMapping(Diffeomorphism):
         r"""
         Redefinition of :meth:`DiffMapping.set_expr`: should not be used
         """
-        raise NotImplementedError("IdentityMapping.set_expr must not be used.")
+        raise NotImplementedError("IdentityMap.set_expr must not be used.")
 
     def multi_function_chart(self, chart1=None, chart2=None):
         r""" 
@@ -1546,7 +1546,7 @@ class IdentityMapping(Diffeomorphism):
         
         - instance of class 
           :class:`~sage.geometry.manifolds.chart.MultiFunctionChart` 
-          representing the identity mapping in the above two charts
+          representing the identity map in the above two charts
 
         """
         def_chart = self._domain._def_chart
@@ -1577,15 +1577,15 @@ class IdentityMapping(Diffeomorphism):
         
         OUTPUT:
         
-        - the identity mapping
+        - the identity map
         
         EXAMPLE::
         
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart()
-            sage: i = M.identity_mapping()
+            sage: i = M.identity_map()
             sage: i.inverse()
-            identity mapping 'Id_M' on the 2-dimensional manifold 'M'
+            identity map 'Id_M' on the 2-dimensional manifold 'M'
             sage: i.inverse() is i
             True
 
@@ -1607,19 +1607,47 @@ class IdentityMapping(Diffeomorphism):
         
         OUTPUT:
 
-        - point ``p`` (since ``self`` is the identity mapping
+        - point ``p`` (since ``self`` is the identity map)
         
         """
         # no test of p being a point in the domain (for efficiency)
         return p
 
+    def restrict(self, subdomain):
+        r"""
+        Restriction of the identity map to some subdomain of its 
+        domain of definition.
+        
+        INPUT:
+        
+        - ``subdomain`` -- the subdomain of ``self._domain`` (instance of
+          :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+        
+        OUTPUT:
+        
+        - the restriction of ``self`` to ``dom``, as an instance of 
+          class :class:`IdentityMap`
+          
+        EXAMPLE:
+        """
+        if subdomain == self._domain:
+            return self
+        if (subdomain, subdomain) not in self._restrictions:
+            if not subdomain.is_subdomain(self._domain):
+                raise ValueError("The specified domain is not a subdomain " + 
+                                 "of the domain of definition of the " + 
+                                 "identity map.")
+            self._restrictions[(subdomain, subdomain)] = \
+                                                   subdomain.identity_map()
+        return self._restrictions[(subdomain, subdomain)]
+
+
     def pullback(self, tensor):
         r""" 
-        Pullback operator associated with the identity mapping.
+        Pullback operator associated with the identity map.
         
         This is a redefinition of :meth:`DiffMapping.pullback`
         """
         # no test for efficiency
         return tensor
 
-        

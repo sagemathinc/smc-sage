@@ -474,7 +474,7 @@ class Metric(TensorFieldParal):
         This formula can be checked here, with the r.h.s. rewritten as 
         `-r g_{j[k} \delta^i_{\ \, l]}`::
         
-            sage: g.riemann() == -g.ricci_scalar()*(g*M.identity_map()).antisymmetrize([2,3])
+            sage: g.riemann() == -g.ricci_scalar()*(g*M.tangent_identity_field()).antisymmetrize([2,3])
             True
         
         """
@@ -630,7 +630,7 @@ class Metric(TensorFieldParal):
             if n < 3:
                 raise ValueError("The Weyl tensor is not defined for a " + 
                                  "manifold of dimension n <= 2.")
-            delta = self._domain.identity_map()
+            delta = self._domain.tangent_identity_field()
             riem = self.riemann()
             ric = self.ricci()
             rscal = self.ricci_scalar()

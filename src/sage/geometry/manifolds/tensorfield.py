@@ -24,12 +24,22 @@ fields:
 
 * :class:`~sage.geometry.manifolds.vectorfield.VectorField` for vector fields 
   (rank-1 contravariant tensor fields)
-* :class:`~sage.geometry.manifolds.diffform.OneForm` for 1-forms (rank-1 
-  covariant tensor fields)
+
 * :class:`~sage.geometry.manifolds.rank2field.EndomorphismField` for fields of 
   endomorphisms (type (1,1) tensor fields)
+
+  * :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` for fields 
+    of invertible endomorphisms
+
+    * :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField` for 
+      fields of identity maps on tangent spaces
+
 * :class:`~sage.geometry.manifolds.diffform.DiffForm` for differential forms 
   (fully antisymmetric covariant tensor fields)
+
+  * :class:`~sage.geometry.manifolds.diffform.OneForm` for 1-forms (rank-1 
+    covariant tensor fields)
+
 
 AUTHORS:
 

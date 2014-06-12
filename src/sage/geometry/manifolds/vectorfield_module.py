@@ -441,8 +441,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
     `\partial/\partial t` and `\partial/\partial u` are 1::
     
         sage: e = M.vector_frame('e')
-        sage: U.set_frame_change(e.restrict(U), c_t.frame(), U.identity_map())
-        sage: V.set_frame_change(e.restrict(V), c_u.frame(), V.identity_map())
+        sage: U.set_frame_change(e.restrict(U), c_t.frame(), U.tangent_identity_field())
+        sage: V.set_frame_change(e.restrict(V), c_u.frame(), V.tangent_identity_field())
         sage: e[0].view(c_t.frame())
         e_0 = d/dt
         sage: e[0].view(c_u.frame())
@@ -933,18 +933,18 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         OUTPUT:
         
         - instance of 
-          :class:`~sage.geometry.manifolds.rank2field.IdentityMapParal`
+          :class:`~sage.geometry.manifolds.rank2field.TangentIdentityFieldParal`
           
         EXAMPLES:
 
 
         See
-        :class:`~sage.geometry.manifolds.rank2field.IdentityMapParal` 
+        :class:`~sage.geometry.manifolds.rank2field.TangentIdentityFieldParal` 
         for further documentation. 
  
         """
-        from rank2field import IdentityMapParal
-        return IdentityMapParal(self, name=name, latex_name=latex_name)
+        from rank2field import TangentIdentityFieldParal
+        return TangentIdentityFieldParal(self, name=name, latex_name=latex_name)
 
     def sym_bilinear_form(self, name=None, latex_name=None):
         r"""

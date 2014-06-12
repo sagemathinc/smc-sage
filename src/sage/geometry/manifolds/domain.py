@@ -1091,7 +1091,7 @@ class OpenDomain(Domain):
     """
     def __init__(self, manifold, name, latex_name=None):
         from scalarfield import ZeroScalarField
-        from diffmapping import IdentityMapping
+        from diffmapping import IdentityMap
         Domain.__init__(self, manifold, name, latex_name)
         # list of charts that individually cover the domain, i.e. whose 
         # domains are self (if non-empty, self is coordinate domain):
@@ -1107,8 +1107,8 @@ class OpenDomain(Domain):
         self._vector_field_modules = {}
         # dict. of tensor field modules along self: 
         self._tensor_field_modules = {}
-        # the identity mapping on self
-        self._identity_mapping = IdentityMapping(self)
+        # the identity map on self
+        self._identity_map = IdentityMap(self)
     
     def _repr_(self):
         r"""
@@ -1995,17 +1995,18 @@ class OpenDomain(Domain):
             raise NotImplementedError("AutomorphismField not implemented yet")
             
 
-    def identity_map(self, name=None, latex_name=None, dest_map=None):  
+    def tangent_identity_field(self, name=None, latex_name=None, 
+                               dest_map=None):  
         r"""
-        Define the identity map in the tangent spaces on the domain.
+        Return the field of identity maps in the tangent spaces on the domain.
 
-        See :class:`~sage.geometry.manifolds.rank2field.IdentityMap` for a 
-        complete documentation. 
+        See :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField` 
+        for a complete documentation. 
 
         INPUT:
     
-        - ``name`` -- (default: None) name given to the identity map; if none
-          is provided, the value 'Id' is set. 
+        - ``name`` -- (default: None) name given to the field of identity maps; 
+          if none is provided, the value 'Id' is set. 
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity
           map; if none is provided, the LaTeX symbol is set to `\mathrm{Id}`
         - ``dest_map`` -- (default: None) instance of 
@@ -2016,34 +2017,34 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - instance of :class:`~sage.geometry.manifolds.rank2field.IdentityMap`
+        - instance of :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField`
           representing the field of identity maps. 
 
         EXAMPLE:
 
-        Identity map on a 3-dimensional manifold::
+        Field of tangent-space identity maps on a 3-dimensional manifold::
     
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M', start_index=1)
             sage: c_xyz.<x,y,z> = M.chart()
-            sage: a = M.identity_map(); a
+            sage: a = M.tangent_identity_field(); a
             field of tangent-space identity maps 'Id' on the 3-dimensional manifold 'M'
             sage: a.comp()
             Kronecker delta of size 3x3            
 
         See the documentation of class 
-        :class:`~sage.geometry.manifolds.rank2field.IdentityMap` for more 
+        :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField` for more 
         examples.
 
         """
-        from rank2field import IdentityMapParal
+        from rank2field import TangentIdentityFieldParal
         if name is None:
             name = 'Id'
         if self.is_manifestly_parallelizable():
-            return IdentityMapParal(self.vector_field_module(dest_map), 
+            return TangentIdentityFieldParal(self.vector_field_module(dest_map), 
                                     name=name, latex_name=latex_name)
         else:
-            raise NotImplementedError("IdentityMap not implemented yet")
+            raise NotImplementedError("TangentIdentityField not implemented yet")
 
 
     def metric(self, name, signature=None, latex_name=None): 
@@ -2393,20 +2394,20 @@ class OpenDomain(Domain):
                               chart1=chart1, chart2=chart2, name=name, 
                               latex_name=latex_name)
 
-    def identity_mapping(self):
+    def identity_map(self):
         r"""
-        Identity mapping on the current domain
+        Identity map on the current domain
         
-        See :class:`~sage.geometry.manifolds.diffmapping.IdentityMapping` for a 
+        See :class:`~sage.geometry.manifolds.diffmapping.IdentityMap` for a 
         complete documentation. 
 
         OUTPUT:
         
-        - the identity mapping, as an instance of 
-          :class:`~sage.geometry.manifolds.diffmapping.IdentityMapping`
+        - the identity map, as an instance of 
+          :class:`~sage.geometry.manifolds.diffmapping.IdentityMap`
 
         """
-        return self._identity_mapping
+        return self._identity_map
 
     def aff_connection(self, name, latex_name=None):
         r"""

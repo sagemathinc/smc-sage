@@ -11,7 +11,8 @@ devoted to type-(1,1) tensor fields are implemented:
 
   * :class:`AutomorphismField` for fields of invertible endomorphisms
 
-    * :class:`IdentityMap` for the identity map on tangent spaces
+    * :class:`TangentIdentityField` for fields of identity maps on tangent 
+      spaces
 
 
 AUTHORS:
@@ -367,7 +368,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
 
 #******************************************************************************
 
-class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
+class TangentIdentityFieldParal(FreeModuleIdentityMap, AutomorphismFieldParal):
     r"""
     Field of tangent-space identity maps with values on a parallelizable open 
     subset of a differentiable manifold. 
@@ -390,16 +391,16 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
 
     EXAMPLES:
 
-    Identity map on a 3-dimensional manifold::
+    Field of tangent-space identity maps on a 3-dimensional manifold::
     
         sage: M = Manifold(3, 'M', start_index=1)
         sage: c_xyz.<x,y,z> = M.chart()
-        sage: a = M.identity_map(); a
+        sage: a = M.tangent_identity_field(); a
         field of tangent-space identity maps 'Id' on the 3-dimensional manifold 'M'
         sage: latex(a)
         \mathrm{Id}
         
-    The identity map is a type-(1,1) tensor::
+    The tangent-space identity map is a type-(1,1) tensor::
     
         sage: a.parent()
         free module TF^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
@@ -429,7 +430,7 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         ...
         NotImplementedError: The components of the identity map cannot be changed.
 
-    The identity map applied to a vector field::
+    The tangent-space identity map applied to a vector field::
     
         sage: v = M.vector_field()
         sage: v[:] = (2*x, -3, y+z)
@@ -440,7 +441,7 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         sage: w is v  # the output is actually the vector v itself
         True
 
-    The identity map acting as a type (1,1) tensor on a pair (1-form, vector)::
+    The tangent-space identity map acting as a type (1,1) tensor on a pair (1-form, vector)::
     
         sage: om = M.one_form()
         sage: om[:] = (0, x*y, 2)
@@ -449,7 +450,7 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         sage: s == om(v)
         True
         
-    The identity map is its own inverse::
+    The tangent-space identity map is its own inverse::
     
         sage: a.inverse() == a
         True
@@ -479,7 +480,7 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
 
     def _new_instance(self):
         r"""
-        Create a :class:`IdentityMapParal` instance on the same domain.
+        Create a :class:`TangentIdentityFieldParal` instance on the same domain.
         """
         return self.__class__(self._fmodule)
 
