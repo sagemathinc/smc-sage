@@ -1169,7 +1169,7 @@ class TensorField(ModuleElement):
         resu_sym = some_rst._sym
         resu_antisym = some_rst._antisym
         resu = self._vmodule.tensor(self._tensor_type, sym=resu_sym, 
-                                   antisym=resu_antisym)
+                                    antisym=resu_antisym)
         resu._restrictions = resu_rst
         if self._name is not None and other._name is not None:
             resu._name = self._name + '+' + other._name

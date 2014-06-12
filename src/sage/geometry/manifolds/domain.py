@@ -1091,6 +1091,7 @@ class OpenDomain(Domain):
     """
     def __init__(self, manifold, name, latex_name=None):
         from scalarfield import ZeroScalarField
+        from diffmapping import IdentityMapping
         Domain.__init__(self, manifold, name, latex_name)
         # list of charts that individually cover the domain, i.e. whose 
         # domains are self (if non-empty, self is coordinate domain):
@@ -1106,8 +1107,8 @@ class OpenDomain(Domain):
         self._vector_field_modules = {}
         # dict. of tensor field modules along self: 
         self._tensor_field_modules = {}
-        # the identity mapping on self (not constructed yet)
-        self._identity_mapping = None 
+        # the identity mapping on self
+        self._identity_mapping = IdentityMapping(self)
     
     def _repr_(self):
         r"""
@@ -1932,13 +1933,14 @@ class OpenDomain(Domain):
         examples.
 
         """
-        from rank2field import EndomorphismFieldParal
+        from rank2field import EndomorphismField, EndomorphismFieldParal
         if self.is_manifestly_parallelizable():
             return EndomorphismFieldParal(
                                       self.vector_field_module(dest_map), 
                                       name=name, latex_name=latex_name)
         else:
-            raise NotImplementedError("EndomorphismField not implemented yet")
+            return EndomorphismField(self.vector_field_module(dest_map), 
+                                     name=name, latex_name=latex_name)
 
 
     def automorphism_field(self, name=None, latex_name=None, 
@@ -2391,20 +2393,12 @@ class OpenDomain(Domain):
                               chart1=chart1, chart2=chart2, name=name, 
                               latex_name=latex_name)
 
-    def identity_mapping(self, name=None, latex_name=None):
+    def identity_mapping(self):
         r"""
         Identity mapping on the current domain
         
         See :class:`~sage.geometry.manifolds.diffmapping.IdentityMapping` for a 
         complete documentation. 
-
-        INPUT:
-
-        - ``name`` -- (default: None) name given to the identity mapping; 
-          if None, it is set to 'Id_U', where 'U' is the domain's name.
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity 
-          mapping; if None, it is set to `\mathrm{Id}_U`, where `U` is the 
-          symbol denoting the domain. 
 
         OUTPUT:
         
@@ -2412,10 +2406,6 @@ class OpenDomain(Domain):
           :class:`~sage.geometry.manifolds.diffmapping.IdentityMapping`
 
         """
-        from diffmapping import IdentityMapping
-        if self._identity_mapping is None:
-            self._identity_mapping = IdentityMapping(self, name=name,
-                                                     latex_name=latex_name)
         return self._identity_mapping
 
     def aff_connection(self, name, latex_name=None):

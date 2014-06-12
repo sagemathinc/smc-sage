@@ -321,7 +321,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
                     
                 
         """
-#        from rank2field import EndomorphismField
+        from rank2field import EndomorphismField
 #        from diffform import DiffForm, OneForm
         if tensor_type==(1,0):
             return self.element_class(self, name=name, latex_name=latex_name)

@@ -30,11 +30,105 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from sage.tensor.modules.free_module_tensor import FreeModuleTensor
 from sage.tensor.modules.free_module_tensor_spec import \
     FreeModuleEndomorphism, FreeModuleAutomorphism, FreeModuleIdentityMap
-from tensorfield import TensorFieldParal
-from vectorfield import VectorFieldParal
+from tensorfield import TensorField, TensorFieldParal
+
+
+class EndomorphismField(TensorField):
+    r"""
+    Field of tangent-space endomorphisms with values in an open
+    subset of a differentiable manifold. 
+    
+    An instance of this class is a field of endomorphisms (i.e. linear 
+    operators in each tangent space) along an open subset `U` of some immersed 
+    submanifold `S` of a manifold `M` with values in an open 
+    subset `V` of `M`. 
+    The standard case of a field of endomorphisms *on* a manifold corresponds 
+    to `U=V` (and hence `S=M`).
+
+    If `V` is parallelizable, the class :class:`EndomorphismFieldParal` must be 
+    used instead.
+    
+    INPUT:
+    
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector 
+      fields along `U` with values on `V`
+    - ``name`` -- (default: None) name given to the field
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
+      if none is provided, the LaTeX symbol is set to ``name``
+
+    EXAMPLES:
+
+
+    """
+    def __init__(self, vector_field_module, name=None, latex_name=None):
+        TensorField.__init__(self, vector_field_module, (1,1), name=name, 
+                             latex_name=latex_name)
+        # Initialization of derived quantities:
+        TensorField._init_derived(self) 
+
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+        description = "field of endomorphisms "
+        if self._name is not None:
+            description += "'%s' " % self._name
+        return self._final_repr(description)
+
+    def _new_instance(self):
+        r"""
+        Create an instance of the same class as ``self`` on the same module.
+        
+        """
+        return self.__class__(self._vmodule)
+
+    def _del_derived(self):
+        r"""
+        Delete the derived quantities
+        """
+        TensorField._del_derived(self)
+
+    def __call__(self, *arg):
+        r"""
+        Redefinition of :meth:`TensorField.__call__` to allow for a single 
+        argument (module element). 
+        """
+        from vectorfield import VectorField
+        if len(arg) > 1:
+            # the endomorphism acting as a type (1,1) tensor on a pair 
+            # (linear form, module element), returning a scalar:
+            return TensorField.__call__(self, *arg) 
+        # the endomorphism acting as such, on a vector field, returning a
+        # vector field:
+        vector = arg[0]
+        if not isinstance(vector, VectorField):
+            raise TypeError("The argument must be a vector field.")
+        if self._name is not None and vector._name is not None:
+            name_resu = self._name + "(" + vector._name + ")"
+        else:
+            name_resu = None
+        if self._latex_name is not None and vector._latex_name is not None:
+            latex_name_resu = self._latex_name + r"\left(" + \
+                              vector._latex_name + r"\right)"
+        else:
+            latex_name_resu = None
+        dom_resu = self._domain.intersection(vector._domain)
+        dest_map = vector._vmodule._dest_map
+        if dest_map is None:
+            dest_map_resu = None
+        else:
+            dest_map_resu = dest_map.restrict(dom_resu)
+        resu = dom_resu.vector_field(name=name_resu, 
+                                     latex_name=latex_name_resu,
+                                     dest_map=dest_map_resu)
+        for dom in self._common_subdomains(vector):
+            if dom.is_subdomain(dom_resu):
+                resu._restrictions[dom] = \
+                    self._restrictions[dom](vector._restrictions[dom])
+        return resu
+
 
 #******************************************************************************
 
@@ -134,7 +228,7 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
         r"""
         Create a :class:`EndomorphismFieldParal` instance on the same domain.
         """
-        return EndomorphismFieldParal(self._fmodule)
+        return self.__class__(self._fmodule)
 
     def _del_derived(self):
         r"""
@@ -227,7 +321,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
         r"""
         Create a :class:`AutomorphismFieldParal` instance on the same domain.
         """
-        return AutomorphismFieldParal(self._fmodule)
+        return self.__class__(self._fmodule)
 
     def inverse(self):
         r"""
@@ -387,7 +481,7 @@ class IdentityMapParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         r"""
         Create a :class:`IdentityMapParal` instance on the same domain.
         """
-        return IdentityMapParal(self._fmodule)
+        return self.__class__(self._fmodule)
 
     def _del_derived(self):
         r"""

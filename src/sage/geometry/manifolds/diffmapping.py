@@ -1044,12 +1044,19 @@ class DiffMapping(SageObject):
                                latex_name=self._latex_name)
             for charts in self._coord_expression:
                 for ch1 in charts[0]._subcharts:
-                    if ch1._domain == subdomain:
+                    if ch1._domain.is_subdomain(subdomain):
                         for ch2 in charts[1]._subcharts:
-                            if ch2._domain == subcodomain:
-                                coord_functions = \
+                            if ch2._domain.is_subdomain(subcodomain):
+                                for sch2 in ch2._supercharts:
+                                    if (ch1, sch2) in resu._coord_expression:
+                                        break
+                                else:
+                                    for sch2 in ch2._subcharts:
+                                        if (ch1, sch2) in resu._coord_expression:
+                                            del resu._coord_expression[(ch1, sch2)]
+                                    coord_functions = \
                                           self._coord_expression[charts].expr()
-                                resu._coord_expression[(ch1, ch2)] = \
+                                    resu._coord_expression[(ch1, ch2)] = \
                                       MultiFunctionChart(ch1, *coord_functions)
             self._restrictions[(subdomain, subcodomain)] = resu
         return self._restrictions[(subdomain, subcodomain)]
