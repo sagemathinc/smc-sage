@@ -115,7 +115,6 @@ class FreeModuleEndomorphism(FreeModuleTensor):
         
         """
         return self.__class__(self._fmodule)
-#old#        return FreeModuleEndomorphism(self._fmodule)
 
     def __call__(self, *arg):
         r"""
@@ -230,7 +229,6 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
         
         """
         return self.__class__(self._fmodule)
-#old#        return FreeModuleAutomorphism(self._fmodule)
         
     def _del_derived(self):
         r"""
@@ -294,7 +292,6 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
             fmodule = self._fmodule
             si = fmodule._sindex ; nsi = fmodule._rank + si
             self._inverse = self.__class__(fmodule, inv_name, inv_latex_name)
-#old#       self._inverse = FreeModuleAutomorphism(fmodule, inv_name, 
             for basis in self._components:
                 try:    
                     mat_self = matrix(
@@ -440,7 +437,6 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
         
         """
         return self.__class__(self._fmodule)
-#old#        return FreeModuleIdentityMap(self._fmodule)
         
     def _new_comp(self, basis): 
         r"""

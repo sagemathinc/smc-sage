@@ -242,8 +242,10 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         FreeModuleAltForm.__init__(self, vector_field_module, degree, 
                                    name=name, latex_name=latex_name)
         # TensorFieldParal attributes:
+        self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
+        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # initialization of derived quantities:
         DiffFormParal._init_derived(self) 
 
@@ -640,9 +642,11 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
     def __init__(self, vector_field_module, name=None, latex_name=None):
         FreeModuleLinForm.__init__(self, vector_field_module, name=name, 
                                    latex_name=latex_name)
-        # TensorFieldParal attributes:
+        # DiffFormParal attributes:
+        self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
+        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # initialization of derived quantities:
         DiffFormParal._init_derived(self) 
         

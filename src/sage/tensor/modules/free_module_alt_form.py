@@ -86,7 +86,6 @@ class FreeModuleAltForm(FreeModuleTensor):
         
         """
         return self.__class__(self._fmodule, self._tensor_rank)
-#old#        return FreeModuleAltForm(self._fmodule, self._tensor_rank)
 
     def _new_comp(self, basis): 
         r"""
@@ -462,8 +461,6 @@ class FreeModuleLinForm(FreeModuleAltForm):
         
         """
         return self.__class__(self._fmodule)
-#old#        return FreeModuleLinForm(self._fmodule)
-
 
     def _new_comp(self, basis): 
         r"""

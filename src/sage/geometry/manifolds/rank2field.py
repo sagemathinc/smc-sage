@@ -96,7 +96,7 @@ class EndomorphismField(TensorField):
         Redefinition of :meth:`TensorField.__call__` to allow for a single 
         argument (module element). 
         """
-        from vectorfield import VectorField
+        from vectorfield import VectorField, VectorFieldParal
         if len(arg) > 1:
             # the endomorphism acting as a type (1,1) tensor on a pair 
             # (linear form, module element), returning a scalar:
@@ -106,6 +106,9 @@ class EndomorphismField(TensorField):
         vector = arg[0]
         if not isinstance(vector, VectorField):
             raise TypeError("The argument must be a vector field.")
+        dom_resu = self._domain.intersection(vector._domain)
+        if isinstance(vector, VectorFieldParal):
+            return self.restrict(dom_resu)(vector.restrict(dom_resu))
         if self._name is not None and vector._name is not None:
             name_resu = self._name + "(" + vector._name + ")"
         else:
@@ -115,7 +118,6 @@ class EndomorphismField(TensorField):
                               vector._latex_name + r"\right)"
         else:
             latex_name_resu = None
-        dom_resu = self._domain.intersection(vector._domain)
         dest_map = vector._vmodule._dest_map
         if dest_map is None:
             dest_map_resu = None
@@ -211,8 +213,10 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
         FreeModuleEndomorphism.__init__(self, vector_field_module, name=name, 
                                         latex_name=latex_name)
         # TensorFieldParal attributes:
+        self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
+        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # Initialization of derived quantities:
         TensorFieldParal._init_derived(self) 
 
@@ -236,6 +240,22 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
         Delete the derived quantities
         """
         TensorFieldParal._del_derived(self)
+
+    def __call__(self, *arg):
+        r"""
+        Redefinition of 
+        :meth:`~sage.geometry.manifolds.tensorfield.TensorFieldParal.__call__` 
+        to allow for a single argument (vector field). 
+        """
+        if len(arg) > 1:
+            # the endomorphism acting as a type (1,1) tensor on a pair 
+            # (linear form, module element), returning a scalar:
+            return TensorFieldParal.__call__(self, *arg)
+        else:
+            vector = arg[0]
+            dom = self._domain.intersection(vector._domain)
+            return FreeModuleEndomorphism.__call__(self.restrict(dom), 
+                                                   vector.restrict(dom))
 
 #******************************************************************************
 

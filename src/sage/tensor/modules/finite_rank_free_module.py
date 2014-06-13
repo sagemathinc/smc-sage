@@ -638,14 +638,11 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
                                         tensor_type, name=name, 
                                         latex_name=latex_name, sym=sym, 
                                         antisym=antisym)
-#old#           return FreeModuleTensor(self, tensor_type, name=name, 
-
         else:
             return self.tensor_module(*tensor_type).element_class(self,
                                     tensor_type, name=name, 
                                     latex_name=latex_name, sym=sym, 
                                     antisym=antisym) 
-#old#       return FreeModuleTensor(self, tensor_type, name=name, 
 
     
     def tensor_from_comp(self, tensor_type, comp, name=None, latex_name=None):
@@ -745,7 +742,6 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         else:
             resu = self.tensor_module(*tensor_type).element_class(self, 
                                  tensor_type, name=name, latex_name=latex_name) 
-#old#       resu = FreeModuleTensor(self, tensor_type, name=name, 
             # Tensor symmetries deduced from those of comp:
             if isinstance(comp, CompWithSym):
                 resu._sym = comp._sym

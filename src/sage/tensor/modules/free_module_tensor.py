@@ -565,8 +565,6 @@ class FreeModuleTensor(ModuleElement):
         """
         return self.__class__(self._fmodule, self._tensor_type, sym=self._sym, 
                               antisym=self._antisym)
-#old#        return FreeModuleTensor(self._fmodule, self._tensor_type, sym=self._sym, 
-#                                antisym=self._antisym)
 
     def _new_comp(self, basis): 
         r"""
@@ -2284,6 +2282,4 @@ class FiniteRankFreeModuleElement(FreeModuleTensor):
         
         """
         return self.__class__(self._fmodule)
-        #old# return FiniteRankFreeModuleElement(self._fmodule)
 
-        

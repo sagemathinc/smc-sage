@@ -380,6 +380,60 @@ class TensorField(ModuleElement):
     - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
       among the arguments, with the same convention as for ``sym``. 
 
+    EXAMPLES:
+    
+    Tensor field of type (0,2) on the sphere `S^2`::
+    
+        sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
+        sage: U = M.open_domain('U') # complement of the North pole
+        sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+        sage: V = M.open_domain('V') # complement of the South pole
+        sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+        sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
+                                             intersection_name='W', restrictions1= x^2+y^2!=0, \
+                                             restrictions2= u^2+v^2!=0)
+        sage: uv_to_xy = xy_to_uv.inverse()
+        sage: W = U.intersection(V)
+        sage: t = M.tensor_field(0,2, name='t') ; t
+        tensor field 't' of type (0,2) on the 2-dimensional manifold 'M'
+        sage: t.parent()
+        module TF^(0,2)(M) of type-(0,2) tensors fields on the 2-dimensional manifold 'M'
+        sage: t.parent().category()
+        Category of modules over algebra of scalar fields on the 2-dimensional manifold 'M'
+
+    The parent of `t` is not a free module, for the sphere `S^2` is not parallelizable::
+    
+        sage: isinstance(t.parent(), FiniteRankFreeModule)
+        False
+
+    To fully define `t`, we have to specify its components in some vector frames 
+    defined on subdomains of `S^2`; let us start by the domain `U`::
+    
+        sage: eU = c_xy.frame()
+        sage: t = M.tensor_field(0,2, name='t')
+        sage: t[eU,:] = [[1,0], [-2,3]]
+        sage: t.view(eU)
+        t = dx*dx - 2 dy*dx + 3 dy*dy
+    
+    To set the components of `t` on `V` consistently, we copy the expressions
+    of the components in the common subdomain `W`::
+    
+        sage: eV = c_uv.frame()
+        sage: eVW = eV.restrict(W)
+        sage: c_uvW = c_uv.restrict(W)
+        sage: t[eV,0,0] = t[eVW,0,0,c_uvW].expr()
+        sage: t[eV,0,1] = t[eVW,0,1,c_uvW].expr()
+        sage: t[eV,1,0] = t[eVW,1,0,c_uvW].expr()
+        sage: t[eV,1,1] = t[eVW,1,1,c_uvW].expr()
+        
+    At this stage, `t` is fully defined, having components in frames eU and eV, 
+    whose domain union is the whole manifold::
+    
+        sage: t.view(eV)
+        t = (u^4 - 4*u^3*v + 10*u^2*v^2 + 4*u*v^3 + v^4)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) du*du - 4*(u^3*v + 2*u^2*v^2 - u*v^3)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) du*dv + 2*(u^4 - 2*u^3*v - 2*u^2*v^2 + 2*u*v^3 + v^4)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) dv*du + (3*u^4 + 4*u^3*v - 2*u^2*v^2 - 4*u*v^3 + 3*v^4)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) dv*dv
+
+    
+    
     """
     def __init__(self, vector_field_module, tensor_type, name=None, 
                  latex_name=None, sym=None, antisym=None):
@@ -1495,6 +1549,85 @@ class TensorField(ModuleElement):
         return metric.contract(1, self, pos)
 
 
+    def __call__(self, *args):
+        r"""
+        The tensor field acting on 1-forms and vector fields as a multilinear 
+        map.
+        
+        INPUT:
+        
+        - ``*args`` -- list of k 1-forms and l vector fields, ``self`` 
+          being a tensor of type (k,l). 
+          
+        """
+        p = len(args)
+        if p != self._tensor_rank:
+            raise TypeError(str(self._tensor_rank) + 
+                            " arguments must be provided.")
+        # Domain of the result
+        dom_resu = self._domain
+        for arg in args:
+            dom_resu = dom_resu.intersection(arg._domain)
+        self_r = self.restrict(dom_resu)
+        args_r = [args[i].restrict(dom_resu) for i in range(p)]
+        if dom_resu.is_manifestly_parallelizable():
+            # TensorFieldParal version
+            return self_r(*args_r)
+        else:
+            resu = dom_resu.scalar_field()
+            com_dom = []
+            for dom in self_r._restrictions:
+                for arg in args_r:
+                    if dom not in arg._restrictions:
+                        break
+                else:
+                    com_dom.append(dom)
+            for dom in com_dom:
+                self_rr = self_r._restrictions[dom]
+                args_rr = [args_r[i]._restrictions[dom] for i in range(p)]
+                resu_rr = self_rr(*args_rr)
+                if resu_rr == 0:
+                    for chart in resu_rr._domain._atlas:
+                        resu._express[chart] = chart._zero_function
+                else:
+                    for chart, expr in resu_rr._express.items():
+                        resu._express[chart] = expr
+            if resu == 0:
+                return dom_resu._zero_scalar_field
+            # Name of the output:
+            res_name = None
+            if self._name is not None:
+                res_name = self._name + "("
+                for i in range(p-1):
+                    if args[i]._name is not None:
+                        res_name += args[i]._name + ","
+                    else:
+                        res_name = None
+                        break
+                if res_name is not None:
+                    if args[p-1]._name is not None:
+                        res_name += args[p-1]._name + ")"
+                    else:
+                        res_name = None
+            resu._name = res_name       
+            # LaTeX symbol of the output:
+            res_latex = None
+            if self._latex_name is not None:
+                res_latex = self._latex_name + r"\left("
+                for i in range(p-1):
+                    if args[i]._latex_name is not None:
+                        res_latex += args[i]._latex_name + ","
+                    else:
+                        res_latex = None
+                        break
+                if res_latex is not None:
+                    if args[p-1]._latex_name is not None:
+                        res_latex += args[p-1]._latex_name + r"\right)"
+                    else:
+                        res_latex = None
+            resu._latex_name = res_latex
+            return resu
+
 #******************************************************************************
 
 class TensorFieldParal(FreeModuleTensor, TensorField):
@@ -2176,28 +2309,52 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             elif not dest_map._codomain.is_subdomain(self._ambient_domain):
                 raise ValueError("Argument dest_map not compatible with " + 
                                  "self._ambient_domain")
-            # First one tries to derive the restriction from a tighter domain:
-            for dom, rst in self._restrictions.items():
-                if subdomain.is_subdomain(dom):
-                    self._restrictions[subdomain] = rst.restrict(subdomain)
-                    break
+            #!# First one tries to derive the restriction from a tighter domain:
+            #for dom, rst in self._restrictions.items():
+            #    if subdomain.is_subdomain(dom):
+            #        self._restrictions[subdomain] = rst.restrict(subdomain)
+            #        break
             # If this fails, the restriction is created from scratch:
-            else:
-                smodule = subdomain.vector_field_module(dest_map=dest_map)
-                resu = smodule.tensor(self._tensor_type, name=self._name, 
-                                      latex_name=self._latex_name, sym=self._sym, 
-                                      antisym=self._antisym)
-                for frame in self._components:
-                    for sframe in subdomain._covering_frames:
-                        if sframe in frame.subframes:
-                            comp_store = self._components[frame]._comp
-                            scomp = resu._new_comp(sframe)
-                            scomp_store = scomp._comp
-                            # the components of the restriction are evaluated 
-                            # index by index:
-                            for ind, value in comp_store.iteritems():
-                                scomp_store[ind] = value.restrict(subdomain)
-                            resu._components[sframe] = scomp
-                self._restrictions[subdomain] = resu
+            #else:
+            smodule = subdomain.vector_field_module(dest_map=dest_map)
+            resu = smodule.tensor(self._tensor_type, name=self._name, 
+                                  latex_name=self._latex_name, sym=self._sym, 
+                                  antisym=self._antisym)
+            for frame in self._components:
+                for sframe in subdomain._covering_frames:
+                    if sframe in frame.subframes:
+                        comp_store = self._components[frame]._comp
+                        scomp = resu._new_comp(sframe)
+                        scomp_store = scomp._comp
+                        # the components of the restriction are evaluated 
+                        # index by index:
+                        for ind, value in comp_store.iteritems():
+                            scomp_store[ind] = value.restrict(subdomain)
+                        resu._components[sframe] = scomp
+            self._restrictions[subdomain] = resu
         return self._restrictions[subdomain]
 
+    def __call__(self, *args):
+        r"""
+        The tensor field acting on 1-forms and vector fields as a multilinear 
+        map.
+        
+        INPUT:
+        
+        - ``*args`` -- list of k 1-forms and l vector fields, ``self`` 
+          being a tensor of type (k,l). 
+          
+        """
+        p = len(args)
+        if p != self._tensor_rank:
+            raise TypeError(str(self._tensor_rank) + 
+                            " arguments must be provided.")
+        # Domain of the result
+        dom_resu = self._domain
+        for arg in args:
+            dom_resu = dom_resu.intersection(arg._domain)
+        # Restriction to the result domain
+        self_r = self.restrict(dom_resu)
+        args_r = [args[i].restrict(dom_resu) for i in range(p)]
+        # Call of the FreeModuleTensor version
+        return FreeModuleTensor.__call__(self_r, *args_r)
