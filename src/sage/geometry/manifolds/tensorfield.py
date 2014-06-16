@@ -384,7 +384,7 @@ class TensorField(ModuleElement):
     
     Tensor field of type (0,2) on the sphere `S^2`::
     
-        sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
+        sage: M = Manifold(2, 'S^2') # the 2-dimensional sphere S^2
         sage: U = M.open_domain('U') # complement of the North pole
         sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
         sage: V = M.open_domain('V') # complement of the South pole
@@ -395,11 +395,11 @@ class TensorField(ModuleElement):
         sage: uv_to_xy = xy_to_uv.inverse()
         sage: W = U.intersection(V)
         sage: t = M.tensor_field(0,2, name='t') ; t
-        tensor field 't' of type (0,2) on the 2-dimensional manifold 'M'
+        tensor field 't' of type (0,2) on the 2-dimensional manifold 'S^2'
         sage: t.parent()
-        module TF^(0,2)(M) of type-(0,2) tensors fields on the 2-dimensional manifold 'M'
+        module TF^(0,2)(S^2) of type-(0,2) tensors fields on the 2-dimensional manifold 'S^2'
         sage: t.parent().category()
-        Category of modules over algebra of scalar fields on the 2-dimensional manifold 'M'
+        Category of modules over algebra of scalar fields on the 2-dimensional manifold 'S^2'
 
     The parent of `t` is not a free module, for the sphere `S^2` is not parallelizable::
     
@@ -432,8 +432,76 @@ class TensorField(ModuleElement):
         sage: t.view(eV)
         t = (u^4 - 4*u^3*v + 10*u^2*v^2 + 4*u*v^3 + v^4)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) du*du - 4*(u^3*v + 2*u^2*v^2 - u*v^3)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) du*dv + 2*(u^4 - 2*u^3*v - 2*u^2*v^2 + 2*u*v^3 + v^4)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) dv*du + (3*u^4 + 4*u^3*v - 2*u^2*v^2 - 4*u*v^3 + 3*v^4)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) dv*dv
 
+    Let us consider two vector fields, `a` and `b`, on `S^2`::
     
+        sage: a = M.vector_field(name='a')
+        sage: a[eU,:] = [1,x]
+        sage: a[eV,0] = a[eVW,0,c_uvW].expr()
+        sage: a[eV,1] = a[eVW,1,c_uvW].expr()
+        sage: a.view(eV)
+        a = -(u^4 - v^4 + 2*u^2*v)/(u^2 + v^2) d/du - (2*u^3*v + 2*u*v^3 - u^3 + u*v^2)/(u^2 + v^2) d/dv
+        sage: b = M.vector_field(name='b')
+        sage: b[eU,:] = [y,-1]
+        sage: b[eV,0] = b[eVW,0,c_uvW].expr()
+        sage: b[eV,1] = b[eVW,1,c_uvW].expr()
+        sage: b.view(eV)
+        b = ((2*u + 1)*v^3 + (2*u^3 - u^2)*v)/(u^2 + v^2) d/du - (u^4 - v^4 + 2*u*v^2)/(u^2 + v^2) d/dv
+        
+    As a tensor field of type (0,2), `t` acts on the pair `(a,b)`, resulting in a scalar 
+    field::
     
+        sage: f = t(a,b) ; f
+        scalar field 't(a,b)' on the 2-dimensional manifold 'S^2'
+        sage: f.view()
+        t(a,b): S^2 --> R
+        on U: (x, y) |--> -(2*x - 1)*y - 3*x
+        on V: (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
+        on W: (x, y) |--> -(2*x - 1)*y - 3*x
+        on W: (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
+
+    The vectors can be defined only on subdomains of `S^2`, the domain of the
+    result is then the common subdomain::
+    
+        sage: s = t(a.restrict(U), b) ; s
+        scalar field 't(a,b)' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+        sage: s.view()
+        t(a,b): U --> R
+           (x, y) |--> -(2*x - 1)*y - 3*x
+        on W: (x, y) |--> -(2*x - 1)*y - 3*x
+        on W: (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
+        sage: s = t(a.restrict(U), b.restrict(W)) ; s
+        scalar field 't(a,b)' on the open domain 'W' on the 2-dimensional manifold 'S^2'
+        sage: s.view()
+        t(a,b): W --> R
+           (x, y) |--> -(2*x - 1)*y - 3*x
+           (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
+
+    The tensor itself can be defined only on some subdomain of `S^2`, yielding
+    a result whose domain is this subdomain::
+    
+        sage: s = t.restrict(V)(a,b) ; s
+        scalar field 't(a,b)' on the open domain 'V' on the 2-dimensional manifold 'S^2'
+        sage: s.view()
+        t(a,b): V --> R
+           (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
+        on W: (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
+
+    Tests regarding the multiplication by a scalar field::
+    
+        sage: t.parent().base_ring() is f.parent()
+        True
+        sage: s = f*t ; s  
+        tensor field of type (0,2) on the 2-dimensional manifold 'S^2'
+        sage: s[[0,0]] == f*t[[0,0]]
+        True
+        sage: s.restrict(U) == f.restrict(U)*t.restrict(U)
+        True
+        sage: s = f*t.restrict(U) ; s
+        tensor field of type (0,2) on the open domain 'U' on the 2-dimensional manifold 'S^2'
+        sage: s.restrict(U) == f.restrict(U)*t.restrict(U)
+        True
+
+        
     """
     def __init__(self, vector_field_module, tensor_type, name=None, 
                  latex_name=None, sym=None, antisym=None):

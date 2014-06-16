@@ -132,6 +132,89 @@ class EndomorphismField(TensorField):
                     self._restrictions[dom](vector._restrictions[dom])
         return resu
 
+#******************************************************************************
+
+class AutomorphismField(EndomorphismField):
+    r"""
+    Field of tangent-space automorphisms with values on a open 
+    subset of a differentiable manifold. 
+    
+    An instance of this class is a field of linear automorphisms (i.e. 
+    invertible linear operators in each tangent space) along an open subset 
+    `U` of some immersed submanifold `S` of a manifold `M` with values in an 
+    open subset `V` of `M`. 
+    The standard case of a field of automorphisms *on* a manifold corresponds 
+    to `U=V` (and hence `S=M`).
+    
+    If `V` is parallelizable, the class :class:`AutomorphismFieldParal` must be 
+    used instead.
+
+    INPUT:
+    
+    - ``vector_field_module`` -- module `\mathcal{X}(U,V)` of vector 
+      fields along `U` with values on `V`
+    - ``name`` -- (default: None) name given to the field
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
+      if none is provided, the LaTeX symbol is set to ``name``
+
+
+    """
+    def __init__(self, vector_field_module, name=None, latex_name=None):
+        EndomorphismField.__init__(self, vector_field_module, name=name, 
+                                        latex_name=latex_name)
+        # TensorFieldParal attributes:
+        self._vmodule = vector_field_module
+        self._domain = vector_field_module._domain
+        self._ambient_domain = vector_field_module._ambient_domain
+        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
+        # Initialization of derived quantities:
+        TensorFieldParal._init_derived(self) 
+        self._inverse = None # inverse not set yet
+
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+        description = "field of tangent-space automorphisms "
+        if self._name is not None:
+            description += "'%s' " % self._name
+        return self._final_repr(description)
+        
+    def _del_derived(self):
+        r"""
+        Delete the derived quantities.
+        """
+        # First delete the derived quantities pertaining to the mother class:
+        EndomorphismField._del_derived(self)
+        # then deletes the inverse automorphism:
+        self._inverse = None
+        
+    def _new_instance(self):
+        r"""
+        Create a :class:`AutomorphismField` instance on the same domain.
+        """
+        return self.__class__(self._vmodule)
+
+    def inverse(self):
+        r"""
+        Return the inverse automorphism.
+        """        
+        if self._inverse is None:
+            if self._name is None:
+                inv_name = None
+            else:
+                inv_name = self._name  + '^(-1)'
+            if self._latex_name is None:
+                inv_latex_name = None
+            else:
+                inv_latex_name = self._latex_name + r'^{-1}'
+            self._inverse = AutomorphismField(self._vmodule, name=inv_name, 
+                                              latex_name=inv_latex_name)
+            for dom, rst in self._restrictions.items():
+                self._inverse._restrictions[dom] = rst.inverse()
+        return self._inverse
+
+
 
 #******************************************************************************
 
@@ -264,10 +347,10 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
     Field of tangent-space automorphisms with values on a parallelizable open 
     subset of a differentiable manifold. 
     
-    An instance of this class is a field of linear automorphisms (i.e. linear 
-    operators in each tangent space) along an open subset `U` of some immersed 
-    submanifold `S` of a manifold `M` with values in a parallelizable open 
-    subset `V` of `M`. 
+    An instance of this class is a field of linear automorphisms (i.e. 
+    invertible linear operators in each tangent space) along an open subset `U` 
+    of some immersed submanifold `S` of a manifold `M` with values in a 
+    parallelizable open subset `V` of `M`. 
     The standard case of a field of automorphisms *on* a manifold corresponds 
     to `U=V` (and hence `S=M`).
     
@@ -315,8 +398,10 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
         FreeModuleAutomorphism.__init__(self, vector_field_module, name=name, 
                                         latex_name=latex_name)
         # TensorFieldParal attributes:
+        self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
+        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # Initialization of derived quantities:
         TensorFieldParal._init_derived(self) 
 
@@ -484,8 +569,10 @@ class TangentIdentityFieldParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         FreeModuleIdentityMap.__init__(self, vector_field_module, name=name, 
                                        latex_name=latex_name)
         # TensorFieldParal attributes:
+        self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
+        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # Initialization of derived quantities:
         TensorFieldParal._init_derived(self) 
 
