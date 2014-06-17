@@ -107,7 +107,8 @@ class EndomorphismField(TensorField):
         if not isinstance(vector, VectorField):
             raise TypeError("The argument must be a vector field.")
         dom_resu = self._domain.intersection(vector._domain)
-        if isinstance(vector, VectorFieldParal):
+        if dom_resu.is_manifestly_parallelizable():
+            # call of the EndomorphismFieldParal version:
             return self.restrict(dom_resu)(vector.restrict(dom_resu))
         if self._name is not None and vector._name is not None:
             name_resu = self._name + "(" + vector._name + ")"
@@ -119,10 +120,7 @@ class EndomorphismField(TensorField):
         else:
             latex_name_resu = None
         dest_map = vector._vmodule._dest_map
-        if dest_map is None:
-            dest_map_resu = None
-        else:
-            dest_map_resu = dest_map.restrict(dom_resu)
+        dest_map_resu = dest_map.restrict(dom_resu)
         resu = dom_resu.vector_field(name=name_resu, 
                                      latex_name=latex_name_resu,
                                      dest_map=dest_map_resu)
@@ -157,6 +155,53 @@ class AutomorphismField(EndomorphismField):
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
       if none is provided, the LaTeX symbol is set to ``name``
 
+    EXAMPLE: 
+    
+    Field of tangent-space automorphisms on a non-parallelizable 2-dimensional 
+    manifold::
+
+        sage: M = Manifold(2, 'M')
+        sage: U = M.open_domain('U') ; V = M.open_domain('V')
+        sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+        sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+        sage: inv = transf.inverse()
+        sage: a = M.automorphism_field('a') ; a
+        field of tangent-space automorphisms 'a' on the 2-dimensional manifold 'M'
+        sage: a.parent()
+        module TF^(1,1)(M) of type-(1,1) tensors fields on the 2-dimensional manifold 'M'
+
+    We first define the components of `a` w.r.t the coordinate frame on `U`::
+
+        sage: eU = c_xy.frame() ; eV = c_uv.frame()
+        sage: a[eU,:] = [[1,x], [0,2]]
+
+    We then set the components w.r.t. the coordinate frame on `V` by extending 
+    the expressions of the components in the corresponding subframe on 
+    `W = U\cap V`::
+    
+        sage: W = U.intersection(V)
+        sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
+        sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
+        sage: a[eV,0,0] = a[eVW,0,0,c_uvW].expr()
+        sage: a[eV,0,1] = a[eVW,0,1,c_uvW].expr()
+        sage: a[eV,1,0] = a[eVW,1,0,c_uvW].expr()
+        sage: a[eV,1,1] = a[eVW,1,1,c_uvW].expr()
+        
+    At this stage, the automorphims field `a` is fully defined::
+    
+        sage: a.view(eU)
+        a = d/dx*dx + x d/dx*dy + 2 d/dy*dy
+        sage: a.view(eV)
+        a = (1/4*u + 1/4*v + 3/2) d/du*du + (-1/4*u - 1/4*v - 1/2) d/du*dv + (1/4*u + 1/4*v - 1/2) d/dv*du + (-1/4*u - 1/4*v + 3/2) d/dv*dv
+    
+    In particular, we may ask for its inverse on the whole manifold `M`::
+    
+        sage: ia = a.inverse() ; ia
+        field of tangent-space automorphisms 'a^(-1)' on the 2-dimensional manifold 'M'
+        sage: ia.view(eU)
+        a^(-1) = d/dx*dx - 1/2*x d/dx*dy + 1/2 d/dy*dy
+        sage: ia.view(eV)
+        a^(-1) = (-1/8*u - 1/8*v + 3/4) d/du*du + (1/8*u + 1/8*v + 1/4) d/du*dv + (-1/8*u - 1/8*v + 1/4) d/dv*du + (1/8*u + 1/8*v + 3/4) d/dv*dv
 
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
@@ -168,7 +213,7 @@ class AutomorphismField(EndomorphismField):
         self._ambient_domain = vector_field_module._ambient_domain
         self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # Initialization of derived quantities:
-        TensorFieldParal._init_derived(self) 
+        TensorField._init_derived(self) 
         self._inverse = None # inverse not set yet
 
     def _repr_(self):
@@ -198,6 +243,42 @@ class AutomorphismField(EndomorphismField):
     def inverse(self):
         r"""
         Return the inverse automorphism.
+        
+        EXAMPLE: 
+        
+        Inverse of a field of tangent-space automorphisms on a 
+        non-parallelizable 2-dimensional manifold::
+    
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+            sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+            sage: inv = transf.inverse()
+            sage: a = M.automorphism_field('a')
+            sage: eU = c_xy.frame() ; eV = c_uv.frame()
+            sage: a[eU,:] = [[1,x], [0,2]]
+            sage: W = U.intersection(V)
+            sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
+            sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
+            sage: a[eV,0,0] = a[eVW,0,0,c_uvW].expr()
+            sage: a[eV,0,1] = a[eVW,0,1,c_uvW].expr()
+            sage: a[eV,1,0] = a[eVW,1,0,c_uvW].expr()
+            sage: a[eV,1,1] = a[eVW,1,1,c_uvW].expr()
+            sage: ia = a.inverse() ; ia
+            field of tangent-space automorphisms 'a^(-1)' on the 2-dimensional manifold 'M'
+            sage: a[eU,:], ia[eU,:]
+            (
+            [1 x]  [     1 -1/2*x]
+            [0 2], [     0    1/2]
+            )
+            sage: a[eV,:], ia[eV,:]
+            (
+            [ 1/4*u + 1/4*v + 3/2 -1/4*u - 1/4*v - 1/2]
+            [ 1/4*u + 1/4*v - 1/2 -1/4*u - 1/4*v + 3/2],
+            [-1/8*u - 1/8*v + 3/4  1/8*u + 1/8*v + 1/4]
+            [-1/8*u - 1/8*v + 1/4  1/8*u + 1/8*v + 3/4]
+            )
+        
         """        
         if self._inverse is None:
             if self._name is None:

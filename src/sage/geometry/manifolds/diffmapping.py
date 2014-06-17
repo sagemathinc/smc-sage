@@ -265,6 +265,43 @@ class DiffMapping(SageObject):
         """
         self._restrictions.clear()
 
+    def __eq__(self, other):
+        r"""
+        Comparison (equality) operator. 
+        
+        INPUT:
+        
+        - ``other`` -- another instance of :class:`DiffMapping` to compare with
+        
+        OUTPUT:
+        
+        - True if ``self`` is equal to ``other``,  or False otherwise
+        
+        """
+        if not isinstance(other, DiffMapping):
+            return False
+        for charts, coord_functions in self._coord_expression.items():
+            if charts not in other._coord_expression:
+                return False
+            if coord_functions != other._coord_expression[charts]:
+                return False
+        return True
+            
+    def __ne__(self, other):
+        r"""
+        Inequality operator. 
+        
+        INPUT:
+        
+        - ``other`` -- another instance of :class:`DiffMapping` to compare with
+        
+        OUTPUT:
+        
+        - True if ``self`` is different from ``other``,  or False otherwise
+        
+        """
+        return not self.__eq__(other)
+
     def domain(self):
         r"""
         Return the domain of definition of the mapping.
@@ -1521,6 +1558,25 @@ class IdentityMap(Diffeomorphism):
         """
         DiffMapping._del_derived(self) # derived quantities of the mother class
         self._inverse = None
+
+    def __eq__(self, other):
+        r"""
+        Comparison (equality) operator. 
+        
+        INPUT:
+        
+        - ``other`` -- another instance of :class:`DiffMapping` to compare with
+        
+        OUTPUT:
+        
+        - True if ``self`` is equal to ``other``,  or False otherwise
+        
+        """
+        if not isinstance(other, IdentityMap):
+            return False  # for efficiency (the dictionaries _coord_expression 
+                          # are not compared)
+        else:
+            return self._domain is other._domain
         
     def set_expr(self, chart1, chart2, coord_functions): 
         r"""

@@ -1703,8 +1703,7 @@ class FreeModuleTensor(ModuleElement):
                 str(nargs) + 
                 " arguments provided, while between 1 and 3 are expected.")
         if not isinstance(other, FreeModuleTensor):
-            raise TypeError("For the contraction, other must be a tensor " + 
-                            "field.")
+            raise TypeError("For the contraction, other must be a tensor ")
         k1, l1 = self._tensor_type
         k2, l2 = other._tensor_type
         if pos1 < k1 and pos2 < k2:

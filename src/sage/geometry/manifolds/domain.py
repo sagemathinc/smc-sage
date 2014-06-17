@@ -1496,12 +1496,10 @@ class OpenDomain(Domain):
         """
         from vectorfield_module import VectorFieldModule, VectorFieldFreeModule
         if dest_map is None:
-            dest_map_name = 'Id'
-            codomain = self
-        else:
-            dest_map_name = dest_map._name
-            codomain = dest_map._codomain
-        if dest_map_name not in self._vector_field_modules:
+            dest_map = self._identity_map
+        dest_map_name = dest_map._name
+        codomain = dest_map._codomain
+        if dest_map_name not in self._vector_field_modules: #!# to be improved (replace dest_map_name by dest_map)
             if codomain.is_manifestly_parallelizable() or force_free:
                 self._vector_field_modules[dest_map_name] = \
                                  VectorFieldFreeModule(self, dest_map=dest_map)
@@ -1563,11 +1561,10 @@ class OpenDomain(Domain):
         if tensor_type == (1,0):
             return self.vector_field_module(dest_map=dest_map)
         if dest_map is None:
-            dest_map_name = 'Id'
-        else:
-            dest_map_name = dest_map._name
+            dest_map = self._identity_map
+        dest_map_name = dest_map._name
         ttype = tuple(tensor_type)
-        if (ttype, dest_map_name) not in self._tensor_field_modules:
+        if (ttype, dest_map_name) not in self._tensor_field_modules: #!# to be improved (replace dest_map_name by dest_map)
             if self.is_manifestly_parallelizable():
                 self._tensor_field_modules[(ttype, dest_map_name)] = \
                         TensorFieldFreeModule(
@@ -1986,14 +1983,14 @@ class OpenDomain(Domain):
         examples.
 
         """
-        from rank2field import AutomorphismFieldParal
+        from rank2field import AutomorphismField, AutomorphismFieldParal
         if self.is_manifestly_parallelizable():
             return AutomorphismFieldParal(
                                       self.vector_field_module(dest_map), 
                                       name=name, latex_name=latex_name)
         else:
-            raise NotImplementedError("AutomorphismField not implemented yet")
-            
+            return AutomorphismField(self.vector_field_module(dest_map), 
+                                      name=name, latex_name=latex_name)            
 
     def tangent_identity_field(self, name=None, latex_name=None, 
                                dest_map=None):  

@@ -876,8 +876,7 @@ class TensorField(ModuleElement):
                 raise ValueError("The provided domain is not a subdomain of " + 
                                  "the current field's domain.")
             if dest_map is None:
-                if self._vmodule._dest_map is not None:
-                    dest_map = self._vmodule._dest_map.restrict(subdomain)
+                dest_map = self._vmodule._dest_map.restrict(subdomain)
             elif not dest_map._codomain.is_subdomain(self._ambient_domain):
                 raise ValueError("Argument dest_map not compatible with " + 
                                  "self._ambient_domain")
@@ -893,7 +892,8 @@ class TensorField(ModuleElement):
                                                     name=self._name, 
                                                     latex_name=self._latex_name, 
                                                     sym=self._sym, 
-                                                    antisym=self._antisym)
+                                                    antisym=self._antisym, 
+                                                    specific_type=self.__class__)
         return self._restrictions[subdomain]
 
     def set_comp(self, basis=None):
@@ -1696,6 +1696,73 @@ class TensorField(ModuleElement):
             resu._latex_name = res_latex
             return resu
 
+
+    def contract(self, *args):
+        r""" 
+        Contraction with another tensor field.  
+        
+        INPUT:
+            
+        - ``pos1`` -- position of the first index (in ``self``) for the 
+          contraction; if not given, the last index position is assumed
+        - ``other`` -- the tensor to contract with
+        - ``pos2`` -- position of the second index (in ``other``) for the 
+          contraction; if not given, the first index position is assumed
+          
+        OUTPUT:
+        
+        - tensor resulting from the (pos1, pos2) contraction of ``self`` with 
+          ``other``
+       
+        EXAMPLES:
+        """
+        nargs = len(args)
+        if nargs == 1:
+            pos1 = self._tensor_rank - 1
+            other = args[0]
+            pos2 = 0
+        elif nargs == 2:
+            if isinstance(args[0], TensorField):
+                pos1 = self._tensor_rank - 1
+                other = args[0]
+                pos2 = args[1]
+            else:
+                pos1 = args[0]
+                other = args[1]
+                pos2 = 0
+        elif nargs == 3:
+            pos1 = args[0]
+            other = args[1]
+            pos2 = args[2]
+        else:
+            raise TypeError("Wrong number of arguments in contract(): " + 
+                str(nargs) + 
+                " arguments provided, while between 1 and 3 are expected.")
+        if not isinstance(other, TensorField):
+            raise TypeError("For the contraction, other must be a tensor " + 
+                            "field.")
+        if self._domain.is_subdomain(other._domain):
+            if not self._ambient_domain.is_subdomain(other._ambient_domain):
+                raise TypeError("Incompatible ambient domains for contraction.")
+        elif other._domain.is_subdomain(self._domain):
+            if not other._ambient_domain.is_subdomain(self._ambient_domain):
+                raise TypeError("Incompatible ambient domains for contraction.")
+        else:
+            raise TypeError("Incompatible domains for contraction.")
+        dom_resu = self._domain.intersection(other._domain)
+        if dom_resu.is_manifestly_parallelizable():
+            # call of the TensorFieldParal version (actually FreeModuleTensor
+            # version):
+            return self.restrict(dom_resu).contract(pos1, 
+                                                other.restrict(dom_resu), pos2)
+        k1, l1 = self._tensor_type
+        k2, l2 = other._tensor_type
+        dest_map = self._vmodule._dest_map
+        dest_map_resu = dest_map.restrict(dom_resu)
+        vmodule = dom_resu.vector_field_module(dest_map)
+        resu = vmodule.tensor(tensor_type, sym=None, antisym=None)
+
+
 #******************************************************************************
 
 class TensorFieldParal(FreeModuleTensor, TensorField):
@@ -2372,8 +2439,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
                 raise ValueError("The provided domain is not a subdomain of " + 
                                  "the current field's domain.")
             if dest_map is None:
-                if self._fmodule._dest_map is not None:
-                    dest_map = self._fmodule._dest_map.restrict(subdomain)
+                dest_map = self._fmodule._dest_map.restrict(subdomain)
             elif not dest_map._codomain.is_subdomain(self._ambient_domain):
                 raise ValueError("Argument dest_map not compatible with " + 
                                  "self._ambient_domain")
@@ -2387,7 +2453,8 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             smodule = subdomain.vector_field_module(dest_map=dest_map)
             resu = smodule.tensor(self._tensor_type, name=self._name, 
                                   latex_name=self._latex_name, sym=self._sym, 
-                                  antisym=self._antisym)
+                                  antisym=self._antisym, 
+                                  specific_type=self.__class__)
             for frame in self._components:
                 for sframe in subdomain._covering_frames:
                     if sframe in frame.subframes:
