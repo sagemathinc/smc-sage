@@ -972,3 +972,24 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
     #### End of methods to be redefined by derived classes of FiniteRankFreeModule ####
 
+class TangentSpace(FiniteRankFreeModule):
+    r"""
+    Tangent space at a point 'p' beloning to 
+    an open domain `U` of some manifold `M`. 
+    """
+
+    Element = VectorFieldParal
+
+    def __init__(self, domain, point):
+        self._manifold = domain._manifold 
+        self._ambient_domain = domain
+        self._point  = point
+
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+
+        description = "tangent space at a " + str(self._point)  
+        return description
+
