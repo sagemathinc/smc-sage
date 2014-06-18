@@ -279,6 +279,21 @@ class AutomorphismField(EndomorphismField):
             [-1/8*u - 1/8*v + 1/4  1/8*u + 1/8*v + 3/4]
             )
         
+        Let us check that ia is indeed the inverse of a::
+        
+            sage: s = a.contract(ia)
+            sage: s[eU,:], s[eV,:]
+            (
+            [1 0]  [1 0]
+            [0 1], [0 1]
+            )
+            sage: s = ia.contract(a)
+            sage: s[eU,:], s[eV,:]
+            (
+            [1 0]  [1 0]
+            [0 1], [0 1]
+            )
+            
         """        
         if self._inverse is None:
             if self._name is None:

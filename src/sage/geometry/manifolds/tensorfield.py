@@ -1634,11 +1634,13 @@ class TensorField(ModuleElement):
                             " arguments must be provided.")
         # Domain of the result
         dom_resu = self._domain
+        ambient_dom = self._ambient_domain
         for arg in args:
             dom_resu = dom_resu.intersection(arg._domain)
+            ambient_dom = ambient_dom.intersection(arg._ambient_domain)
         self_r = self.restrict(dom_resu)
         args_r = [args[i].restrict(dom_resu) for i in range(p)]
-        if dom_resu.is_manifestly_parallelizable():
+        if ambient_dom.is_manifestly_parallelizable():
             # TensorFieldParal version
             return self_r(*args_r)
         else:
@@ -1740,7 +1742,7 @@ class TensorField(ModuleElement):
                 " arguments provided, while between 1 and 3 are expected.")
         if not isinstance(other, TensorField):
             raise TypeError("For the contraction, other must be a tensor " + 
-                            "field.")
+                            "field.")            
         if self._domain.is_subdomain(other._domain):
             if not self._ambient_domain.is_subdomain(other._ambient_domain):
                 raise TypeError("Incompatible ambient domains for contraction.")
@@ -1750,17 +1752,36 @@ class TensorField(ModuleElement):
         else:
             raise TypeError("Incompatible domains for contraction.")
         dom_resu = self._domain.intersection(other._domain)
-        if dom_resu.is_manifestly_parallelizable():
-            # call of the TensorFieldParal version (actually FreeModuleTensor
-            # version):
-            return self.restrict(dom_resu).contract(pos1, 
-                                                other.restrict(dom_resu), pos2)
+        ambient_dom_resu = self._ambient_domain.intersection(
+                                                         other._ambient_domain)
+        self_r = self.restrict(dom_resu)
+        other_r = other.restrict(dom_resu)
         k1, l1 = self._tensor_type
         k2, l2 = other._tensor_type
+        tensor_type_resu = (k1+k2-1, l1+l2-1)
+        if ambient_dom_resu.is_manifestly_parallelizable() or \
+                                                     tensor_type_resu == (0,0):
+            # call of the TensorFieldParal version (actually FreeModuleTensor
+            # version):
+            return self_r.contract(pos1, other_r, pos2)
         dest_map = self._vmodule._dest_map
-        dest_map_resu = dest_map.restrict(dom_resu)
-        vmodule = dom_resu.vector_field_module(dest_map)
-        resu = vmodule.tensor(tensor_type, sym=None, antisym=None)
+        dest_map_resu = dest_map.restrict(dom_resu, 
+                                          subcodomain=ambient_dom_resu)
+        vmodule = dom_resu.vector_field_module(dest_map=dest_map_resu)
+        com_dom = []
+        for dom in self_r._restrictions:
+            if dom in other_r._restrictions:
+                com_dom.append(dom)
+        resu_rst = []
+        for dom in com_dom:
+            self_rr = self_r._restrictions[dom]
+            other_rr = other_r._restrictions[dom]
+            resu_rst.append(self_rr.contract(pos1, other_rr, pos2))
+        resu = vmodule.tensor(tensor_type_resu, sym=resu_rst[0]._sym, 
+                              antisym=resu_rst[0]._antisym)
+        for rst in resu_rst:
+            resu._restrictions[rst._domain] = rst
+        return resu
 
 
 #******************************************************************************
