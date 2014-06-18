@@ -171,15 +171,15 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         name = "X(" + domain._name
         latex_name = r"\mathcal{X}\left(" + domain._latex_name
         if dest_map is None:
-            self._dest_map = None
-            self._ambient_domain = domain
+            dest_map = domain._identity_map
+        self._dest_map = dest_map
+        if dest_map is domain._identity_map:
             name += ")" 
             latex_name += r"\right)"
         else:
-            self._dest_map = dest_map
-            self._ambient_domain = dest_map._codomain
             name += "," + self._dest_map._name + ")" 
             latex_name += "," + self._dest_map._latex_name + r"\right)"
+        self._ambient_domain = self._dest_map._codomain
         self._name = name
         self._latex_name = latex_name
         # the member self._ring is created for efficiency (to avoid calls to 
@@ -195,13 +195,9 @@ class VectorFieldModule(UniqueRepresentation, Parent):
             self._zero_element = self._element_constructor_(name='zero', 
                                                             latex_name='0')
             for frame in self._domain._frames:
-                if frame._dest_map is None and self._dest_map is None: 
+                if self._dest_map.restrict(frame._domain) == frame._dest_map:
                     self._zero_element.add_comp(frame)
                     # (since new components are initialized to zero)
-                elif frame._dest_map is not None and self._dest_map is not None:
-                    if frame._dest_map._name == self._dest_map._name: #!# to be improved
-                        self._zero_element.add_comp(frame)
-                        # (since new components are initialized to zero)
                     
     #### Methods required for any Parent 
 
@@ -251,7 +247,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         if self._name is not None:
             description += self._name + " "
         description += "of vector fields "
-        if self._dest_map is None:
+        if self._dest_map is self._domain._identity_map:
             description += "on the " + str(self._domain)
         else:
             description += "along the " + str(self._domain) + \
@@ -285,7 +281,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         return self._tensor_modules[(k,l)]
 
     def tensor(self, tensor_type, name=None, latex_name=None, sym=None, 
-               antisym=None):
+               antisym=None, specific_type=None):
         r"""
         Construct a tensor on the vector field module. 
 
@@ -309,6 +305,9 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
           among the arguments, with the same convention as for ``sym``. 
+        - ``specific_type`` -- (default: None) specific subclass of 
+          :class:`~sage.geometry.geometry.tensorfield.TensorField` for the 
+          output
           
         OUTPUT:
         
@@ -321,14 +320,17 @@ class VectorFieldModule(UniqueRepresentation, Parent):
                     
                 
         """
-        from rank2field import EndomorphismField
+        from rank2field import EndomorphismField, AutomorphismField
 #        from diffform import DiffForm, OneForm
         if tensor_type==(1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type==(0,1):
             return OneForm(self, name=name, latex_name=latex_name)
         elif tensor_type==(1,1):
-            return EndomorphismField(self, name=name, latex_name=latex_name)
+            if specific_type == AutomorphismField:
+                return AutomorphismField(self, name=name, latex_name=latex_name)
+            else:
+                return EndomorphismField(self, name=name, latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
             if len(antisym)==tensor_type[1]:
                 return DiffForm(self, tensor_type[1], name=name, 
@@ -523,15 +525,15 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         name = "X(" + domain._name
         latex_name = r"\mathcal{X}\left(" + domain._latex_name
         if dest_map is None:
-            self._dest_map = None
-            self._ambient_domain = domain
+            dest_map = domain._identity_map
+        self._dest_map = dest_map
+        if dest_map is domain._identity_map:
             name += ")" 
             latex_name += r"\right)"
         else:
-            self._dest_map = dest_map
-            self._ambient_domain = dest_map._codomain
             name += "," + self._dest_map._name + ")" 
-            latex_name += "," + self._dest_map._latex_name + r"\right)" 
+            latex_name += "," + self._dest_map._latex_name + r"\right)"
+        self._ambient_domain = dest_map._codomain
         manif = self._ambient_domain._manifold
         FiniteRankFreeModule.__init__(self, domain.scalar_field_algebra(), 
                                   manif._dim, name=name, latex_name=latex_name, 
@@ -539,13 +541,9 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                                   output_formatter=ScalarField.function_chart)
         # Initialization of the components of the zero element:
         for frame in self._domain._frames:
-            if frame._dest_map is None and self._dest_map is None: 
+            if frame._dest_map == self._dest_map: 
                 self._zero_element.add_comp(frame)
                 # (since new components are initialized to zero)
-            elif frame._dest_map is not None and self._dest_map is not None:
-                if frame._dest_map._name == self._dest_map._name: #!# to be improved
-                    self._zero_element.add_comp(frame)
-                    # (since new components are initialized to zero)
 
     def _element_constructor_(self, comp=[], basis=None, name=None, 
                               latex_name=None):
@@ -586,7 +584,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         if self._name is not None:
             description += self._name + " "
         description += "of vector fields "
-        if self._dest_map is None:
+        if self._dest_map is self._domain._identity_map:
             description += "on the " + str(self._domain)
         else:
             description += "along the " + str(self._domain) + \
@@ -659,10 +657,11 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                 if symbol == other._symbol:
                     return other
             return VectorFrame(self._domain, symbol=symbol, 
-                               latex_symbol=latex_symbol, dest_map=self._dest_map)
+                               latex_symbol=latex_symbol, 
+                               dest_map=self._dest_map)
 
     def tensor(self, tensor_type, name=None, latex_name=None, sym=None, 
-               antisym=None):
+               antisym=None, specific_type=None):
         r"""
         Construct a tensor on the free module. 
 
@@ -686,7 +685,10 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
         - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries 
           among the arguments, with the same convention as for ``sym``. 
-          
+        - ``specific_type`` -- (default: None) specific subclass of 
+          :class:`~sage.geometry.geometry.tensorfield.TensorFieldParal` for the 
+          output
+         
         OUTPUT:
         
         - instance of 
@@ -698,14 +700,20 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                     
                 
         """
-        from rank2field import EndomorphismFieldParal
+        from rank2field import EndomorphismFieldParal, AutomorphismField, \
+                               AutomorphismFieldParal
         from diffform import DiffFormParal, OneFormParal
         if tensor_type==(1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type==(0,1):
             return OneFormParal(self, name=name, latex_name=latex_name)
         elif tensor_type==(1,1):
-            return EndomorphismFieldParal(self, name=name, 
+            if specific_type == AutomorphismFieldParal or \
+                                           specific_type == AutomorphismField:
+                return AutomorphismFieldParal(self, name=name, 
+                                                         latex_name=latex_name)
+            else:
+                return EndomorphismFieldParal(self, name=name, 
                                                          latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
             if len(antisym)==tensor_type[1]:

@@ -247,10 +247,7 @@ class VectorFrame(FreeModuleBasis):
         # The frame is added to the domain's set of frames, as well as to all 
         # the superdomains' sets of frames; moreover the first defined frame 
         # is considered as the default one
-        if self._dest_map is None:
-            dest_map_name = 'Id'
-        else:
-            dest_map_name = self._dest_map._name
+        dest_map_name = self._dest_map._name
         for sd in self._domain._superdomains:
             for other in sd._frames:
                 if repr(self) == repr(other):
@@ -267,7 +264,7 @@ class VectorFrame(FreeModuleBasis):
                         for t in xsd._tensor_modules.values():
                             t(0).add_comp(self)
                             # (since new components are initialized to zero)
-        if self._dest_map is None:
+        if self._dest_map is self._domain._identity_map:
             # The frame is added to the list of the domain's covering frames:
             self._domain._set_covering_frame(self)
         #
@@ -297,7 +294,7 @@ class VectorFrame(FreeModuleBasis):
         String representation of the object.
         """
         description = "vector frame " + self._name
-        if self._dest_map is not None:
+        if self._dest_map is not self._domain._identity_map:
             description += " with values on the " + str(self._dest_map._codomain)
         return description
         
@@ -471,10 +468,7 @@ class VectorFrame(FreeModuleBasis):
             if not subdomain.is_subdomain(self._domain):
                 raise ValueError("The provided domain is not a subdomain of " + 
                                  "the current frame's domain.")
-            if self._dest_map is None:
-                sdest_map = None
-            else:
-                sdest_map = self._dest_map.restrict(subdomain)
+            sdest_map = self._dest_map.restrict(subdomain)
             res = VectorFrame(subdomain.vector_field_module(sdest_map, 
                                                             force_free=True), 
                               self._symbol, latex_symbol=self._latex_symbol)

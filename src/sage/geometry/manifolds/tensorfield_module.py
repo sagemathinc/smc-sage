@@ -133,7 +133,7 @@ class TensorFieldModule(UniqueRepresentation, Module):
         name = "TF^(" + str(kcon) + "," + str(lcov) + ")(" + domain._name
         latex_name = "TF^(" + str(kcon) + "," + str(lcov) + r")\left(" + \
                      domain._latex_name
-        if dest_map is None:
+        if dest_map is domain._identity_map:
             name += ")" 
             latex_name += r"\right)" 
         else:
@@ -165,13 +165,10 @@ class TensorFieldModule(UniqueRepresentation, Module):
                 self._zero_element = self._element_constructor_(name='zero', 
                                                                 latex_name='0')
                 for frame in self._domain._frames:
-                    if frame._dest_map is None and self._dest_map is None: 
+                    if self._dest_map.restrict(frame._domain) == \
+                                                               frame._dest_map:
                         self._zero_element.add_comp(frame)
                         # (since new components are initialized to zero)
-                    elif frame._dest_map is not None and self._dest_map is not None:
-                        if frame._dest_map._name == self._dest_map._name: #!# to be improved
-                            self._zero_element.add_comp(frame)
-                            # (since new components are initialized to zero)
             return self._zero_element
         if isinstance(comp, TensorField):
             if self._tensor_type == comp._tensor_type and \
@@ -218,7 +215,7 @@ class TensorFieldModule(UniqueRepresentation, Module):
         description += "of type-(%s,%s)" % \
                            (str(self._tensor_type[0]), str(self._tensor_type[1]))
         description += " tensors fields "
-        if self._dest_map is None:
+        if self._dest_map is self._domain._identity_map:
             description += "on the " + str(self._domain)
         else:
             description += "along the " + str(self._domain) + \
@@ -336,7 +333,7 @@ class TensorFieldFreeModule(TensorFreeModule):
         name = "TF^(" + str(kcon) + "," + str(lcov) + ")(" + domain._name
         latex_name = "TF^(" + str(kcon) + "," + str(lcov) + r")\left(" + \
                      domain._latex_name
-        if dest_map is None:
+        if dest_map is domain._identity_map:
             name += ")" 
             latex_name += r"\right)" 
         else:
@@ -391,7 +388,7 @@ class TensorFieldFreeModule(TensorFreeModule):
         description += "of type-(%s,%s)" % \
                            (str(self._tensor_type[0]), str(self._tensor_type[1]))
         description += " tensors fields "
-        if self._dest_map is None:
+        if self._dest_map is self._domain._identity_map:
             description += "on the " + str(self._domain)
         else:
             description += "along the " + str(self._domain) + \
