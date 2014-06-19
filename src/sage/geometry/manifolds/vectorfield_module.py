@@ -320,7 +320,8 @@ class VectorFieldModule(UniqueRepresentation, Parent):
                     
                 
         """
-        from rank2field import EndomorphismField, AutomorphismField
+        from rank2field import EndomorphismField, AutomorphismField, \
+                                                           TangentIdentityField
 #        from diffform import DiffForm, OneForm
         if tensor_type==(1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
@@ -329,6 +330,9 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         elif tensor_type==(1,1):
             if specific_type == AutomorphismField:
                 return AutomorphismField(self, name=name, latex_name=latex_name)
+            elif specific_type == TangentIdentityField:
+                return TangentIdentityField(self, name=name, 
+                                            latex_name=latex_name)
             else:
                 return EndomorphismField(self, name=name, latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
@@ -701,7 +705,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                 
         """
         from rank2field import EndomorphismFieldParal, AutomorphismField, \
-                               AutomorphismFieldParal
+                               AutomorphismFieldParal, TangentIdentityField, \
+                               TangentIdentityFieldParal
         from diffform import DiffFormParal, OneFormParal
         if tensor_type==(1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
@@ -711,6 +716,10 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
             if specific_type == AutomorphismFieldParal or \
                                            specific_type == AutomorphismField:
                 return AutomorphismFieldParal(self, name=name, 
+                                                         latex_name=latex_name)
+            elif specific_type == TangentIdentityFieldParal or \
+                                         specific_type == TangentIdentityField:
+                return TangentIdentityFieldParal(self, name=name, 
                                                          latex_name=latex_name)
             else:
                 return EndomorphismFieldParal(self, name=name, 

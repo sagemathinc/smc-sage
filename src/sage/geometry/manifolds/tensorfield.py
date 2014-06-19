@@ -2715,5 +2715,14 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
        
         EXAMPLES:
         """
-        # This method is a redefinition of FreeModuleTensor.contract
+        # This is to ensure the call to the TensorField version instead of
+        # the FreeModuleTensor one
         return TensorField.contract(self, *args)
+
+    def __mul__(self, other):
+        r"""
+        Tensor product. 
+        """
+        # This is to ensure the call to the TensorField version instead of
+        # the FreeModuleTensor one
+        return TensorField.__mul__(self, other)

@@ -66,8 +66,6 @@ class EndomorphismField(TensorField):
     def __init__(self, vector_field_module, name=None, latex_name=None):
         TensorField.__init__(self, vector_field_module, (1,1), name=name, 
                              latex_name=latex_name)
-        # Initialization of derived quantities:
-        TensorField._init_derived(self) 
 
     def _repr_(self):
         r"""
@@ -84,12 +82,6 @@ class EndomorphismField(TensorField):
         
         """
         return self.__class__(self._vmodule)
-
-    def _del_derived(self):
-        r"""
-        Delete the derived quantities
-        """
-        TensorField._del_derived(self)
 
     def __call__(self, *arg):
         r"""
@@ -207,14 +199,8 @@ class AutomorphismField(EndomorphismField):
     def __init__(self, vector_field_module, name=None, latex_name=None):
         EndomorphismField.__init__(self, vector_field_module, name=name, 
                                         latex_name=latex_name)
-        # TensorFieldParal attributes:
-        self._vmodule = vector_field_module
-        self._domain = vector_field_module._domain
-        self._ambient_domain = vector_field_module._ambient_domain
-        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # Initialization of derived quantities:
-        TensorField._init_derived(self) 
-        self._inverse = None # inverse not set yet
+        self._init_derived() 
 
     def _repr_(self):
         r"""
@@ -225,21 +211,22 @@ class AutomorphismField(EndomorphismField):
             description += "'%s' " % self._name
         return self._final_repr(description)
         
+    def _init_derived(self):
+        r"""
+        Initialize the derived quantities
+        """
+        TensorField._init_derived(self)
+        self._inverse = None  # inverse not set yet
+        
     def _del_derived(self):
         r"""
         Delete the derived quantities.
         """
         # First delete the derived quantities pertaining to the mother class:
-        EndomorphismField._del_derived(self)
+        TensorField._del_derived(self)
         # then deletes the inverse automorphism:
         self._inverse = None
         
-    def _new_instance(self):
-        r"""
-        Create a :class:`AutomorphismField` instance on the same domain.
-        """
-        return self.__class__(self._vmodule)
-
     def inverse(self):
         r"""
         Return the inverse automorphism.
@@ -310,6 +297,57 @@ class AutomorphismField(EndomorphismField):
                 self._inverse._restrictions[dom] = rst.inverse()
         return self._inverse
 
+
+#******************************************************************************
+
+class TangentIdentityField(AutomorphismField):
+    r"""
+    Field of tangent-space identity maps with values on an open subset of a 
+    differentiable manifold. 
+    
+    An instance of this class is a field of identity maps (i.e. identity 
+    operator in each tangent space) along an open subset `U` of some immersed 
+    submanifold `S` of a manifold `M` with values in an open 
+    subset `V` of `M`. 
+    The standard case of a field of identity maps *on* a manifold corresponds 
+    to `U=V` (and hence `S=M`).
+    
+    If `V` is parallelizable, the class :class:`TangentIdentityFieldParal` must
+    be used instead.
+
+    INPUT:
+    
+    - ``vector_field_module`` -- module `\mathcal{X}(U,V)` of vector 
+      fields along `U` with values on `V`
+    - ``name`` -- (default: None) name given to the identity map; if none
+      is provided, the value 'Id' is set. 
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity
+      map; if none is provided, the LaTeX symbol is set to `\mathrm{Id}`
+
+    EXAMPLES:
+
+         
+    """
+    def __init__(self, vector_field_module, name='Id', latex_name=None):
+        if latex_name is None and name == 'Id':
+            latex_name = r'\mathrm{Id}'
+        AutomorphismField.__init__(self, vector_field_module, name=name, 
+                                       latex_name=latex_name)
+        for dom in self._domain._subdomains:
+            if dom.is_manifestly_parallelizable():
+                fmodule = dom.vector_field_module()
+                self._restriction[dom] = TangentIdentityFieldParal(fmodule, 
+                                              name=name, latex_name=latex_name)
+        self._inverse = self    # the identity is its own inverse
+        
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+        description = "field of tangent-space identity maps "
+        if self._name is not None:
+            description += "'%s' " % self._name
+        return self._final_repr(description)
 
 
 #******************************************************************************
