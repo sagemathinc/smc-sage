@@ -1669,7 +1669,7 @@ class IdentityMap(Diffeomorphism):
         # no test of p being a point in the domain (for efficiency)
         return p
 
-    def restrict(self, subdomain):
+    def restrict(self, subdomain, subcodomain=None):
         r"""
         Restriction of the identity map to some subdomain of its 
         domain of definition.
@@ -1678,13 +1678,14 @@ class IdentityMap(Diffeomorphism):
         
         - ``subdomain`` -- the subdomain of ``self._domain`` (instance of
           :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+        - ``subcodomain`` -- (default: None) unused here (just for
+          compatibility with :meth:`DiffMapping.restrict`)
         
         OUTPUT:
         
         - the restriction of ``self`` to ``dom``, as an instance of 
           class :class:`IdentityMap`
           
-        EXAMPLE:
         """
         if subdomain == self._domain:
             return self
