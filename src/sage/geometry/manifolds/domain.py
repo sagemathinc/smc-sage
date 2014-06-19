@@ -1109,6 +1109,8 @@ class OpenDomain(Domain):
         self._tensor_field_modules = {}
         # the identity map on self
         self._identity_map = IdentityMap(self)
+        # dict. of tangent spaces at points on self:
+        self._tangent_spaces = {}
     
     def _repr_(self):
         r"""
@@ -1507,6 +1509,16 @@ class OpenDomain(Domain):
                 self._vector_field_modules[dest_map_name] = \
                                      VectorFieldModule(self, dest_map=dest_map)
         return self._vector_field_modules[dest_map_name]
+
+    def tangent_space(self, point):
+        r"""
+    
+        """ 
+
+        from vectorfield_module import TangentSpace    
+
+        self._tangent_spaces[point] = TangentSpace(self, point)        
+        return self._tangent_spaces[point]
 
     def tensor_field_module(self, tensor_type, dest_map=None):
         r"""

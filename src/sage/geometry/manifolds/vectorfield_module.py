@@ -980,3 +980,50 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
     #### End of methods to be redefined by derived classes of FiniteRankFreeModule ####
 
+class TangentSpace(FiniteRankFreeModule):
+    r"""
+    Tangent space at a point `p` beloning to 
+    an open domain `U` of some manifold `M`. 
+
+    INPUT:
+    
+    - ``domain`` -- open subset `U` on which the vector fields are defined
+    - ``point`` -- point `p` beloning to `U` at which the tangent space is defined. 
+
+    EXAMPLES:
+
+    Tangent space on `\RR^2`::
+
+        sage: M = Manifold(2, 'R^2')
+        sage: c.<x,y> = M.chart() 
+        sage: p1 = M.point((1, 0), name='P1')
+        sage: p2 = M.point((1, 0), name='P2')
+        sage: T1 = M.tangent_space(p1); T1
+        tangent space at a point 'P1' on 2-dimensional manifold 'R^2'
+        sage: T2 = M.tangent_space(p2); T2
+        tangent space at a point 'P2' on 2-dimensional manifold 'R^2'
+        sage: M._tangent_spaces
+        {point 'P2' on 2-dimensional manifold 'R^2': tangent space at a point 'P2' on 2-dimensional manifold 'R^2',
+        point 'P1' on 2-dimensional manifold 'R^2': tangent space at a point 'P1' on 2-dimensional manifold 'R^2'}
+        sage: U = M.open_domain('U')
+        sage: cu.<x,y> = U.chart()
+        sage: q = U.point((1, 0), name='Pq')
+        sage: TU = U.tangent_space(q)
+
+    """
+
+    Element = VectorField
+
+    def __init__(self, domain, point):
+        self._manifold = domain._manifold 
+        self._ambient_domain = domain
+        self._point  = point
+
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+
+        description = "tangent space at a " + str(self._point)  
+        return description
+

@@ -117,6 +117,7 @@ class Point(Element):
         Element.__init__(self, domain)
         self._manifold = domain._manifold
         self._domain = domain
+        self._tangent_space=None
         self._coordinates = {}
         if coords is not None: 
             if len(coords) != self._manifold._dim: 
@@ -427,5 +428,10 @@ class Point(Element):
         return self._coordinates[common_chart] == \
                                               other._coordinates[common_chart]
         
-
-
+    def tangent_space(self): 
+        r""" 
+        Returns the tangent space related to the point
+        """
+        
+        return (self._manifold)._tangent_spaces[self]
+ 
