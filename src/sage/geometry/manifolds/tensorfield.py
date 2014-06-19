@@ -52,8 +52,10 @@ A tensor field of type (1,1) on a 2-dimensional manifold::
     sage: M = Manifold(2, 'M', start_index=1)
     sage: c_xy.<x,y> = M.chart()
     sage: t = M.tensor_field(1, 1, 'T') ; t
-    tensor field 'T' of type (1,1) on the 2-dimensional manifold 'M'
-    sage: t._tensor_rank
+    field of endomorphisms 'T' on the 2-dimensional manifold 'M'
+    sage: t.tensor_type()
+    (1, 1)
+    sage: t.tensor_rank()
     2
 
 A just-created tensor field has no components::
@@ -1698,6 +1700,87 @@ class TensorField(ModuleElement):
             resu._latex_name = res_latex
             return resu
 
+    def self_contract(self, pos1, pos2):
+        r""" 
+        Contraction on two slots of the tensor field. 
+        
+        INPUT:
+            
+        - ``pos1`` -- position of the first index for the contraction, with the
+          convention ``pos1=0`` for the first slot
+        - ``pos2`` -- position of the second index for the contraction, with 
+          the same convention as for ``pos1``. 
+          
+        OUTPUT:
+        
+        - tensor field resulting from the (pos1, pos2) contraction
+       
+        EXAMPLES:
+
+        Self-contraction of a type-(1,1) tensor field on a 2-dimensional 
+        non-parallelizable manifold::
+
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+            sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+            sage: inv = transf.inverse()
+            sage: W = U.intersection(V)
+            sage: eU = c_xy.frame() ; eV = c_uv.frame()
+            sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
+            sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
+            sage: a = M.tensor_field(1,1, name='a')
+            sage: a[eU,:] = [[1,x], [2,y]]
+            sage: a[eV,0,0] = a[eVW,0,0,c_uvW].expr()
+            sage: a[eV,0,1] = a[eVW,0,1,c_uvW].expr()
+            sage: a[eV,1,0] = a[eVW,1,0,c_uvW].expr()
+            sage: a[eV,1,1] = a[eVW,1,1,c_uvW].expr()
+            sage: s = a.self_contract(0,1) ; s
+            scalar field on the 2-dimensional manifold 'M'
+            sage: s.view()
+            M --> R
+            on U: (x, y) |--> y + 1
+            on V: (u, v) |--> 1/2*u - 1/2*v + 1
+            on W: (x, y) |--> y + 1
+            on W: (u, v) |--> 1/2*u - 1/2*v + 1
+
+        Self-contraction of a type-(1,2) tensor field::
+
+            sage: b = M.tensor_field(1,2, name='b') ; b
+            tensor field 'b' of type (1,2) on the 2-dimensional manifold 'M'
+            sage: b[eU,:] = [[[1,x], [2,y]], [[0,y-3], [x*y,y^2]]] 
+            sage: for i in M.irange():
+            ....:     for j in M.irange():
+            ....:         for k in M.irange():
+            ....:             b[eV,i,j,k] = b[eVW,i,j,k,c_uvW].expr()
+            ....:             
+            
+        """
+        # The indices at pos1 and pos2 must be of different types: 
+        k_con = self._tensor_type[0]
+        l_cov = self._tensor_type[1]
+        if pos1 < k_con and pos2 < k_con:
+            raise IndexError("Contraction on two contravariant indices is " +
+                             "not allowed.")
+        if pos1 >= k_con and pos2 >= k_con:
+            raise IndexError("Contraction on two covariant indices is " +
+                             "not allowed.")
+        resu_rst = []
+        for dom, rst in self._restrictions.items():
+            resu_rst.append(rst.self_contract(pos1, pos2))
+        if (k_con, l_cov) == (1,1):
+            # scalar field result
+            resu = self._domain.scalar_field()
+            for rst in resu_rst:
+                for chart, funct in rst._express.items():
+                    resu._express[chart] = funct
+        else:
+            # tensor field result
+            resu = self._vmodule.tensor((k_con-1, l_cov-1), 
+                            sym=resu_rst[0]._sym, antisym=resu_rst[0]._antisym)
+        for rst in resu_rst:
+            resu._restrictions[rst._domain] = rst
+        return resu
 
     def contract(self, *args):
         r""" 
@@ -1717,6 +1800,74 @@ class TensorField(ModuleElement):
           ``other``
        
         EXAMPLES:
+        
+        Contractions of a type-(1,1) tensor field with a type-(2,0) one on 
+        a 2-dimensional non-parallelizable manifold::
+        
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+            sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+            sage: inv = transf.inverse()
+            sage: W = U.intersection(V)
+            sage: eU = c_xy.frame() ; eV = c_uv.frame()
+            sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
+            sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
+            sage: a = M.tensor_field(1,1, name='a')
+            sage: a[eU,:] = [[1,x], [0,2]]
+            sage: a[eV,0,0] = a[eVW,0,0,c_uvW].expr()
+            sage: a[eV,0,1] = a[eVW,0,1,c_uvW].expr()
+            sage: a[eV,1,0] = a[eVW,1,0,c_uvW].expr()
+            sage: a[eV,1,1] = a[eVW,1,1,c_uvW].expr()
+            sage: b = M.tensor_field(2,0, name='b') 
+            sage: b[eU,:] = [[y,-1], [x+y,2]]
+            sage: b[eV,0,0] = b[eVW,0,0,c_uvW].expr()
+            sage: b[eV,0,1] = b[eVW,0,1,c_uvW].expr()
+            sage: b[eV,1,0] = b[eVW,1,0,c_uvW].expr()
+            sage: b[eV,1,1] = b[eVW,1,1,c_uvW].expr()
+            sage: s = a.contract(b) ; s   # contraction on last index of a and first one of b
+            tensor field of type (2,0) on the 2-dimensional manifold 'M'
+        
+        Check 1: components w.r.t. the manifold's default frame (eU)::
+
+            sage: for i in M.irange():
+            ....:     for j in M.irange():
+            ....:         print bool(s[i,j] == sum(a[i,k]*b[k,j] for k in M.irange())), 
+            ....:         
+            True True True True
+
+        Check 2: components w.r.t. frame eV::
+
+            sage: for i in M.irange():
+            ....:     for j in M.irange():
+            ....:         print bool(s[eV,i,j] == sum(a[eV,i,k]*b[eV,k,j] for k in M.irange())),
+            ....:         
+            True True True True
+
+        Contraction on the last index of a and last index of b::
+        
+            sage: s = a.contract(b, 1) ; s
+            tensor field of type (2,0) on the 2-dimensional manifold 'M'
+
+        Contraction on the first index of b and the last index of a::
+        
+            sage: s = b.contract(0,a,1) ; s
+            tensor field of type (2,0) on the 2-dimensional manifold 'M'
+        
+        The domain of the result is the intersection of the two tensor fields 
+        domain::
+        
+            sage: aU = a.restrict(U) ; bV = b.restrict(V)
+            sage: s = aU.contract(b) ; s
+            tensor field of type (2,0) on the open domain 'U' on the 2-dimensional manifold 'M'
+            sage: s = a.contract(bV) ; s
+            tensor field of type (2,0) on the open domain 'V' on the 2-dimensional manifold 'M'
+            sage: s = aU.contract(bV) ; s
+            tensor field of type (2,0) on the open domain 'W' on the 2-dimensional manifold 'M'
+            sage: s0 = a.contract(b)
+            sage: s == s0.restrict(W)
+            True
+
         """
         nargs = len(args)
         if nargs == 1:
@@ -1749,8 +1900,6 @@ class TensorField(ModuleElement):
         elif other._domain.is_subdomain(self._domain):
             if not other._ambient_domain.is_subdomain(self._ambient_domain):
                 raise TypeError("Incompatible ambient domains for contraction.")
-        else:
-            raise TypeError("Incompatible domains for contraction.")
         dom_resu = self._domain.intersection(other._domain)
         ambient_dom_resu = self._ambient_domain.intersection(
                                                          other._ambient_domain)
@@ -1761,9 +1910,8 @@ class TensorField(ModuleElement):
         tensor_type_resu = (k1+k2-1, l1+l2-1)
         if ambient_dom_resu.is_manifestly_parallelizable() or \
                                                      tensor_type_resu == (0,0):
-            # call of the TensorFieldParal version (actually FreeModuleTensor
-            # version):
-            return self_r.contract(pos1, other_r, pos2)
+            # call of the FreeModuleTensor version:
+            return FreeModuleTensor.contract(self_r, pos1, other_r, pos2)
         dest_map = self._vmodule._dest_map
         dest_map_resu = dest_map.restrict(dom_resu, 
                                           subcodomain=ambient_dom_resu)
@@ -1778,6 +1926,39 @@ class TensorField(ModuleElement):
             other_rr = other_r._restrictions[dom]
             resu_rst.append(self_rr.contract(pos1, other_rr, pos2))
         resu = vmodule.tensor(tensor_type_resu, sym=resu_rst[0]._sym, 
+                              antisym=resu_rst[0]._antisym)
+        for rst in resu_rst:
+            resu._restrictions[rst._domain] = rst
+        return resu
+
+    def __mul__(self, other):
+        r"""
+        Tensor product. 
+        """
+        dom_resu = self._domain.intersection(other._domain)
+        ambient_dom_resu = self._ambient_domain.intersection(
+                                                         other._ambient_domain)
+        self_r = self.restrict(dom_resu)
+        other_r = other.restrict(dom_resu)
+        if ambient_dom_resu.is_manifestly_parallelizable():
+            # call of the FreeModuleTensor version:
+            return FreeModuleTensor.__mul__(self_r, other_r)
+        dest_map = self._vmodule._dest_map
+        dest_map_resu = dest_map.restrict(dom_resu, 
+                                          subcodomain=ambient_dom_resu)
+        vmodule = dom_resu.vector_field_module(dest_map=dest_map_resu)
+        com_dom = []
+        for dom in self_r._restrictions:
+            if dom in other_r._restrictions:
+                com_dom.append(dom)
+        resu_rst = []
+        for dom in com_dom:
+            self_rr = self_r._restrictions[dom]
+            other_rr = other_r._restrictions[dom]
+            resu_rst.append(self_rr * other_rr)
+        k1, l1 = self._tensor_type
+        k2, l2 = other._tensor_type
+        resu = vmodule.tensor((k1+k2, l1+l2), sym=resu_rst[0]._sym, 
                               antisym=resu_rst[0]._antisym)
         for rst in resu_rst:
             resu._restrictions[rst._domain] = rst
@@ -2514,3 +2695,25 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         args_r = [args[i].restrict(dom_resu) for i in range(p)]
         # Call of the FreeModuleTensor version
         return FreeModuleTensor.__call__(self_r, *args_r)
+
+    def contract(self, *args):
+        r""" 
+        Contraction with another tensor field.
+        
+        INPUT:
+            
+        - ``pos1`` -- position of the first index (in ``self``) for the 
+          contraction; if not given, the last index position is assumed
+        - ``other`` -- the tensor to contract with
+        - ``pos2`` -- position of the second index (in ``other``) for the 
+          contraction; if not given, the first index position is assumed
+          
+        OUTPUT:
+        
+        - tensor resulting from the (pos1, pos2) contraction of ``self`` with 
+          ``other``
+       
+        EXAMPLES:
+        """
+        # This method is a redefinition of FreeModuleTensor.contract
+        return TensorField.contract(self, *args)

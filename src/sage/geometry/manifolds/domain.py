@@ -1754,11 +1754,9 @@ class OpenDomain(Domain):
         examples.
 
         """
-        tmodule = self.tensor_field_module((k,l), dest_map)  # the parent
         vmodule = self.vector_field_module(dest_map)
-        return tmodule.element_class(vmodule, (k,l), name=name, 
-                                     latex_name=latex_name, sym=sym, 
-                                     antisym=antisym)
+        return vmodule.tensor((k,l), name=name, latex_name=latex_name, sym=sym, 
+                              antisym=antisym)
 
     def sym_bilin_form_field(self, name=None, latex_name=None, dest_map=None):  
         r"""
