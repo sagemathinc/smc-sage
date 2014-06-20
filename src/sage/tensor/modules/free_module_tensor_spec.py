@@ -222,13 +222,6 @@ class FreeModuleAutomorphism(FreeModuleEndomorphism):
             description += self._name + " " 
         description += "on the " + str(self._fmodule)
         return description
-
-    def _new_instance(self):
-        r"""
-        Create an instance of the same class as ``self``.
-        
-        """
-        return self.__class__(self._fmodule)
         
     def _del_derived(self):
         r"""
@@ -430,13 +423,6 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
         """
         # FreeModuleAutomorphism._del_derived is bypassed:
         FreeModuleEndomorphism._del_derived(self)
-
-    def _new_instance(self):
-        r"""
-        Create an instance of the same class as ``self``. 
-        
-        """
-        return self.__class__(self._fmodule)
         
     def _new_comp(self, basis): 
         r"""
@@ -448,7 +434,7 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
         return KroneckerDelta(fmodule._ring, basis, start_index=fmodule._sindex,
                               output_formatter=fmodule._output_formatter)
 
-    def comp(self, basis=None):
+    def comp(self, basis=None, from_basis=None):
         r"""
         Return the components in a given basis, as a Kronecker delta.
                 
@@ -457,6 +443,8 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
         - ``basis`` -- (default: None) module basis in which the components 
           are required; if none is provided, the components are assumed to 
           refer to the module's default basis
+        - ``from_basis`` -- (default: None) unused (present just for ensuring 
+          compatibility with FreeModuleTensor.comp calling list)
  
         OUTPUT: 
         
@@ -531,5 +519,5 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
                 raise TypeError("The second argument must be a module element.")
             return linform(vector)
         else:
-            raise TypeError("Bad number of arguments.")
+            raise TypeError("Wrong number of arguments.")
 

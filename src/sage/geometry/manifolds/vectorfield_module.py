@@ -322,7 +322,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         """
         from rank2field import EndomorphismField, AutomorphismField, \
                                                            TangentIdentityField
-#        from diffform import DiffForm, OneForm
+        from diffform import DiffForm, OneForm
         if tensor_type==(1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type==(0,1):
@@ -336,7 +336,11 @@ class VectorFieldModule(UniqueRepresentation, Parent):
             else:
                 return EndomorphismField(self, name=name, latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
-            if len(antisym)==tensor_type[1]:
+            if isinstance(antisym, list):
+                antisym0 = antisym[0]
+            else:
+                antisym0 = antisym
+            if len(antisym0)==tensor_type[1]:
                 return DiffForm(self, tensor_type[1], name=name, 
                                                          latex_name=latex_name)
             else:
@@ -347,6 +351,154 @@ class VectorFieldModule(UniqueRepresentation, Parent):
             return self.tensor_module(*tensor_type).element_class(self, 
                                  tensor_type, name=name, latex_name=latex_name, 
                                  sym=sym, antisym=antisym)
+
+    def alternating_form(self, degree, name=None, latex_name=None):
+        r"""
+        Construct an alternating form on the module ``self``. 
+        
+        INPUT:
+    
+        - ``degree`` -- the degree of the alternating form (i.e. its tensor rank)
+        - ``name`` -- (string; default: None) name given to the alternating 
+          form
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          alternating form; if none is provided, the LaTeX symbol is set to 
+          ``name``
+          
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.geometry.manifolds.diffform.DiffForm` 
+          (``degree`` > 1) or 
+          :class:`~sage.geometry.manifolds.diffform.OneForm` 
+          (``degree`` = 1)
+        
+        See 
+        :class:`~sage.geometry.manifolds.diffform.DiffForm` 
+        for further documentation. 
+
+        """
+        from diffform import DiffForm, OneForm
+        if degree == 1:
+            return OneForm(self, name=name, latex_name=latex_name)
+        else:
+            return DiffForm(self, degree, name=name, latex_name=latex_name)
+
+    def linear_form(self, name=None, latex_name=None):
+        r"""
+        Construct a linear form on the module ``self``. 
+        
+        A linear form on the vector field module ``self`` is actually a field
+        of linear forms (i.e. a 1-form) along the open subset `U` on which 
+        ``self`` is defined.
+
+        INPUT:
+    
+        - ``name`` -- (string; default: None) name given to the linear 
+          form
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          linear form; if none is provided, the LaTeX symbol is set to 
+          ``name``
+          
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.geometry.manifolds.diffform.OneForm` 
+
+        See 
+        :class:`~sage.geometry.manifolds.diffform.OneForm` 
+        for further documentation. 
+        
+
+        """
+        from diffform import OneForm
+        return OneForm(self, name=name, latex_name=latex_name)
+
+    def endomorphism(self, name=None, latex_name=None):
+        r"""
+        Construct an endomorphism of the module ``self``.
+        
+        An endomorphism of the module ``self`` is actually a field
+        of tangent-space endomorphisms along the open subset `U` on which 
+        ``self`` is defined.
+        
+        INPUT:
+    
+        - ``name`` -- (string; default: None) name given to the endomorphism
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          endomorphism; if none is provided, the LaTeX symbol is set to 
+          ``name``
+          
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.geometry.manifolds.rank2field.EndomorphismField`
+          
+        See 
+        :class:`~sage.geometry.manifolds.rank2field.EndomorphismField` 
+        for further documentation. 
+
+        """
+        from rank2field import EndomorphismField
+        return EndomorphismField(self, name=name, latex_name=latex_name)
+
+    def automorphism(self, name=None, latex_name=None):
+        r"""
+        Construct an automorphism of the module ``self``.
+        
+        An automorphism of the module ``self`` is actually a field
+        of tangent-space automorphisms along the open subset `U` on which 
+        ``self`` is defined.
+        
+        INPUT:
+    
+        - ``name`` -- (string; default: None) name given to the automorphism
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          automorphism; if none is provided, the LaTeX symbol is set to 
+          ``name``
+          
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.geometry.manifolds.rank2field.AutomorphismField`
+          
+        See 
+        :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` 
+        for further documentation. 
+
+        """
+        from rank2field import AutomorphismField
+        return AutomorphismField(self, name=name, latex_name=latex_name)
+
+    def identity_map(self, name='Id', latex_name=None):
+        r"""
+        Construct the identity map on the module ``self``. 
+        
+        The identity map on the module ``self`` is actually a field
+        of tangent-space identity maps along the open subset `U` on which 
+        ``self`` is defined.
+        
+        INPUT:
+    
+        - ``name`` -- (string; default: 'Id') name given to the identity map
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          identity map; if none is provided, the LaTeX symbol is set to 
+          ``name``
+          
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField`
+          
+        See
+        :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField` 
+        for further documentation. 
+ 
+        """
+        from rank2field import TangentIdentityField
+        return TangentIdentityField(self, name=name, latex_name=latex_name)
+
+
 
 #******************************************************************************
 
@@ -725,7 +877,11 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                 return EndomorphismFieldParal(self, name=name, 
                                                          latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
-            if len(antisym)==tensor_type[1]:
+            if isinstance(antisym, list):
+                antisym0 = antisym[0]
+            else:
+                antisym0 = antisym
+            if len(antisym0)==tensor_type[1]:
                 return DiffFormParal(self, tensor_type[1], name=name, 
                                                          latex_name=latex_name)
             else:
@@ -872,9 +1028,9 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
     def endomorphism(self, name=None, latex_name=None):
         r"""
-        Construct an endomorphism on the free module ``self``.
+        Construct an endomorphism of the free module ``self``.
         
-        An endomorphism on the vector free module ``self`` is actually a field
+        An endomorphism of the vector free module ``self`` is actually a field
         of tangent-space endomorphisms along the open subset `U` on which 
         ``self`` is defined.
         
@@ -889,10 +1045,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         
         - instance of 
           :class:`~sage.geometry.manifolds.rank2field.EndomorphismFieldParal`
-          
-        EXAMPLES:
-
-   
+             
         See 
         :class:`~sage.geometry.manifolds.rank2field.EndomorphismFieldParal` 
         for further documentation. 
@@ -903,9 +1056,9 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
     def automorphism(self, name=None, latex_name=None):
         r"""
-        Construct an automorphism on the free module ``self``.
+        Construct an automorphism of the free module ``self``.
         
-        An automorphism on the vector free module ``self`` is actually a field
+        An automorphism of the vector free module ``self`` is actually a field
         of tangent-space automorphisms along the open subset `U` on which 
         ``self`` is defined.
         
@@ -921,9 +1074,6 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         - instance of 
           :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal`
           
-        EXAMPLES:
-
-   
         See 
         :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal` 
         for further documentation. 
@@ -952,9 +1102,6 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         - instance of 
           :class:`~sage.geometry.manifolds.rank2field.TangentIdentityFieldParal`
           
-        EXAMPLES:
-
-
         See
         :class:`~sage.geometry.manifolds.rank2field.TangentIdentityFieldParal` 
         for further documentation. 
@@ -988,51 +1135,4 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         return self.tensor((0,2), name=name, latex_name=latex_name, sym=(0,1))
 
     #### End of methods to be redefined by derived classes of FiniteRankFreeModule ####
-
-class TangentSpace(FiniteRankFreeModule):
-    r"""
-    Tangent space at a point `p` beloning to 
-    an open domain `U` of some manifold `M`. 
-
-    INPUT:
-    
-    - ``domain`` -- open subset `U` on which the vector fields are defined
-    - ``point`` -- point `p` beloning to `U` at which the tangent space is defined. 
-
-    EXAMPLES:
-
-    Tangent space on `\RR^2`::
-
-        sage: M = Manifold(2, 'R^2')
-        sage: c.<x,y> = M.chart() 
-        sage: p1 = M.point((1, 0), name='P1')
-        sage: p2 = M.point((1, 0), name='P2')
-        sage: T1 = M.tangent_space(p1); T1
-        tangent space at a point 'P1' on 2-dimensional manifold 'R^2'
-        sage: T2 = M.tangent_space(p2); T2
-        tangent space at a point 'P2' on 2-dimensional manifold 'R^2'
-        sage: M._tangent_spaces
-        {point 'P2' on 2-dimensional manifold 'R^2': tangent space at a point 'P2' on 2-dimensional manifold 'R^2',
-        point 'P1' on 2-dimensional manifold 'R^2': tangent space at a point 'P1' on 2-dimensional manifold 'R^2'}
-        sage: U = M.open_domain('U')
-        sage: cu.<x,y> = U.chart()
-        sage: q = U.point((1, 0), name='Pq')
-        sage: TU = U.tangent_space(q)
-
-    """
-
-    Element = VectorField
-
-    def __init__(self, domain, point):
-        self._manifold = domain._manifold 
-        self._ambient_domain = domain
-        self._point  = point
-
-    def _repr_(self):
-        r"""
-        String representation of the object.
-        """
-
-        description = "tangent space at a " + str(self._point)  
-        return description
 

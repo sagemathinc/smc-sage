@@ -1510,16 +1510,6 @@ class OpenDomain(Domain):
                                      VectorFieldModule(self, dest_map=dest_map)
         return self._vector_field_modules[dest_map_name]
 
-    def tangent_space(self, point):
-        r"""
-    
-        """ 
-
-        from vectorfield_module import TangentSpace    
-
-        self._tangent_spaces[point] = TangentSpace(self, point)        
-        return self._tangent_spaces[point]
-
     def tensor_field_module(self, tensor_type, dest_map=None):
         r"""
         Returns the set of tensor fields of a given type defined on ``self``, 
@@ -1920,8 +1910,11 @@ class OpenDomain(Domain):
         OUTPUT:
         
         - instance of 
-          :class:`~sage.geometry.manifolds.rank2field.EndomorphismField` 
-          representing the defined field of endomorphisms.
+          :class:`~sage.geometry.manifolds.rank2field.EndomorphismField`
+          (or of 
+          :class:`~sage.geometry.manifolds.rank2field.EndomorphismFieldParal`
+          if the domain is parallelizable) representing the defined field of 
+          endomorphisms.
 
         EXAMPLE:
 
@@ -1940,15 +1933,8 @@ class OpenDomain(Domain):
         examples.
 
         """
-        from rank2field import EndomorphismField, EndomorphismFieldParal
-        if self.is_manifestly_parallelizable():
-            return EndomorphismFieldParal(
-                                      self.vector_field_module(dest_map), 
-                                      name=name, latex_name=latex_name)
-        else:
-            return EndomorphismField(self.vector_field_module(dest_map), 
-                                     name=name, latex_name=latex_name)
-
+        vmodule = self.vector_field_module(dest_map)
+        return vmodule.endomorphism(name=name, latex_name=latex_name)
 
     def automorphism_field(self, name=None, latex_name=None, 
                            dest_map=None):  
@@ -1974,7 +1960,10 @@ class OpenDomain(Domain):
         
         - instance of 
           :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` 
-          representing the defined field of automorphisms. 
+          (or of 
+          :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal`
+          if the domain is parallelizable) representing the defined field of 
+          automorphisms. 
 
         EXAMPLE:
 
@@ -1993,16 +1982,10 @@ class OpenDomain(Domain):
         examples.
 
         """
-        from rank2field import AutomorphismField, AutomorphismFieldParal
-        if self.is_manifestly_parallelizable():
-            return AutomorphismFieldParal(
-                                      self.vector_field_module(dest_map), 
-                                      name=name, latex_name=latex_name)
-        else:
-            return AutomorphismField(self.vector_field_module(dest_map), 
-                                      name=name, latex_name=latex_name)            
+        vmodule = self.vector_field_module(dest_map)
+        return vmodule.automorphism(name=name, latex_name=latex_name)
 
-    def tangent_identity_field(self, name=None, latex_name=None, 
+    def tangent_identity_field(self, name='Id', latex_name=None, 
                                dest_map=None):  
         r"""
         Return the field of identity maps in the tangent spaces on the domain.
@@ -2012,10 +1995,11 @@ class OpenDomain(Domain):
 
         INPUT:
     
-        - ``name`` -- (default: None) name given to the field of identity maps; 
-          if none is provided, the value 'Id' is set. 
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity
-          map; if none is provided, the LaTeX symbol is set to `\mathrm{Id}`
+        - ``name`` -- (string; default: 'Id') name given to the field of 
+          identity maps. 
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          identity map; if none is provided and ``name`` is 'Id', the LaTeX 
+          symbol is set to '\mathrm{Id}'
         - ``dest_map`` -- (default: None) instance of 
           class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
           representing the destination map `\Phi:\ U \rightarrow V`, where `U` 
@@ -2024,8 +2008,12 @@ class OpenDomain(Domain):
 
         OUTPUT:
         
-        - instance of :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField`
-          representing the field of identity maps. 
+        - instance of 
+          :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField`
+          (or of 
+          :class:`~sage.geometry.manifolds.rank2field.TangentIdentityFieldParal`
+          if the domain is parallelizable) representing the field of identity 
+          maps. 
 
         EXAMPLE:
 
@@ -2044,14 +2032,8 @@ class OpenDomain(Domain):
         examples.
 
         """
-        from rank2field import TangentIdentityFieldParal
-        if name is None:
-            name = 'Id'
-        if self.is_manifestly_parallelizable():
-            return TangentIdentityFieldParal(self.vector_field_module(dest_map), 
-                                    name=name, latex_name=latex_name)
-        else:
-            raise NotImplementedError("TangentIdentityField not implemented yet")
+        vmodule = self.vector_field_module(dest_map)
+        return vmodule.identity_map(name=name, latex_name=latex_name)
 
 
     def metric(self, name, signature=None, latex_name=None): 
@@ -2233,13 +2215,9 @@ class OpenDomain(Domain):
         :class:`~sage.geometry.manifolds.diffform.DiffForm` for more examples.
 
         """
-        from diffform import DiffFormParal
-        if self.is_manifestly_parallelizable():
-            return DiffFormParal(self.vector_field_module(dest_map), 
-                                 degree, name=name, latex_name=latex_name)
-        else:
-            raise NotImplementedError("DiffForm not implemented yet")
-
+        vmodule = self.vector_field_module(dest_map)
+        return vmodule.alternating_form(degree, name=name, 
+                                        latex_name=latex_name)
 
     def one_form(self, name=None, latex_name=None, dest_map=None):
         r"""    
@@ -2281,13 +2259,8 @@ class OpenDomain(Domain):
         :class:`~sage.geometry.manifolds.diffform.OneForm` for more examples.
 
         """
-        from diffform import OneFormParal
-        if self.is_manifestly_parallelizable():
-            return OneFormParal(self.vector_field_module(dest_map), 
-                                name=name, latex_name=latex_name)
-        else:
-            raise NotImplementedError("OneForm not implemented yet")
-
+        vmodule = self.vector_field_module(dest_map)
+        return vmodule.linear_form(name=name, latex_name=latex_name)
 
     def diff_mapping(self, codomain, coord_functions=None, chart1=None, 
                      chart2=None, name=None, latex_name=None):

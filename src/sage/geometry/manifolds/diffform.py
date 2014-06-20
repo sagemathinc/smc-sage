@@ -47,7 +47,299 @@ AUTHORS:
 
 from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm, \
                                                               FreeModuleLinForm
-from tensorfield import TensorFieldParal
+from tensorfield import TensorField, TensorFieldParal
+
+class DiffForm(TensorField):
+    r"""
+    Differential form with values in an open subset of a 
+    differentiable manifold. 
+
+    An instance of this class is a field of alternating multilinear forms along 
+    an open subset `U` of some immersed  submanifold `S` of a manifold `M` with 
+    values in an open subset `V` of `M`. 
+    The standard case of a differential form *on* a manifold corresponds 
+    to `U=V` (and hence `S=M`).
+
+    If `V` is parallelizable, the class :class:`DiffFormParal` must be 
+    used instead.
+
+    INPUT:
+    
+    - ``vector_field_module`` -- module `\mathcal{X}(U,V)` of vector 
+      fields along `U` with values on `V`
+    - ``degree`` -- the degree of the differential form (i.e. its tensor rank)
+    - ``name`` -- (default: None) name given to the differential form
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the differential 
+      form; if none is provided, the LaTeX symbol is set to ``name``
+
+    EXAMPLES:
+    
+    Differential form of degree 2 on a non-parallelizable 2-dimensional manifold::
+    
+        sage: M = Manifold(2, 'M')
+        sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+        sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+        sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+        sage: inv = transf.inverse()
+        sage: W = U.intersection(V)
+        sage: eU = c_xy.frame() ; eV = c_uv.frame()
+        sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
+        sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
+        sage: a = M.diff_form(2, name='a') ; a
+        2-form 'a' on the 2-dimensional manifold 'M'
+        sage: a.parent()
+        module TF^(0,2)(M) of type-(0,2) tensors fields on the 2-dimensional manifold 'M'
+    
+    Setting the components of a::
+    
+        sage: a[eU,0,1] = x*y^2 + 2*x
+        sage: a[eV,0,1] = a[eVW,0,1,c_uvW].expr()
+        sage: a.view(eU)
+        a = (x*y^2 + 2*x) dx/\dy
+        sage: a.view(eV)
+        a = (-1/16*u^3 + 1/16*u*v^2 - 1/16*v^3 + 1/16*(u^2 - 8)*v - 1/2*u) du/\dv
+        
+    """
+    def __init__(self, vector_field_module, degree, name=None, latex_name=None):
+        TensorField.__init__(self, vector_field_module, (0,degree), name=name, 
+                             latex_name=latex_name, antisym=range(degree))
+        self._init_derived() # initialization of derived quantities
+
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+        description = str(self._tensor_rank) + "-form "
+        if self._name is not None:
+            description += "'%s' " % self._name
+        return self._final_repr(description)
+
+    def _new_instance(self):
+        r"""
+        Create an instance of the same class, of the same degree and on the
+        same domain.
+        """
+        return self.__class__(self._vmodule, self._tensor_rank)
+
+    def _init_derived(self):
+        r"""
+        Initialize the derived quantities
+        """
+        TensorField._init_derived(self)
+        self._exterior_derivative = None
+
+    def _del_derived(self):
+        r"""
+        Delete the derived quantities
+        """
+        TensorField._del_derived(self)
+        self._exterior_derivative = None
+
+    def exterior_der(self):
+        r"""
+        Compute the exterior derivative of the differential form. 
+                
+        OUTPUT:
+        
+        - the exterior derivative of ``self``. 
+        
+        EXAMPLE:
+        
+        """
+        from utilities import format_unop_txt, format_unop_latex
+        if self._exterior_derivative is None:
+            vmodule = self._vmodule # shortcut
+            rname = format_unop_txt('d', self._name)
+            rlname = format_unop_latex(r'\mathrm{d}', self._latex_name)
+            resu = vmodule.alternating_form(self._tensor_rank+1, name=rname, 
+                                            latex_name=rlname)
+            for dom, rst in self._restrictions.items():
+                resu._restrictions[dom] = rst.exterior_der()
+            self._exterior_derivative = resu
+        return self._exterior_derivative
+
+    def wedge(self, other):
+        r"""
+        Exterior product with another differential form. 
+        
+        INPUT:
+        
+        - ``other``: another differential form
+        
+        OUTPUT:
+        
+        - instance of :class:`DiffForm` representing the exterior 
+          product self/\\other. 
+        
+        """
+        from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
+        from sage.tensor.modules.format_utilities import is_atomic
+        if self._domain.is_subdomain(other._domain):
+            if not self._ambient_domain.is_subdomain(other._ambient_domain):
+                raise TypeError("Incompatible ambient domains for exterior " + 
+                                "product.")
+        elif other._domain.is_subdomain(self._domain):
+            if not other._ambient_domain.is_subdomain(self._ambient_domain):
+                raise TypeError("Incompatible ambient domains for exterior " + 
+                                "product.")
+        dom_resu = self._domain.intersection(other._domain)
+        ambient_dom_resu = self._ambient_domain.intersection(
+                                                         other._ambient_domain)
+        self_r = self.restrict(dom_resu)
+        other_r = other.restrict(dom_resu)
+        if ambient_dom_resu.is_manifestly_parallelizable():
+            # call of the FreeModuleAltForm version:
+            return FreeModuleAltForm.wedge(self_r, other_r)
+        # otherwise, the result is created here:
+        if self._name is not None and other._name is not None:
+            sname = self._name
+            oname = other._name
+            if not is_atomic(sname):
+                sname = '(' + sname + ')'
+            if not is_atomic(oname):
+                oname = '(' + oname + ')'
+            resu_name = sname + '/\\' + oname
+        if self._latex_name is not None and other._latex_name is not None:
+            slname = self._latex_name
+            olname = other._latex_name
+            if not is_atomic(slname):
+                slname = '(' + slname + ')'
+            if not is_atomic(olname):
+                olname = '(' + olname + ')'
+            resu_latex_name = slname + r'\wedge ' + olname
+        dest_map = self._vmodule._dest_map
+        dest_map_resu = dest_map.restrict(dom_resu, 
+                                          subcodomain=ambient_dom_resu)
+        vmodule = dom_resu.vector_field_module(dest_map=dest_map_resu)
+        resu_degree = self._tensor_rank + other._tensor_rank
+        resu = vmodule.alternating_form(resu_degree, name=resu_name, 
+                                        latex_name=resu_latex_name)
+        for dom in self_r._restrictions:
+            if dom in other_r._restrictions:
+                resu._restrictions[dom] = self_r._restrictions[dom].wedge(
+                                          other_r._restrictions[dom])
+        return resu
+        
+
+#******************************************************************************
+
+class OneForm(DiffForm):
+    r"""
+    1-form with values in an open subset of a differentiable 
+    manifold. 
+
+    An instance of this class is a field of linear forms along an open subset 
+    `U` of some immersed  submanifold `S` of a manifold `M` with values in an 
+    open subset `V` of `M`. 
+    The standard case of a 1-form *on* a manifold corresponds to `U=V` 
+    (and hence `S=M`).
+
+    If `V` is parallelizable, the class :class:`OneFormParal` must be 
+    used instead.
+
+    INPUT:
+    
+    - ``vector_field_module`` -- module `\mathcal{X}(U,V)` of vector 
+      fields along `U` with values on `V`
+    - ``name`` -- (default: None) name given to the 1-form
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the 1-form; 
+      if none is provided, the LaTeX symbol is set to ``name``
+
+    EXAMPLES:
+
+    1-form on a non-parallelizable 2-dimensional manifold::
+
+        sage: M = Manifold(2, 'M')
+        sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+        sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+        sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+        sage: inv = transf.inverse()
+        sage: W = U.intersection(V)
+        sage: eU = c_xy.frame() ; eV = c_uv.frame()
+        sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
+        sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
+        sage: a = M.one_form('a') ; a
+        1-form 'a' on the 2-dimensional manifold 'M'
+        sage: a.parent()
+        module TF^(0,1)(M) of type-(0,1) tensors fields on the 2-dimensional manifold 'M'
+
+    Setting the components of the 1-form in a consistent way::
+
+        sage: a[eU,:] = [-y, x]
+        sage: a[eV,0] = a[eVW,0,c_uvW].expr()
+        sage: a[eV,1] = a[eVW,1,c_uvW].expr()
+        sage: a.view(eU)
+        a = -y dx + x dy
+        sage: a.view(eV)
+        a = 1/2*v du - 1/2*u dv
+
+    The exterior derivative of the 1-form is a 2-form::
+    
+        sage: da = a.exterior_der() ; da
+        2-form 'da' on the 2-dimensional manifold 'M'
+        sage: da.view(eU)
+        da = 2 dx/\dy
+        sage: da.view(eV)
+        da = -du/\dv
+
+    Another 1-form::
+        
+        sage: b = M.one_form('b')
+        sage: b[eU,:] = [1+x*y, x^2]
+        sage: b[eV,0] = b[eVW,0,c_uvW].expr()
+        sage: b[eV,1] = b[eVW,1,c_uvW].expr()
+
+    Adding two 1-forms results in another 1-form::
+    
+        sage: s = a + b ; s
+        1-form 'a+b' on the 2-dimensional manifold 'M'
+        sage: s.view(eU)
+        a+b = ((x - 1)*y + 1) dx + (x^2 + x) dy
+        sage: s.view(eV)
+        a+b = (1/4*u^2 + 1/4*(u + 2)*v + 1/2) du + (-1/4*u*v - 1/4*v^2 - 1/2*u + 1/2) dv
+
+    The exterior product of two 1-forms is a 2-form::
+    
+        sage: s = a.wedge(b) ; s
+        2-form 'a/\b' on the 2-dimensional manifold 'M'
+        sage: s.view(eU)
+        a/\b = (-2*x^2*y - x) dx/\dy
+        sage: s.view(eV)
+        a/\b = (1/8*u^3 - 1/8*u*v^2 - 1/8*v^3 + 1/8*(u^2 + 2)*v + 1/4*u) du/\dv
+    
+    Multiplying a 1-form by a scalar field results in another 1-form::
+    
+        sage: f = M.scalar_field({c_xy: (x+y)^2, c_uv: u^2}, name='f')
+        sage: s = f*a ; s
+        1-form on the 2-dimensional manifold 'M'
+        sage: s.view(eU)
+        (-x^2*y - 2*x*y^2 - y^3) dx + (x^3 + 2*x^2*y + x*y^2) dy
+        sage: s.view(eV)
+        1/2*u^2*v du - 1/2*u^3 dv
+
+    """
+    def __init__(self, vector_field_module, name=None, latex_name=None):
+        DiffForm.__init__(self, vector_field_module, 1, name=name, 
+                                                         latex_name=latex_name)
+        
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+        description = "1-form "
+        if self._name is not None:
+            description += "'%s' " % self._name
+        return self._final_repr(description)
+
+    def _new_instance(self):
+        r"""
+        Create an instance of the same class on the same domain. 
+        """
+        return self.__class__(self._vmodule)
+
+
+
+#******************************************************************************
 
 class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     r"""
@@ -247,11 +539,11 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         self._ambient_domain = vector_field_module._ambient_domain
         self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # initialization of derived quantities:
-        DiffFormParal._init_derived(self) 
-
+        self._init_derived()
+        
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
         description = str(self._tensor_rank) + "-form "
         if self._name is not None:
@@ -260,10 +552,10 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
 
     def _new_instance(self):
         r"""
-        Create a :class:`DiffFormParal` instance of the same degree and on the
-        same domain. 
+        Create an instance of the same class, of the same degree and on the
+        same domain.
         """
-        return DiffFormParal(self._fmodule, self._tensor_rank)
+        return self.__class__(self._fmodule, self._tensor_rank)
 
     def _init_derived(self):
         r"""
@@ -370,7 +662,39 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
                                val.function_chart(chart).diff(i).scalar_field()
                 self._exterior_derivative._components[frame] = dc
         return self._exterior_derivative
- 
+
+    def wedge(self, other):
+        r"""
+        Exterior product with another differential form. 
+        
+        This is a redefinition of 
+        :meth:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm.wedge`
+        to treat properly the domains. 
+        
+        INPUT:
+        
+        - ``other``: another differential form
+        
+        OUTPUT:
+        
+        - instance of :class:`DiffFormParal` representing the exterior 
+          product self/\\other. 
+        
+        """
+        from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
+        if self._domain.is_subdomain(other._domain):
+            if not self._ambient_domain.is_subdomain(other._ambient_domain):
+                raise TypeError("Incompatible ambient domains for exterior " + 
+                                "product.")
+        elif other._domain.is_subdomain(self._domain):
+            if not other._ambient_domain.is_subdomain(self._ambient_domain):
+                raise TypeError("Incompatible ambient domains for exterior " + 
+                                "product.")
+        dom_resu = self._domain.intersection(other._domain)
+        self_r = self.restrict(dom_resu)
+        other_r = other.restrict(dom_resu)
+        return FreeModuleAltForm.wedge(self_r, other_r)
+
     def hodge_star(self, metric):
         r"""
         Compute the Hodge dual of the differential form. 
@@ -661,7 +985,26 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
 
     def _new_instance(self):
         r"""
-        Create a :class:`OneForm` instance on the same domain. 
+        Create an instance of the same class on the same domain. 
         """
-        return OneFormParal(self._fmodule)
+        return self.__class__(self._fmodule)
 
+    def wedge(self, other):
+        r"""
+        Exterior product with another differential form. 
+        
+        This is a redefinition of 
+        :meth:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm.wedge`
+        to treat properly the domains. 
+        
+        INPUT:
+        
+        - ``other``: another differential form
+        
+        OUTPUT:
+        
+        - instance of :class:`DiffFormParal` representing the exterior 
+          product self/\\other. 
+        
+        """
+        return DiffFormParal.wedge(self, other)

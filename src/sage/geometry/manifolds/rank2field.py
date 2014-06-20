@@ -88,10 +88,10 @@ class EndomorphismField(TensorField):
         Redefinition of :meth:`TensorField.__call__` to allow for a single 
         argument (module element). 
         """
-        from vectorfield import VectorField, VectorFieldParal
+        from vectorfield import VectorField
         if len(arg) > 1:
             # the endomorphism acting as a type (1,1) tensor on a pair 
-            # (linear form, module element), returning a scalar:
+            # (1-form, vector field), returning a scalar field:
             return TensorField.__call__(self, *arg) 
         # the endomorphism acting as such, on a vector field, returning a
         # vector field:
@@ -199,8 +199,7 @@ class AutomorphismField(EndomorphismField):
     def __init__(self, vector_field_module, name=None, latex_name=None):
         EndomorphismField.__init__(self, vector_field_module, name=name, 
                                         latex_name=latex_name)
-        # Initialization of derived quantities:
-        self._init_derived() 
+        self._init_derived() # initialization of derived quantities
 
     def _repr_(self):
         r"""
@@ -326,7 +325,69 @@ class TangentIdentityField(AutomorphismField):
 
     EXAMPLES:
 
-         
+    Field of tangent-space identity maps on a non-parallelizable 2-dimensional 
+    manifold::
+    
+        sage: M = Manifold(2, 'M')
+        sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+        sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+        sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+        sage: inv = transf.inverse()
+        sage: W = U.intersection(V)
+        sage: eU = c_xy.frame() ; eV = c_uv.frame()
+        sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
+        sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
+        sage: a = M.tangent_identity_field() ; a
+        field of tangent-space identity maps 'Id' on the 2-dimensional manifold 'M'
+        sage: a.parent()
+        module TF^(1,1)(M) of type-(1,1) tensors fields on the 2-dimensional manifold 'M'
+        
+    The components in any frame on M are Kronecker deltas::
+    
+        sage: a[eU,:]
+        [1 0]
+        [0 1]
+        sage: a[eV,:]
+        [1 0]
+        [0 1]
+        sage: a[eUW,:]
+        [1 0]
+        [0 1]
+        sage: a[eVW,:]
+        [1 0]
+        [0 1]
+    
+    The identity is its own inverse::
+        
+        sage: a.inverse() is a
+        True
+    
+    The identity map acting on a vector::
+    
+        sage: v = M.vector_field('v')
+        sage: v[eU,:] = [1-y, x*y]
+        sage: v[eV,0] = v[eVW,0,c_uvW].expr()
+        sage: v[eV,1] = v[eVW,1,c_uvW].expr()
+        sage: a(v)
+        vector field 'v' on the 2-dimensional manifold 'M'
+        sage: a(v) is v
+        True
+        
+    When the domains of the identity field and the vector fields are different, 
+    their intersection is used for the result::
+    
+        sage: a(v.restrict(U))
+        vector field 'v' on the open domain 'U' on the 2-dimensional manifold 'M'
+        sage: a(v.restrict(U)) is v.restrict(U)
+        True
+    
+    ::
+    
+        sage: a.restrict(U)(v)
+        vector field 'v' on the open domain 'U' on the 2-dimensional manifold 'M'
+        sage: a.restrict(U)(v) is v.restrict(U)
+        True
+   
     """
     def __init__(self, vector_field_module, name='Id', latex_name=None):
         if latex_name is None and name == 'Id':
@@ -336,7 +397,7 @@ class TangentIdentityField(AutomorphismField):
         for dom in self._domain._subdomains:
             if dom.is_manifestly_parallelizable():
                 fmodule = dom.vector_field_module()
-                self._restriction[dom] = TangentIdentityFieldParal(fmodule, 
+                self._restrictions[dom] = TangentIdentityFieldParal(fmodule, 
                                               name=name, latex_name=latex_name)
         self._inverse = self    # the identity is its own inverse
         
@@ -349,6 +410,28 @@ class TangentIdentityField(AutomorphismField):
             description += "'%s' " % self._name
         return self._final_repr(description)
 
+    def __call__(self, *arg):
+        r"""
+        Redefinition of :meth:`EndomorphismField.__call__`.
+        """
+        from vectorfield import VectorField        
+        if len(arg) == 1:
+            # The identity map acting as such, on a vector field:
+            vector = arg[0]
+            if not isinstance(vector, VectorField):
+                raise TypeError("The argument must be a vector field.")
+            dom = self._domain.intersection(vector._domain)
+            return vector.restrict(dom)
+        elif len(arg) == 2:
+            # self acting as a type-(1,1) tensor on a pair 
+            # (1-form, vector field), returning a scalar field:
+            oneform = arg[0]
+            vector = arg[1]
+            dom = self._domain.intersection(
+                            oneform._domain).intersection(vector._domain)
+            return oneform.restrict(dom)(vector.restrict(dom))
+        else:
+            raise TypeError("Wrong number of arguments.")
 
 #******************************************************************************
 
@@ -448,7 +531,7 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
         
     def _new_instance(self):
         r"""
-        Create a :class:`EndomorphismFieldParal` instance on the same domain.
+        Create an instance if the same type as ``self`` on the same domain.
         """
         return self.__class__(self._fmodule)
 
@@ -461,8 +544,8 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
     def __call__(self, *arg):
         r"""
         Redefinition of 
-        :meth:`~sage.geometry.manifolds.tensorfield.TensorFieldParal.__call__` 
-        to allow for a single argument (vector field). 
+        :meth:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphism.__call__` 
+        to allow for domain treatment
         """
         if len(arg) > 1:
             # the endomorphism acting as a type (1,1) tensor on a pair 
@@ -557,12 +640,6 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
         # then deletes the inverse automorphism:
         self._inverse = None
         
-    def _new_instance(self):
-        r"""
-        Create a :class:`AutomorphismFieldParal` instance on the same domain.
-        """
-        return self.__class__(self._fmodule)
-
     def inverse(self):
         r"""
         Return the inverse automorphism.
@@ -719,15 +796,34 @@ class TangentIdentityFieldParal(FreeModuleIdentityMap, AutomorphismFieldParal):
             description += "'%s' " % self._name
         return self._final_repr(description)
 
-    def _new_instance(self):
-        r"""
-        Create a :class:`TangentIdentityFieldParal` instance on the same domain.
-        """
-        return self.__class__(self._fmodule)
-
     def _del_derived(self):
         r"""
         Delete the derived quantities
         """
         # AutomorphismFieldParal._del_derived is bypassed:
         EndomorphismFieldParal._del_derived(self)
+
+    def __call__(self, *arg):
+        r"""
+        Redefinition of 
+        :meth:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityMap.__call__` 
+        to allow for domain treatment
+        """
+        from vectorfield import VectorField        
+        if len(arg) == 1:
+            # The identity map acting as such, on a vector field:
+            vector = arg[0]
+            if not isinstance(vector, VectorField):
+                raise TypeError("The argument must be a vector field.")
+            dom = self._domain.intersection(vector._domain)
+            return vector.restrict(dom)
+        elif len(arg) == 2:
+            # self acting as a type-(1,1) tensor on a pair 
+            # (1-form, vector field), returning a scalar field:
+            oneform = arg[0]
+            vector = arg[1]
+            dom = self._domain.intersection(
+                            oneform._domain).intersection(vector._domain)
+            return oneform.restrict(dom)(vector.restrict(dom))
+        else:
+            raise TypeError("Wrong number of arguments.")
