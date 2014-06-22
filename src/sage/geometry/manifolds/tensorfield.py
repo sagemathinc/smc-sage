@@ -1766,7 +1766,7 @@ class TensorField(ModuleElement):
             raise IndexError("Contraction on two covariant indices is " +
                              "not allowed.")
         resu_rst = []
-        for dom, rst in self._restrictions.items():
+        for rst in self._restrictions.itervalues():
             resu_rst.append(rst.self_contract(pos1, pos2))
         if (k_con, l_cov) == (1,1):
             # scalar field result

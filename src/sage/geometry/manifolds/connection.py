@@ -126,7 +126,8 @@ class AffConnection(SageObject):
             self._latex_name = self._name
         else:
             self._latex_name = latex_name
-        self._coefficients = {}    # coefficients not set yet
+        self._coefficients = {}  # dict. of connection coefficients, with the
+                                 # vector frames as keys
         # Initialization of derived quantities:
         AffConnection._init_derived(self) 
 
@@ -153,6 +154,8 @@ class AffConnection(SageObject):
         r"""
         Initialize the derived quantities
         """
+        self._restrictions = {} # dict. of restrictions of ``self`` some 
+                                # subdomains, with the subdomains as keys
         self._torsion = None
         self._riemann = None
         self._ricci = None
@@ -164,12 +167,38 @@ class AffConnection(SageObject):
         r"""
         Delete the derived quantities
         """
+        self._restrictions.clear()
         self._torsion = None
         self._riemann = None
         self._ricci = None
         self._connection_forms.clear()
         self._torsion_forms.clear()
         self._curvature_forms.clear()
+
+    def domain(self):
+        r"""
+        Return the domain on which the affine connection is defined.
+        
+        OUTPUT:
+        
+        - instance of class :class:`~sage.geometry.manifolds.domain.OpenDomain` 
+          representing the manifold's open subset on which ``self`` is defined. 
+        
+        EXAMPLES::
+        
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_xyz.<x,y,z> = M.chart()
+            sage: nab = M.aff_connection('nabla', r'\nabla')
+            sage: nab.domain()
+            3-dimensional manifold 'M'
+            sage: U = M.open_domain('U', coord_def={c_xyz: x>0})
+            sage: nabU = U.aff_connection('D')
+            sage: nabU.domain()
+            open domain 'U' on the 3-dimensional manifold 'M'
+
+        """
+        return self._domain
+
 
     def _new_coef(self, frame): 
         r"""
@@ -374,6 +403,45 @@ class AffConnection(SageObject):
     
         """        
         self.set_coef()[indices] = value
+
+    def restrict(self, subdomain):
+        r"""
+        Return the restriction of ``self`` to some subdomain.
+        
+        If such restriction has not been defined yet, it is constructed here.
+
+        INPUT:
+        
+        - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an 
+          instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+          
+        OUTPUT:
+        
+        - instance of :class:`AffConnection` representing the restriction.
+
+        EXAMPLES:
+        """
+        if subdomain == self._domain:
+            return self
+        if subdomain not in self._restrictions:
+            if not subdomain.is_subdomain(self._domain):
+                raise ValueError("The provided domain is not a subdomain of " + 
+                                 "the current field's domain.")
+            resu = AffConnection(subdomain, name=self._name, 
+                                 latex_name=self._latex_name)
+            for frame in self._coefficients:
+                for sframe in subdomain._covering_frames:
+                    if sframe in frame.subframes:
+                        comp_store = self._coefficients[frame]._comp
+                        scoef = resu._new_coef(sframe)
+                        scomp_store = scoef._comp
+                        # the coefficients of the restriction are evaluated 
+                        # index by index:
+                        for ind, value in comp_store.iteritems():
+                            scomp_store[ind] = value.restrict(subdomain)
+                        resu._coefficients[sframe] = scoef
+            self._restrictions[subdomain] = resu
+        return self._restrictions[subdomain]
         
     def common_frame(self, other):
         r"""
@@ -419,8 +487,45 @@ class AffConnection(SageObject):
         - tensor field `\nabla T`. 
           
         """
-        from sage.tensor.modules.comp import Components, CompWithSym
         from scalarfield import ScalarField
+        from tensorfield import TensorFieldParal
+        from utilities import format_unop_txt, format_unop_latex
+        if isinstance(tensor, ScalarField):
+            return tensor.differential()
+        if isinstance(tensor, TensorFieldParal):
+            return self._derive_paral(tensor)
+        resu_rst = []
+        for rst in tensor._restrictions.itervalues():
+            resu_rst.append(self.__call__(rst))
+        dom_resu = tensor._domain
+        tensor_type_resu = (tensor._tensor_type[0], tensor._tensor_type[1]+1)
+        name_resu = format_unop_txt(self._name + ' ', tensor._name)
+        latex_name_resu=format_unop_latex(self._latex_name + ' ', 
+                                                            tensor._latex_name) 
+        vmodule = dom_resu.vector_field_module()
+        resu = vmodule.tensor(tensor_type_resu, name=name_resu,
+                              latex_name=latex_name_resu,
+                              sym=resu_rst[0]._sym, 
+                              antisym=resu_rst[0]._antisym)
+        for rst in resu_rst:
+            resu._restrictions[rst._domain] = rst
+        return resu
+
+    def _derive_paral(self, tensor):
+        r"""
+        Action of the connection on a tensor field on a parallelizable domain. 
+        
+        INPUT:
+        
+        - ``tensor`` -- a tensor field `T`, of type `(k,\ell)`
+        
+        OUTPUT:
+        
+        - tensor field `\nabla T`. 
+          
+        """
+        from scalarfield import ScalarField
+        from sage.tensor.modules.comp import Components, CompWithSym
         from utilities import format_unop_txt, format_unop_latex
         manif = self._manifold
         dom = self._domain
@@ -428,8 +533,6 @@ class AffConnection(SageObject):
         if not tdom.is_subdomain(dom):
             raise TypeError("The tensor field is not defined on the same " + 
                             "domain as the connection.")
-        if isinstance(tensor, ScalarField):
-            return tensor.differential()
         frame = self.common_frame(tensor)
         if frame is None:
             raise ValueError("No common frame found for the computation.")

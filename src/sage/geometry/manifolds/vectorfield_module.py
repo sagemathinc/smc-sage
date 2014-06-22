@@ -336,7 +336,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
             else:
                 return EndomorphismField(self, name=name, latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
-            if isinstance(antisym, list):
+            if isinstance(antisym, list) and antisym != []:
                 antisym0 = antisym[0]
             else:
                 antisym0 = antisym
@@ -877,7 +877,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                 return EndomorphismFieldParal(self, name=name, 
                                                          latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
-            if isinstance(antisym, list):
+            if isinstance(antisym, list) and antisym != []:
                 antisym0 = antisym[0]
             else:
                 antisym0 = antisym
