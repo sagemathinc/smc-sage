@@ -571,6 +571,13 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         TensorFieldParal._del_derived(self)
         self._exterior_derivative = None
 
+    def __call__(self, *args):
+        r"""
+        Redefinition of 
+        :meth:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor.__call__` 
+        to allow for domain treatment
+        """
+        return TensorFieldParal.__call__(self, *args)
 
     def exterior_der(self):
         r"""
@@ -988,6 +995,16 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
         Create an instance of the same class on the same domain. 
         """
         return self.__class__(self._fmodule)
+
+    def __call__(self, vector):
+        r"""
+        Redefinition of 
+        :meth:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm.__call__` 
+        to allow for domain treatment
+        """
+        dom_resu = self._domain.intersection(vector._domain)
+        return FreeModuleLinForm.__call__(self.restrict(dom_resu), 
+                                          vector.restrict(dom_resu))
 
     def wedge(self, other):
         r"""

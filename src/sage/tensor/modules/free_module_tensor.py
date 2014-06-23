@@ -1407,10 +1407,22 @@ class FreeModuleTensor(ModuleElement):
                 if basis is not None: # common basis found ! 
                     break
         if basis is None:
+            # A last attempt to find a common basis, possibly via a 
+            # change-of-components transformation
+            for arg in args:
+                self.common_basis(arg) # to trigger some change of components
+            for bas in self._components:
+                basis = bas
+                for arg in args:
+                    if bas not in arg._components:
+                        basis = None
+                        break
+                if basis is not None: # common basis found ! 
+                    break
+        if basis is None:
             raise ValueError("No common basis for the components.")
         t = self._components[basis]
         v = [args[i]._components[basis] for i in range(p)]
-        
         res = 0
         for ind in t.index_generator():
             prod = t[[ind]]

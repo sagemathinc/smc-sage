@@ -48,6 +48,86 @@ class VectorField(TensorField):
       if none is provided, the LaTeX symbol is set to ``name``
 
     EXAMPLES:
+    
+    A vector field on a non-parallelizable 2-dimensional manifold::
+    
+        sage: M = Manifold(2, 'M')
+        sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+        sage: c_xy.<x,y> = U.chart() ; c_tu.<t,u> = V.chart()
+        sage: transf = c_xy.transition_map(c_tu, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= t+u>0)
+        sage: inv = transf.inverse()
+        sage: W = U.intersection(V)
+        sage: eU = c_xy.frame() ; eV = c_tu.frame()
+        sage: c_tuW = c_tu.restrict(W) ; eVW = c_tuW.frame()
+        sage: v = M.vector_field('v') ; v
+        vector field 'v' on the 2-dimensional manifold 'M'
+        sage: v.parent()
+        module X(M) of vector fields on the 2-dimensional manifold 'M'
+
+    The vector field is first defined on the domain `U` by means of its 
+    components w.r.t. the frame eU::
+
+        sage: v[eU,:] = [-y, 1+x]
+    
+    The components w.r.t the frame eV are then deduced by continuation of the 
+    components w.r.t. the frame eVW on the domain `W=U\cap V`, expressed in
+    terms on the coordinates covering `V`::
+
+        sage: v[eV,0] = v[eVW,0,c_tuW].expr()
+        sage: v[eV,1] = v[eVW,1,c_tuW].expr()
+
+    At this stage, the vector field is fully defined on the whole manifold::
+    
+        sage: v.view(eU)
+        v = -y d/dx + (x + 1) d/dy
+        sage: v.view(eV)
+        v = (u + 1) d/dt + (-t - 1) d/du
+
+    The vector field acting on scalar fields::
+    
+        sage: f = M.scalar_field({c_xy: (x+y)^2, c_tu: t^2}, name='f')
+        sage: s = v(f) ; s
+        scalar field 'v(f)' on the 2-dimensional manifold 'M'
+        sage: s.view()
+        v(f): M --> R
+        on U: (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
+        on V: (t, u) |--> 2*t*u + 2*t
+        on W: (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
+        on W: (t, u) |--> 2*t*u + 2*t
+
+    Some checks::
+    
+        sage: v(f) == f.differential()(v)
+        True
+        sage: v(f) == f.lie_der(v)
+        True
+        
+    The result is defined on the intersection of the vector field's domain and
+    the scalar field's one::
+    
+        sage: s = v(f.restrict(U)) ; s
+        scalar field 'v(f)' on the open domain 'U' on the 2-dimensional manifold 'M'
+        sage: s == v(f).restrict(U)
+        True
+        sage: s = v(f.restrict(W)) ; s
+        scalar field 'v(f)' on the open domain 'W' on the 2-dimensional manifold 'M'
+        sage: s.view()
+        v(f): W --> R
+           (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
+           (t, u) |--> 2*t*u + 2*t
+        sage: s = v.restrict(U)(f) ; s
+        scalar field 'v(f)' on the open domain 'U' on the 2-dimensional manifold 'M'
+        sage: s.view()
+        v(f): U --> R
+           (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
+        on W: (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
+        on W: (t, u) |--> 2*t*u + 2*t
+        sage: s = v.restrict(U)(f.restrict(V)) ; s
+        scalar field 'v(f)' on the open domain 'W' on the 2-dimensional manifold 'M'
+        sage: s.view()
+        v(f): W --> R
+           (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
+           (t, u) |--> 2*t*u + 2*t
 
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
@@ -89,6 +169,56 @@ class VectorField(TensorField):
                 del tens._lie_derivatives[id(self)]
             self._lie_der_along_self.clear()
 
+    def __call__(self, scalar):
+        r"""
+        Action on a scalar field (or on a 1-form)
+            
+        INPUT:
+            
+        - ``scalar`` -- scalar field `f`
+            
+        OUTPUT:
+            
+        - scalar field representing the derivative of `f` along the vector 
+          field, i.e. `v^i \frac{\partial f}{\partial x^i}`
+          
+        """
+        from diffform import OneForm, OneFormParal
+        from scalarfield import ScalarField, ZeroScalarField
+        if isinstance(scalar, (OneForm, OneFormParal)):
+            # This is actually the action of the vector field on a 1-form, 
+            # as a tensor field of type (1,0):
+            return scalar(self)
+        if not isinstance(scalar, ScalarField):
+            raise TypeError("The argument must be a scalar field")
+        #!# Could it be simply 
+        # return scalar.differential()(self)
+        # ?
+        dom_resu = self._domain.intersection(scalar._domain)
+        self_r = self.restrict(dom_resu)
+        scalar_r = scalar.restrict(dom_resu)
+        if isinstance(scalar_r, ZeroScalarField):
+            return scalar_r
+        if isinstance(self_r, VectorFieldParal):
+            return self_r(scalar_r)
+        # Creation of the result:
+        if self._name is not None and scalar._name is not None:
+            resu_name = self._name + "(" + scalar._name + ")"
+        else:
+            resu_name = None
+        if self._latex_name is not None and scalar._latex_name is not None:
+            resu_latex = self._latex_name + r"\left(" + scalar._latex_name + \
+                        r"\right)"
+        else:
+            resu_latex = None
+        resu = dom_resu.scalar_field(name=resu_name, latex_name=resu_latex)
+        for dom, rst in self_r._restrictions.iteritems():
+            resu_rst = rst(scalar_r.restrict(dom))
+            for chart, funct in resu_rst._express.iteritems():
+                resu._express[chart] = funct
+        return resu
+
+        
 #******************************************************************************
 
 class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorField):
@@ -198,6 +328,7 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
 
     A vector field acts on scalar fields (derivation along the vector field)::
     
+        sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(2, 'M')            
         sage: c_cart.<x,y> = M.chart()
         sage: f = M.scalar_field(x*y^2, name='f')  
@@ -278,44 +409,59 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
             2*x^2*y - y^3
           
         """
-        from diffform import OneFormParal
+        from diffform import OneForm, OneFormParal
         from scalarfield import ScalarField, ZeroScalarField
-        if isinstance(scalar, OneFormParal):  #!# it should be OneForm
+        from vectorframe import CoordFrame
+        if isinstance(scalar, (OneForm, OneFormParal)):
             # This is actually the action of the vector field on a 1-form, 
             # as a tensor field of type (1,0):
             return scalar(self)
         if not isinstance(scalar, ScalarField):
             raise TypeError("The argument must be a scalar field")
-        if not scalar._domain.is_subdomain(self._domain):
-            raise ValueError("The scalar field and the vector are defined " +
-                             "on different domains.")
-        if isinstance(scalar, ZeroScalarField):
-            return scalar
-        # search for a commont chart: 
-        chart = None
-        def_chart = self._domain._def_chart
-        if def_chart in scalar._express:
-            if def_chart._frame in self._components:
-                chart = def_chart
-        else:
-            for kchart in scalar._express:
-                if kchart._frame in self._components: 
-                    chart = kchart
-                    break
-        if chart is None:
-            raise ValueError("No common chart found.")
-        v = self.comp(chart._frame)
-        f = scalar.function_chart(chart) 
-        res = 0 
-        for i in scalar._manifold.irange():
-            res += v[i, chart] * f.diff(i)
-        # Name of the output:
-        res_name = None
+        #!# Could it be simply 
+        # return scalar.differential()(self)
+        # ?
+        dom_resu = self._domain.intersection(scalar._domain)
+        self_r = self.restrict(dom_resu)
+        scalar_r = scalar.restrict(dom_resu)
+        if isinstance(scalar_r, ZeroScalarField):
+            return scalar_r
+        # Creation of the result:
         if self._name is not None and scalar._name is not None:
-            res_name = self._name + "(" + scalar._name + ")"
-        # LaTeX symbol for the output:
-        res_latex = None
+            resu_name = self._name + "(" + scalar._name + ")"
+        else:
+            resu_name = None
         if self._latex_name is not None and scalar._latex_name is not None:
-            res_latex = self._latex_name + r"\left(" + scalar._latex_name + \
+            resu_latex = self._latex_name + r"\left(" + scalar._latex_name + \
                         r"\right)"
-        return res.scalar_field(name=res_name, latex_name=res_latex)
+        else:
+            resu_latex = None
+        resu = dom_resu.scalar_field(name=resu_name, latex_name=resu_latex)
+        # Search for common charts for the computation:
+        common_charts = set()
+        for chart in scalar_r._express:
+            try:
+                self_r.comp(chart._frame)
+                common_charts.add(chart)
+            except ValueError:
+                pass
+        for frame in self_r._components:
+            if isinstance(frame, CoordFrame):
+                chart = frame._chart
+                try:
+                    scalar_r.function_chart(chart)
+                    common_charts.add(chart)
+                except ValueError:
+                    pass
+        if not common_charts:
+            raise ValueError("No common chart found.")
+        # The computation:
+        manif = scalar._manifold
+        for chart in common_charts:
+            v = self_r.comp(chart._frame)
+            f = scalar_r.function_chart(chart) 
+            res = 0 
+            for i in manif.irange():
+                res += v[i, chart] * f.diff(i)
+            resu._express[chart] = res
+        return resu

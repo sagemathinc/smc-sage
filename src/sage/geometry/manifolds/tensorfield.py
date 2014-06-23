@@ -2417,12 +2417,12 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             if def_frame in self._components:
                 for oframe in other._components:
                     if (oframe, def_frame) in dom._frame_changes:
-                        other.comp(def_frame, from_frame=oframe)
+                        other.comp(def_frame, from_basis=oframe)
                         return def_frame
             if def_frame in other._components:
                 for sframe in self._components:
                     if (sframe, def_frame) in dom._frame_changes:
-                        self.comp(def_frame, from_frame=sframe)
+                        self.comp(def_frame, from_basis=sframe)
                         return def_frame
         # If this point is reached, then def_frame cannot be a common frame
         # via a single component transformation
@@ -2433,30 +2433,30 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
                 if not instance(oframe, CoordFrame):
                     continue
                 if (oframe, sframe) in dom._frame_changes:
-                    other.comp(sframe, from_frame=oframe)
+                    other.comp(sframe, from_basis=oframe)
                     return sframe
                 if (sframe, oframe) in dom._frame_changes:
-                    self.comp(oframe, from_frame=sframe)
+                    self.comp(oframe, from_basis=sframe)
                     return oframe
         #
         # 3/ Search for a common frame via two component transformations
         #    -----------------------------------------------------------
-        # If this point is reached, it is indeed necessary to perform at two
-        # component transformation to get a common frame
+        # If this point is reached, it is indeed necessary to perform at least
+        # two component transformations to get a common frame
         for sframe in self._components:
             for oframe in other._components:
                 if (sframe, def_frame) in dom._frame_changes and \
                    (oframe, def_frame) in dom._frame_changes and \
                    isinstance(def_frame, CoordFrame):
-                    self.comp(def_frame, from_frame=sframe)
-                    other.comp(def_frame, from_frame=oframe)
+                    self.comp(def_frame, from_basis=sframe)
+                    other.comp(def_frame, from_basis=oframe)
                     return def_frame
                 for frame in dom._frames:
                     if (sframe, frame) in dom._frame_changes and \
                        (oframe, frame) in dom._frame_changes and \
                        isinstance(frame, CoordFrame):
-                        self.comp(frame, from_frame=sframe)
-                        other.comp(frame, from_frame=oframe)
+                        self.comp(frame, from_basis=sframe)
+                        other.comp(frame, from_basis=oframe)
                         return frame
         #
         # If this point is reached, no common frame could be found, even at 

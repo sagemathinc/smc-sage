@@ -1399,8 +1399,7 @@ class ScalarField(CommutativeAlgebraElement):
             rlname = format_unop_latex(r'\mathrm{d}', self._latex_name)
             self._exterior_derivative = self._domain.one_form(name=rname, 
                                                              latex_name=rlname)
-            for chart in self._express:
-                f = self._express[chart]
+            for chart, f in self._express.iteritems():
                 for i in self._manifold.irange():
                     self._exterior_derivative.add_comp(chart._frame)[i, chart] \
                         = f.diff(i)
@@ -1482,8 +1481,9 @@ class ScalarField(CommutativeAlgebraElement):
         A vanishing Lie derivative::
         
             sage: f.set_expr(x^2 + y^2)
-            sage: f.lie_der(v)
-            zero scalar field on the 2-dimensional manifold 'M'
+            sage: f.lie_der(v).view()
+            M --> R
+            (x, y) |--> 0
 
         """
         if id(vector) not in self._lie_derivatives:

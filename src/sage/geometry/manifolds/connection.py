@@ -114,7 +114,72 @@ class AffConnection(SageObject):
         [            0 (x^2*y + 1)*z             y]
         [            z             0             x]
         [            y             x       x*y*z^2]
+    
+    Another example: connection on a non-parallelizable 2-dimensional manifold::
+    
+        sage: M = Manifold(2, 'M')
+        sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+        sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+        sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+        sage: inv = transf.inverse()
+        sage: W = U.intersection(V)
+        sage: eU = c_xy.frame() ; eV = c_uv.frame()
+        sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
+        sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
+        sage: nab = M.aff_connection('nabla', r'\nabla')
         
+    The connection is first defined on the domain U by means of its 
+    coefficients w.r.t. the frame eU (the manifold's default frame)::
+    
+        sage: nab[0,0,0], nab[1,0,1] = x, x*y
+
+    The coefficients w.r.t the frame eV are deduced by continuation of the 
+    coefficients w.r.t. the frame eVW on the domain `W=U\cap V`::
+    
+        sage: for i in M.irange():
+        ....:     for j in M.irange():
+        ....:         for k in M.irange():
+        ....:             nab.add_coef(eV)[i,j,k] = nab.coef(eVW)[i,j,k,c_uvW].expr()
+        ....:             
+
+    At this stage, the connection is fully defined on all the manifold::
+    
+        sage: nab.coef(eU)[:]
+        [[[x, 0], [0, 0]], [[0, x*y], [0, 0]]]
+        sage: nab.coef(eV)[:]
+        [[[1/16*u^2 - 1/16*v^2 + 1/8*u + 1/8*v, -1/16*u^2 + 1/16*v^2 + 1/8*u + 1/8*v],
+          [1/16*u^2 - 1/16*v^2 + 1/8*u + 1/8*v, -1/16*u^2 + 1/16*v^2 + 1/8*u + 1/8*v]],
+         [[-1/16*u^2 + 1/16*v^2 + 1/8*u + 1/8*v, 1/16*u^2 - 1/16*v^2 + 1/8*u + 1/8*v],
+          [-1/16*u^2 + 1/16*v^2 + 1/8*u + 1/8*v, 1/16*u^2 - 1/16*v^2 + 1/8*u + 1/8*v]]]
+    
+    We may let it act on a vector field defined globally on `M`::
+    
+        sage: a = M.vector_field('a')
+        sage: a[eU,:] = [-y,x]
+        sage: a[eV,0] = a[eVW,0,c_uvW].expr()
+        sage: a[eV,1] = a[eVW,1,c_uvW].expr()
+        sage: a.view(eU)
+        a = -y d/dx + x d/dy
+        sage: a.view(eV)
+        a = v d/du - u d/dv
+        sage: da = nab(a) ; da
+        field of endomorphisms 'nabla a' on the 2-dimensional manifold 'M'
+        sage: da.view(eU)
+        nabla a = -x*y d/dx*dx - d/dx*dy + d/dy*dx - x*y^2 d/dy*dy
+        sage: da.view(eV)
+        nabla a = (-1/16*u^3 + 1/16*u^2*v + 1/16*(u + 2)*v^2 - 1/16*v^3 - 1/8*u^2) d/du*du + (1/16*u^3 - 1/16*u^2*v - 1/16*(u - 2)*v^2 + 1/16*v^3 - 1/8*u^2 + 1) d/du*dv + (1/16*u^3 - 1/16*u^2*v - 1/16*(u - 2)*v^2 + 1/16*v^3 - 1/8*u^2 - 1) d/dv*du + (-1/16*u^3 + 1/16*u^2*v + 1/16*(u + 2)*v^2 - 1/16*v^3 - 1/8*u^2) d/dv*dv
+
+    A few tests::
+    
+        sage: nab(a.restrict(V)) == da.restrict(V)
+        True
+        sage: nab.restrict(V)(a) == da.restrict(V)
+        True
+        sage: nab.restrict(V)(a.restrict(U)) == da.restrict(W)
+        True
+        sage: nab.restrict(U)(a.restrict(V)) == da.restrict(W)
+        True
+
     """
     def __init__(self, domain, name, latex_name=None):
         if not isinstance(domain, Domain):
@@ -211,7 +276,7 @@ class AffConnection(SageObject):
         """
         from sage.tensor.modules.comp import Components
         from scalarfield import ScalarField
-        return Components(self._domain.scalar_field_algebra(), frame, 3, 
+        return Components(frame._domain.scalar_field_algebra(), frame, 3, 
                           start_index=self._manifold._sindex,
                           output_formatter=ScalarField.function_chart)
         
@@ -419,14 +484,44 @@ class AffConnection(SageObject):
         
         - instance of :class:`AffConnection` representing the restriction.
 
-        EXAMPLES:
+        EXAMPLE:
+        
+        Restriction of a connection on a 2-dimensional manifold::
+        
+            sage: M = Manifold(2, 'M', start_index=1)
+            sage: c_xy.<x,y> = M.chart()
+            sage: nab = M.aff_connection('nabla', r'\nabla')
+            sage: nab[1,1,2], nab[2,1,1] = x^2, x+y
+            sage: nab[:]
+            [[[0, x^2], [0, 0]], [[x + y, 0], [0, 0]]]
+            sage: U = M.open_domain('U', coord_def={c_xy: x>0})
+            sage: nabU = nab.restrict(U) ; nabU
+            affine connection 'nabla' on the open domain 'U' on the 2-dimensional manifold 'M'
+            sage: nabU.domain()
+            open domain 'U' on the 2-dimensional manifold 'M'
+            sage: nabU[:]
+            [[[0, x^2], [0, 0]], [[x + y, 0], [0, 0]]]
+            
+        The result is cached::
+        
+            sage: nab.restrict(U) is nabU
+            True
+
+        ...until the connection is modified::
+        
+            sage: nab[1,2,2] = -y
+            sage: nab.restrict(U) is nabU
+            False
+            sage: nab.restrict(U)[:]
+            [[[0, x^2], [0, -y]], [[x + y, 0], [0, 0]]]
+
         """
         if subdomain == self._domain:
             return self
         if subdomain not in self._restrictions:
             if not subdomain.is_subdomain(self._domain):
                 raise ValueError("The provided domain is not a subdomain of " + 
-                                 "the current field's domain.")
+                                 "the current connection's domain.")
             resu = AffConnection(subdomain, name=self._name, 
                                  latex_name=self._latex_name)
             for frame in self._coefficients:
@@ -445,8 +540,8 @@ class AffConnection(SageObject):
         
     def common_frame(self, other):
         r"""
-        Find a common vector frame for the components of ``self`` and 
-        ``other``. 
+        Find a common vector frame for the coefficients of ``self`` and
+        the components of  ``other``. 
         
         In case of multiple common frames, the domain's default frame is 
         privileged. 
@@ -460,19 +555,30 @@ class AffConnection(SageObject):
         - common frame; if no common frame is found, None is returned. 
         
         """
-        # Does each object have components on the domain's default frame ? 
-        def_frame = self._domain._def_frame
-        if def_frame in self._coefficients and \
-           def_frame in other._components:
-            frame = def_frame
-        else:
-            # Search for a common frame
-            frame = None
-            for frame0 in self._coefficients:
-                if frame0 in other._components:
-                    frame = frame0
-                    break
-        return frame
+        # 1/ Does each object have components on the domain's default frame ? 
+        dom = self._domain
+        def_frame = dom._def_frame
+        if def_frame in self._coefficients and def_frame in other._components:
+            return def_frame
+        # 2/ Search for a common frame among the existing components, i.e. 
+        #    without performing any component transformation. 
+        #    -------------------------------------------------------------
+        for sframe in self._coefficients:
+            if sframe in other._components:
+                return sframe
+        # 3/ Search for a common frame via one component transformation 
+        #    ----------------------------------------------------------
+        # If this point is reached, it is necessary to perform at least 
+        # one component transformation to get a common frame
+        for sframe in self._coefficients:
+            for oframe in other._components:
+                if (oframe, sframe) in dom._frame_changes:
+                    other.comp(sframe, from_basis=oframe)
+                    return sframe
+        #
+        # If this point is reached, no common frame could be found, even at 
+        # the price of a component transformation:
+        return None
 
     def __call__(self, tensor):
         r"""
@@ -490,18 +596,20 @@ class AffConnection(SageObject):
         from scalarfield import ScalarField
         from tensorfield import TensorFieldParal
         from utilities import format_unop_txt, format_unop_latex
-        if isinstance(tensor, ScalarField):
-            return tensor.differential()
-        if isinstance(tensor, TensorFieldParal):
-            return self._derive_paral(tensor)
+        dom_resu = self._domain.intersection(tensor._domain)
+        self_r = self.restrict(dom_resu)
+        tensor_r = tensor.restrict(dom_resu)
+        if isinstance(tensor_r, ScalarField):
+            return tensor_r.differential()
+        if isinstance(tensor_r, TensorFieldParal):
+            return self_r._derive_paral(tensor_r)
         resu_rst = []
-        for rst in tensor._restrictions.itervalues():
-            resu_rst.append(self.__call__(rst))
-        dom_resu = tensor._domain
-        tensor_type_resu = (tensor._tensor_type[0], tensor._tensor_type[1]+1)
-        name_resu = format_unop_txt(self._name + ' ', tensor._name)
+        for rst in tensor_r._restrictions.itervalues():
+            resu_rst.append(self_r.__call__(rst))
+        tensor_type_resu = (tensor_r._tensor_type[0], tensor_r._tensor_type[1]+1)
+        name_resu = format_unop_txt(self._name + ' ', tensor_r._name)
         latex_name_resu=format_unop_latex(self._latex_name + ' ', 
-                                                            tensor._latex_name) 
+                                                            tensor_r._latex_name) 
         vmodule = dom_resu.vector_field_module()
         resu = vmodule.tensor(tensor_type_resu, name=name_resu,
                               latex_name=latex_name_resu,
@@ -528,11 +636,7 @@ class AffConnection(SageObject):
         from sage.tensor.modules.comp import Components, CompWithSym
         from utilities import format_unop_txt, format_unop_latex
         manif = self._manifold
-        dom = self._domain
         tdom = tensor._domain
-        if not tdom.is_subdomain(dom):
-            raise TypeError("The tensor field is not defined on the same " + 
-                            "domain as the connection.")
         frame = self.common_frame(tensor)
         if frame is None:
             raise ValueError("No common frame found for the computation.")
@@ -1291,7 +1395,7 @@ class LeviCivitaConnection(AffConnection):
         if frame not in self._coefficients:
             # the coefficients must be computed
             manif = self._manifold
-            dom = self._domain
+            dom = frame._domain
             if isinstance(frame, CoordFrame):
                 # Christoffel symbols
                 chart = frame._chart
