@@ -88,7 +88,6 @@ class EndomorphismField(TensorField):
         Redefinition of :meth:`TensorField.__call__` to allow for a single 
         argument (module element). 
         """
-        from vectorfield import VectorField
         if len(arg) > 1:
             # the endomorphism acting as a type (1,1) tensor on a pair 
             # (1-form, vector field), returning a scalar field:
@@ -96,7 +95,7 @@ class EndomorphismField(TensorField):
         # the endomorphism acting as such, on a vector field, returning a
         # vector field:
         vector = arg[0]
-        if not isinstance(vector, VectorField):
+        if vector._tensor_type != (1,0):
             raise TypeError("The argument must be a vector field.")
         dom_resu = self._domain.intersection(vector._domain)
         if dom_resu.is_manifestly_parallelizable():
@@ -414,11 +413,10 @@ class TangentIdentityField(AutomorphismField):
         r"""
         Redefinition of :meth:`EndomorphismField.__call__`.
         """
-        from vectorfield import VectorField        
         if len(arg) == 1:
             # The identity map acting as such, on a vector field:
             vector = arg[0]
-            if not isinstance(vector, VectorField):
+            if vector._tensor_type != (1,0):
                 raise TypeError("The argument must be a vector field.")
             dom = self._domain.intersection(vector._domain)
             return vector.restrict(dom)
@@ -809,11 +807,10 @@ class TangentIdentityFieldParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         :meth:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityMap.__call__` 
         to allow for domain treatment
         """
-        from vectorfield import VectorField        
         if len(arg) == 1:
             # The identity map acting as such, on a vector field:
             vector = arg[0]
-            if not isinstance(vector, VectorField):
+            if vector._tensor_type != (1,0):
                 raise TypeError("The argument must be a vector field.")
             dom = self._domain.intersection(vector._domain)
             return vector.restrict(dom)

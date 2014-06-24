@@ -183,13 +183,12 @@ class VectorField(TensorField):
           field, i.e. `v^i \frac{\partial f}{\partial x^i}`
           
         """
-        from diffform import OneForm, OneFormParal
-        from scalarfield import ScalarField, ZeroScalarField
-        if isinstance(scalar, (OneForm, OneFormParal)):
+        from scalarfield import ZeroScalarField
+        if scalar._tensor_type == (0,1):
             # This is actually the action of the vector field on a 1-form, 
             # as a tensor field of type (1,0):
             return scalar(self)
-        if not isinstance(scalar, ScalarField):
+        if scalar._tensor_type != (0,0):
             raise TypeError("The argument must be a scalar field")
         #!# Could it be simply 
         # return scalar.differential()(self)
@@ -409,14 +408,13 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
             2*x^2*y - y^3
           
         """
-        from diffform import OneForm, OneFormParal
         from scalarfield import ScalarField, ZeroScalarField
         from vectorframe import CoordFrame
-        if isinstance(scalar, (OneForm, OneFormParal)):
+        if scalar._tensor_type == (0,1):
             # This is actually the action of the vector field on a 1-form, 
             # as a tensor field of type (1,0):
             return scalar(self)
-        if not isinstance(scalar, ScalarField):
+        if scalar._tensor_type != (0,0):
             raise TypeError("The argument must be a scalar field")
         #!# Could it be simply 
         # return scalar.differential()(self)

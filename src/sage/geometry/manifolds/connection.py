@@ -593,14 +593,13 @@ class AffConnection(SageObject):
         - tensor field `\nabla T`. 
           
         """
-        from scalarfield import ScalarField
         from tensorfield import TensorFieldParal
         from utilities import format_unop_txt, format_unop_latex
         dom_resu = self._domain.intersection(tensor._domain)
         self_r = self.restrict(dom_resu)
         tensor_r = tensor.restrict(dom_resu)
-        if isinstance(tensor_r, ScalarField):
-            return tensor_r.differential()
+        if tensor_r._tensor_type == (0,0):  # scalar field case
+            return tensor_r.differential()   
         if isinstance(tensor_r, TensorFieldParal):
             return self_r._derive_paral(tensor_r)
         resu_rst = []
@@ -680,7 +679,7 @@ class AffConnection(SageObject):
                         latex_name=format_unop_latex(self._latex_name + ' ', 
                                                         tensor._latex_name) )
 
-    def torsion(self, frame=None):
+    def torsion(self):
         r""" 
         Return the connection's torsion tensor.
         
@@ -692,14 +691,7 @@ class AffConnection(SageObject):
                 - [u, v] \right\rangle
         
         for any 1-form  `\omega`  and any vector fields `u` and `v`. 
-        
-        INPUT:
-        
-        - ``frame`` -- (default: None) vector frame in which the computation 
-          must be performed; if none is provided, the computation is performed 
-          in a frame for which the connection coefficients are known, 
-          privileging the domain's default frame.
-          
+                  
         OUTPUT:
         
         - the torsion tensor `T`, as an instance of 
@@ -742,28 +734,78 @@ class AffConnection(SageObject):
             \nabla_j \nabla_i \, f - \nabla_i \nabla_j \, f = T^k_{\ \, ij} \nabla_k \, f , 
         
         where the `T^k_{\ \, ij}`'s are the components of the torsion tensor. 
-  
+
+        The result is cached::
+        
+            sage: nab.torsion() is t
+            True
+
+        ...as long as the connection remains unchanged::
+        
+            sage: nab[2,1,3] = 1+x    # changing the connection
+            sage: nab.torsion() is t  # a new computation of the torsion has been made
+            False
+            sage: (nab.torsion() - t).view()
+            (-x - 1) d/dy*dx*dz + (x + 1) d/dy*dz*dx
+
+        Another example: torsion of some connection on a non-parallelizable 
+        2-dimensional manifold::
+        
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+            sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+            sage: inv = transf.inverse()
+            sage: W = U.intersection(V)
+            sage: eU = c_xy.frame() ; eV = c_uv.frame()
+            sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
+            sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
+            sage: nab = M.aff_connection('nabla', r'\nabla')
+            sage: nab[0,0,0], nab[0,1,0], nab[1,0,1] = x, x-y, x*y
+            sage: for i in M.irange():
+            ....:     for j in M.irange():
+            ....:         for k in M.irange():
+            ....:             nab.add_coef(eV)[i,j,k] = nab.coef(eVW)[i,j,k,c_uvW].expr()
+            ....: 
+            sage: t = nab.torsion() ; t
+            tensor field of type (1,2) on the 2-dimensional manifold 'M'
+            sage: t.parent()
+            module TF^(1,2)(M) of type-(1,2) tensors fields on the 2-dimensional manifold 'M'          
+            sage: t[eU,:]
+            [[[0, x - y], [-x + y, 0]], [[0, -x*y], [x*y, 0]]]
+            sage: t[eV,:]
+            [[[0, 1/8*u^2 - 1/8*v^2 - 1/2*v], [-1/8*u^2 + 1/8*v^2 + 1/2*v, 0]],
+             [[0, -1/8*u^2 + 1/8*v^2 - 1/2*v], [1/8*u^2 - 1/8*v^2 + 1/2*v, 0]]]
+
+        Check of the torsion formula::
+        
+            sage: f = M.scalar_field({c_xy: (x+y)^2, c_uv: u^2}, name='f')
+            sage: DDf = nab(nab(f)) ; DDf
+            tensor field 'nabla df' of type (0,2) on the 2-dimensional manifold 'M'
+            sage: DDf.antisymmetrize().view(eU)
+            (-x^2*y - (x + 1)*y^2 + x^2) dx/\dy
+            sage: DDf.antisymmetrize().view(eV)
+            (1/8*u^3 - 1/8*u*v^2 - 1/2*u*v) du/\dv
+            sage: 2*DDf.antisymmetrize() == nab(f).contract(nab.torsion())
+            True
+
+
         """
         if self._torsion is None:
             manif = self._manifold
-            dom = self._domain
-            if frame is None:
-                if dom._def_frame in self._coefficients:
-                    frame = dom._def_frame
-                else: # a random frame is picked
-                    frame = self._coefficients.items()[0][0]
-            gam = self.coef(frame)
-            sc = frame.structure_coef()
-            self._torsion = dom.tensor_field(1, 2, antisym=(1,2))   
-            res = self._torsion.set_comp(frame)
-            for k in manif.irange():
-                for i in manif.irange():
-                     for j in manif.irange(start=i+1):
-                         res[[k,i,j]] = gam[[k,j,i]] - gam[[k,i,j]] - \
-                                        sc[[k,i,j]]
+            resu = self._domain.tensor_field(1, 2, antisym=(1,2))
+            for frame, gam in self._coefficients.iteritems():
+                sc = frame.structure_coef()
+                res = resu.add_comp(frame)
+                for k in manif.irange():
+                    for i in manif.irange():
+                         for j in manif.irange(start=i+1):
+                             res[[k,i,j]] = gam[[k,j,i]] - gam[[k,i,j]] - \
+                                            sc[[k,i,j]]
+            self._torsion = resu
         return self._torsion 
 
-    def riemann(self, frame=None):
+    def riemann(self):
         r""" 
         Return the connection's Riemann curvature tensor.
 
@@ -777,13 +819,6 @@ class AffConnection(SageObject):
         
         for any 1-form  `\omega`  and any vector fields `u`, `v` and `w`. 
 
-        INPUT:
-        
-        - ``frame`` -- (default: None) vector frame in which the computation 
-          must be performed; if none is provided, the computation is performed 
-          in a frame for which the connection coefficients are known, 
-          privileging the domain's default frame.
-          
         OUTPUT:
         
         - the Riemann curvature tensor `R`, as an instance of 
@@ -800,6 +835,8 @@ class AffConnection(SageObject):
             sage: nab[1,1,2], nab[3,2,3] = x^2, y*z  # Gamma^1_{12} = x^2, Gamma^3_{23} = yz 
             sage: r = nab.riemann() ; r
             tensor field of type (1,3) on the 3-dimensional manifold 'M'
+            sage: r.parent()
+            free module TF^(1,3)(M) of type-(1,3) tensors fields on the 3-dimensional manifold 'M'
             sage: r.symmetries()
             no symmetry;  antisymmetry: (2, 3)
             sage: r[:]
@@ -812,38 +849,60 @@ class AffConnection(SageObject):
             [[[0, 0, 0], [0, 0, 0], [0, 0, 0]],
             [[0, 0, 0], [0, 0, z], [0, -z, 0]],
             [[0, 0, 0], [0, 0, 0], [0, 0, 0]]]]
-       
+
+        Another example: Riemann curvature tensor of some connection on a 
+        non-parallelizable 2-dimensional manifold::
+        
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+            sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+            sage: inv = transf.inverse()
+            sage: W = U.intersection(V)
+            sage: eU = c_xy.frame() ; eV = c_uv.frame()
+            sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
+            sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
+            sage: nab = M.aff_connection('nabla', r'\nabla')
+            sage: nab[0,0,0], nab[0,1,0], nab[1,0,1] = x, x-y, x*y
+            sage: for i in M.irange():
+            ....:     for j in M.irange():
+            ....:         for k in M.irange():
+            ....:             nab.add_coef(eV)[i,j,k] = nab.coef(eVW)[i,j,k,c_uvW].expr()
+            ....: 
+            sage: r = nab.riemann() ; r
+            tensor field of type (1,3) on the 2-dimensional manifold 'M'
+            sage: r.parent()
+            module TF^(1,3)(M) of type-(1,3) tensors fields on the 2-dimensional manifold 'M'
+            sage: r.view(eU)
+            (x^2*y - x*y^2) d/dx*dx*dx*dy + (-x^2*y + x*y^2) d/dx*dx*dy*dx + d/dx*dy*dx*dy - d/dx*dy*dy*dx - (x^2 - 1)*y d/dy*dx*dx*dy + (x^2 - 1)*y d/dy*dx*dy*dx + (-x^2*y + x*y^2) d/dy*dy*dx*dy + (x^2*y - x*y^2) d/dy*dy*dy*dx
+            sage: r.view(eV)
+            (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/du*du*du*dv + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/du*du*dv*du + (1/32*u^3 - 1/32*u*v^2 + 3/32*v^3 - 1/32*(3*u^2 - 4)*v - 1/8*u + 1/4) d/du*dv*du*dv + (-1/32*u^3 + 1/32*u*v^2 - 3/32*v^3 + 1/32*(3*u^2 - 4)*v + 1/8*u - 1/4) d/du*dv*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 5/32*v^3 - 1/32*(5*u^2 + 4)*v + 1/8*u - 1/4) d/dv*du*du*dv + (1/32*u^3 - 1/32*u*v^2 - 5/32*v^3 + 1/32*(5*u^2 + 4)*v - 1/8*u + 1/4) d/dv*du*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/dv*dv*du*dv + (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/dv*dv*dv*du
+
         """
         if self._riemann is None:
             manif = self._manifold
-            dom = self._domain
-            if frame is None:
-                if dom._def_frame in self._coefficients:
-                    frame = dom._def_frame
-                else: # a random frame is picked
-                    frame = self._coefficients.items()[0][0]
-            ev = frame
-            gam = self.coef(frame)
-            sc = ev.structure_coef()
-            gam_gam = gam.contract(1, gam, 0)
-            gam_sc = gam.contract(2, sc, 0)
-            self._riemann = dom.tensor_field(1, 3, antisym=(2,3))   
-            res = self._riemann.set_comp(frame)
-            for i in manif.irange():
-                for j in manif.irange():
-                    for k in manif.irange():
-                        # antisymmetry of the Riemann tensor taken into account 
-                        # by l>k: 
-                        for l in manif.irange(start=k+1):
-                            res[i,j,k,l] = ev[k](gam[[i,j,l]]) - \
-                                           ev[l](gam[[i,j,k]]) + \
-                                           gam_gam[[i,k,j,l]] -  \
-                                           gam_gam[[i,l,j,k]] -  \
-                                           gam_sc[[i,j,k,l]]
+            resu = self._domain.tensor_field(1, 3, antisym=(2,3))
+            for frame, gam in self._coefficients.iteritems():
+                sc = frame.structure_coef()
+                gam_gam = gam.contract(1, gam, 0)
+                gam_sc = gam.contract(2, sc, 0)
+                res = resu.add_comp(frame)
+                for i in manif.irange():
+                    for j in manif.irange():
+                        for k in manif.irange():
+                            # antisymmetry of the Riemann tensor taken into 
+                            # account by l>k: 
+                            for l in manif.irange(start=k+1):
+                                res[i,j,k,l] = frame[k](gam[[i,j,l]]) - \
+                                               frame[l](gam[[i,j,k]]) + \
+                                               gam_gam[[i,k,j,l]] -  \
+                                               gam_gam[[i,l,j,k]] -  \
+                                               gam_sc[[i,j,k,l]]
+            self._riemann = resu
         return self._riemann 
         
 
-    def ricci(self, frame=None):
+    def ricci(self):
         r""" 
         Return the connection's Ricci tensor.
         
@@ -857,13 +916,6 @@ class AffConnection(SageObject):
         for any vector fields `u` and `v`, `(e_i)` being any vector frame and
         `(e^i)` the dual coframe. 
         
-        INPUT:
-        
-        - ``frame`` -- (default: None) vector frame in which the computation 
-          must be performed; if none is provided, the computation is performed
-          in a frame for which the connection coefficients are known, 
-          privileging the domain's default frame.
-          
         OUTPUT:
         
         - the Ricci  tensor `Ric`, as an instance of 
@@ -887,7 +939,7 @@ class AffConnection(SageObject):
        
         """
         if self._ricci is None:
-            self._ricci = self.riemann(frame).self_contract(0,2)
+            self._ricci = self.riemann().self_contract(0,2)
         return self._ricci 
         
     def connection_form(self, i, j, frame=None):
@@ -918,8 +970,8 @@ class AffConnection(SageObject):
         
         - ``i``, ``j`` -- indices identifying the 1-form `\omega^i_{\ \, j}`
         - ``frame`` -- (default: None) vector frame relative to which the 
-          connection 1-forms are defined; if none is provided, the domain's 
-          default frame is assumed. 
+          connection 1-forms are defined; if none is provided, the default 
+          frame of the connection's domain is assumed. 
           
         OUTPUT:
         
@@ -1036,8 +1088,8 @@ class AffConnection(SageObject):
         
         - ``i`` -- index identifying the 2-form `\theta^i`
         - ``frame`` -- (default: None) vector frame relative to which the 
-          torsion 2-forms are defined; if none is provided, the domain's 
-          default frame is assumed. 
+          torsion 2-forms are defined; if none is provided, the default frame
+          of the connection's domain is assumed. 
           
         OUTPUT:
         
@@ -1101,20 +1153,19 @@ class AffConnection(SageObject):
             frame = self._domain._def_frame
         if frame not in self._torsion_forms:
             forms = {}
+            frame_dom = frame._domain
             for i1 in self._manifold.irange():
                 name = self._name + " torsion 2-form (" + str(i1) + ")"
                 latex_name = r"\theta^" + str(i1)
-                theta = self._domain.diff_form(2, name=name, 
-                                              latex_name=latex_name)
+                theta = frame_dom.diff_form(2, name=name, 
+                                            latex_name=latex_name)
                 ctheta = theta.set_comp(frame)
                 for k in self._manifold.irange():
                     for l in self._manifold.irange(start=k+1):
-                        ctheta[k,l] = \
-                            self.torsion(frame).comp(frame)[[i1,k,l]]
+                        ctheta[k,l] = self.torsion().comp(frame)[[i1,k,l]]
                 forms[i1] = theta
             self._torsion_forms[frame] = forms
         return  self._torsion_forms[frame][i] 
-
                     
     def curvature_form(self, i, j, frame=None):
         r"""
@@ -1136,8 +1187,8 @@ class AffConnection(SageObject):
         
         - ``i``, ``j`` -- indices identifying the 2-form `\Omega^i_{\ \, j}`
         - ``frame`` -- (default: None) vector frame relative to which the 
-          curvature 2-forms are defined; if none is provided, the domain's 
-          default frame is assumed. 
+          curvature 2-forms are defined; if none is provided, the default frame
+          of the connection's domain is assumed. 
           
         OUTPUT:
         
@@ -1205,15 +1256,15 @@ class AffConnection(SageObject):
                 for j1 in self._manifold.irange():
                     name = self._name + " curvature 2-form (" + str(i1) + \
                            "," + str(j1) + ")"
-                    latex_name = r"\Omega^" + str(i1) + r"_{\ \, " + str(j1) + \
-                                 "}"
+                    latex_name = r"\Omega^" + str(i1) + r"_{\ \, " + \
+                                str(j1) + "}"
                     omega = frame_dom.diff_form(2, name=name, 
                                                 latex_name=latex_name)
                     comega = omega.set_comp(frame)
                     for k in self._manifold.irange():
                         for l in self._manifold.irange(start=k+1):
                             comega[k,l] = \
-                          self.riemann(frame).comp(frame)[[i1,j1,k,l]]
+                                        self.riemann().comp(frame)[[i1,j1,k,l]]
                     forms[(i1,j1)] = omega
             self._curvature_forms[frame] = forms
         return  self._curvature_forms[frame][(i,j)] 
@@ -1421,7 +1472,7 @@ class LeviCivitaConnection(AffConnection):
                 return AffConnection.coef(self, frame)
         return self._coefficients[frame]
 
-    def torsion(self, frame=None):
+    def torsion(self):
         r""" 
         Return the connection's torsion tensor (identically zero for a 
         Levi-Civita connection). 
@@ -1429,13 +1480,6 @@ class LeviCivitaConnection(AffConnection):
         See :meth:`AffConnection.torsion` for the general definition of the 
         torsion tensor. 
         
-        
-        INPUT:
-        
-        - ``frame`` -- (default: None) vector frame in which the torsion must 
-          be initialized; if none is provided, the domain's default frame is 
-          assumed.
-          
         OUTPUT:
         
         - the torsion tensor `T`, as a vanishing instance of 
@@ -1444,15 +1488,14 @@ class LeviCivitaConnection(AffConnection):
         """
         if self._torsion is None:
             manif = self._manifold
-            dom = self._domain
-            if frame is None:
-                frame = dom._def_frame
-            self._torsion = dom.tensor_field(1, 2, antisym=(1,2))
-            # Initialization of the frame components to zero: 
-            self._torsion.set_comp(frame) 
+            resu = self._domain.tensor_field(1, 2, antisym=(1,2))
+            for frame in self._coefficients:
+                # Initialization of the frame components to zero: 
+                resu.set_comp(frame) 
+            self._torsion = resu
         return self._torsion 
 
-    def riemann(self, frame=None, name=None, latex_name=None):
+    def riemann(self, name=None, latex_name=None):
         r""" 
         Return the Riemann curvature tensor associated with the metric.
 
@@ -1471,10 +1514,6 @@ class LeviCivitaConnection(AffConnection):
 
         INPUT:
         
-        - ``frame`` -- (default: None) vector frame in which the computation 
-          must be performed; if none is provided, the computation is performed
-          in a frame for which the metric components are known, privileging the
-          domain's default frame.
         - ``name`` -- (default: None) name given to the Riemann tensor; 
           if none, it is set to "Riem(g)", where "g" is the metric's name
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
@@ -1488,7 +1527,7 @@ class LeviCivitaConnection(AffConnection):
           
         """
         if self._riemann is None:
-            AffConnection.riemann(self, frame)
+            AffConnection.riemann(self)
             if name is None:
                 self._riemann._name = "Riem(" + self._metric._name + ")"
             else:
@@ -1502,7 +1541,7 @@ class LeviCivitaConnection(AffConnection):
             
 
 
-    def ricci(self, frame=None, name=None, latex_name=None):
+    def ricci(self, name=None, latex_name=None):
         r""" 
         Return the connection's Ricci tensor.
         
@@ -1521,10 +1560,6 @@ class LeviCivitaConnection(AffConnection):
                 
         INPUT:
         
-        - ``frame`` -- (default: None) vector frame in which the computation 
-          must be performed; if none is provided, the computation is performed 
-          in a frame for which the connection coefficients are known, 
-          privileging the domain's default frame.
         - ``name`` -- (default: None) name given to the Ricci tensor; 
           if none, it is set to "Ric(g)", where "g" is the metric's name
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
@@ -1578,7 +1613,9 @@ class LeviCivitaConnection(AffConnection):
         if self._ricci is None:
             manif = self._manifold
             dom = self._domain
-            riem = self.riemann(frame)
+            riem = self.riemann()
+            #!# to be changed
+            frame = None
             if frame is None:
                 if dom._def_frame in riem._components:
                     frame = dom._def_frame
@@ -1610,7 +1647,7 @@ class LeviCivitaConnection(AffConnection):
                 self._ricci._latex_name = latex_name
         return self._ricci 
 
-    def ricci_scalar(self, frame=None, name=None, latex_name=None):
+    def ricci_scalar(self, name=None, latex_name=None):
         r""" 
         Return the connection's Ricci scalar.
         
@@ -1623,10 +1660,6 @@ class LeviCivitaConnection(AffConnection):
         
         INPUT:
         
-        - ``frame`` -- (default: None) vector frame in which the computation 
-          must be performed; if none is provided, the computation is performed 
-          in a frame for which the connection coefficients are known, 
-          privileging the domain's default frame.
         - ``name`` -- (default: None) name given to the Ricci scalar; 
           if none, it is set to "r(g)", where "g" is the metric's name
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
@@ -1659,7 +1692,7 @@ class LeviCivitaConnection(AffConnection):
         """
         if self._ricci_scalar is None:            
             manif = self._manifold
-            ric = self.ricci(frame)
+            ric = self.ricci()
             ig = self._metric.inverse()
             frame = ig.common_basis(ric)
             cric = ric._components[frame]

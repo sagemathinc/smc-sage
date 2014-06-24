@@ -882,8 +882,8 @@ class TensorField(ModuleElement):
             elif not dest_map._codomain.is_subdomain(self._ambient_domain):
                 raise ValueError("Argument dest_map not compatible with " + 
                                  "self._ambient_domain")
-            # First one tries to derive the restriction from a tighter domain:
-            for dom, rst in self._restrictions.items():
+            # First one tries to get the restriction from a tighter domain:
+            for dom, rst in self._restrictions.iteritems():
                 if subdomain.is_subdomain(dom):
                     self._restrictions[subdomain] = rst.restrict(subdomain)
                     break
@@ -1964,6 +1964,55 @@ class TensorField(ModuleElement):
             resu._restrictions[rst._domain] = rst
         return resu
 
+    def symmetrize(self, pos=None):
+        r"""
+        Symmetrization over some arguments.
+        
+        INPUT:
+        
+        - ``pos`` -- (default: None) list of argument positions involved in the 
+          symmetrization (with the convention position=0 for the first 
+          argument); if none, the symmetrization is performed over all the 
+          arguments
+                  
+        OUTPUT:
+        
+        - the symmetrized tensor field (instance of :class:`TensorField`)
+
+        """
+        resu_rst = []
+        for rst in self._restrictions.itervalues():
+            resu_rst.append(rst.symmetrize(pos))
+        resu = self._vmodule.tensor(self._tensor_type, sym=resu_rst[0]._sym, 
+                                    antisym=resu_rst[0]._antisym)
+        for rst in resu_rst:
+            resu._restrictions[rst._domain] = rst
+        return resu
+
+    def antisymmetrize(self, pos=None):
+        r"""
+        Antisymmetrization over some arguments.
+        
+        INPUT:
+        
+        - ``pos`` -- (default: None) list of argument positions involved in the 
+          antisymmetrization (with the convention position=0 for the first 
+          argument); if none, the antisymmetrization is performed over all the 
+          arguments
+                  
+        OUTPUT:
+        
+        - the antisymmetrized tensor field (instance of :class:`TensorField`)
+        
+        """
+        resu_rst = []
+        for rst in self._restrictions.itervalues():
+            resu_rst.append(rst.antisymmetrize(pos))
+        resu = self._vmodule.tensor(self._tensor_type, sym=resu_rst[0]._sym, 
+                                    antisym=resu_rst[0]._antisym)
+        for rst in resu_rst:
+            resu._restrictions[rst._domain] = rst
+        return resu
 
 #******************************************************************************
 

@@ -915,11 +915,17 @@ class ScalarField(CommutativeAlgebraElement):
                 raise ValueError("The specified domain is not a subdomain " + 
                                  "of the domain of definition of the scalar " + 
                                  "field.")
-            # the restriction is obtained via coercion
-            resu = subdomain.scalar_field_algebra()(self)
-            resu._name = self._name
-            resu._latex_name = self._latex_name
-            self._restrictions[subdomain] = resu
+            # First one tries to get the restriction from a tighter domain:
+            for dom, rst in self._restrictions.iteritems():
+                if subdomain.is_subdomain(dom):
+                    self._restrictions[subdomain] = rst.restrict(subdomain)
+                    break
+            else:
+            # If this fails, the restriction is obtained via coercion
+                resu = subdomain.scalar_field_algebra()(self)
+                resu._name = self._name
+                resu._latex_name = self._latex_name
+                self._restrictions[subdomain] = resu
         return self._restrictions[subdomain]
             
     def pick_a_chart(self):
