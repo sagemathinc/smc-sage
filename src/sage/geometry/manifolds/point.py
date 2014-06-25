@@ -429,9 +429,16 @@ class Point(Element):
                                               other._coordinates[common_chart]
         
     def tangent_space(self): 
-        r""" 
-        Returns the tangent space related to the point
+        r"""
+        Returns the tangent space at self.
         """
-        
-        return (self._manifold)._tangent_spaces[self]
- 
+
+        from tangentspace import TangentSpace
+
+        if self._tangent_space is not None:
+            return self._tangent_space
+        else: 
+            res = TangentSpace(self)
+            (self._manifold)._tangent_spaces[self] = res
+            return res 
+
