@@ -323,6 +323,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         from rank2field import EndomorphismField, AutomorphismField, \
                                                            TangentIdentityField
         from diffform import DiffForm, OneForm
+        from metric import Metric, RiemannMetric, LorentzMetric
         if tensor_type==(1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type==(0,1):
@@ -335,8 +336,9 @@ class VectorFieldModule(UniqueRepresentation, Parent):
                                             latex_name=latex_name)
             else:
                 return EndomorphismField(self, name=name, latex_name=latex_name)
-        elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
-            if isinstance(antisym, list) and antisym != []:
+        elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None \
+                                                              and antisym !=[]:
+            if isinstance(antisym, list):
                 antisym0 = antisym[0]
             else:
                 antisym0 = antisym
@@ -347,6 +349,19 @@ class VectorFieldModule(UniqueRepresentation, Parent):
                 return self.tensor_module(*tensor_type).element_class(self, 
                                  tensor_type, name=name, latex_name=latex_name, 
                                  sym=sym, antisym=antisym)
+        elif tensor_type==(0,2):
+            if specific_type == Metric:
+                return Metric(self, name, latex_name=latex_name) 
+                # NB: the signature is not passed
+            elif specific_type == RiemannMetric:
+                return RiemannMetric(self, name, latex_name=latex_name)
+            elif specific_type == LorentzMetric:
+                return LorentzMetric(self, name, latex_name=latex_name) 
+                # NB: the signature convention is not passed
+            else:
+                return self.tensor_module(0,2).element_class(self, (0,2), 
+                                              name=name, latex_name=latex_name, 
+                                              sym=sym, antisym=antisym)
         else:
             return self.tensor_module(*tensor_type).element_class(self, 
                                  tensor_type, name=name, latex_name=latex_name, 
@@ -955,6 +970,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                                AutomorphismFieldParal, TangentIdentityField, \
                                TangentIdentityFieldParal
         from diffform import DiffFormParal, OneFormParal
+        from metric import Metric, RiemannMetric, LorentzMetric, MetricParal, \
+                           RiemannMetricParal, LorentzMetricParal
         if tensor_type==(1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type==(0,1):
@@ -971,8 +988,9 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
             else:
                 return EndomorphismFieldParal(self, name=name, 
                                                          latex_name=latex_name)
-        elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None:
-            if isinstance(antisym, list) and antisym != []:
+        elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None \
+                                                              and antisym !=[]:
+            if isinstance(antisym, list):
                 antisym0 = antisym[0]
             else:
                 antisym0 = antisym
@@ -983,6 +1001,21 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                 return self.tensor_module(*tensor_type).element_class(self, 
                                  tensor_type, name=name, latex_name=latex_name, 
                                  sym=sym, antisym=antisym)
+        elif tensor_type==(0,2):
+            if specific_type == MetricParal or specific_type == Metric:
+                return MetricParal(self, name, latex_name=latex_name) 
+                # NB: the signature is not passed
+            elif specific_type == RiemannMetricParal or \
+                                                specific_type == RiemannMetric:
+                return RiemannMetricParal(self, name, latex_name=latex_name)
+            elif specific_type == LorentzMetricParal or \
+                                                specific_type == LorentzMetric:
+                return LorentzMetricParal(self, name, latex_name=latex_name) 
+                # NB: the signature convention is not passed
+            else:
+                return self.tensor_module(0,2).element_class(self, (0,2), 
+                                              name=name, latex_name=latex_name, 
+                                              sym=sym, antisym=antisym)
         else:
             return self.tensor_module(*tensor_type).element_class(self, 
                                  tensor_type, name=name, latex_name=latex_name, 

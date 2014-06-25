@@ -182,6 +182,151 @@ class Metric(TensorField):
         """
         return self._signature
 
+    def restrict(self, subdomain, dest_map=None):
+        r"""
+        Return the restriction of the metric to some subdomain.
+        
+        If the restriction has not been defined yet, it is constructed here.
+
+        INPUT:
+        
+        - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an 
+          instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+        - ``dest_map`` -- (default: None) destination map 
+          `\Phi:\ U \rightarrow V`, where `V` is a subdomain of 
+          ``self._codomain``
+          (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
+          If None, the restriction of ``self._vmodule._dest_map`` to `U` is 
+          used.
+          
+        OUTPUT:
+        
+        - instance of :class:`Metric` representing the restriction.
+        
+        """
+        if subdomain == self._domain:
+            return self
+        if subdomain not in self._restrictions:
+            # Construct the restriction at the tensor field level:
+            resu = TensorField.restrict(self, subdomain, dest_map=dest_map)
+            # the signature is not handled by TensorField.restrict:
+            resu._signature = self._signature
+            resu._signature_pm = self._signature_pm
+            resu._indic_signat = self._indic_signat
+            # Restrictions of derived quantities:
+            resu._inverse = self._inverse.restrict(subdomain)
+            if self._connection is not None:
+                resu._connection = self._connection.restrict(subdomain)
+            if self._weyl is not None:
+                resu._weyl = self._weyl.restrict(subdomain)
+            if self._vol_forms != []:
+                for eps in self._vol_forms:
+                    resu._vol_forms.append(eps.restrict(subdomain))
+            # NB: no initialization of resu._determinants nor 
+            # resu._sqrt_abs_dets
+            # The restriction is ready:
+            self._restrictions[subdomain] = resu
+        return self._restrictions[subdomain]
+
+#*****************************************************************************
+
+class RiemannMetric(Metric):
+    r"""
+    Riemannian metric with values on an open subset of a 
+    differentiable manifold.
+    
+    A Riemannian metric is a field of positive-definite symmetric bilinear 
+    forms on the manifold. 
+
+    See :class:`Metric` for a complete documentation. 
+    
+    INPUT:
+    
+    - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector 
+      fields along `U` with values on `\Phi(U)\subset V \subset M`
+    - ``name`` -- name given to the metric
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+      none, it is formed from ``name``      
+
+
+    """
+    def __init__(self, vector_field_module, name, latex_name=None):
+        dim = vector_field_module._ambient_domain._manifold._dim
+        Metric.__init__(self, vector_field_module, name, signature=dim,
+                             latex_name=latex_name)
+
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+        description = "Riemannian metric '%s' " % self._name
+        return self._final_repr(description)
+
+    def _new_instance(self):
+        r"""
+        Create a :class:`RiemannMetric` instance on the same domain.
+        
+        """
+        return self.__class__(self._vmodule, 'unnamed metric')
+
+#*****************************************************************************
+
+class LorentzMetric(Metric):
+    r"""
+    Lorentzian metric with values on an open subset of a 
+    differentiable manifold.
+    
+    A Lorentzian metric is a field of symmetric bilinear 
+    forms with signature `(-,+,\cdots,+)` or `(+,-,\cdots,-)`. 
+
+    See :class:`Metric` for a complete documentation. 
+    
+    INPUT:
+    
+    - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector 
+      fields along `U` with values on `\Phi(U)\subset V \subset M`
+    - ``name`` -- name given to the metric
+    - ``signature`` -- (default: 'positive') sign of the metric signature: 
+        * if set to 'positive', the signature is n-2, where n is the manifold's
+          dimension, i.e. `(-,+,\cdots,+)`
+        * if set to 'negative', the signature is -n+2, i.e. `(+,-,\cdots,-)`
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+      none, it is formed from ``name``      
+
+    EXAMPLE:
+
+    """
+    def __init__(self, vector_field_module, name, signature='positive', 
+                 latex_name=None):
+        dim = vector_field_module._ambient_domain._manifold._dim
+        if signature=='positive':
+            signat = dim - 2
+        else:
+            signat = 2 - dim
+        Metric.__init__(self, vector_field_module, name, signature=signat,
+                        latex_name=latex_name)
+
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+        description = "Lorentzian metric '%s' " % self._name
+        return self._final_repr(description)
+
+    def _new_instance(self):
+        r"""
+        Create a :class:`LorentzMetric` instance on the same domain.
+        
+        """
+        if self._signature >= 0:
+            signature_type = 'positive'
+        else:
+            signature_type = 'negative'            
+        return self.__class__(self._module, 'unnamed metric', 
+                              signature=signature_type)
+
+
+
 #******************************************************************************
 
 class MetricParal(Metric, TensorFieldParal):
@@ -334,6 +479,53 @@ class MetricParal(Metric, TensorFieldParal):
         """
         self._inverse._components.clear()
         self._inverse._del_derived()
+
+    def restrict(self, subdomain, dest_map=None):
+        r"""
+        Return the restriction of the metric to some subdomain.
+        
+        If the restriction has not been defined yet, it is constructed here.
+
+        INPUT:
+        
+        - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an 
+          instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+        - ``dest_map`` -- (default: None) destination map 
+          `\Phi:\ U \rightarrow V`, where `V` is a subdomain of 
+          ``self._codomain``
+          (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
+          If None, the restriction of ``self._vmodule._dest_map`` to `U` is 
+          used.
+          
+        OUTPUT:
+        
+        - instance of :class:`Metric` representing the restriction.
+        
+        """
+        if subdomain == self._domain:
+            return self
+        if subdomain not in self._restrictions:
+            # Construct the restriction at the tensor field level:
+            resu = TensorFieldParal.restrict(self, subdomain, dest_map=dest_map)
+            # the signature is not handled by TensorField.restrict:
+            resu._signature = self._signature
+            resu._signature_pm = self._signature_pm
+            resu._indic_signat = self._indic_signat
+            # Restrictions of derived quantities:
+            resu._inverse = self._inverse.restrict(subdomain)
+            if self._connection is not None:
+                resu._connection = self._connection.restrict(subdomain)
+            if self._weyl is not None:
+                resu._weyl = self._weyl.restrict(subdomain)
+            if self._vol_forms != []:
+                for eps in self._vol_forms:
+                    resu._vol_forms.append(eps.restrict(subdomain))
+            # NB: no initialization of resu._determinants nor 
+            # resu._sqrt_abs_dets
+            # The restriction is ready:
+            self._restrictions[subdomain] = resu
+        return self._restrictions[subdomain]
+
 
     def set(self, symbiform):
         r"""
