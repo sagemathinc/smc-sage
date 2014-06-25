@@ -2036,7 +2036,7 @@ class OpenDomain(Domain):
         return vmodule.identity_map(name=name, latex_name=latex_name)
 
 
-    def metric(self, name, signature=None, latex_name=None): 
+    def metric(self, name, signature=None, latex_name=None, dest_map=None): 
         r"""
         Define a pseudo-Riemannian metric on the domain.
 
@@ -2053,6 +2053,11 @@ class OpenDomain(Domain):
           the manifold's dimension (Riemannian signature)
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
           none, it is formed from ``name``      
+        - ``dest_map`` -- (default: None) instance of 
+          class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+          representing the destination map `\Phi:\ U \rightarrow V`, where `U` 
+          is ``self``; if none is provided, the identity map is assumed (case 
+          of a metric field *on* ``self``)
 
         OUTPUT:
         
@@ -2066,18 +2071,17 @@ class OpenDomain(Domain):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M', start_index=1)
             sage: c_xyz.<x,y,z> = M.chart()
-            sage: #!# g = M.metric('g'); g 
+            sage: g = M.metric('g'); g 
             pseudo-Riemannian metric 'g' on the 3-dimensional manifold 'M'
         
         See the documentation of class 
         :class:`~sage.geometry.manifolds.metric.Metric` for more examples.
 
         """
-        from metric import Metric
-        return Metric(self, name, signature, latex_name)
+        vmodule = self.vector_field_module(dest_map)
+        return vmodule.metric(name, signature=signature, latex_name=latex_name)
 
-
-    def riemann_metric(self, name, latex_name=None):
+    def riemann_metric(self, name, latex_name=None, dest_map=None):
         r"""
         Define a Riemannian metric on the domain.
 
@@ -2092,6 +2096,11 @@ class OpenDomain(Domain):
         - ``name`` -- name given to the metric
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
           none, it is formed from ``name``      
+        - ``dest_map`` -- (default: None) instance of 
+          class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+          representing the destination map `\Phi:\ U \rightarrow V`, where `U` 
+          is ``self``; if none is provided, the identity map is assumed (case 
+          of a metric field *on* ``self``)
 
         OUTPUT:
         
@@ -2105,23 +2114,23 @@ class OpenDomain(Domain):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
             sage: c_spher.<th,ph> = M.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
-            sage: #!# g = M.riemann_metric('g'); g
+            sage: g = M.riemann_metric('g'); g
             Riemannian metric 'g' on the 2-dimensional manifold 'S^2'
-            sage: #!# g[1,1], g[2,2] = 1, sin(th)^2
-            sage: #!# g.view()
+            sage: g[1,1], g[2,2] = 1, sin(th)^2
+            sage: g.view()
             g = dth*dth + sin(th)^2 dph*dph
-            sage: #!# g.signature() 
+            sage: g.signature() 
             2
 
         See the documentation of class 
         :class:`~sage.geometry.manifolds.metric.RiemannMetric` for more examples.
 
         """  
-        from metric import RiemannMetric
-        return RiemannMetric(self, name, latex_name)
+        vmodule = self.vector_field_module(dest_map)
+        return vmodule.riemann_metric(name, latex_name=latex_name)
 
-
-    def lorentz_metric(self, name, signature='positive', latex_name=None):
+    def lorentz_metric(self, name, signature='positive', latex_name=None,
+                       dest_map=None):
         r"""
         Define a Lorentzian metric on the domain.
 
@@ -2143,6 +2152,11 @@ class OpenDomain(Domain):
 
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
           none, it is formed from ``name``      
+        - ``dest_map`` -- (default: None) instance of 
+          class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+          representing the destination map `\Phi:\ U \rightarrow V`, where `U` 
+          is ``self``; if none is provided, the identity map is assumed (case 
+          of a metric field *on* ``self``)
 
         OUTPUT:
         
@@ -2156,12 +2170,12 @@ class OpenDomain(Domain):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(4, 'M')
             sage: c_cart.<t,x,y,z> = M.chart()
-            sage: #!# g = M.lorentz_metric('g'); g
+            sage: g = M.lorentz_metric('g'); g
             Lorentzian metric 'g' on the 4-dimensional manifold 'M'
-            sage: #!# g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
-            sage: #!# g.view()
+            sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
+            sage: g.view()
             g = -dt*dt + dx*dx + dy*dy + dz*dz
-            sage: #!# g.signature()
+            sage:g.signature()
             2 
 
         See the documentation of class 
@@ -2169,9 +2183,9 @@ class OpenDomain(Domain):
         examples.
 
         """
-        from metric import LorentzMetric
-        return LorentzMetric(self, name, signature, latex_name)
-
+        vmodule = self.vector_field_module(dest_map)
+        return vmodule.lorentz_metric(name, signature=signature, 
+                                      latex_name=latex_name)
 
     def diff_form(self, degree, name=None, latex_name=None, 
                   dest_map=None):

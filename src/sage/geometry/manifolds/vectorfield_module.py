@@ -498,6 +498,101 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         from rank2field import TangentIdentityField
         return TangentIdentityField(self, name=name, latex_name=latex_name)
 
+    def metric(self, name, signature=None, latex_name=None):
+        r"""
+        Construct a pseudo-Riemannian metric (nondegenerate symmetric bilinear 
+        form) on the free module ``self``.
+        
+        A metric of the vector free module ``self`` is actually a field
+        of tangent-space metrics along the open subset `U` on which 
+        ``self`` is defined.
+        
+        INPUT:
+    
+        - ``name`` -- (string) name given to the metric
+        - ``signature`` -- (integer; default: None) signature `S` of the 
+          metric: `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of 
+          positive terms (resp. number of negative terms) in any diagonal writing 
+          of the metric components; if ``signature`` is not provided, `S` is set to 
+          the manifold's dimension (Riemannian signature)
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          metric; if none, it is formed from ``name``      
+          
+        OUTPUT:
+        
+        - instance of :class:`~sage.geometry.manifolds.metric.Metric` 
+          representing the defined pseudo-Riemannian metric. 
+
+        See :class:`~sage.geometry.manifolds.metric.Metric` for further
+        documentation.
+
+        """
+        from metric import Metric
+        return Metric(self, name, signature=signature, latex_name=latex_name)
+
+    def riemann_metric(self, name, latex_name=None):
+        r"""
+        Construct a Riemannian metric (positive definite symmetric bilinear 
+        form) on the free module ``self``.
+        
+        A Riemannian metric of the vector free module ``self`` is actually a 
+        field of tangent-space Riemannian metrics along the open subset `U` 
+        on which ``self`` is defined.
+        
+        INPUT:
+    
+        - ``name`` -- (string) name given to the metric
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          metric; if none, it is formed from ``name``      
+          
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.geometry.manifolds.metric.RiemannMetric` 
+          representing the defined Riemannian metric. 
+
+        See :class:`~sage.geometry.manifolds.metric.RiemannMetric` for 
+        further documentation.
+
+        """
+        from metric import RiemannMetric
+        return RiemannMetric(self, name, latex_name=latex_name)
+
+    def lorentz_metric(self, name, signature='positive', latex_name=None):
+        r"""
+        Construct a Lorentzian metric (symmetric bilinear 
+        form of signature (-,+,...,+) or (+,-,...,-)) on the free 
+        module ``self``.
+        
+        A Lorentzian metric of the vector free module ``self`` is actually a 
+        field of tangent-space Lorentzian metrics along the open subset `U` on 
+        which ``self`` is defined.
+        
+        INPUT:
+    
+        - ``name`` -- (string) name given to the metric
+        - ``signature`` -- (string, default: 'positive') sign of the metric 
+          signature: 
+
+          * if set to 'positive', the signature is n-2, where n is the manifold's
+            dimension, i.e. `(-,+,\cdots,+)`
+          * if set to 'negative', the signature is -n+2, i.e. `(+,-,\cdots,-)`
+
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          metric; if none, it is formed from ``name``      
+          
+        OUTPUT:
+        
+        - instance of :class:`~sage.geometry.manifolds.metric.LorentzMetric` 
+          representing the defined Loretnzian metric. 
+
+        See :class:`~sage.geometry.manifolds.metric.LorentzMetric` for 
+        further documentation.
+
+        """
+        from metric import LorentzMetric
+        return LorentzMetric(self, name, signature=signature, 
+                             latex_name=latex_name)
 
 
 #******************************************************************************
@@ -1136,3 +1231,99 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
     #### End of methods to be redefined by derived classes of FiniteRankFreeModule ####
 
+    def metric(self, name, signature=None, latex_name=None):
+        r"""
+        Construct a pseudo-Riemannian metric (nondegenerate symmetric bilinear 
+        form) on the free module ``self``.
+        
+        A metric of the vector free module ``self`` is actually a field
+        of tangent-space metrics along the open subset `U` on which 
+        ``self`` is defined.
+        
+        INPUT:
+    
+        - ``name`` -- (string) name given to the metric
+        - ``signature`` -- (integer; default: None) signature `S` of the 
+          metric: `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of 
+          positive terms (resp. number of negative terms) in any diagonal writing 
+          of the metric components; if ``signature`` is not provided, `S` is set to 
+          the manifold's dimension (Riemannian signature)
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          metric; if none, it is formed from ``name``      
+          
+        OUTPUT:
+        
+        - instance of :class:`~sage.geometry.manifolds.metric.MetricParal` 
+          representing the defined pseudo-Riemannian metric. 
+
+        See :class:`~sage.geometry.manifolds.metric.MetricParal` for further
+        documentation.
+
+        """
+        from metric import MetricParal
+        return MetricParal(self, name, signature=signature, 
+                           latex_name=latex_name)
+
+    def riemann_metric(self, name, latex_name=None):
+        r"""
+        Construct a Riemannian metric (positive definite symmetric bilinear 
+        form) on the free module ``self``.
+        
+        A Riemannian metric of the vector free module ``self`` is actually a 
+        field of tangent-space Riemannian metrics along the open subset `U` 
+        on which ``self`` is defined.
+        
+        INPUT:
+    
+        - ``name`` -- (string) name given to the metric
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          metric; if none, it is formed from ``name``      
+          
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.geometry.manifolds.metric.RiemannMetricParal` 
+          representing the defined Riemannian metric. 
+
+        See :class:`~sage.geometry.manifolds.metric.RiemannMetricParal` for 
+        further documentation.
+
+        """
+        from metric import RiemannMetricParal
+        return RiemannMetricParal(self, name, latex_name=latex_name)
+
+    def lorentz_metric(self, name, signature='positive', latex_name=None):
+        r"""
+        Construct a Lorentzian metric (symmetric bilinear 
+        form of signature (-,+,...,+) or (+,-,...,-)) on the free 
+        module ``self``.
+        
+        A Lorentzian metric of the vector free module ``self`` is actually a 
+        field of tangent-space Lorentzian metrics along the open subset `U` on 
+        which ``self`` is defined.
+        
+        INPUT:
+    
+        - ``name`` -- (string) name given to the metric
+        - ``signature`` -- (string, default: 'positive') sign of the metric 
+          signature: 
+
+          * if set to 'positive', the signature is n-2, where n is the manifold's
+            dimension, i.e. `(-,+,\cdots,+)`
+          * if set to 'negative', the signature is -n+2, i.e. `(+,-,\cdots,-)`
+
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          metric; if none, it is formed from ``name``      
+          
+        OUTPUT:
+        
+        - instance of :class:`~sage.geometry.manifolds.metric.LorentzMetricParal` 
+          representing the defined Loretnzian metric. 
+
+        See :class:`~sage.geometry.manifolds.metric.LorentzMetricParal` for 
+        further documentation.
+
+        """
+        from metric import LorentzMetricParal
+        return LorentzMetricParal(self, name, signature=signature, 
+                                  latex_name=latex_name)

@@ -24,25 +24,202 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from tensorfield import TensorFieldParal
+from tensorfield import TensorField, TensorFieldParal
 from sage.rings.integer import Integer
 
-#!# Provisory: TensorFieldParal must be replaced by TensorField:
-class Metric(TensorFieldParal):
+class Metric(TensorField):
     r"""
-    Base class for pseudo-Riemannian metrics on a differentiable manifold.
+    Base class for pseudo-Riemannian metrics with values on an
+    open subset of a differentiable manifold. 
 
+    An instance of this class is a field of nondegenerate symmetric bilinear 
+    forms (metric field) along an open subset `U` of some manifold `S` with 
+    values in an open subset `V` of a manifold `M`, via a 
+    differentiable mapping `\Phi: U \rightarrow V`. 
+    The standard case of a metric field *on* a manifold corresponds to `S=M`, 
+    `U=V` and `\Phi = \mathrm{Id}`. Another common case is `\Phi` being an
+    immersion.
+
+    If `V` is parallelizable, the class :class:`MetricParal` should be
+    used instead. 
+
+    A *metric* `g` is a field on `U`, so that at each 
+    point `p\in U`, `g(p)` is a bilinear map of the type:
+
+    .. MATH::
+
+        g(p):\ T_p M\times T_p M  \longrightarrow \RR
+    
+    where `T_p M` stands for the tangent space at the point `p` on the
+    manifold `M`, such that `g(p)` is symmetric: 
+    `forall (u,v)\in  T_p M\times T_p M, \ g(p)(u,v) = g(p)(u,v)` 
+    and nondegenerate: 
+    `(\forall v\in T_p M,\ \ g(p)(u,v) = 0) \Rightarrow u=0`. 
+    
     INPUT:
     
-    - ``domain`` -- the manifold domain on which the metric is defined
-      (must be an instance of class 
-      :class:`~sage.geometry.manifolds.domain.Domain`)
+    - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector 
+      fields along `U` with values on `\Phi(U)\subset V \subset M`
     - ``name`` -- name given to the metric
     - ``signature`` -- (default: None) signature `S` of the metric as a single 
       integer: `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of 
       positive terms (resp. number of negative terms) in any diagonal writing 
       of the metric components; if ``signature`` is not provided, `S` is set to 
-      the manifold's dimension (Riemannian signature)
+      the dimension of manifold `M` (Riemannian signature)
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+      none, it is formed from ``name``      
+
+    EXAMPLES:
+    
+
+    """
+    def __init__(self, vector_field_module, name, signature=None, 
+                 latex_name=None):
+        TensorField.__init__(self, vector_field_module, (0,2), 
+                             name=name, latex_name=latex_name, sym=(0,1))
+        # signature:
+        ndim = self._ambient_domain._manifold._dim
+        if signature is None:
+            signature = ndim
+        else:
+            if not isinstance(signature, (int, Integer)):
+                raise TypeError("The metric signature must be an integer.")
+            if (signature < - ndim) or (signature > ndim):
+                raise ValueError("Metric signature out of range.")
+            if (signature+ndim)%2 == 1:
+                if ndim%2 == 0:
+                    raise ValueError("The metric signature must be even.")
+                else:
+                    raise ValueError("The metric signature must be odd.")
+        self._signature = signature
+        # the pair (n_+, n_-):
+        self._signature_pm = ((ndim+signature)/2, (ndim-signature)/2)
+        self._indic_signat = 1 - 2*(self._signature_pm[1]%2)  # (-1)^n_-
+        Metric._init_derived(self)
+
+    def _repr_(self):
+        r"""
+        String representation of the object.
+        """
+        description = "pseudo-Riemannian metric '%s' " % self._name
+        return self._final_repr(description)
+
+    def _new_instance(self):
+        r"""
+        Create an instance of the same class as ``self`` with the same 
+        signature.
+        
+        """
+        return self.__class__(self._vmodule, 'unnamed metric', 
+                              signature=self._signature)
+
+    def _init_derived(self):
+        r"""
+        Initialize the derived quantities
+        """
+        # Initialization of quantities pertaining to the mother class:
+        TensorField._init_derived(self) 
+        # inverse metric:
+        inv_name = 'inv_' + self._name
+        inv_latex_name = self._latex_name + r'^{-1}'
+        self._inverse = self._vmodule.tensor((2,0), name=inv_name, 
+                                             latex_name=inv_latex_name, 
+                                             sym=(0,1))
+        self._connection = None  # Levi-Civita connection (not set yet)
+        self._weyl = None # Weyl tensor (not set yet)
+        self._determinants = {} # determinants in various frames
+        self._sqrt_abs_dets = {} # sqrt(abs(det g)) in various frames
+        self._vol_forms = [] # volume form and associated tensors
+
+    def _del_derived(self):
+        r"""
+        Delete the derived quantities
+        """
+        # First the derived quantities from the mother class are deleted:
+        TensorField._del_derived(self)
+        # The inverse metric is cleared: 
+        self._del_inverse()
+        # The connection and Weyl tensor are reset to None:
+        self._connection = None
+        self._weyl = None
+        # The dictionary of determinants over the various frames is cleared:
+        self._determinants.clear()
+        self._sqrt_abs_dets.clear()
+        # The volume form and the associated tensors is deleted:
+        del self._vol_forms[:]
+
+    def _del_inverse(self):
+        r"""
+        Delete the inverse metric
+        """
+        self._inverse._restrictions.clear()
+        self._inverse._del_derived()
+
+    def signature(self):
+        r"""
+        Signature of the metric. 
+        
+        OUTPUT:
+
+        - signature `S` of the metric, defined as the integer 
+          `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of 
+          positive terms (resp. number of negative terms) in any diagonal 
+          writing of the metric components
+        
+        EXAMPLES:
+        
+        Signatures on a 2-dimensional manifold::
+        
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: g = M.metric('g') # if not specified, the signature is Riemannian
+            sage: g.signature() 
+            2
+            sage: h = M.metric('h', signature=0)
+            sage: h.signature()
+            0
+
+        """
+        return self._signature
+
+#******************************************************************************
+
+class MetricParal(Metric, TensorFieldParal):
+    r"""
+    Base class for pseudo-Riemannian metrics with values on a parallelizable 
+    open subset of a differentiable manifold. 
+
+    An instance of this class is a field of nondegenerate symmetric bilinear 
+    forms (metric field) along an open subset `U` of some manifold `S` with 
+    values in a parallelizable open subset `V` of a manifold `M`, via a 
+    differentiable mapping `\Phi: U \rightarrow V`. 
+    The standard case of a metric field *on* a manifold corresponds to `S=M`, 
+    `U=V` and `\Phi = \mathrm{Id}`. Another common case is `\Phi` being an
+    immersion.
+
+    A *metric* `g` is a field on `U`, so that at each 
+    point `p\in U`, `g(p)` is a bilinear map of the type:
+
+    .. MATH::
+
+        g(p):\ T_p M\times T_p M  \longrightarrow \RR
+    
+    where `T_p M` stands for the tangent space at the point `p` on the
+    manifold `M`, such that `g(p)` is symmetric: 
+    `forall (u,v)\in  T_p M\times T_p M, \ g(p)(u,v) = g(p)(u,v)` 
+    and nondegenerate: 
+    `(\forall v\in T_p M,\ \ g(p)(u,v) = 0) \Rightarrow u=0`. 
+    
+    INPUT:
+    
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector 
+      fields along `U` with values on `\Phi(U)\subset V \subset M`
+    - ``name`` -- name given to the metric
+    - ``signature`` -- (default: None) signature `S` of the metric as a single 
+      integer: `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of 
+      positive terms (resp. number of negative terms) in any diagonal writing 
+      of the metric components; if ``signature`` is not provided, `S` is set to 
+      the dimension of manifold `M` (Riemannian signature)
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``      
 
@@ -111,9 +288,9 @@ class Metric(TensorFieldParal):
         inv_g = (x - 1)/(x^2*y^2 + x^2 - 1) d/dx*d/dx + x*y/(x^2*y^2 + x^2 - 1) d/dx*d/dy + x*y/(x^2*y^2 + x^2 - 1) d/dy*d/dx - (x + 1)/(x^2*y^2 + x^2 - 1) d/dy*d/dy
 
     """
-    def __init__(self, domain, name, signature=None, latex_name=None):
-        #!# Provisory: must be replaced by TensorField.__init__ :
-        TensorFieldParal.__init__(self, domain.vector_field_module(), (0,2), 
+    def __init__(self, vector_field_module, name, signature=None, 
+                 latex_name=None):
+        TensorFieldParal.__init__(self, vector_field_module, (0,2), 
                                   name=name, latex_name=latex_name, sym=(0,1))
         # signature:
         ndim = self._ambient_domain._manifold._dim
@@ -133,87 +310,30 @@ class Metric(TensorFieldParal):
         # the pair (n_+, n_-):
         self._signature_pm = ((ndim+signature)/2, (ndim-signature)/2)
         self._indic_signat = 1 - 2*(self._signature_pm[1]%2)  # (-1)^n_-
-        Metric._init_derived(self)
+        MetricParal._init_derived(self)
         
-    def _repr_(self):
-        r"""
-        Special Sage function for the string representation of the object.
-        """
-        description = "pseudo-Riemannian metric '%s'" % self._name
-        description += " on the " + str(self._domain)
-        return description
-
-    def _new_instance(self):
-        r"""
-        Create a :class:`Metric` instance with the same signature.
-        
-        """
-        return Metric(self._domain, 'unnamed', signature=self._signature)
-
     def _init_derived(self):
         r"""
         Initialize the derived quantities
         """
-        # Initialization of quantities pertaining to the mother class:
-        #!# Provisory: TensorFieldParal must be replaced by TensorField:
+        # Initialization of quantities pertaining to the mother classes:
         TensorFieldParal._init_derived(self) 
-        # inverse metric:
-        inv_name = 'inv_' + self._name
-        inv_latex_name = self._latex_name + r'^{-1}'
-        self._inverse = self._domain.tensor_field(2, 0, name=inv_name, 
-                                                 latex_name=inv_latex_name, 
-                                                 sym=(0,1))   
-        self._connection = None  # Levi-Civita connection (not set yet)
-        self._weyl = None # Weyl tensor (not set yet)
-        self._determinants = {} # determinants in various frames
-        self._sqrt_abs_dets = {} # sqrt(abs(det g)) in various frames
-        self._vol_forms = [] # volume form and associated tensors
+        Metric._init_derived(self) 
 
     def _del_derived(self):
         r"""
         Delete the derived quantities
         """
-        # First the derived quantities from the mother class are deleted:
-        #!# Provisory: TensorFieldParal must be replaced by TensorField:
+        # The derived quantities from the mother classes are deleted:
         TensorFieldParal._del_derived(self)
-        # The inverse metric is cleared: 
+        Metric._del_derived(self)
+
+    def _del_inverse(self):
+        r"""
+        Delete the inverse metric
+        """
         self._inverse._components.clear()
         self._inverse._del_derived()
-        # The connection and Weyl tensor are reset to None:
-        self._connection = None
-        self._weyl = None
-        # The dictionary of determinants over the various frames is cleared:
-        self._determinants.clear()
-        self._sqrt_abs_dets.clear()
-        # The volume form and the associated tensors is deleted:
-        del self._vol_forms[:]
-
-    def signature(self):
-        r"""
-        Signature of the metric. 
-        
-        OUTPUT:
-
-        - signature `S` of the metric, defined as the integer 
-          `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of 
-          positive terms (resp. number of negative terms) in any diagonal 
-          writing of the metric components
-        
-        EXAMPLES:
-        
-        Signatures on a 2-dimensional manifold::
-        
-            sage: M = Manifold(2, 'M')
-            sage: X.<x,y> = M.chart()
-            sage: g = M.metric('g') # if not specified, the signature is Riemannian
-            sage: g.signature() 
-            2
-            sage: h = M.metric('h', signature=0)
-            sage: h.signature()
-            0
-
-        """
-        return self._signature
 
     def set(self, symbiform):
         r"""
@@ -224,17 +344,16 @@ class Metric(TensorFieldParal):
         - ``symbiform`` -- field of symmetric bilinear forms
 
         """
-        #!# Provisory: TensorFieldParal must be replaced by TensorField:
         if not isinstance(symbiform, TensorFieldParal):
-            raise TypeError("The argument must be a tensor field.")
+            raise TypeError("The argument must be a tensor field with " + 
+                            "values on a parallelizable domain.")
         if not symbiform._tensor_type != (0,2):
             raise TypeError("The argument must be of tensor type (0,2).")
         if not symbiform._sym != [(0,1)]:
             raise TypeError("The argument must be symmetric.")
-        if symbiform._domain != self._domain:
+        if symbiform._vmodule is not self._vmodule:
             raise TypeError("The symmetric bilinear form and the metric are " + 
-                            "not defined on the same domain.")
-        self._domain = symbiform._domain
+                            "not defined on the same vector field module.")
         self._init_derived()
         self._components.clear()
         for frame in symbiform._components:
@@ -413,7 +532,7 @@ class Metric(TensorFieldParal):
             frame = chart._frame
         return self.connection().coef(frame)
           
-    def riemann(self, frame=None, name=None, latex_name=None):
+    def riemann(self, name=None, latex_name=None):
         r""" 
         Return the Riemann curvature tensor associated with the metric.
 
@@ -431,10 +550,6 @@ class Metric(TensorFieldParal):
 
         INPUT:
         
-        - ``frame`` -- (default: None) vector frame in which the computation 
-          must be performed; if none is provided, the computation is performed 
-          in a frame in which the metric components are known, privileging the 
-          domain's default frame.
         - ``name`` -- (default: None) name given to the Riemann tensor; 
           if none, it is set to "Riem(g)", where "g" is the metric's name
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
@@ -478,10 +593,10 @@ class Metric(TensorFieldParal):
             True
         
         """
-        return self.connection().riemann(frame, name, latex_name)
+        return self.connection().riemann(name, latex_name)
 
         
-    def ricci(self, frame=None, name=None, latex_name=None):
+    def ricci(self, name=None, latex_name=None):
         r""" 
         Return the Ricci tensor associated with the metric.
         
@@ -499,10 +614,6 @@ class Metric(TensorFieldParal):
 
         INPUT:
         
-        - ``frame`` -- (default: None) vector frame in which the computation 
-          must be performed; if none is provided, the computation is performed 
-          in a frame in which the metric components are known, privileging the 
-          domain's default frame.
         - ``name`` -- (default: None) name given to the Ricci tensor; 
           if none, it is set to "Ric(g)", where "g" is the metric's name
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
@@ -535,10 +646,10 @@ class Metric(TensorFieldParal):
             True
 
         """
-        return self.connection().ricci(frame, name, latex_name)
+        return self.connection().ricci(name, latex_name)
     
         
-    def ricci_scalar(self, frame=None, name=None, latex_name=None):
+    def ricci_scalar(self, name=None, latex_name=None):
         r""" 
         Return the Ricci scalar associated with the metric.
         
@@ -552,10 +663,6 @@ class Metric(TensorFieldParal):
 
         INPUT:
         
-        - ``frame`` -- (default: None) vector frame in which the computation 
-          must be performed; if none is provided, the computation is performed 
-          in a frame in which the metric components are known, privileging 
-          the domain's default frame.
         - ``name`` -- (default: None) name given to the Ricci scalar; 
           if none, it is set to "r(g)", where "g" is the metric's name
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
@@ -584,7 +691,7 @@ class Metric(TensorFieldParal):
             2/a^2
 
         """
-        return self.connection().ricci_scalar(frame, name, latex_name)
+        return self.connection().ricci_scalar(name, latex_name)
 
 
     def weyl(self, name=None, latex_name=None):
@@ -940,20 +1047,20 @@ class Metric(TensorFieldParal):
 
 #*****************************************************************************
 
-class RiemannMetric(Metric):
+class RiemannMetricParal(MetricParal):
     r"""
-    Riemannian metric on a differentiable manifold.
+    Riemannian metric with values on a parallelizable open subset of a 
+    differentiable manifold.
     
     A Riemannian metric is a field of positive-definite symmetric bilinear 
     forms on the manifold. 
 
-    See :class:`Metric` for a complete documentation. 
+    See :class:`MetricParal` for a complete documentation. 
     
     INPUT:
     
-    - ``domain`` -- the manifold domain on which the metric is defined
-      (must be an instance of class 
-      :class:`~sage.geometry.manifolds.domain.Domain`)
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector 
+      fields along `U` with values on `\Phi(U)\subset V \subset M`
     - ``name`` -- name given to the metric
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``      
@@ -973,42 +1080,42 @@ class RiemannMetric(Metric):
         2
 
     """
-    def __init__(self, domain, name, latex_name=None):
-        Metric.__init__(self, domain, name, signature=domain._manifold._dim, 
-                        latex_name=latex_name)
-    
+    def __init__(self, vector_field_module, name, latex_name=None):
+        dim = vector_field_module._ambient_domain._manifold._dim
+        MetricParal.__init__(self, vector_field_module, name, signature=dim,
+                             latex_name=latex_name)
+
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
-        description = "Riemannian metric '%s'" % self._name
-        description += " on the " + str(self._domain)
-        return description
+        description = "Riemannian metric '%s' " % self._name
+        return self._final_repr(description)
 
     def _new_instance(self):
         r"""
         Create a :class:`RiemannMetric` instance on the same domain.
         
         """
-        return RiemannMetric(self._domain, 'unnamed')
+        return self.__class__(self._fmodule, 'unnamed metric')
 
 
 #*****************************************************************************
 
-class LorentzMetric(Metric):
+class LorentzMetricParal(MetricParal):
     r"""
-    Lorentzian metric on a differentiable manifold.
+    Lorentzian metric with values on a parallelizable open subset of a 
+    differentiable manifold.
     
     A Lorentzian metric is a field of symmetric bilinear 
     forms with signature `(-,+,\cdots,+)` or `(+,-,\cdots,-)`. 
 
-    See :class:`Metric` for a complete documentation. 
+    See :class:`MetricParal` for a complete documentation. 
     
     INPUT:
     
-    - ``domain`` -- the manifold domain on which the metric is defined
-      (must be an instance of class 
-      :class:`~sage.geometry.manifolds.domain.Domain`)
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector 
+      fields along `U` with values on `\Phi(U)\subset V \subset M`
     - ``name`` -- name given to the metric
     - ``signature`` -- (default: 'positive') sign of the metric signature: 
         * if set to 'positive', the signature is n-2, where n is the manifold's
@@ -1038,21 +1145,22 @@ class LorentzMetric(Metric):
         -2
 
     """
-    def __init__(self, domain, name, signature='positive', latex_name=None):
+    def __init__(self, vector_field_module, name, signature='positive', 
+                 latex_name=None):
+        dim = vector_field_module._ambient_domain._manifold._dim
         if signature=='positive':
-            signat = domain._manifold._dim - 2
+            signat = dim - 2
         else:
-            signat = 2 - domain._manifold._dim
-        Metric.__init__(self, domain, name, signature=signat,
-                        latex_name=latex_name)
+            signat = 2 - dim
+        MetricParal.__init__(self, vector_field_module, name, signature=signat,
+                             latex_name=latex_name)
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
-        description = "Lorentzian metric '%s'" % self._name
-        description += " on the " + str(self._domain)
-        return description
+        description = "Lorentzian metric '%s' " % self._name
+        return self._final_repr(description)
 
     def _new_instance(self):
         r"""
@@ -1063,10 +1171,6 @@ class LorentzMetric(Metric):
             signature_type = 'positive'
         else:
             signature_type = 'negative'            
-        return LorentzMetric(self._domain, 'unnamed', signature=signature_type)
-
-
-
-
-
+        return self.__class__(self._fmodule, 'unnamed metric', 
+                              signature=signature_type)
 
