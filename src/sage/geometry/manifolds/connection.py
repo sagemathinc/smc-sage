@@ -1359,6 +1359,68 @@ class LeviCivitaConnection(AffConnection):
         AffConnection._del_derived(self)
         self._ricci_scalar = None
 
+    def restrict(self, subdomain):
+        r"""
+        Return the restriction of ``self`` to some subdomain.
+        
+        If such restriction has not been defined yet, it is constructed here.
+
+        INPUT:
+        
+        - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an 
+          instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+          
+        OUTPUT:
+        
+        - instance of :class:`LeviCivitaConnection` representing the restriction.
+
+        EXAMPLE:
+        
+        """
+        if subdomain == self._domain:
+            return self
+        if subdomain not in self._restrictions:
+            if not subdomain.is_subdomain(self._domain):
+                raise ValueError("The provided domain is not a subdomain of " + 
+                                 "the current connection's domain.")
+            resu = LeviCivitaConnection(self._metric.restrict(subdomain), 
+                                        name=self._name, 
+                                        latex_name=self._latex_name)
+            for frame in self._coefficients:
+                for sframe in subdomain._covering_frames:
+                    if sframe in frame.subframes:
+                        comp_store = self._coefficients[frame]._comp
+                        scoef = resu._new_coef(sframe)
+                        scomp_store = scoef._comp
+                        # the coefficients of the restriction are evaluated 
+                        # index by index:
+                        for ind, value in comp_store.iteritems():
+                            scomp_store[ind] = value.restrict(subdomain)
+                        resu._coefficients[sframe] = scoef
+            self._restrictions[subdomain] = resu
+        return self._restrictions[subdomain]
+
+    def _new_coef(self, frame): 
+        r"""
+        Create the connection coefficients w.r.t. the given frame. 
+                
+        """
+        from sage.tensor.modules.comp import Components, CompWithSym
+        from scalarfield import ScalarField
+        from vectorframe import CoordFrame
+        if isinstance(frame, CoordFrame):
+            # the Christoffel symbols are symmetric:
+            return CompWithSym(frame._domain.scalar_field_algebra(), frame, 3, 
+                               start_index=self._manifold._sindex,
+                               output_formatter=ScalarField.function_chart,
+                               sym=(1,2))
+        else:
+            # a priori no symmetry in a generic frame:
+            return Components(frame._domain.scalar_field_algebra(), frame, 3, 
+                              start_index=self._manifold._sindex,
+                              output_formatter=ScalarField.function_chart)
+
+
     def coef(self, frame=None):
         r"""
         Return the connection coefficients relative to the given frame.
@@ -1438,7 +1500,6 @@ class LeviCivitaConnection(AffConnection):
             (-cos(th)/(r*sin(th)), cos(th)/(r*sin(th)))
 
         """
-        from sage.tensor.modules.comp import CompWithSym
         from scalarfield import ScalarField
         from vectorframe import CoordFrame
         if frame is None: 
@@ -1450,10 +1511,7 @@ class LeviCivitaConnection(AffConnection):
             if isinstance(frame, CoordFrame):
                 # Christoffel symbols
                 chart = frame._chart
-                gam = CompWithSym(dom.scalar_field_algebra(), frame, 3, 
-                                  start_index=self._manifold._sindex,
-                                  output_formatter=ScalarField.function_chart,
-                                  sym=(1,2))
+                gam = self._new_coef(frame)
                 gg = self._metric.comp(frame)
                 ginv = self._metric.inverse().comp(frame)
                 for ind in gam.non_redundant_index_generator():
@@ -1608,43 +1666,30 @@ class LeviCivitaConnection(AffConnection):
             True
 
         """
-        from scalarfield import ScalarField
-        from sage.tensor.modules.comp import CompFullySym
         if self._ricci is None:
             manif = self._manifold
-            dom = self._domain
             riem = self.riemann()
-            #!# to be changed
-            frame = None
-            if frame is None:
-                if dom._def_frame in riem._components:
-                    frame = dom._def_frame
-                else: # a random frame is picked
-                    frame = riem._components.items()[0][0]
-            criem = riem._components[frame]
-            cric = CompFullySym(dom.scalar_field_algebra(), frame, 2,
-                                start_index=self._manifold._sindex,
-                                output_formatter=ScalarField.function_chart)
-            si = manif._sindex
-            for i in manif.irange():
-                # symmetry of the Ricci tensor taken into account by j>=i: 
-                for j in manif.irange(start=i):  
-                    rsum = criem[[si,i,si,j]].copy()
-                    for k in manif.irange(start=si+1):
-                        rsum += criem[[k,i,k,j]]
-                    cric[i,j] = rsum
-            self._ricci = dom.vector_field_module().tensor_from_comp((0,2), 
-                                                                     cric)
-            self._ricci._domain = self._domain
+            resu = self._domain.tensor_field(0,2, sym=(0,1))
+            for frame in self._coefficients:
+                cric = resu.add_comp(frame)
+                criem = riem.comp(frame)
+                for i in manif.irange():
+                    # symmetry of the Ricci tensor taken into account by j>=i: 
+                    for j in manif.irange(start=i):  
+                        rsum = 0
+                        for k in manif.irange():
+                            rsum += criem[[k,i,k,j]]
+                        cric[i,j] = rsum
             if name is None:
-                self._ricci._name = "Ric(" + self._metric._name + ")"
+                resu._name = "Ric(" + self._metric._name + ")"
             else:
-                self._ricci._name = name
+                resu._name = name
             if latex_name is None:
-                self._ricci._latex_name = r"\mathrm{Ric}\left(" + \
+                resu._latex_name = r"\mathrm{Ric}\left(" + \
                                          self._metric._latex_name + r"\right)"
             else:
-                self._ricci._latex_name = latex_name
+                resu._latex_name = latex_name
+            self._ricci = resu
         return self._ricci 
 
     def ricci_scalar(self, name=None, latex_name=None):

@@ -52,9 +52,9 @@ class Metric(TensorField):
     
     where `T_p M` stands for the tangent space at the point `p` on the
     manifold `M`, such that `g(p)` is symmetric: 
-    `forall (u,v)\in  T_p M\times T_p M, \ g(p)(u,v) = g(p)(u,v)` 
+    `\forall (u,v)\in  T_p M\times T_p M, \ g(p)(v,u) = g(p)(u,v)` 
     and nondegenerate: 
-    `(\forall v\in T_p M,\ \ g(p)(u,v) = 0) \Rightarrow u=0`. 
+    `(\forall v\in T_p M,\ \ g(p)(u,v) = 0) \Longrightarrow u=0`. 
     
     INPUT:
     
@@ -118,7 +118,7 @@ class Metric(TensorField):
         sage: g.view(eVW, c_uvW)
         g = 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) du*du + 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) dv*dv
 
-    Therefore, we set
+    Therefore, we set::
     
         sage: g[eV,1,1], g[eV,2,2] = 4/(1+u^2+v^2)^2, 4/(1+u^2+v^2)^2
         sage: g[eV,1,1].factor() ; g[eV,2,2].factor()
@@ -151,6 +151,8 @@ class Metric(TensorField):
         tensor field 'inv_g' of type (2,0) on the 2-dimensional manifold 'S^2'
         sage: ginv.parent()
         module TF^(2,0)(S^2) of type-(2,0) tensors fields on the 2-dimensional manifold 'S^2'
+        sage: latex(ginv)
+        g^{-1}
         sage: ginv.view(eU) # again the components are expanded
         inv_g = (1/4*x^4 + 1/4*y^4 + 1/2*(x^2 + 1)*y^2 + 1/2*x^2 + 1/4) d/dx*d/dx + (1/4*x^4 + 1/4*y^4 + 1/2*(x^2 + 1)*y^2 + 1/2*x^2 + 1/4) d/dy*d/dy
         sage: ginv.view(eV)
@@ -164,7 +166,49 @@ class Metric(TensorField):
         True
         sage: ginv.restrict(W) is g.restrict(W).inverse()
         True
+    
+    The Levi-Civita connection associated with the metric `g`::
+    
+        sage: nabla = g.connection() ; nabla
+        Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the 2-dimensional manifold 'S^2'
+        sage: latex(nabla)
+        \nabla_{g}
+    
+    The Christoffel symbols `\Gamma^i_{\ \, jk}` associated with some coordinates::
+    
+        sage: g.christoffel_symbols(c_xy)
+        3-indices components w.r.t. coordinate frame (U, (d/dx,d/dy)), with symmetry on the index positions (1, 2)
+        sage: g.christoffel_symbols(c_xy)[:]
+        [[[-2*x/(x^2 + y^2 + 1), -2*y/(x^2 + y^2 + 1)],
+          [-2*y/(x^2 + y^2 + 1), 2*x/(x^2 + y^2 + 1)]],
+         [[2*y/(x^2 + y^2 + 1), -2*x/(x^2 + y^2 + 1)],
+          [-2*x/(x^2 + y^2 + 1), -2*y/(x^2 + y^2 + 1)]]]
+        sage: g.christoffel_symbols(c_uv)[:]
+        [[[-2*u/(u^2 + v^2 + 1), -2*v/(u^2 + v^2 + 1)],
+          [-2*v/(u^2 + v^2 + 1), 2*u/(u^2 + v^2 + 1)]],
+         [[2*v/(u^2 + v^2 + 1), -2*u/(u^2 + v^2 + 1)],
+          [-2*u/(u^2 + v^2 + 1), -2*v/(u^2 + v^2 + 1)]]]
+
+    The Christoffel symbols are nothing but the connection coefficients w.r.t.
+    the coordinate frame::
+    
+        sage: g.christoffel_symbols(c_xy) is nabla.coef(c_xy.frame())
+        True
+        sage: g.christoffel_symbols(c_uv) is nabla.coef(c_uv.frame())
+        True
+
+    Test that nabla is the connection compatible with `g`::
+    
+        sage: t = nabla(g) ; t
+        tensor field 'nabla_g g' of type (0,3) on the 2-dimensional manifold 'S^2'
+        sage: t.view(eU)
+        nabla_g g = 0
+        sage: t.view(eV)
+        nabla_g g = 0
+        sage: t == 0
+        True
         
+
     """
     def __init__(self, vector_field_module, name, signature=None, 
                  latex_name=None):
@@ -399,7 +443,7 @@ class Metric(TensorField):
             self._connection = LeviCivitaConnection(self, name, latex_name)
         return self._connection
 
-    def christoffel(self, chart=None):
+    def christoffel_symbols(self, chart=None):
         r"""
         Christoffel symbols of ``self`` with respect to a chart.
         
@@ -425,7 +469,7 @@ class Metric(TensorField):
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, r^2*sin(th)^2
             sage: g.view()  # the standard flat metric expressed in spherical coordinates
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
-            sage: Gam = g.christoffel() ; Gam
+            sage: Gam = g.christoffel_symbols() ; Gam
             3-indices components w.r.t. coordinate frame (R3, (d/dr,d/dth,d/dph)), with symmetry on the index positions (1, 2)
             sage: print type(Gam)
             <class 'sage.tensor.modules.comp.CompWithSym'>
@@ -693,9 +737,9 @@ class MetricParal(Metric, TensorFieldParal):
     
     where `T_p M` stands for the tangent space at the point `p` on the
     manifold `M`, such that `g(p)` is symmetric: 
-    `forall (u,v)\in  T_p M\times T_p M, \ g(p)(u,v) = g(p)(u,v)` 
+    `\forall (u,v)\in  T_p M\times T_p M, \ g(p)(v,u) = g(p)(u,v)` 
     and nondegenerate: 
-    `(\forall v\in T_p M,\ \ g(p)(u,v) = 0) \Rightarrow u=0`. 
+    `(\forall v\in T_p M,\ \ g(p)(u,v) = 0) \Longrightarrow u=0`. 
     
     INPUT:
     
