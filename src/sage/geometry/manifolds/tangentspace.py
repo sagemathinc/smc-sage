@@ -37,20 +37,31 @@ class TangentVector(FiniteRankFreeModuleElement):
         tangent space at a point 'P' on 2-dimensional manifold 'R^2'
         sage: v = T.tangent_vector('V'); v
         tangent vector V at point 'P' on 2-dimensional manifold 'R^2'
+
+    Check if vector `v` belongs to `T`::
+
+        sage: v in T
+        True
+
+    Checking the object's type::  
+
+        sage: type(v)
+        <class 'sage.geometry.manifolds.tangentspace.TangentSpace_with_category.element_class'>
+
+    Unnamed element of the tangent space:: 
+
         sage: w = T._an_element_()
         sage: w
         tangent vector at point 'P' on 2-dimensional manifold 'R^2' 
     """
     
     def __init__(self, parent, name=None, latex_name=None):
-        from sage.symbolic.ring import SR
 
         self._point = parent._point
-        self._dim = parent._dim    
+        self._dim = parent._rank    
         self.name = name 
         self.latex_name = latex_name
-        vmodule = FiniteRankFreeModule(SR, self._dim) 
-        FiniteRankFreeModuleElement.__init__(self, vmodule, name=name, latex_name=latex_name)
+        FiniteRankFreeModuleElement.__init__(self, parent, name=name, latex_name=latex_name)
 
     def _repr_(self): 
         r"""
@@ -62,6 +73,7 @@ class TangentVector(FiniteRankFreeModuleElement):
             desc += " " + str(self.name) 
         desc += " at " + str(self._point)
         return desc
+
 
 class TangentSpace(FiniteRankFreeModule):
     r"""
@@ -82,13 +94,28 @@ class TangentSpace(FiniteRankFreeModule):
         point 'P' on 2-dimensional manifold 'R^2'
         sage: T = p.tangent_space(); T
         tangent space at a point 'P' on 2-dimensional manifold 'R^2'
+
+    Checking the object's type:: 
+
+        sage: type(T)
+        <class 'sage.geometry.manifolds.tangentspace.TangentSpace_with_category'>
     """
 
     Element = TangentVector
 
     def __init__(self, point):
+
+        from scalarfield import ScalarField
+
         self._point = point 
-        self._dim = (point._manifold)._dim
+        manif = point._manifold
+        name = "T_" + str(point._name) + " " + str(manif._name)
+        latex_name = r"T_" + str(point._name) + "\," + str(manif._name)
+
+        FiniteRankFreeModule.__init__(self, manif.scalar_field_algebra(),
+                                  manif._dim, name=name, latex_name=latex_name,
+                                  start_index=manif._sindex,
+                                  output_formatter=ScalarField.function_chart)
 
     def _repr_(self):
         r"""
@@ -98,11 +125,11 @@ class TangentSpace(FiniteRankFreeModule):
         description = "tangent space at a " + str(self._point)  
         return description
        
-    def _element_constructor_(self, point, name=None, latex_name=None):
+    def _element_constructor_(self, name=None, latex_name=None):
         r"""
         Construct an element of the module
         """
-        return self.element_class(self, point, name=name, latex_name=latex_name)
+        return self.element_class(self, name=name, latex_name=latex_name)
 
     def _an_element_(self):
         r"""
@@ -110,9 +137,9 @@ class TangentSpace(FiniteRankFreeModule):
         """
         return self.element_class(self)
 
-    def tangent_vector(self, name):
+    def tangent_vector(self, name=None):
         r"""
-        Construct an element with name
+        Construct an element vector with name
         """
-        return self.element_class(self, name=name)
+        return self.element_class(self, name)
 
