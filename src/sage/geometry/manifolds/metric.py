@@ -71,7 +71,100 @@ class Metric(TensorField):
 
     EXAMPLES:
     
+    Standard metric on the sphere `S^2`::
+    
+        sage: Manifold._clear_cache_() # for doctests only
+        sage: M = Manifold(2, 'S^2', start_index=1)
+        sage: # The two open domains covered by stereographic coordinates (North and South): 
+        sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+        sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart() # stereographic coord 
+        sage: transf = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), intersection_name='W', restrictions1= x^2+y^2!=0, restrictions2= u^2+v^2!=0)
+        sage: inv = transf.inverse()
+        sage: W = U.intersection(V) # The complement of the two poles
+        sage: eU = c_xy.frame() ; eV = c_uv.frame()
+        sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
+        sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
+        sage: g = M.metric('g') ; g
+        pseudo-Riemannian metric 'g' on the 2-dimensional manifold 'S^2'
 
+    The metric is considered as a tensor field of type (0,2) on `S^2`::
+    
+        sage: g.parent()
+        module TF^(0,2)(S^2) of type-(0,2) tensors fields on the 2-dimensional manifold 'S^2'
+
+    We define g by its components on domain U (factorizing them to have a nicer
+    view)::
+    
+        sage: g[eU,1,1], g[eU,2,2] = 4/(1+x^2+y^2)^2, 4/(1+x^2+y^2)^2
+        sage: g.view(eU) # the components of the output are expanded 
+        g = 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) dx*dx + 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) dy*dy
+        sage: g[eU,1,1].factor() ; g[eU,2,2].factor() # we enforce the factorization
+        4/(x^2 + y^2 + 1)^2
+        4/(x^2 + y^2 + 1)^2
+        sage: g.view(eU) # the output looks nicer
+        g = 4/(x^2 + y^2 + 1)^2 dx*dx + 4/(x^2 + y^2 + 1)^2 dy*dy
+
+    A matrix view of the components::
+    
+        sage: g[eU,:]
+        [4/(x^2 + y^2 + 1)^2                   0]
+        [                  0 4/(x^2 + y^2 + 1)^2]
+
+    The components of g on domain V expressed in terms of (u,v) coordinates are
+    similar to those on domain U expressed in (x,y) coordinates, as we can 
+    check explicitely by asking for the component transformation on the 
+    common subdomain W::
+    
+        sage: g.view(eVW, c_uvW)
+        g = 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) du*du + 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) dv*dv
+
+    Therefore, we set
+    
+        sage: g[eV,1,1], g[eV,2,2] = 4/(1+u^2+v^2)^2, 4/(1+u^2+v^2)^2
+        sage: g[eV,1,1].factor() ; g[eV,2,2].factor()
+        4/(u^2 + v^2 + 1)^2
+        4/(u^2 + v^2 + 1)^2
+        sage: g.view(eV)
+        g = 4/(u^2 + v^2 + 1)^2 du*du + 4/(u^2 + v^2 + 1)^2 dv*dv
+
+    At this stage, the metric is fully defined on the whole sphere. Its 
+    restriction to some subdomain is itself a metric (by default, it bears the
+    same symbol)::
+    
+        sage: g.restrict(U)
+        pseudo-Riemannian metric 'g' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+        sage: g.restrict(U).parent()
+        free module TF^(0,2)(U) of type-(0,2) tensors fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+
+    The parent of `g|_U` is a free module because is `U` is a parallelizable 
+    domain, contrary to `S^2`. Actually, `g` and `g|_U` have different Python
+    type::
+    
+        sage: type(g)
+        <class 'sage.geometry.manifolds.metric.Metric'>
+        sage: type(g.restrict(U))
+        <class 'sage.geometry.manifolds.metric.MetricParal'>
+
+    The inverse metric is::
+    
+        sage: ginv = g.inverse() ; ginv
+        tensor field 'inv_g' of type (2,0) on the 2-dimensional manifold 'S^2'
+        sage: ginv.parent()
+        module TF^(2,0)(S^2) of type-(2,0) tensors fields on the 2-dimensional manifold 'S^2'
+        sage: ginv.view(eU) # again the components are expanded
+        inv_g = (1/4*x^4 + 1/4*y^4 + 1/2*(x^2 + 1)*y^2 + 1/2*x^2 + 1/4) d/dx*d/dx + (1/4*x^4 + 1/4*y^4 + 1/2*(x^2 + 1)*y^2 + 1/2*x^2 + 1/4) d/dy*d/dy
+        sage: ginv.view(eV)
+        inv_g = (1/4*u^4 + 1/4*v^4 + 1/2*(u^2 + 1)*v^2 + 1/2*u^2 + 1/4) d/du*d/du + (1/4*u^4 + 1/4*v^4 + 1/2*(u^2 + 1)*v^2 + 1/2*u^2 + 1/4) d/dv*d/dv
+
+    We have::
+    
+        sage: ginv.restrict(U) is g.restrict(U).inverse()
+        True
+        sage: ginv.restrict(V) is g.restrict(V).inverse()
+        True
+        sage: ginv.restrict(W) is g.restrict(W).inverse()
+        True
+        
     """
     def __init__(self, vector_field_module, name, signature=None, 
                  latex_name=None):
@@ -227,6 +320,255 @@ class Metric(TensorField):
             # The restriction is ready:
             self._restrictions[subdomain] = resu
         return self._restrictions[subdomain]
+
+    def inverse(self):
+        r"""
+        Return the inverse metric.
+        
+        OUTPUT:
+        
+        - instance of
+          :class:`~sage.geometry.geometry.tensorfield.TensorField`
+          with tensor_type = (2,0) representing the inverse metric
+        
+        EXAMPLES:
+        
+
+        """
+        # Is the inverse metric up to date ?
+        for dom, rst in self._restrictions.iteritems():
+            self._inverse._restrictions[dom] = rst.inverse() # forces the 
+                                                    # update of the restriction
+        return self._inverse
+
+    def connection(self, name=None, latex_name=None):
+        r"""
+        Return the unique torsion-free affine connection compatible with 
+        ``self``.
+        
+        This is the so-called Levi-Civita connection.
+        
+        INPUT:
+        
+        - ``name`` -- (default: None) name given to the Levi-Civita connection; 
+          if none, it is formed from the metric name
+        - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
+          Levi-Civita connection; if none, it is formed from the symbol 
+          `\nabla` and the metric symbol
+          
+        OUTPUT:
+        
+        - the Levi-Civita connection, as an instance of 
+          :class:`~sage.geometry.manifolds.connection.LeviCivitaConnection`. 
+          
+        EXAMPLES:
+        
+        Levi-Civitation connection associated with the Euclidean metric on 
+        `\RR^3`::
+        
+            sage: M = Manifold(3, 'R^3', start_index=1)
+            sage: # Let us use spherical coordinates on R^3:
+            sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: g = M.metric('g')
+            sage: g[1,1], g[2,2], g[3,3] = 1, r^2 , (r*sin(th))^2  # the Euclidean metric
+            sage: g.connection()
+            Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the 3-dimensional manifold 'R^3'
+            sage: g.connection()[:]  # Christoffel symbols in spherical coordinates
+            [[[0, 0, 0], [0, -r, 0], [0, 0, -r*sin(th)^2]], 
+            [[0, 1/r, 0], [1/r, 0, 0], [0, 0, -cos(th)*sin(th)]], 
+            [[0, 0, 1/r], [0, 0, cos(th)/sin(th)], [1/r, cos(th)/sin(th), 0]]]
+
+        Test of compatibility with the metric::
+        
+            sage: Dg = g.connection()(g) ; Dg
+            tensor field 'nabla_g g' of type (0,3) on the 3-dimensional manifold 'R^3'
+            sage: Dg == 0
+            True
+            sage: Dig = g.connection()(g.inverse()) ; Dig
+            tensor field 'nabla_g inv_g' of type (2,1) on the 3-dimensional manifold 'R^3'
+            sage: Dig == 0
+            True
+        
+        """
+        from connection import LeviCivitaConnection
+        if self._connection is None:
+            if name is None:
+                name = 'nabla_' + self._name
+            if latex_name is None:
+                latex_name = r'\nabla_{' + self._latex_name + '}'
+            self._connection = LeviCivitaConnection(self, name, latex_name)
+        return self._connection
+
+    def christoffel(self, chart=None):
+        r"""
+        Christoffel symbols of ``self`` with respect to a chart.
+        
+        INPUT:
+        
+        - ``chart`` -- (default: None) chart with respect to which the 
+          Christoffel symbolds are required; if none is provided, the 
+          manifold's default chart is assumed.
+          
+        OUTPUT:
+        
+        - the set of Christoffel symbols in the given chart, as an instance of
+          :class:`~sage.tensor.modules.comp.CompWithSym`
+          
+        EXAMPLES:
+        
+        Christoffel symbols of the flat metric on `\RR^3` with respect to 
+        spherical coordinates::
+        
+            sage: M = Manifold(3, 'R3', r'\RR^3', start_index=1)
+            sage: X.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: g = M.metric('g')
+            sage: g[1,1], g[2,2], g[3,3] = 1, r^2, r^2*sin(th)^2
+            sage: g.view()  # the standard flat metric expressed in spherical coordinates
+            g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
+            sage: Gam = g.christoffel() ; Gam
+            3-indices components w.r.t. coordinate frame (R3, (d/dr,d/dth,d/dph)), with symmetry on the index positions (1, 2)
+            sage: print type(Gam)
+            <class 'sage.tensor.modules.comp.CompWithSym'>
+            sage: Gam[:]
+            [[[0, 0, 0], [0, -r, 0], [0, 0, -r*sin(th)^2]], 
+            [[0, 1/r, 0], [1/r, 0, 0], [0, 0, -cos(th)*sin(th)]], 
+            [[0, 0, 1/r], [0, 0, cos(th)/sin(th)], [1/r, cos(th)/sin(th), 0]]]
+            sage: Gam[1,2,2]
+            -r
+            sage: Gam[2,1,2]
+            1/r
+            sage: Gam[3,1,3]
+            1/r
+            sage: Gam[3,2,3]
+            cos(th)/sin(th)
+            sage: Gam[2,3,3]
+            -cos(th)*sin(th)
+
+        
+        """
+        if chart is None:
+            frame = self._domain._def_chart._frame
+        else:
+            frame = chart._frame
+        return self.connection().coef(frame)
+          
+    def riemann(self, name=None, latex_name=None):
+        r""" 
+        Return the Riemann curvature tensor associated with the metric.
+
+        This method is actually a shortcut for ``self.connection().riemann()``
+        
+        The Riemann curvature tensor is the tensor field `R` of type (1,3) 
+        defined by
+
+        .. MATH::
+            
+            R(\omega, u, v, w) = \left\langle \omega, \nabla_u \nabla_v w
+                - \nabla_v \nabla_u w - \nabla_{[u, v]} w \right\rangle
+        
+        for any 1-form  `\omega`  and any vector fields `u`, `v` and `w`. 
+
+        INPUT:
+        
+        - ``name`` -- (default: None) name given to the Riemann tensor; 
+          if none, it is set to "Riem(g)", where "g" is the metric's name
+        - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
+          Riemann tensor; if none, it is set to "\\mathrm{Riem}(g)", where "g" 
+          is the metric's name
+
+        OUTPUT:
+        
+        - the Riemann curvature tensor `R`, as an instance of 
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
+        
+        EXAMPLES:
+
+        Riemann tensor of the standard metric on the 2-sphere::
+        
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'S^2', start_index=1)
+            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: a = var('a') # the sphere radius 
+            sage: g = M.metric('g')
+            sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
+            sage: g.view() # standard metric on the 2-sphere of radius a:
+            g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
+            sage: g.riemann()
+            tensor field 'Riem(g)' of type (1,3) on the 2-dimensional manifold 'S^2'
+            sage: g.riemann()[:]
+            [[[[0, 0], [0, 0]], [[0, sin(th)^2], [-sin(th)^2, 0]]],
+             [[[0, (cos(th)^2 - 1)/sin(th)^2], [1, 0]], [[0, 0], [0, 0]]]]
+             
+        In dimension 2, the Riemann tensor can be expressed entirely in terms of
+        the Ricci scalar `r`:
+
+        .. MATH::
+            
+            R^i_{\ \, jlk} = \frac{r}{2} \left( \delta^i_{\ \, k} g_{jl}
+                - \delta^i_{\ \, l} g_{jk} \right)
+        
+        This formula can be checked here, with the r.h.s. rewritten as 
+        `-r g_{j[k} \delta^i_{\ \, l]}`::
+        
+            sage: g.riemann() == -g.ricci_scalar()*(g*M.tangent_identity_field()).antisymmetrize([2,3])
+            True
+        
+        """
+        return self.connection().riemann(name, latex_name)
+
+        
+    def ricci(self, name=None, latex_name=None):
+        r""" 
+        Return the Ricci tensor associated with the metric.
+        
+        This method is actually a shortcut for ``self.connection().ricci()``
+                
+        The Ricci tensor is the tensor field `Ric` of type (0,2) 
+        defined from the Riemann curvature tensor `R` by 
+
+        .. MATH::
+            
+            Ric(u, v) = R(e^i, u, e_i, v)
+        
+        for any vector fields `u` and `v`, `(e_i)` being any vector frame and
+        `(e^i)` the dual coframe. 
+
+        INPUT:
+        
+        - ``name`` -- (default: None) name given to the Ricci tensor; 
+          if none, it is set to "Ric(g)", where "g" is the metric's name
+        - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
+          Ricci tensor; if none, it is set to "\\mathrm{Ric}(g)", where "g" 
+          is the metric's name
+          
+        OUTPUT:
+        
+        - the Ricci tensor `Ric`, as an instance of 
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField` of tensor
+          type (0,2) and symmetric
+        
+        EXAMPLES:
+        
+        Ricci tensor of the standard metric on the 2-sphere::
+        
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'S^2', start_index=1)
+            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: a = var('a') # the sphere radius 
+            sage: g = M.metric('g')
+            sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
+            sage: g.view() # standard metric on the 2-sphere of radius a:
+            g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
+            sage: g.ricci()
+            field of symmetric bilinear forms 'Ric(g)' on the 2-dimensional manifold 'S^2'
+            sage: g.ricci()[:]
+            [        1         0]
+            [        0 sin(th)^2]
+            sage: g.ricci() == a^(-2) * g
+            True
+
+        """
+        return self.connection().ricci(name, latex_name)
 
 #*****************************************************************************
 
@@ -555,6 +897,12 @@ class MetricParal(Metric, TensorFieldParal):
         r"""
         Return the inverse metric.
         
+        OUTPUT:
+        
+        - instance of
+          :class:`~sage.geometry.geometry.tensorfield.TensorFieldParal`
+          with tensor_type = (2,0) representing the inverse metric
+
         EXAMPLES:
         
         Inverse metric on a 2-dimensional manifold::
@@ -612,235 +960,6 @@ class MetricParal(Metric, TensorFieldParal):
                 self._inverse._components[frame] = cinv
         return self._inverse
         
-    def connection(self, name=None, latex_name=None):
-        r"""
-        Return the unique torsion-free affine connection compatible with 
-        ``self``.
-        
-        This is the so-called Levi-Civita connection.
-        
-        INPUT:
-        
-        - ``name`` -- (default: None) name given to the Levi-Civita connection; 
-          if none, it is formed from the metric name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
-          Levi-Civita connection; if none, it is formed from the symbol 
-          `\nabla` and the metric symbol
-          
-        OUTPUT:
-        
-        - the Levi-Civita connection, as an instance of 
-          :class:`~sage.geometry.manifolds.connection.LeviCivitaConnection`. 
-          
-        EXAMPLES:
-        
-        Levi-Civitation connection associated with the Euclidean metric on 
-        `\RR^3`::
-        
-            sage: M = Manifold(3, 'R^3', start_index=1)
-            sage: # Let us use spherical coordinates on R^3:
-            sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = M.metric('g')
-            sage: g[1,1], g[2,2], g[3,3] = 1, r^2 , (r*sin(th))^2  # the Euclidean metric
-            sage: g.connection()
-            Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the 3-dimensional manifold 'R^3'
-            sage: g.connection()[:]  # Christoffel symbols in spherical coordinates
-            [[[0, 0, 0], [0, -r, 0], [0, 0, -r*sin(th)^2]], 
-            [[0, 1/r, 0], [1/r, 0, 0], [0, 0, -cos(th)*sin(th)]], 
-            [[0, 0, 1/r], [0, 0, cos(th)/sin(th)], [1/r, cos(th)/sin(th), 0]]]
-
-        Test of compatibility with the metric::
-        
-            sage: Dg = g.connection()(g) ; Dg
-            tensor field 'nabla_g g' of type (0,3) on the 3-dimensional manifold 'R^3'
-            sage: Dg == 0
-            True
-            sage: Dig = g.connection()(g.inverse()) ; Dig
-            tensor field 'nabla_g inv_g' of type (2,1) on the 3-dimensional manifold 'R^3'
-            sage: Dig == 0
-            True
-        
-        """
-        from connection import LeviCivitaConnection
-        if self._connection is None:
-            if name is None:
-                name = 'nabla_' + self._name
-            if latex_name is None:
-                latex_name = r'\nabla_{' + self._latex_name + '}'
-            self._connection = LeviCivitaConnection(self, name, latex_name)
-        return self._connection
-
-        
-    def christoffel(self, chart=None):
-        r"""
-        Christoffel symbols of ``self`` with respect to a chart.
-        
-        INPUT:
-        
-        - ``chart`` -- (default: None) chart with respect to which the 
-          Christoffel symbolds are required; if none is provided, the 
-          manifold's default chart is assumed.
-          
-        OUTPUT:
-        
-        - the set of Christoffel symbols in the given chart, as an instance of
-          :class:`~sage.tensor.modules.comp.CompWithSym`
-          
-        EXAMPLES:
-        
-        Christoffel symbols of the flat metric on `\RR^3` with respect to 
-        spherical coordinates::
-        
-            sage: M = Manifold(3, 'R3', r'\RR^3', start_index=1)
-            sage: X.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = M.metric('g')
-            sage: g[1,1], g[2,2], g[3,3] = 1, r^2, r^2*sin(th)^2
-            sage: g.view()  # the standard flat metric expressed in spherical coordinates
-            g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
-            sage: Gam = g.christoffel() ; Gam
-            3-indices components w.r.t. coordinate frame (R3, (d/dr,d/dth,d/dph)), with symmetry on the index positions (1, 2)
-            sage: print type(Gam)
-            <class 'sage.tensor.modules.comp.CompWithSym'>
-            sage: Gam[:]
-            [[[0, 0, 0], [0, -r, 0], [0, 0, -r*sin(th)^2]], 
-            [[0, 1/r, 0], [1/r, 0, 0], [0, 0, -cos(th)*sin(th)]], 
-            [[0, 0, 1/r], [0, 0, cos(th)/sin(th)], [1/r, cos(th)/sin(th), 0]]]
-            sage: Gam[1,2,2]
-            -r
-            sage: Gam[2,1,2]
-            1/r
-            sage: Gam[3,1,3]
-            1/r
-            sage: Gam[3,2,3]
-            cos(th)/sin(th)
-            sage: Gam[2,3,3]
-            -cos(th)*sin(th)
-
-        
-        """
-        if chart is None:
-            frame = self._domain._def_chart._frame
-        else:
-            frame = chart._frame
-        return self.connection().coef(frame)
-          
-    def riemann(self, name=None, latex_name=None):
-        r""" 
-        Return the Riemann curvature tensor associated with the metric.
-
-        This method is actually a shortcut for ``self.connection().riemann()``
-        
-        The Riemann curvature tensor is the tensor field `R` of type (1,3) 
-        defined by
-
-        .. MATH::
-            
-            R(\omega, u, v, w) = \left\langle \omega, \nabla_u \nabla_v w
-                - \nabla_v \nabla_u w - \nabla_{[u, v]} w \right\rangle
-        
-        for any 1-form  `\omega`  and any vector fields `u`, `v` and `w`. 
-
-        INPUT:
-        
-        - ``name`` -- (default: None) name given to the Riemann tensor; 
-          if none, it is set to "Riem(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
-          Riemann tensor; if none, it is set to "\\mathrm{Riem}(g)", where "g" 
-          is the metric's name
-
-        OUTPUT:
-        
-        - the Riemann curvature tensor `R`, as an instance of 
-          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
-        
-        EXAMPLES:
-
-        Riemann tensor of the standard metric on the 2-sphere::
-        
-            sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: a = var('a') # the sphere radius 
-            sage: g = M.metric('g')
-            sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
-            sage: g.view() # standard metric on the 2-sphere of radius a:
-            g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
-            sage: g.riemann()
-            tensor field 'Riem(g)' of type (1,3) on the 2-dimensional manifold 'S^2'
-            sage: g.riemann()[:]
-            [[[[0, 0], [0, 0]], [[0, sin(th)^2], [-sin(th)^2, 0]]],
-             [[[0, (cos(th)^2 - 1)/sin(th)^2], [1, 0]], [[0, 0], [0, 0]]]]
-             
-        In dimension 2, the Riemann tensor can be expressed entirely in terms of
-        the Ricci scalar `r`:
-
-        .. MATH::
-            
-            R^i_{\ \, jlk} = \frac{r}{2} \left( \delta^i_{\ \, k} g_{jl}
-                - \delta^i_{\ \, l} g_{jk} \right)
-        
-        This formula can be checked here, with the r.h.s. rewritten as 
-        `-r g_{j[k} \delta^i_{\ \, l]}`::
-        
-            sage: g.riemann() == -g.ricci_scalar()*(g*M.tangent_identity_field()).antisymmetrize([2,3])
-            True
-        
-        """
-        return self.connection().riemann(name, latex_name)
-
-        
-    def ricci(self, name=None, latex_name=None):
-        r""" 
-        Return the Ricci tensor associated with the metric.
-        
-        This method is actually a shortcut for ``self.connection().ricci()``
-                
-        The Ricci tensor is the tensor field `Ric` of type (0,2) 
-        defined from the Riemann curvature tensor `R` by 
-
-        .. MATH::
-            
-            Ric(u, v) = R(e^i, u, e_i, v)
-        
-        for any vector fields `u` and `v`, `(e_i)` being any vector frame and
-        `(e^i)` the dual coframe. 
-
-        INPUT:
-        
-        - ``name`` -- (default: None) name given to the Ricci tensor; 
-          if none, it is set to "Ric(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
-          Ricci tensor; if none, it is set to "\\mathrm{Ric}(g)", where "g" 
-          is the metric's name
-          
-        OUTPUT:
-        
-        - the Ricci tensor `Ric`, as an instance of 
-          :class:`~sage.geometry.manifolds.tensorfield.TensorField` of tensor
-          type (0,2) and symmetric
-        
-        EXAMPLES:
-        
-        Ricci tensor of the standard metric on the 2-sphere::
-        
-            sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: a = var('a') # the sphere radius 
-            sage: g = M.metric('g')
-            sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
-            sage: g.view() # standard metric on the 2-sphere of radius a:
-            g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
-            sage: g.ricci()
-            field of symmetric bilinear forms 'Ric(g)' on the 2-dimensional manifold 'S^2'
-            sage: g.ricci()[:]
-            [        1         0]
-            [        0 sin(th)^2]
-            sage: g.ricci() == a^(-2) * g
-            True
-
-        """
-        return self.connection().ricci(name, latex_name)
-    
-        
     def ricci_scalar(self, name=None, latex_name=None):
         r""" 
         Return the Ricci scalar associated with the metric.
@@ -870,6 +989,7 @@ class MetricParal(Metric, TensorFieldParal):
         
         Ricci scalar of the standard metric on the 2-sphere::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
             sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: a = var('a') # the sphere radius 
@@ -1261,6 +1381,7 @@ class RiemannMetricParal(MetricParal):
     
     Standard metric on the 2-sphere `S^2`::
     
+        sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(2, 'S^2', start_index=1)
         sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
         sage: g = M.riemann_metric('g') ; g

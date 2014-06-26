@@ -2175,7 +2175,7 @@ class OpenDomain(Domain):
             sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
             sage: g.view()
             g = -dt*dt + dx*dx + dy*dy + dz*dz
-            sage:g.signature()
+            sage: g.signature()
             2 
 
         See the documentation of class 
