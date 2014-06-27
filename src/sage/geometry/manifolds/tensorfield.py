@@ -2451,10 +2451,10 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             for frame2 in other._components:
                 if not isinstance(frame2, CoordFrame):
                     continue
-                if frame2 in frame1.subframes:
+                if frame2 in frame1._subframes:
                     self.comp(frame2)
                     return frame2
-                if frame1 in frame2.subframes:
+                if frame1 in frame2._subframes:
                     other.comp(frame1)
                     return frame1
         #
@@ -2708,7 +2708,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
                                   specific_type=self.__class__)
             for frame in self._components:
                 for sframe in subdomain._covering_frames:
-                    if sframe in frame.subframes:
+                    if sframe in frame._subframes:
                         comp_store = self._components[frame]._comp
                         scomp = resu._new_comp(sframe)
                         scomp_store = scomp._comp

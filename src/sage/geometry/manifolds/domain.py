@@ -183,12 +183,16 @@ class Domain(UniqueRepresentation, Parent):
         else:
             self._latex_name = latex_name
         self._subdomains = set([self]) # domains contained in self
+        self._top_subdomains = set([self]) # domains contained in self but not
+            # in another strict subdomain of self
         self._intersections = {} # dict. of intersections with other domains
         self._unions = {} # dict. of unions with other domains
         self._atlas = []  # list of charts defined on subdomains of self
         self._def_chart = None  # default chart
         self._coord_changes = {} # dictionary of transition maps 
         self._frames = []  # list of vector frames defined on subdomains of self
+        self._top_frames = []  # list of vector frames defined on subdomains 
+               # of self that are not subframes of frames on larger subdomains
         self._def_frame = None  # default frame
         self._frame_changes = {} # dictionary of changes of frames
         self._coframes = []  # list of coframes defined on subdomains of self
@@ -396,6 +400,7 @@ class Domain(UniqueRepresentation, Parent):
         res._superdomains.update(self._superdomains)
         for sd in self._superdomains:
             sd._subdomains.add(res)
+        self._top_subdomains.add(res)
         return res
             
     def superdomain(self, name, latex_name=None, is_open=False):
@@ -458,6 +463,7 @@ class Domain(UniqueRepresentation, Parent):
         res._atlas = list(self._atlas)
         res._coord_changes = dict(self._coord_changes)
         res._frames = list(self._frames)
+        res._top_frames = list(self._top_frames)
         res._frame_changes = dict(self._frame_changes)
         res._coframes = list(self._coframes)
         res._def_chart = self._def_chart
@@ -557,6 +563,7 @@ class Domain(UniqueRepresentation, Parent):
             res._superdomains.update(other._superdomains)
             for sd in other._superdomains:
                 sd._subdomains.add(res)
+            other._top_subdomains.add(res)
             self._intersections[other._name] = res
             other._intersections[self._name] = res
             return res
@@ -648,6 +655,8 @@ class Domain(UniqueRepresentation, Parent):
                        isinstance(other, OpenDomain)
             res = self.superdomain(name, latex_name, is_open=res_open)
             res._subdomains.update(other._subdomains)
+            res._top_subdomains.add(self)
+            res._top_subdomains.add(other)
             for sd in other._subdomains:
                 sd._superdomains.add(res)
             for chart in other._atlas:
@@ -657,6 +666,9 @@ class Domain(UniqueRepresentation, Parent):
             for frame in other._frames:
                 if frame not in res._frames:
                     res._frames.append(frame)
+            for frame in other._top_frames:
+                if frame not in res._top_frames:
+                    res._top_frames.append(frame)
             res._frame_changes.update(other._frame_changes)
             for coframe in other._coframes:
                 if coframe not in res._coframes:

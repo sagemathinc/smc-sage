@@ -335,15 +335,28 @@ class AffConnection(SageObject):
             frame = self._domain._def_frame
         if frame not in self._coefficients:
             # the coefficients must be computed
-            manif = self._manifold
-            ev = frame  # the vector frame
-            ef = ev._coframe # the dual frame
-            gam = self._new_coef(ev)
-            for k in manif.irange():
-                for i in manif.irange():
-                    for j in manif.irange():
-                        gam[[k,i,j]] = self(ev[i])(ef[k],ev[j])
-            self._coefficients[frame] = gam
+            #
+            # Check whether frame is a subframe of a frame in which the 
+            # coefficients are already known:
+            for oframe in self._coefficients:
+                if frame in oframe._subframes:
+                    self._coefficients[frame] = self._new_coef(frame)
+                    comp_store = self._coefficients[frame]._comp
+                    ocomp_store = self._coefficients[oframe]._comp
+                    for ind, value in ocomp_store.iteritems():
+                        comp_store[ind] = value.restrict(frame._domain)
+                    break
+            else:
+                # If not, the coefficients must be computed from scratch:
+                manif = self._manifold
+                ev = frame  # the vector frame
+                ef = ev._coframe # the dual frame
+                gam = self._new_coef(ev)
+                for k in manif.irange():
+                    for i in manif.irange():
+                        for j in manif.irange():
+                            gam[[k,i,j]] = self(ev[i])(ef[k],ev[j])
+                self._coefficients[frame] = gam
         return self._coefficients[frame]
         
 
@@ -525,8 +538,8 @@ class AffConnection(SageObject):
             resu = AffConnection(subdomain, name=self._name, 
                                  latex_name=self._latex_name)
             for frame in self._coefficients:
-                for sframe in subdomain._covering_frames:
-                    if sframe in frame.subframes:
+                for sframe in subdomain._covering_frames: #!# what about a non-parallelizable subdomain ?
+                    if sframe in frame._subframes:
                         comp_store = self._coefficients[frame]._comp
                         scoef = resu._new_coef(sframe)
                         scomp_store = scoef._comp
@@ -538,7 +551,7 @@ class AffConnection(SageObject):
             self._restrictions[subdomain] = resu
         return self._restrictions[subdomain]
         
-    def common_frame(self, other):
+    def _common_frame(self, other):
         r"""
         Find a common vector frame for the coefficients of ``self`` and
         the components of  ``other``. 
@@ -548,33 +561,54 @@ class AffConnection(SageObject):
         
         INPUT:
         
-        - ``other`` -- a tensor field
+        - ``other`` -- a tensor field on parallelizable domain, as an 
+          instance of 
+          :class:`~sage.geometry.manifolds.tensorfield.TensorFieldParal`
         
         OUPUT:
         
         - common frame; if no common frame is found, None is returned. 
         
         """
+        # The domain of search is restricted to other._domain: 
+        dom = other._domain
         # 1/ Does each object have components on the domain's default frame ? 
-        dom = self._domain
         def_frame = dom._def_frame
         if def_frame in self._coefficients and def_frame in other._components:
             return def_frame
         # 2/ Search for a common frame among the existing components, i.e. 
         #    without performing any component transformation. 
         #    -------------------------------------------------------------
-        for sframe in self._coefficients:
-            if sframe in other._components:
-                return sframe
-        # 3/ Search for a common frame via one component transformation 
+        for frame in self._coefficients:
+            if frame in other._components:
+                return frame
+        # 3/ Search for a common frame among the subframes of self's frames: 
+        #    --------------------------------------------------------------
+        for frame in self._coefficients:
+            for oframe in other._components:
+                if oframe in frame._subframes:
+                    self.coef(oframe) # update the coefficients of self in oframe
+                    return oframe
+        #
+        # 4/ Search for a common frame via one component transformation 
         #    ----------------------------------------------------------
         # If this point is reached, it is necessary to perform at least 
         # one component transformation to get a common frame
-        for sframe in self._coefficients:
+        for frame in self._coefficients:
             for oframe in other._components:
-                if (oframe, sframe) in dom._frame_changes:
-                    other.comp(sframe, from_basis=oframe)
-                    return sframe
+                if (oframe, frame) in dom._frame_changes:
+                    other.comp(frame, from_basis=oframe)
+                    return frame
+        # 5/ Search for a common frame via one component transformation to
+        #    a subframe of self's frames: 
+        #    -------------------------------------------------------------
+        for frame in self._coefficients:
+            for oframe in other._components:
+                for sframe in frame._subframes:
+                    if (oframe, sframe) in dom._frame_changes:
+                        self.coef(sframe)
+                        other.comp(sframe, from_basis=oframe)
+                        return sframe
         #
         # If this point is reached, no common frame could be found, even at 
         # the price of a component transformation:
@@ -596,15 +630,21 @@ class AffConnection(SageObject):
         from tensorfield import TensorFieldParal
         from utilities import format_unop_txt, format_unop_latex
         dom_resu = self._domain.intersection(tensor._domain)
-        self_r = self.restrict(dom_resu)
         tensor_r = tensor.restrict(dom_resu)
         if tensor_r._tensor_type == (0,0):  # scalar field case
             return tensor_r.differential()   
         if isinstance(tensor_r, TensorFieldParal):
-            return self_r._derive_paral(tensor_r)
+            return self._derive_paral(tensor_r)
         resu_rst = []
-        for rst in tensor_r._restrictions.itervalues():
-            resu_rst.append(self_r.__call__(rst))
+        for dom, rst in tensor_r._restrictions.iteritems():
+            # the computation is performed only if dom is not a subdomain
+            # of another restriction:
+            for odom in tensor_r._restrictions:
+                if dom in odom._subdomains and dom is not odom:
+                    break
+            else:
+                # dom is a not a subdomain and the computation is performed:
+                resu_rst.append(self.__call__(rst))
         tensor_type_resu = (tensor_r._tensor_type[0], tensor_r._tensor_type[1]+1)
         name_resu = format_unop_txt(self._name + ' ', tensor_r._name)
         latex_name_resu=format_unop_latex(self._latex_name + ' ', 
@@ -636,7 +676,7 @@ class AffConnection(SageObject):
         from utilities import format_unop_txt, format_unop_latex
         manif = self._manifold
         tdom = tensor._domain
-        frame = self.common_frame(tensor)
+        frame = self._common_frame(tensor)
         if frame is None:
             raise ValueError("No common frame found for the computation.")
         # Component computation in the common frame:
@@ -883,21 +923,27 @@ class AffConnection(SageObject):
             manif = self._manifold
             resu = self._domain.tensor_field(1, 3, antisym=(2,3))
             for frame, gam in self._coefficients.iteritems():
-                sc = frame.structure_coef()
-                gam_gam = gam.contract(1, gam, 0)
-                gam_sc = gam.contract(2, sc, 0)
-                res = resu.add_comp(frame)
-                for i in manif.irange():
-                    for j in manif.irange():
-                        for k in manif.irange():
-                            # antisymmetry of the Riemann tensor taken into 
-                            # account by l>k: 
-                            for l in manif.irange(start=k+1):
-                                res[i,j,k,l] = frame[k](gam[[i,j,l]]) - \
-                                               frame[l](gam[[i,j,k]]) + \
-                                               gam_gam[[i,k,j,l]] -  \
-                                               gam_gam[[i,l,j,k]] -  \
-                                               gam_sc[[i,j,k,l]]
+                # The computation is performed only on the top frames:
+                for oframe in self._coefficients:
+                    if frame in oframe._subframes and frame is not oframe:
+                        break
+                else:
+                    # frame in not a subframe and the computation is performed:
+                    sc = frame.structure_coef()
+                    gam_gam = gam.contract(1, gam, 0)
+                    gam_sc = gam.contract(2, sc, 0)
+                    res = resu.add_comp(frame)
+                    for i in manif.irange():
+                        for j in manif.irange():
+                            for k in manif.irange():
+                                # antisymmetry of the Riemann tensor taken into 
+                                # account by l>k: 
+                                for l in manif.irange(start=k+1):
+                                    res[i,j,k,l] = frame[k](gam[[i,j,l]]) - \
+                                                   frame[l](gam[[i,j,k]]) + \
+                                                   gam_gam[[i,k,j,l]] -  \
+                                                   gam_gam[[i,l,j,k]] -  \
+                                                   gam_sc[[i,j,k,l]]
             self._riemann = resu
         return self._riemann 
         
@@ -1283,6 +1329,9 @@ class LeviCivitaConnection(AffConnection):
     - ``name`` -- name given to the connection
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the  
       connection
+    - ``init_coef`` -- (default: True) determines whether the Chrsitoffel 
+      symbols are initialized (in the top charts on the domain, i.e. 
+      disregarding the subcharts)
 
     EXAMPLES:
     
@@ -1327,13 +1376,22 @@ class LeviCivitaConnection(AffConnection):
         [[0, 0, 1/r], [0, 0, cos(th)/sin(th)], [1/r, cos(th)/sin(th), 0]]]
 
     """
-    def __init__(self, metric, name, latex_name=None):
+    def __init__(self, metric, name, latex_name=None, init_coef=True):
         AffConnection.__init__(self, metric._domain, name, latex_name)
         self._metric = metric
         # Initialization of the derived quantities:
         LeviCivitaConnection._init_derived(self)
-        # Initialization of the Christoffel symbols in the domain's default chart:
-        self.coef(self._domain._def_chart._frame)
+        if init_coef:
+            # Initialization of the Christoffel symbols in the top charts on
+            # the domain (i.e. disregarding the subcharts)
+            for chart in self._domain._atlas:
+                for other in self._domain._atlas:
+                    if chart in other._subcharts and chart is not other:
+                        break 
+                else:
+                    # the chart is not any subchart and therefore the *
+                    # Christoffel relative to it are computed:
+                    self.coef(chart._frame)
         
     def _repr_(self):
         r"""
@@ -1385,10 +1443,11 @@ class LeviCivitaConnection(AffConnection):
                                  "the current connection's domain.")
             resu = LeviCivitaConnection(self._metric.restrict(subdomain), 
                                         name=self._name, 
-                                        latex_name=self._latex_name)
+                                        latex_name=self._latex_name,
+                                        init_coef=False)
             for frame in self._coefficients:
-                for sframe in subdomain._covering_frames:
-                    if sframe in frame.subframes:
+                for sframe in subdomain._covering_frames: #!# what about a non-parallelizable subdomain ?
+                    if sframe in frame._subframes:
                         comp_store = self._coefficients[frame]._comp
                         scoef = resu._new_coef(sframe)
                         scomp_store = scoef._comp
@@ -1506,28 +1565,40 @@ class LeviCivitaConnection(AffConnection):
             frame = self._domain._def_frame
         if frame not in self._coefficients:
             # the coefficients must be computed
-            manif = self._manifold
-            dom = frame._domain
-            if isinstance(frame, CoordFrame):
-                # Christoffel symbols
-                chart = frame._chart
-                gam = self._new_coef(frame)
-                gg = self._metric.comp(frame)
-                ginv = self._metric.inverse().comp(frame)
-                for ind in gam.non_redundant_index_generator():
-                    i, j, k = ind
-                    # The computation is performed at the FunctionChart level:
-                    rsum = 0
-                    for s in manif.irange():
-                        rsum += ginv[i,s, chart] * ( 
-                                            gg[s,k, chart].diff(j)
-                                          + gg[j,s, chart].diff(k)
-                                          - gg[j,k, chart].diff(s) )
-                    gam[i,j,k, chart] = rsum / 2
-                    self._coefficients[frame] = gam
+            #
+            # Check whether frame is a subframe of a frame in which the 
+            # coefficients are already known:
+            for oframe in self._coefficients:
+                if frame in oframe._subframes:
+                    self._coefficients[frame] = self._new_coef(frame)
+                    comp_store = self._coefficients[frame]._comp
+                    ocomp_store = self._coefficients[oframe]._comp
+                    for ind, value in ocomp_store.iteritems():
+                        comp_store[ind] = value.restrict(frame._domain)
+                    break
             else:
-                # Computation from the formula defining the connection coef.
-                return AffConnection.coef(self, frame)
+                # If not, the coefficients must be computed from scratch:
+                manif = self._manifold
+                if isinstance(frame, CoordFrame):
+                    # Christoffel symbols
+                    chart = frame._chart
+                    gam = self._new_coef(frame)
+                    gg = self._metric.comp(frame)
+                    ginv = self._metric.inverse().comp(frame)
+                    for ind in gam.non_redundant_index_generator():
+                        i, j, k = ind
+                        # The computation is performed at the FunctionChart level:
+                        rsum = 0
+                        for s in manif.irange():
+                            rsum += ginv[i,s, chart] * ( 
+                                                gg[s,k, chart].diff(j)
+                                              + gg[j,s, chart].diff(k)
+                                              - gg[j,k, chart].diff(s) )
+                        gam[i,j,k, chart] = rsum / 2
+                        self._coefficients[frame] = gam
+                else:
+                    # Computation from the formula defining the connection coef.
+                    return AffConnection.coef(self, frame)
         return self._coefficients[frame]
 
     def torsion(self):
@@ -1595,8 +1666,10 @@ class LeviCivitaConnection(AffConnection):
                                            self._metric._latex_name + r"\right)"
             else:
                 self._riemann._latex_name = latex_name
+            for rst in self._riemann._restrictions.itervalues():
+                rst._name = self._riemann._name
+                rst._latex_name = self._riemann._latex_name
         return self._riemann
-            
 
 
     def ricci(self, name=None, latex_name=None):
@@ -1689,6 +1762,9 @@ class LeviCivitaConnection(AffConnection):
                                          self._metric._latex_name + r"\right)"
             else:
                 resu._latex_name = latex_name
+            for rst in resu._restrictions.itervalues():
+                rst._name = resu._name
+                rst._latex_name = resu._latex_name
             self._ricci = resu
         return self._ricci 
 

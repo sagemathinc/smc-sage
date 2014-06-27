@@ -712,10 +712,13 @@ class Chart(UniqueRepresentation, SageObject):
                 schart._subcharts.add(res)
                 schart._dom_restrict[subdomain] = res
             # Update of superframes and subframes:
-            res._frame.superframes.update(self._frame.superframes)
-            for sframe in self._frame.superframes:
-                sframe.subframes.add(res._frame)
+            res._frame._superframes.update(self._frame._superframes)
+            for sframe in self._frame._superframes:
+                sframe._subframes.add(res._frame)
                 sframe._restrictions[subdomain] = res._frame
+            for dom in self._domain._superdomains:
+                dom._top_frames.remove(res._frame) # since it was added by 
+                                                   # the Chart constructor
             # Update of domain restrictions:
             self._dom_restrict[subdomain] = res
         return self._dom_restrict[subdomain]

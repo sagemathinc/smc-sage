@@ -207,7 +207,26 @@ class Metric(TensorField):
         nabla_g g = 0
         sage: t == 0
         True
-        
+    
+    The Riemann curvature tensor of `g`::
+    
+        sage: riem = g.riemann() ; riem
+        tensor field 'Riem(g)' of type (1,3) on the 2-dimensional manifold 'S^2'
+        sage: riem.view(eU)
+        Riem(g) = 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) d/dx*dy*dx*dy - 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) d/dx*dy*dy*dx - 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) d/dy*dx*dx*dy + 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) d/dy*dx*dy*dx
+        sage: riem.view(eV)
+        Riem(g) = 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) d/du*dv*du*dv - 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) d/du*dv*dv*du - 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) d/dv*du*du*dv + 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) d/dv*du*dv*du
+
+    The Ricci tensor of `g`::
+
+        sage: ric = g.ricci() ; ric
+        field of symmetric bilinear forms 'Ric(g)' on the 2-dimensional manifold 'S^2'
+        sage: ric.view(eU)
+        Ric(g) = 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) dx*dx + 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) dy*dy
+        sage: ric.view(eV)
+        Ric(g) = 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) du*du + 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) dv*dv
+        sage: ric == g
+        True
 
     """
     def __init__(self, vector_field_module, name, signature=None, 

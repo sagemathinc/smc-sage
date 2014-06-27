@@ -254,6 +254,7 @@ class VectorFrame(FreeModuleBasis):
                     raise ValueError("The " + str(self) + " already exist on" +
                                      " the " + str(sd))
             sd._frames.append(self)
+            sd._top_frames.append(self)
             if sd._def_frame is None: 
                 sd._def_frame = self
             if isinstance(sd, OpenDomain):
@@ -276,15 +277,15 @@ class VectorFrame(FreeModuleBasis):
         self._structure_coef = None
         # Initialization of the set of frames that are restrictions of the
         # current frame to subdomains of the frame domain:
-        self.subframes = set([self]) 
+        self._subframes = set([self]) 
         # Initialization of the set of frames which the current frame is a 
         # restriction of:
-        self.superframes = set([self]) 
+        self._superframes = set([self]) 
         #
         self._restrictions = {} # dict. of the restrictions of self to
                                # subdomains of self._domain, with the 
                                # subdomains as keys
-        # NB: set(self._restrictions.values()) is identical to self.subframes
+        # NB: set(self._restrictions.values()) is identical to self._subframes
         
 
     ###### Methods that must be redefined by derived classes of FreeModuleBasis ######
@@ -472,6 +473,10 @@ class VectorFrame(FreeModuleBasis):
             res = VectorFrame(subdomain.vector_field_module(sdest_map, 
                                                             force_free=True), 
                               self._symbol, latex_symbol=self._latex_symbol)
+            for dom in subdomain._superdomains:
+                if dom is not subdomain:
+                    dom._top_frames.remove(res)  # since it was added by 
+                                                 # VectorFrame constructor
             n = self._fmodule.rank()
             new_vectors = list()
             for i in range(n):
@@ -482,10 +487,10 @@ class VectorFrame(FreeModuleBasis):
                 new_vectors.append(vrest)
             res._vec = tuple(new_vectors)
             # Update of superframes and subframes:
-            res.superframes.update(self.superframes)
-            for sframe in self.superframes:
-                sframe.subframes.add(res)
-                sframe._restrictions[subdomain] = res # includes sframe = self
+            res._superframes.update(self._superframes)
+            for sframe in self._superframes:
+                sframe._subframes.add(res)
+                sframe._restrictions[subdomain] = res # includes sframe = self                
         return self._restrictions[subdomain]
     
     def structure_coef(self):
