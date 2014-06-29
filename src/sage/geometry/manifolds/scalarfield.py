@@ -343,7 +343,8 @@ class ScalarField(CommutativeAlgebraElement):
             self._latex_name = self._name
         else:
             self._latex_name = latex_name
-        self._express = {}
+        self._express = {} # dict of coordinate expressions (FunctionChart
+                           # instances) with charts as keys
         if coord_expression is not None:
             if isinstance(coord_expression, FunctionChart):
                 self._express[coord_expression._chart] = coord_expression

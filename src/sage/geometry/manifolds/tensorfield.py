@@ -3,19 +3,6 @@ Tensor fields
 
 The class :class:`TensorField` implements tensor fields on differentiable 
 manifolds over `\RR`. 
-
-A tensor field of type `(k,\ell)` is a field of multilinear maps:
-
-.. MATH::
-
-    \underbrace{T_p^*M\times\cdots\times T_p^*M}_{k\ \; \mbox{times}}
-    \times \underbrace{T_p M\times\cdots\times T_p M}_{\ell\ \; \mbox{times}}
-    \longrightarrow \RR
-    
-where `T_p M` stands for the tangent space at the point `p` on the
-manifold `M` and `T_p^*M` for its dual vector space. The integer `k+\ell`
-is called the tensor rank. 
-
 The derived class :class:`TensorFieldParal` is devoted to tensor fields with
 values on parallelizable open subsets.
 
@@ -353,12 +340,12 @@ class TensorField(ModuleElement):
 
     .. MATH::
 
-        t(p):\ \underbrace{T_p^*M\times\cdots\times T_p^*M}_{k\ \; \mbox{times}}
-        \times \underbrace{T_p M\times\cdots\times T_p M}_{\ell\ \; \mbox{times}}
+        t(p):\ \underbrace{T_q^*M\times\cdots\times T_q^*M}_{k\ \; \mbox{times}}
+        \times \underbrace{T_q M\times\cdots\times T_q M}_{\ell\ \; \mbox{times}}
         \longrightarrow \RR
     
-    where `T_p M` stands for the tangent space at the point `p` on the
-    manifold `M` and `T_p^* M` for its dual vector space. The integer `k+\ell`
+    where `T_q M` stands for the tangent space at the point `q=\Phi(p)` on the
+    manifold `M` and `T_q^* M` for its dual vector space. The integer `k+\ell`
     is called the tensor rank. 
     
     INPUT:
@@ -2033,12 +2020,12 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
     .. MATH::
 
-        t(p):\ \underbrace{T_p^*M\times\cdots\times T_p^*M}_{k\ \; \mbox{times}}
-        \times \underbrace{T_p M\times\cdots\times T_p M}_{\ell\ \; \mbox{times}}
+        t(p):\ \underbrace{T_q^*M\times\cdots\times T_q^*M}_{k\ \; \mbox{times}}
+        \times \underbrace{T_q M\times\cdots\times T_q M}_{\ell\ \; \mbox{times}}
         \longrightarrow \RR
     
-    where `T_p M` stands for the tangent space at the point `p` on the
-    manifold `M` and `T_p^* M` for its dual vector space. The integer `k+\ell`
+    where `T_q M` stands for the tangent space at the point `q=\Phi(p)` on the
+    manifold `M` and `T_q^* M` for its dual vector space. The integer `k+\ell`
     is called the tensor rank. 
     
     INPUT:

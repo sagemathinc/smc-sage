@@ -538,7 +538,7 @@ class AffConnection(SageObject):
             resu = AffConnection(subdomain, name=self._name, 
                                  latex_name=self._latex_name)
             for frame in self._coefficients:
-                for sframe in subdomain._covering_frames: #!# what about a non-parallelizable subdomain ?
+                for sframe in subdomain._top_frames: 
                     if sframe in frame._subframes:
                         comp_store = self._coefficients[frame]._comp
                         scoef = resu._new_coef(sframe)
@@ -546,8 +546,14 @@ class AffConnection(SageObject):
                         # the coefficients of the restriction are evaluated 
                         # index by index:
                         for ind, value in comp_store.iteritems():
-                            scomp_store[ind] = value.restrict(subdomain)
+                            scomp_store[ind] = value.restrict(sframe._domain)
                         resu._coefficients[sframe] = scoef
+            if self._torsion is not None:
+                resu._torsion = self._torsion.restrict(subdomain)
+            if self._riemann is not None:
+                resu._riemann = self._riemann.restrict(subdomain)
+            if self._ricci is not None:
+                resu._ricci = self._ricci.restrict(subdomain)
             self._restrictions[subdomain] = resu
         return self._restrictions[subdomain]
         
@@ -1408,14 +1414,12 @@ class LeviCivitaConnection(AffConnection):
         Initialize the derived quantities
         """
         AffConnection._init_derived(self)
-        self._ricci_scalar = None
 
     def _del_derived(self):
         r"""
         Delete the derived quantities
         """
         AffConnection._del_derived(self)
-        self._ricci_scalar = None
 
     def restrict(self, subdomain):
         r"""
@@ -1446,7 +1450,7 @@ class LeviCivitaConnection(AffConnection):
                                         latex_name=self._latex_name,
                                         init_coef=False)
             for frame in self._coefficients:
-                for sframe in subdomain._covering_frames: #!# what about a non-parallelizable subdomain ?
+                for sframe in subdomain._top_frames: 
                     if sframe in frame._subframes:
                         comp_store = self._coefficients[frame]._comp
                         scoef = resu._new_coef(sframe)
@@ -1454,8 +1458,12 @@ class LeviCivitaConnection(AffConnection):
                         # the coefficients of the restriction are evaluated 
                         # index by index:
                         for ind, value in comp_store.iteritems():
-                            scomp_store[ind] = value.restrict(subdomain)
+                            scomp_store[ind] = value.restrict(sframe._domain)
                         resu._coefficients[sframe] = scoef
+            if self._riemann is not None:
+                resu._riemann = self._riemann.restrict(subdomain)
+            if self._ricci is not None:
+                resu._ricci = self._ricci.restrict(subdomain)
             self._restrictions[subdomain] = resu
         return self._restrictions[subdomain]
 
@@ -1768,73 +1776,4 @@ class LeviCivitaConnection(AffConnection):
             self._ricci = resu
         return self._ricci 
 
-    def ricci_scalar(self, name=None, latex_name=None):
-        r""" 
-        Return the connection's Ricci scalar.
-        
-        The Ricci scalar is the scalar field `r` defined from the Ricci tensor 
-        `Ric` and the metric tensor `g` by 
-
-        .. MATH::
-            
-            r = g^{ij} Ric_{ij}
-        
-        INPUT:
-        
-        - ``name`` -- (default: None) name given to the Ricci scalar; 
-          if none, it is set to "r(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
-          Ricci scalar; if none, it is set to "\\mathrm{r}(g)", where "g" 
-          is the metric's name
-          
-        OUTPUT:
-        
-        - the Ricci scalar `r`, as an instance of 
-          :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
-        
-        EXAMPLES:
-        
-        Ricci scalar of the standard connection on the 2-dimensional sphere::
-        
-            sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: a = var('a') # the sphere radius
-            sage: g = M.metric('g')
-            sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
-            sage: g.view() # standard metric on S^2 with radius a
-            g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
-            sage: nab = g.connection() ; nab
-            Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the 2-dimensional manifold 'S^2'
-            sage: r = nab.ricci_scalar() ; r
-            scalar field 'r(g)' on the 2-dimensional manifold 'S^2'
-            sage: r.expr()
-            2/a^2        
-
-        """
-        if self._ricci_scalar is None:            
-            manif = self._manifold
-            ric = self.ricci()
-            ig = self._metric.inverse()
-            frame = ig.common_basis(ric)
-            cric = ric._components[frame]
-            cig = ig._components[frame]
-            rsum1 = 0
-            for i in manif.irange():
-                rsum1 += cig[[i,i]] * cric[[i,i]]
-            rsum2 = 0
-            for i in manif.irange():
-                for j in manif.irange(start=i+1):
-                    rsum2 += cig[[i,j]] * cric[[i,j]]
-            self._ricci_scalar = rsum1 + 2*rsum2
-            self._ricci_scalar._domain = self._domain
-            if name is None:
-                self._ricci_scalar._name = "r(" + self._metric._name + ")"
-            else:
-                self._ricci_scalar._name = name
-            if latex_name is None:
-                self._ricci_scalar._latex_name = r"\mathrm{r}\left(" + \
-                                            self._metric._latex_name + r"\right)"
-            else:
-                self._ricci_scalar._latex_name = latex_name
-        return self._ricci_scalar 
 

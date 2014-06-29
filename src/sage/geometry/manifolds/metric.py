@@ -167,6 +167,23 @@ class Metric(TensorField):
         sage: ginv.restrict(W) is g.restrict(W).inverse()
         True
     
+    The volume form (Levi-Civita tensor) associated with `g`::
+    
+        sage: eps = g.volume_form() ; eps
+        2-form 'eps_g' on the 2-dimensional manifold 'S^2'
+        sage: eps.view(eU)
+        eps_g = 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) dx/\dy
+        sage: eps.view(eV)
+        eps_g = 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) du/\dv
+
+    The unique non-trivial component of the volume form is nothing but the
+    square root of the determinant of g in the corresponding frame::
+    
+        sage: eps[[eU,1,2]] == g.sqrt_abs_det(eU)
+        True
+        sage: eps[[eV,1,2]] == g.sqrt_abs_det(eV)
+        True
+        
     The Levi-Civita connection associated with the metric `g`::
     
         sage: nabla = g.connection() ; nabla
@@ -228,6 +245,32 @@ class Metric(TensorField):
         sage: ric == g
         True
 
+    The Ricci scalar of `g`::
+    
+        sage: r = g.ricci_scalar() ; r
+        scalar field 'r(g)' on the 2-dimensional manifold 'S^2'
+        sage: r.view()
+        r(g): S^2 --> R
+        on U: (x, y) |--> 2
+        on V: (u, v) |--> 2
+        on W: (x, y) |--> 2
+        on W: (u, v) |--> 2
+    
+    In dimension 2, the Riemann tensor can be expressed entirely in terms of
+    the Ricci scalar `r`:
+
+    .. MATH::
+        
+        R^i_{\ \, jlk} = \frac{r}{2} \left( \delta^i_{\ \, k} g_{jl}
+            - \delta^i_{\ \, l} g_{jk} \right)
+    
+    This formula can be checked here, with the r.h.s. rewritten as 
+    `-r g_{j[k} \delta^i_{\ \, l]}`::
+        
+        sage: delta = M.tangent_identity_field()
+        sage: riem == - r*(g*delta).antisymmetrize([2,3])
+        True
+
     """
     def __init__(self, vector_field_module, name, signature=None, 
                  latex_name=None):
@@ -282,6 +325,7 @@ class Metric(TensorField):
                                              latex_name=inv_latex_name, 
                                              sym=(0,1))
         self._connection = None  # Levi-Civita connection (not set yet)
+        self._ricci_scalar = None # Ricci scalar (not set yet)
         self._weyl = None # Weyl tensor (not set yet)
         self._determinants = {} # determinants in various frames
         self._sqrt_abs_dets = {} # sqrt(abs(det g)) in various frames
@@ -295,8 +339,9 @@ class Metric(TensorField):
         TensorField._del_derived(self)
         # The inverse metric is cleared: 
         self._del_inverse()
-        # The connection and Weyl tensor are reset to None:
+        # The connection, Ricci scalar and Weyl tensor are reset to None:
         self._connection = None
+        self._ricci_scalar = None
         self._weyl = None
         # The dictionary of determinants over the various frames is cleared:
         self._determinants.clear()
@@ -373,6 +418,8 @@ class Metric(TensorField):
             resu._inverse = self._inverse.restrict(subdomain)
             if self._connection is not None:
                 resu._connection = self._connection.restrict(subdomain)
+            if self._ricci_scalar is not None:
+                resu._ricci_scalar = self._ricci_scalar.restrict(subdomain)
             if self._weyl is not None:
                 resu._weyl = self._weyl.restrict(subdomain)
             if self._vol_forms != []:
@@ -632,6 +679,411 @@ class Metric(TensorField):
 
         """
         return self.connection().ricci(name, latex_name)
+
+    def ricci_scalar(self, name=None, latex_name=None):
+        r""" 
+        Return the Ricci scalar associated with the metric.
+        
+        The Ricci scalar is the scalar field `r` defined from the Ricci tensor 
+        `Ric` and the metric tensor `g` by 
+
+        .. MATH::
+            
+            r = g^{ij} Ric_{ij}
+        
+        INPUT:
+        
+        - ``name`` -- (default: None) name given to the Ricci scalar; 
+          if none, it is set to "r(g)", where "g" is the metric's name
+        - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
+          Ricci scalar; if none, it is set to "\\mathrm{r}(g)", where "g" 
+          is the metric's name
+
+        OUTPUT:
+        
+        - the Ricci scalar `r`, as an instance of 
+          :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
+
+        EXAMPLES:
+        
+        Ricci scalar of the standard metric on the 2-sphere::
+        
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'S^2', start_index=1)
+            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: a = var('a') # the sphere radius 
+            sage: g = M.metric('g')
+            sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
+            sage: g.view() # standard metric on the 2-sphere of radius a:
+            g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
+            sage: g.ricci_scalar()
+            scalar field 'r(g)' on the 2-dimensional manifold 'S^2'
+            sage: g.ricci_scalar().expr()
+            2/a^2
+
+        """
+        if self._ricci_scalar is None:
+            resu = (self.inverse().contract(self.ricci())).self_contract(0,1)
+            if name is None:
+                name = "r(" + self._name + ")"
+            if latex_name is None:
+                latex_name = r"\mathrm{r}\left(" + self._latex_name + \
+                              r"\right)"
+            resu._name = name
+            resu._latex_name = latex_name
+            self._ricci_scalar = resu
+        return self._ricci_scalar
+
+    def weyl(self, name=None, latex_name=None):
+        r""" 
+        Return the Weyl conformal tensor associated with the metric.
+                        
+        The Weyl conformal tensor is the tensor field `C` of type (1,3) 
+        defined as the trace-free part of the Riemann curvature tensor `R`
+
+        INPUT:
+        
+        - ``name`` -- (default: None) name given to the Weyl conformal tensor; 
+          if none, it is set to "C(g)", where "g" is the metric's name
+        - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
+          Weyl conformal tensor; if none, it is set to "\\mathrm{C}(g)", where 
+          "g" is the metric's name
+
+        OUTPUT:
+        
+        - the Weyl conformal tensor `C`, as an instance of 
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
+        
+        EXAMPLES:
+        
+        Checking that the Weyl tensor identically vanishes on a 3-dimensional 
+        manifold, for instance the hyperbolic space `H^3`::
+        
+            sage: M = Manifold(3, 'H^3', start_index=1)
+            sage: X.<rh,th,ph> = M.chart(r'rh:[0,+oo):\rho th:[0,pi]:\theta  ph:[0,2*pi):\phi')
+            sage: g = M.metric('g')
+            sage: b = var('b')                                                        
+            sage: g[1,1], g[2,2], g[3,3] = b^2, (b*sinh(rh))^2, (b*sinh(rh)*sin(th))^2
+            sage: g.view()  # standard metric on H^3:
+            g = b^2 drh*drh + b^2*sinh(rh)^2 dth*dth + b^2*sin(th)^2*sinh(rh)^2 dph*dph
+            sage: C = g.weyl() ; C
+            tensor field 'C(g)' of type (1,3) on the 3-dimensional manifold 'H^3'
+            sage: C == 0 
+            True
+
+        """
+        if self._weyl is None:
+            n = self._ambient_domain._dim
+            if n < 3:
+                raise ValueError("The Weyl tensor is not defined for a " + 
+                                 "manifold of dimension n <= 2.")
+            delta = self._domain.tangent_identity_field(dest_map=
+                                                       self._vmodule._dest_map)
+            riem = self.riemann()
+            ric = self.ricci()
+            rscal = self.ricci_scalar()
+            # First index of the Ricci tensor raised with the metric
+            ricup = ric.up(self, 0) 
+            aux = self*ricup + ric*delta - rscal/(n-1)* self*delta
+            self._weyl = riem + 2/(n-2)* aux.antisymmetrize([2,3]) 
+            if name is None:
+                self._weyl._name = "C(" + self._name + ")"
+            else:
+                self._weyl._name = name
+            if latex_name is None:
+                self._weyl._latex_name = r"\mathrm{C}\left(" + self._latex_name \
+                                        + r"\right)"
+            else:
+                self._weyl._latex_name = latex_name
+        return self._weyl
+
+    def determinant(self, frame=None):
+        r"""
+        Determinant of the metric components in the specified frame.
+        
+        INPUT:
+        
+        - ``frame`` -- (default: None) vector frame with 
+          respect to which the components `g_{ij}` of ``self`` are defined; 
+          if None, the default frame of the metric's domain is used. If a 
+          chart is provided instead of a frame, the associated coordinate 
+          frame is used
+          
+        OUTPUT:
+        
+        - the determinant `\det (g_{ij})`, as an instance of 
+          :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
+        
+        EXAMPLES:
+        
+        Metric determinant on a 2-dimensional manifold::
+        
+            sage: M = Manifold(2, 'M', start_index=1)
+            sage: X.<x,y> = M.chart()
+            sage: g = M.metric('g')
+            sage: g[1,1], g[1, 2], g[2, 2] = 1+x, x*y , 1-y
+            sage: g[:]
+            [ x + 1    x*y]
+            [   x*y -y + 1]
+            sage: s = g.determinant()  # determinant in M's default frame
+            sage: s.expr()
+            -x^2*y^2 - (x + 1)*y + x + 1
+
+        Determinant in a frame different from the default's one::
+            
+            sage: Y.<u,v> = M.chart()
+            sage: ch_X_Y = X.coord_change(Y, x+y, x-y)   
+            sage: ch_X_Y.inverse()
+            coordinate change from chart (M, (u, v)) to chart (M, (x, y))                 
+            sage: g.comp(Y.frame())[:, Y]
+            [ 1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2                            1/4*u]
+            [                           1/4*u -1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2]
+            sage: g.determinant(Y.frame()).expr()
+            -1/4*x^2*y^2 - 1/4*(x + 1)*y + 1/4*x + 1/4
+            sage: g.determinant(Y.frame()).expr(Y)
+            -1/64*u^4 - 1/64*v^4 + 1/32*(u^2 + 2)*v^2 - 1/16*u^2 + 1/4*v + 1/4
+
+        A chart can be passed instead of a frame::
+        
+            sage: g.determinant(X) is g.determinant(X.frame())
+            True
+            sage: g.determinant(Y) is g.determinant(Y.frame())
+            True
+
+        The metric determinant depends on the frame::
+        
+            sage: g.determinant(X.frame()) == g.determinant(Y.frame())
+            False
+        
+        """
+        from sage.matrix.constructor import matrix
+        from utilities import simple_determinant, simplify_chain
+        manif = self._ambient_domain._manifold
+        dom = self._domain
+        if frame is None:
+            frame = dom._def_frame
+        if frame in dom._atlas:   
+            # frame is actually a chart and is changed to the associated 
+            # coordinate frame:
+            frame = frame._frame
+        if frame not in self._determinants:
+            # a new computation is necessary
+            resu = frame._domain.scalar_field()
+            gg = self.comp(frame)
+            i1 = manif._sindex
+            for chart in gg[[i1, i1]]._express:
+                gm = matrix( [[ gg[i, j, chart]._express 
+                            for j in manif.irange()] for i in manif.irange()] )
+                detgm = simplify_chain(simple_determinant(gm))
+                resu.add_expr(detgm, chart=chart)
+            self._determinants[frame] = resu
+        return self._determinants[frame]
+
+    def sqrt_abs_det(self, frame=None):
+        r"""
+        Square root of the absolute value of the determinant of the metric 
+        components in the specified frame.
+        
+        INPUT:
+        
+        - ``frame`` -- (default: None) vector frame with 
+          respect to which the components `g_{ij}` of ``self`` are defined; 
+          if None, the domain's default frame is used. If a chart is 
+          provided, the associated coordinate frame is used
+          
+        OUTPUT:
+        
+        - `\sqrt{|\det (g_{ij})|}`, as an instance of 
+          :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
+        
+        EXAMPLES:
+        
+        Standard metric in the Euclidean space `\RR^3` with spherical 
+        coordinates::
+        
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: g = M.metric('g')
+            sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
+            sage: g.view()
+            g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
+            sage: g.sqrt_abs_det().expr()
+            r^2*sin(th)
+            
+        Metric determinant on a 2-dimensional manifold::
+        
+            sage: M = Manifold(2, 'M', start_index=1)
+            sage: X.<x,y> = M.chart()
+            sage: g = M.metric('g')
+            sage: g[1,1], g[1, 2], g[2, 2] = 1+x, x*y , 1-y
+            sage: g[:]
+            [ x + 1    x*y]
+            [   x*y -y + 1]
+            sage: s = g.sqrt_abs_det() ; s
+            scalar field on the 2-dimensional manifold 'M'
+            sage: s.expr()
+            sqrt(-x^2*y^2 - (x + 1)*y + x + 1)
+
+        Determinant in a frame different from the default's one::
+            
+            sage: Y.<u,v> = M.chart()
+            sage: ch_X_Y = X.coord_change(Y, x+y, x-y)   
+            sage: ch_X_Y.inverse()
+            coordinate change from chart (M, (u, v)) to chart (M, (x, y))                    
+            sage: g.comp(Y.frame())[:, Y]
+            [ 1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2                            1/4*u]
+            [                           1/4*u -1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2]
+            sage: g.sqrt_abs_det(Y.frame()).expr()
+            1/2*sqrt(-x^2*y^2 - (x + 1)*y + x + 1)
+            sage: g.sqrt_abs_det(Y.frame()).expr(Y)
+            1/8*sqrt(-u^4 - v^4 + 2*(u^2 + 2)*v^2 - 4*u^2 + 16*v + 16)
+
+        A chart can be passed instead of a frame::
+        
+            sage: g.sqrt_abs_det(Y) is g.sqrt_abs_det(Y.frame())
+            True
+
+        The metric determinant depends on the frame::
+        
+            sage: g.sqrt_abs_det(X.frame()) == g.sqrt_abs_det(Y.frame()) 
+            False
+
+        """
+        from sage.functions.other import sqrt
+        from utilities import simplify_chain
+        dom = self._domain
+        if frame is None:
+            frame = dom._def_frame
+        if frame in dom._atlas:   
+            # frame is actually a chart and is changed to the associated 
+            # coordinate frame:
+            frame = frame._frame
+        if frame not in self._sqrt_abs_dets:
+            # a new computation is necessary
+            detg = self.determinant(frame)
+            resu = frame._domain.scalar_field()
+            for chart in detg._express:
+                x = self._indic_signat * detg._express[chart]._express # |g|
+                x = simplify_chain(sqrt(x))
+                resu.add_expr(x, chart=chart)
+            self._sqrt_abs_dets[frame] = resu
+        return self._sqrt_abs_dets[frame]
+
+    def volume_form(self, contra=0):
+        r"""
+        Volume form (Levi-Civita tensor) `\epsilon` associated with the metric.
+        
+        This assumes that the manifold is orientable. 
+        
+        The volume form `\epsilon` is a `n`-form (`n` being the manifold's 
+        dimension) such that for any vector basis `(e_i)` that is orthonormal
+        with respect to the metric, 
+        
+        .. MATH::
+            
+            \epsilon(e_1,\ldots,e_n) = \pm 1 
+
+        There are only two such `n`-forms, which are opposite of each other. 
+        The volume form `\epsilon` is selected such that the domain's default 
+        frame is right-handed with respect to it. 
+        
+        INPUT:
+        
+        - ``contra`` -- (default: 0) number of contravariant indices of the
+          returned tensor
+        
+        OUTPUT:
+        
+        - if ``contra = 0`` (default value): the volume `n`-form `\epsilon`, as 
+          an instance of 
+          :class:`~sage.geometry.manifolds.diffform.DiffForm`
+        - if ``contra = k``, with `1\leq k \leq n`, the tensor field of type 
+          (k,n-k) formed from `\epsilon` by raising the first k indices with the 
+          metric (see method :meth:`TensorField.up`); the output is then an
+          instance of 
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`, with the 
+          appropriate antisymmetries
+       
+        EXAMPLES:
+        
+        Volume form on `\RR^3` with spherical coordinates::
+        
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: g = M.metric('g')
+            sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
+            sage: g.view()
+            g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
+            sage: eps = g.volume_form() ; eps
+            3-form 'eps_g' on the 3-dimensional manifold 'M'
+            sage: eps.view()
+            eps_g = r^2*sin(th) dr/\dth/\dph
+            sage: eps[[1,2,3]] == g.sqrt_abs_det()
+            True
+            sage: latex(eps)
+            \epsilon_{g}
+            
+            
+        The tensor field of components `\epsilon^i_{\ \, jk}` (``contra=1``)::
+        
+            sage: eps1 = g.volume_form(1) ; eps1
+            tensor field of type (1,2) on the 3-dimensional manifold 'M'
+            sage: eps1.symmetries()
+            no symmetry;  antisymmetry: (1, 2)
+            sage: eps1[:]
+            [[[0, 0, 0], [0, 0, r^2*sin(th)], [0, -r^2*sin(th), 0]],
+             [[0, 0, -sin(th)], [0, 0, 0], [sin(th), 0, 0]],
+             [[0, 1/sin(th), 0], [-1/sin(th), 0, 0], [0, 0, 0]]]
+            
+        The tensor field of components `\epsilon^{ij}_{\ \ k}` (``contra=2``)::
+        
+            sage: eps2 = g.volume_form(2) ; eps2
+            tensor field of type (2,1) on the 3-dimensional manifold 'M'
+            sage: eps2.symmetries()
+            no symmetry;  antisymmetry: (0, 1)
+            sage: eps2[:]
+            [[[0, 0, 0], [0, 0, sin(th)], [0, -1/sin(th), 0]],
+             [[0, 0, -sin(th)], [0, 0, 0], [1/(r^2*sin(th)), 0, 0]],
+             [[0, 1/sin(th), 0], [-1/(r^2*sin(th)), 0, 0], [0, 0, 0]]]
+            
+        The tensor field of components `\epsilon^{ijk}` (``contra=3``)::
+        
+            sage: eps3 = g.volume_form(3) ; eps3
+            tensor field of type (3,0) on the 3-dimensional manifold 'M'
+            sage: eps3.symmetries()
+            no symmetry;  antisymmetry: (0, 1, 2)
+            sage: eps3[:]
+            [[[0, 0, 0], [0, 0, 1/(r^2*sin(th))], [0, -1/(r^2*sin(th)), 0]],
+             [[0, 0, -1/(r^2*sin(th))], [0, 0, 0], [1/(r^2*sin(th)), 0, 0]],
+             [[0, 1/(r^2*sin(th)), 0], [-1/(r^2*sin(th)), 0, 0], [0, 0, 0]]]
+            sage: eps3[1,2,3]
+            1/(r^2*sin(th))
+            sage: eps3[[1,2,3]] * g.sqrt_abs_det() == 1
+            True
+        
+        """
+        if self._vol_forms == []:
+            # a new computation is necessary
+            manif = self._ambient_domain._manifold
+            dom = self._domain
+            ndim = manif._dim
+            # The result is constructed on the vector field module, 
+            # so that dest_map is taken automatically into account:
+            eps = self._vmodule.alternating_form(ndim, name='eps_'+self._name, 
+                                latex_name=r'\epsilon_{'+self._latex_name+r'}')
+            ind = tuple(range(manif._sindex, manif._sindex+ndim))
+            for frame in dom._top_frames:
+                eps.add_comp(frame)[[ind]] = self.sqrt_abs_det(frame)
+            self._vol_forms.append(eps)  # Levi-Civita tensor constructed
+            # Tensors related to the Levi-Civita one by index rising:
+            for k in range(1, ndim+1):
+                epskm1 = self._vol_forms[k-1]
+                epsk = epskm1.up(self, k-1)
+                if k > 1:
+                    # restoring the antisymmetry after the up operation: 
+                    epsk = epsk.antisymmetrize(range(k)) 
+                self._vol_forms.append(epsk)
+        return self._vol_forms[contra]
 
 #*****************************************************************************
 
@@ -920,6 +1372,8 @@ class MetricParal(Metric, TensorFieldParal):
             resu._inverse = self._inverse.restrict(subdomain)
             if self._connection is not None:
                 resu._connection = self._connection.restrict(subdomain)
+            if self._ricci_scalar is not None:
+                resu._ricci_scalar = self._ricci_scalar.restrict(subdomain)
             if self._weyl is not None:
                 resu._weyl = self._weyl.restrict(subdomain)
             if self._vol_forms != []:
@@ -1022,10 +1476,10 @@ class MetricParal(Metric, TensorFieldParal):
                         cinv[i, j] = {chart: simplify_chain(gmat_inv[i-si,j-si])}
                 self._inverse._components[frame] = cinv
         return self._inverse
-        
+
     def ricci_scalar(self, name=None, latex_name=None):
         r""" 
-        Return the Ricci scalar associated with the metric.
+        Return the metric's Ricci scalar.
         
         The Ricci scalar is the scalar field `r` defined from the Ricci tensor 
         `Ric` and the metric tensor `g` by 
@@ -1034,7 +1488,6 @@ class MetricParal(Metric, TensorFieldParal):
             
             r = g^{ij} Ric_{ij}
         
-
         INPUT:
         
         - ``name`` -- (default: None) name given to the Ricci scalar; 
@@ -1042,383 +1495,55 @@ class MetricParal(Metric, TensorFieldParal):
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
           Ricci scalar; if none, it is set to "\\mathrm{r}(g)", where "g" 
           is the metric's name
-
+          
         OUTPUT:
         
         - the Ricci scalar `r`, as an instance of 
           :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
-
+        
         EXAMPLES:
         
-        Ricci scalar of the standard metric on the 2-sphere::
+        Ricci scalar of the standard metric on the 2-dimensional sphere::
         
-            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
             sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: a = var('a') # the sphere radius 
+            sage: a = var('a') # the sphere radius
             sage: g = M.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
-            sage: g.view() # standard metric on the 2-sphere of radius a:
+            sage: g.view() # standard metric on S^2 with radius a
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
-            sage: g.ricci_scalar()
+            sage: r = g.ricci_scalar() ; r
             scalar field 'r(g)' on the 2-dimensional manifold 'S^2'
-            sage: g.ricci_scalar().expr()
-            2/a^2
+            sage: r.expr()
+            2/a^2        
 
         """
-        return self.connection().ricci_scalar(name, latex_name)
-
-
-    def weyl(self, name=None, latex_name=None):
-        r""" 
-        Return the Weyl conformal tensor associated with the metric.
-                        
-        The Weyl conformal tensor is the tensor field `C` of type (1,3) 
-        defined as the trace-free part of the Riemann curvature tensor `R`
-
-        INPUT:
-        
-        - ``name`` -- (default: None) name given to the Weyl conformal tensor; 
-          if none, it is set to "C(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
-          Weyl conformal tensor; if none, it is set to "\\mathrm{C}(g)", where 
-          "g" is the metric's name
-
-        OUTPUT:
-        
-        - the Weyl conformal tensor `C`, as an instance of 
-          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
-        
-        EXAMPLES:
-        
-        Checking that the Weyl tensor identically vanishes on a 3-dimensional 
-        manifold, for instance the hyperbolic space `H^3`::
-        
-            sage: M = Manifold(3, 'H^3', start_index=1)
-            sage: X.<rh,th,ph> = M.chart(r'rh:[0,+oo):\rho th:[0,pi]:\theta  ph:[0,2*pi):\phi')
-            sage: g = M.metric('g')
-            sage: b = var('b')                                                        
-            sage: g[1,1], g[2,2], g[3,3] = b^2, (b*sinh(rh))^2, (b*sinh(rh)*sin(th))^2
-            sage: g.view()  # standard metric on H^3:
-            g = b^2 drh*drh + b^2*sinh(rh)^2 dth*dth + b^2*sin(th)^2*sinh(rh)^2 dph*dph
-            sage: C = g.weyl() ; C
-            tensor field 'C(g)' of type (1,3) on the 3-dimensional manifold 'H^3'
-            sage: C == 0 
-            True
-
-        """
-        if self._weyl is None:
-            n = self._ambient_domain._dim
-            if n < 3:
-                raise ValueError("The Weyl tensor is not defined for a " + 
-                                 "manifold of dimension n <= 2.")
-            delta = self._domain.tangent_identity_field()
-            riem = self.riemann()
+        if self._ricci_scalar is None:            
+            manif = self._domain._manifold
             ric = self.ricci()
-            rscal = self.ricci_scalar()
-            # First index of the Ricci tensor raised with the metric
-            ricup = ric.up(self, 0) 
-            # The identity map is expressed in a frame in which the Riemann 
-            # tensor is known
-            delta.comp(riem.pick_a_basis())
-            aux = self*ricup + ric*delta - rscal/(n-1)* self*delta
-            self._weyl = riem + 2/(n-2)* aux.antisymmetrize([2,3]) 
+            ig = self.inverse()
+            frame = ig.common_basis(ric)
+            cric = ric._components[frame]
+            cig = ig._components[frame]
+            rsum1 = 0
+            for i in manif.irange():
+                rsum1 += cig[[i,i]] * cric[[i,i]]
+            rsum2 = 0
+            for i in manif.irange():
+                for j in manif.irange(start=i+1):
+                    rsum2 += cig[[i,j]] * cric[[i,j]]
+            self._ricci_scalar = rsum1 + 2*rsum2
+            self._ricci_scalar._domain = self._domain #?# not necessary ?
             if name is None:
-                self._weyl._name = "C(" + self._name + ")"
+                self._ricci_scalar._name = "r(" + self._name + ")"
             else:
-                self._weyl._name = name
+                self._ricci_scalar._name = name
             if latex_name is None:
-                self._weyl._latex_name = r"\mathrm{C}\left(" + self._latex_name \
-                                        + r"\right)"
+                self._ricci_scalar._latex_name = r"\mathrm{r}\left(" + \
+                                            self._latex_name + r"\right)"
             else:
-                self._weyl._latex_name = latex_name
-        return self._weyl
-            
-    def determinant(self, frame=None):
-        r"""
-        Determinant of the metric components in the specified frame.
-        
-        INPUT:
-        
-        - ``frame`` -- (default: None) vector frame with 
-          respect to which the components `g_{ij}` of ``self`` are defined; 
-          if None, the domain's default frame is used. If a chart is 
-          provided, the associated coordinate frame is used
-          
-        OUTPUT:
-        
-        - the determinant `\det (g_{ij})`, as an instance of 
-          :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
-        
-        EXAMPLES:
-        
-        Metric determinant on a 2-dimensional manifold::
-        
-            sage: M = Manifold(2, 'M', start_index=1)
-            sage: X.<x,y> = M.chart()
-            sage: g = M.metric('g')
-            sage: g[1,1], g[1, 2], g[2, 2] = 1+x, x*y , 1-y
-            sage: g[:]
-            [ x + 1    x*y]
-            [   x*y -y + 1]
-            sage: s = g.determinant()  # determinant in M's default frame
-            sage: s.expr()
-            -x^2*y^2 - (x + 1)*y + x + 1
-
-        Determinant in a frame different from the default's one::
-            
-            sage: Y.<u,v> = M.chart()
-            sage: ch_X_Y = X.coord_change(Y, x+y, x-y)   
-            sage: ch_X_Y.inverse()
-            coordinate change from chart (M, (u, v)) to chart (M, (x, y))                 
-            sage: g.comp(Y.frame())[:, Y]
-            [ 1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2                            1/4*u]
-            [                           1/4*u -1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2]
-            sage: g.determinant(Y.frame()).expr()
-            -1/4*x^2*y^2 - 1/4*(x + 1)*y + 1/4*x + 1/4
-            sage: g.determinant(Y.frame()).expr(Y)
-            -1/64*u^4 - 1/64*v^4 + 1/32*(u^2 + 2)*v^2 - 1/16*u^2 + 1/4*v + 1/4
-
-        A chart can be passed instead of a frame::
-        
-            sage: g.determinant(X) is g.determinant(X.frame())
-            True
-            sage: g.determinant(Y) is g.determinant(Y.frame())
-            True
-
-        The metric determinant depends on the frame::
-        
-            sage: g.determinant(X.frame()) == g.determinant(Y.frame())
-            False
-        
-        """
-        from sage.matrix.constructor import matrix
-        from utilities import simple_determinant, simplify_chain
-        manif = self._ambient_domain._manifold
-        dom = self._domain
-        if frame is None:
-            frame = dom._def_frame
-        if frame in dom._atlas:   
-            # frame is actually a chart and is changed to the associated 
-            # coordinate frame:
-            frame = frame._frame
-        if frame not in self._determinants:
-            # a new computation is necessary
-            resu = dom.scalar_field()
-            gg = self.comp(frame)
-            i1 = manif._sindex
-            for chart in gg[[i1, i1]]._express:
-                gm = matrix( [[ gg[i, j, chart]._express 
-                            for j in manif.irange()] for i in manif.irange()] )
-                detgm = simplify_chain(simple_determinant(gm))
-                resu.add_expr(detgm, chart=chart)
-            self._determinants[frame] = resu
-        return self._determinants[frame]
-
-    def sqrt_abs_det(self, frame=None):
-        r"""
-        Square root of the absolute value of the determinant of the metric 
-        components in the specified frame.
-        
-        INPUT:
-        
-        - ``frame`` -- (default: None) vector frame with 
-          respect to which the components `g_{ij}` of ``self`` are defined; 
-          if None, the domain's default frame is used. If a chart is 
-          provided, the associated coordinate frame is used
-          
-        OUTPUT:
-        
-        - `\sqrt{|\det (g_{ij})|}`, as an instance of 
-          :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
-        
-        EXAMPLES:
-        
-        Standard metric in the Euclidean space `\RR^3` with spherical 
-        coordinates::
-        
-            sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = M.metric('g')
-            sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
-            sage: g.view()
-            g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
-            sage: g.sqrt_abs_det().expr()
-            r^2*sin(th)
-            
-        Metric determinant on a 2-dimensional manifold::
-        
-            sage: M = Manifold(2, 'M', start_index=1)
-            sage: X.<x,y> = M.chart()
-            sage: g = M.metric('g')
-            sage: g[1,1], g[1, 2], g[2, 2] = 1+x, x*y , 1-y
-            sage: g[:]
-            [ x + 1    x*y]
-            [   x*y -y + 1]
-            sage: s = g.sqrt_abs_det() ; s
-            scalar field on the 2-dimensional manifold 'M'
-            sage: s.expr()
-            sqrt(-x^2*y^2 - (x + 1)*y + x + 1)
-
-        Determinant in a frame different from the default's one::
-            
-            sage: Y.<u,v> = M.chart()
-            sage: ch_X_Y = X.coord_change(Y, x+y, x-y)   
-            sage: ch_X_Y.inverse()
-            coordinate change from chart (M, (u, v)) to chart (M, (x, y))                    
-            sage: g.comp(Y.frame())[:, Y]
-            [ 1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2                            1/4*u]
-            [                           1/4*u -1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2]
-            sage: g.sqrt_abs_det(Y.frame()).expr()
-            1/2*sqrt(-x^2*y^2 - (x + 1)*y + x + 1)
-            sage: g.sqrt_abs_det(Y.frame()).expr(Y)
-            1/8*sqrt(-u^4 - v^4 + 2*(u^2 + 2)*v^2 - 4*u^2 + 16*v + 16)
-
-        A chart can be passed instead of a frame::
-        
-            sage: g.sqrt_abs_det(Y) is g.sqrt_abs_det(Y.frame())
-            True
-
-        The metric determinant depends on the frame::
-        
-            sage: g.sqrt_abs_det(X.frame()) == g.sqrt_abs_det(Y.frame()) 
-            False
-
-        """
-        from sage.functions.other import sqrt
-        from utilities import simplify_chain
-        dom = self._domain
-        if frame is None:
-            frame = dom._def_frame
-        if frame in dom._atlas:   
-            # frame is actually a chart and is changed to the associated 
-            # coordinate frame:
-            frame = frame._frame
-        if frame not in self._sqrt_abs_dets:
-            # a new computation is necessary
-            detg = self.determinant(frame)
-            resu = dom.scalar_field()
-            for chart in detg._express:
-                x = self._indic_signat * detg._express[chart]._express # |g|
-                x = simplify_chain(sqrt(x))
-                resu.add_expr(x, chart=chart)
-            self._sqrt_abs_dets[frame] = resu
-        return self._sqrt_abs_dets[frame]
-
-
-    def volume_form(self, contra=0):
-        r"""
-        Volume form (Levi-Civita tensor) `\epsilon` associated with the metric.
-        
-        This assumes that the manifold is orientable. 
-        
-        The volume form `\epsilon` is a `n`-form (`n` being the manifold's 
-        dimension) such that for any vector basis `(e_i)` that is orthonormal
-        with respect to the metric, 
-        
-        .. MATH::
-            
-            \epsilon(e_1,\ldots,e_n) = \pm 1 
-
-        There are only two such `n`-forms, which are opposite of each other. 
-        The volume form `\epsilon` is selected such that the domain's default 
-        frame is right-handed with respect to it. 
-        
-        INPUT:
-        
-        - ``contra`` -- (default: 0) number of contravariant indices of the
-          returned tensor
-        
-        OUTPUT:
-        
-        - if ``contra = 0`` (default value): the volume `n`-form `\epsilon`, as 
-          an instance of 
-          :class:`~sage.geometry.manifolds.diffform.DiffForm`
-        - if ``contra = k``, with `1\leq k \leq n`, the tensor field of type 
-          (k,n-k) formed from `\epsilon` by raising the first k indices with the 
-          metric (see method :meth:`TensorField.up`); the output is then an
-          instance of 
-          :class:`~sage.geometry.manifolds.tensorfield.TensorField`, with the 
-          appropriate antisymmetries
-       
-        EXAMPLES:
-        
-        Volume form on `\RR^3` with spherical coordinates::
-        
-            sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = M.metric('g')
-            sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
-            sage: g.view()
-            g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
-            sage: eps = g.volume_form() ; eps
-            3-form 'eps_g' on the 3-dimensional manifold 'M'
-            sage: eps.view()
-            eps_g = r^2*sin(th) dr/\dth/\dph
-            sage: eps[[1,2,3]] == g.sqrt_abs_det()
-            True
-            sage: latex(eps)
-            \epsilon_{g}
-            
-            
-        The tensor field of components `\epsilon^i_{\ \, jk}` (``contra=1``)::
-        
-            sage: eps1 = g.volume_form(1) ; eps1
-            tensor field of type (1,2) on the 3-dimensional manifold 'M'
-            sage: eps1.symmetries()
-            no symmetry;  antisymmetry: (1, 2)
-            sage: eps1[:]
-            [[[0, 0, 0], [0, 0, r^2*sin(th)], [0, -r^2*sin(th), 0]],
-             [[0, 0, -sin(th)], [0, 0, 0], [sin(th), 0, 0]],
-             [[0, 1/sin(th), 0], [-1/sin(th), 0, 0], [0, 0, 0]]]
-            
-        The tensor field of components `\epsilon^{ij}_{\ \ k}` (``contra=2``)::
-        
-            sage: eps2 = g.volume_form(2) ; eps2
-            tensor field of type (2,1) on the 3-dimensional manifold 'M'
-            sage: eps2.symmetries()
-            no symmetry;  antisymmetry: (0, 1)
-            sage: eps2[:]
-            [[[0, 0, 0], [0, 0, sin(th)], [0, -1/sin(th), 0]],
-             [[0, 0, -sin(th)], [0, 0, 0], [1/(r^2*sin(th)), 0, 0]],
-             [[0, 1/sin(th), 0], [-1/(r^2*sin(th)), 0, 0], [0, 0, 0]]]
-            
-        The tensor field of components `\epsilon^{ijk}` (``contra=3``)::
-        
-            sage: eps3 = g.volume_form(3) ; eps3
-            tensor field of type (3,0) on the 3-dimensional manifold 'M'
-            sage: eps3.symmetries()
-            no symmetry;  antisymmetry: (0, 1, 2)
-            sage: eps3[:]
-            [[[0, 0, 0], [0, 0, 1/(r^2*sin(th))], [0, -1/(r^2*sin(th)), 0]],
-             [[0, 0, -1/(r^2*sin(th))], [0, 0, 0], [1/(r^2*sin(th)), 0, 0]],
-             [[0, 1/(r^2*sin(th)), 0], [-1/(r^2*sin(th)), 0, 0], [0, 0, 0]]]
-            sage: eps3[1,2,3]
-            1/(r^2*sin(th))
-            sage: eps3[[1,2,3]] * g.sqrt_abs_det() == 1
-            True
-        
-        """
-        if self._vol_forms == []:
-            # a new computation is necessary
-            manif = self._ambient_domain._manifold
-            dom = self._domain
-            ndim = manif._dim
-            eps = dom.diff_form(ndim, name='eps_'+self._name, 
-                                latex_name=r'\epsilon_{'+self._latex_name+r'}')
-            ind = tuple(range(manif._sindex, manif._sindex+ndim))
-            eps[[ind]] = self.sqrt_abs_det(dom._def_frame)
-            self._vol_forms.append(eps)  # Levi-Civita tensor constructed
-            # Tensors related to the Levi-Civita one by index rising:
-            for k in range(1, ndim+1):
-                epskm1 = self._vol_forms[k-1]
-                epsk = epskm1.up(self, k-1)
-                if k > 1:
-                    # restoring the antisymmetry after the up operation: 
-                    epsk = epsk.antisymmetrize(range(k)) 
-                self._vol_forms.append(epsk)
-        return self._vol_forms[contra]
-
+                self._ricci_scalar._latex_name = latex_name
+        return self._ricci_scalar 
 
 #*****************************************************************************
 
