@@ -222,6 +222,15 @@ class TensorFieldModule(UniqueRepresentation, Module):
                            " mapped into the " + str(self._ambient_domain)
         return description
 
+    def _latex_(self):
+        r"""
+        LaTeX representation of the object.
+        """
+        if self._latex_name is None:
+            return r'\mbox{' + str(self) + r'}'
+        else:
+           return self._latex_name
+
     def base_module(self):
         r""" 
         Return the vector field module on which ``self`` is constructed.

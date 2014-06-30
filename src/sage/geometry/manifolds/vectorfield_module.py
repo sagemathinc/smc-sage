@@ -254,6 +254,15 @@ class VectorFieldModule(UniqueRepresentation, Parent):
                            " mapped into the " + str(self._ambient_domain)
         return description
 
+    def _latex_(self):
+        r"""
+        LaTeX representation of the object.
+        """
+        if self._latex_name is None:
+            return r'\mbox{' + str(self) + r'}'
+        else:
+           return self._latex_name
+
     def tensor_module(self, k, l):
         r"""
         Return the module of all tensor fields of type (k,l) defined on 
