@@ -9,6 +9,16 @@ Derived classes of :class:`Metric` are
 * :class:`RiemannMetric` for Riemannian metrics 
 * :class:`LorentzMetric` for Lorentzian metrics 
 
+Other derived classes are devoted to the special cases of metrics with
+values on a parallelizable open subset of a differentiable manifold:
+
+* :class:`MetricParal`
+
+  * :class:`RiemannMetricParal`
+  * :class:`LorentzMetricParal`
+
+See the documentation of class :class:`Metric` for an introduction. 
+
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2013, 2014) : initial version
@@ -48,13 +58,13 @@ class Metric(TensorField):
 
     .. MATH::
 
-        g(p):\ T_p M\times T_p M  \longrightarrow \RR
+        g(p):\ T_q M\times T_q M  \longrightarrow \RR
     
-    where `T_p M` stands for the tangent space at the point `p` on the
+    where `T_q M` stands for the tangent space at the point `q=\Phi(p)` on the
     manifold `M`, such that `g(p)` is symmetric: 
-    `\forall (u,v)\in  T_p M\times T_p M, \ g(p)(v,u) = g(p)(u,v)` 
+    `\forall (u,v)\in  T_q M\times T_q M, \ g(p)(v,u) = g(p)(u,v)` 
     and nondegenerate: 
-    `(\forall v\in T_p M,\ \ g(p)(u,v) = 0) \Longrightarrow u=0`. 
+    `(\forall v\in T_q M,\ \ g(p)(u,v) = 0) \Longrightarrow u=0`. 
     
     INPUT:
     
@@ -144,6 +154,24 @@ class Metric(TensorField):
         <class 'sage.geometry.manifolds.metric.Metric'>
         sage: type(g.restrict(U))
         <class 'sage.geometry.manifolds.metric.MetricParal'>
+
+    As a field of bilinear forms, the metric acts on pairs of tensor fields,
+    yielding a scalar field::
+    
+        sage: a = M.vector_field('a')
+        sage: a[eU,:] = [x, 2+y]
+        sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
+        sage: b = M.vector_field('b')
+        sage: b[eU,:] = [-y, x]
+        sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
+        sage: s = g(a,b) ; s
+        scalar field 'g(a,b)' on the 2-dimensional manifold 'S^2'
+        sage: s.view()
+        g(a,b): S^2 --> R
+        on U: (x, y) |--> 8*x/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1)
+        on V: (u, v) |--> 8*(u^3 + u*v^2)/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1)
+        on W: (x, y) |--> 8*x/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1)
+        on W: (u, v) |--> 8*(u^3 + u*v^2)/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1)
 
     The inverse metric is::
     
@@ -403,6 +431,10 @@ class Metric(TensorField):
         OUTPUT:
         
         - instance of :class:`Metric` representing the restriction.
+
+        EXAMPLES:
+        
+        See the top documentation of :class:`Metric`. 
         
         """
         if subdomain == self._domain:
@@ -443,6 +475,7 @@ class Metric(TensorField):
         
         EXAMPLES:
         
+        See the top documentation of :class:`Metric`. 
 
         """
         # Is the inverse metric up to date ?
@@ -478,12 +511,13 @@ class Metric(TensorField):
         
             sage: M = Manifold(3, 'R^3', start_index=1)
             sage: # Let us use spherical coordinates on R^3:
-            sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = M.metric('g')
+            sage: U = M.open_domain('U') # the complement of the half-plane (y=0, x>=0)
+            sage: c_spher.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: g = U.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2 , (r*sin(th))^2  # the Euclidean metric
             sage: g.connection()
-            Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the 3-dimensional manifold 'R^3'
-            sage: g.connection()[:]  # Christoffel symbols in spherical coordinates
+            Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the open domain 'U' on the 3-dimensional manifold 'R^3'
+            sage: g.connection()[:]  # Christoffel symbols w.r.t. spherical coordinates
             [[[0, 0, 0], [0, -r, 0], [0, 0, -r*sin(th)^2]], 
             [[0, 1/r, 0], [1/r, 0, 0], [0, 0, -cos(th)*sin(th)]], 
             [[0, 0, 1/r], [0, 0, cos(th)/sin(th)], [1/r, cos(th)/sin(th), 0]]]
@@ -491,11 +525,11 @@ class Metric(TensorField):
         Test of compatibility with the metric::
         
             sage: Dg = g.connection()(g) ; Dg
-            tensor field 'nabla_g g' of type (0,3) on the 3-dimensional manifold 'R^3'
+            tensor field 'nabla_g g' of type (0,3) on the open domain 'U' on the 3-dimensional manifold 'R^3'
             sage: Dg == 0
             True
             sage: Dig = g.connection()(g.inverse()) ; Dig
-            tensor field 'nabla_g inv_g' of type (2,1) on the 3-dimensional manifold 'R^3'
+            tensor field 'nabla_g inv_g' of type (2,1) on the open domain 'U' on the 3-dimensional manifold 'R^3'
             sage: Dig == 0
             True
         
@@ -530,13 +564,14 @@ class Metric(TensorField):
         spherical coordinates::
         
             sage: M = Manifold(3, 'R3', r'\RR^3', start_index=1)
-            sage: X.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = M.metric('g')
+            sage: U = M.open_domain('U') # the complement of the half-plane (y=0, x>=0)
+            sage: X.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: g = U.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, r^2*sin(th)^2
             sage: g.view()  # the standard flat metric expressed in spherical coordinates
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
             sage: Gam = g.christoffel_symbols() ; Gam
-            3-indices components w.r.t. coordinate frame (R3, (d/dr,d/dth,d/dph)), with symmetry on the index positions (1, 2)
+            3-indices components w.r.t. coordinate frame (U, (d/dr,d/dth,d/dph)), with symmetry on the index positions (1, 2)
             sage: print type(Gam)
             <class 'sage.tensor.modules.comp.CompWithSym'>
             sage: Gam[:]
@@ -553,7 +588,6 @@ class Metric(TensorField):
             cos(th)/sin(th)
             sage: Gam[2,3,3]
             -cos(th)*sin(th)
-
         
         """
         if chart is None:
@@ -597,14 +631,15 @@ class Metric(TensorField):
         
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: U = M.open_domain('U') # the complement of a meridian (domain of spherical coordinates)
+            sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: a = var('a') # the sphere radius 
-            sage: g = M.metric('g')
+            sage: g = U.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
             sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
             sage: g.riemann()
-            tensor field 'Riem(g)' of type (1,3) on the 2-dimensional manifold 'S^2'
+            tensor field 'Riem(g)' of type (1,3) on the open domain 'U' on the 2-dimensional manifold 'S^2'
             sage: g.riemann()[:]
             [[[[0, 0], [0, 0]], [[0, sin(th)^2], [-sin(th)^2, 0]]],
              [[[0, (cos(th)^2 - 1)/sin(th)^2], [1, 0]], [[0, 0], [0, 0]]]]
@@ -620,7 +655,7 @@ class Metric(TensorField):
         This formula can be checked here, with the r.h.s. rewritten as 
         `-r g_{j[k} \delta^i_{\ \, l]}`::
         
-            sage: g.riemann() == -g.ricci_scalar()*(g*M.tangent_identity_field()).antisymmetrize([2,3])
+            sage: g.riemann() == -g.ricci_scalar()*(g*U.tangent_identity_field()).antisymmetrize([2,3])
             True
         
         """
@@ -663,14 +698,15 @@ class Metric(TensorField):
         
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: U = M.open_domain('U') # the complement of a meridian (domain of spherical coordinates)
+            sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: a = var('a') # the sphere radius 
-            sage: g = M.metric('g')
+            sage: g = U.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
             sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
             sage: g.ricci()
-            field of symmetric bilinear forms 'Ric(g)' on the 2-dimensional manifold 'S^2'
+            field of symmetric bilinear forms 'Ric(g)' on the open domain 'U' on the 2-dimensional manifold 'S^2'
             sage: g.ricci()[:]
             [        1         0]
             [        0 sin(th)^2]
@@ -710,16 +746,18 @@ class Metric(TensorField):
         
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+            sage: U = M.open_domain('U') # the complement of a meridian (domain of spherical coordinates)
+            sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: a = var('a') # the sphere radius 
-            sage: g = M.metric('g')
+            sage: g = U.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
             sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
             sage: g.ricci_scalar()
-            scalar field 'r(g)' on the 2-dimensional manifold 'S^2'
-            sage: g.ricci_scalar().expr()
-            2/a^2
+            scalar field 'r(g)' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            sage: g.ricci_scalar().view() # The Ricci scalar is constant:
+            r(g): U --> R
+               (th, ph) |--> 2/a^2
 
         """
         if self._ricci_scalar is None:
@@ -760,20 +798,21 @@ class Metric(TensorField):
         manifold, for instance the hyperbolic space `H^3`::
         
             sage: M = Manifold(3, 'H^3', start_index=1)
-            sage: X.<rh,th,ph> = M.chart(r'rh:[0,+oo):\rho th:[0,pi]:\theta  ph:[0,2*pi):\phi')
-            sage: g = M.metric('g')
+            sage: U = M.open_domain('U') # the complement of the half-plane (y=0, x>=0)
+            sage: X.<rh,th,ph> = U.chart(r'rh:(0,+oo):\rho th:(0,pi):\theta  ph:(0,2*pi):\phi')
+            sage: g = U.metric('g')
             sage: b = var('b')                                                        
             sage: g[1,1], g[2,2], g[3,3] = b^2, (b*sinh(rh))^2, (b*sinh(rh)*sin(th))^2
             sage: g.view()  # standard metric on H^3:
             g = b^2 drh*drh + b^2*sinh(rh)^2 dth*dth + b^2*sin(th)^2*sinh(rh)^2 dph*dph
             sage: C = g.weyl() ; C
-            tensor field 'C(g)' of type (1,3) on the 3-dimensional manifold 'H^3'
+            tensor field 'C(g)' of type (1,3) on the open domain 'U' on the 3-dimensional manifold 'H^3'
             sage: C == 0 
             True
 
         """
         if self._weyl is None:
-            n = self._ambient_domain._dim
+            n = self._ambient_domain._manifold._dim
             if n < 3:
                 raise ValueError("The Weyl tensor is not defined for a " + 
                                  "manifold of dimension n <= 2.")
@@ -902,8 +941,9 @@ class Metric(TensorField):
         coordinates::
         
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = M.metric('g')
+            sage: U = M.open_domain('U') # the complement of the half-plane (y=0, x>=0)
+            sage: c_spher.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: g = U.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
             sage: g.view()
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
@@ -930,7 +970,7 @@ class Metric(TensorField):
             sage: ch_X_Y = X.coord_change(Y, x+y, x-y)   
             sage: ch_X_Y.inverse()
             coordinate change from chart (M, (u, v)) to chart (M, (x, y))                    
-            sage: g.comp(Y.frame())[:, Y]
+            sage: g[Y.frame(),:,Y]
             [ 1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2                            1/4*u]
             [                           1/4*u -1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2]
             sage: g.sqrt_abs_det(Y.frame()).expr()
@@ -1009,13 +1049,14 @@ class Metric(TensorField):
         Volume form on `\RR^3` with spherical coordinates::
         
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: g = M.metric('g')
+            sage: U = M.open_domain('U') # the complement of the half-plane (y=0, x>=0)
+            sage: c_spher.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: g = U.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
             sage: g.view()
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
             sage: eps = g.volume_form() ; eps
-            3-form 'eps_g' on the 3-dimensional manifold 'M'
+            3-form 'eps_g' on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: eps.view()
             eps_g = r^2*sin(th) dr/\dth/\dph
             sage: eps[[1,2,3]] == g.sqrt_abs_det()
@@ -1027,7 +1068,7 @@ class Metric(TensorField):
         The tensor field of components `\epsilon^i_{\ \, jk}` (``contra=1``)::
         
             sage: eps1 = g.volume_form(1) ; eps1
-            tensor field of type (1,2) on the 3-dimensional manifold 'M'
+            tensor field of type (1,2) on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: eps1.symmetries()
             no symmetry;  antisymmetry: (1, 2)
             sage: eps1[:]
@@ -1038,7 +1079,7 @@ class Metric(TensorField):
         The tensor field of components `\epsilon^{ij}_{\ \ k}` (``contra=2``)::
         
             sage: eps2 = g.volume_form(2) ; eps2
-            tensor field of type (2,1) on the 3-dimensional manifold 'M'
+            tensor field of type (2,1) on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: eps2.symmetries()
             no symmetry;  antisymmetry: (0, 1)
             sage: eps2[:]
@@ -1049,7 +1090,7 @@ class Metric(TensorField):
         The tensor field of components `\epsilon^{ijk}` (``contra=3``)::
         
             sage: eps3 = g.volume_form(3) ; eps3
-            tensor field of type (3,0) on the 3-dimensional manifold 'M'
+            tensor field of type (3,0) on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: eps3.symmetries()
             no symmetry;  antisymmetry: (0, 1, 2)
             sage: eps3[:]
@@ -1105,7 +1146,6 @@ class RiemannMetric(Metric):
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``      
 
-
     """
     def __init__(self, vector_field_module, name, latex_name=None):
         dim = vector_field_module._ambient_domain._manifold._dim
@@ -1149,8 +1189,6 @@ class LorentzMetric(Metric):
         * if set to 'negative', the signature is -n+2, i.e. `(+,-,\cdots,-)`
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``      
-
-    EXAMPLE:
 
     """
     def __init__(self, vector_field_module, name, signature='positive', 
@@ -1204,13 +1242,13 @@ class MetricParal(Metric, TensorFieldParal):
 
     .. MATH::
 
-        g(p):\ T_p M\times T_p M  \longrightarrow \RR
+        g(p):\ T_q M\times T_q M  \longrightarrow \RR
     
-    where `T_p M` stands for the tangent space at the point `p` on the
+    where `T_q M` stands for the tangent space at the point `q=\Phi(p)` on the
     manifold `M`, such that `g(p)` is symmetric: 
-    `\forall (u,v)\in  T_p M\times T_p M, \ g(p)(v,u) = g(p)(u,v)` 
+    `\forall (u,v)\in  T_q M\times T_q M, \ g(p)(v,u) = g(p)(u,v)` 
     and nondegenerate: 
-    `(\forall v\in T_p M,\ \ g(p)(u,v) = 0) \Longrightarrow u=0`. 
+    `(\forall v\in T_q M,\ \ g(p)(u,v) = 0) \Longrightarrow u=0`. 
     
     INPUT:
     
@@ -1267,12 +1305,12 @@ class MetricParal(Metric, TensorFieldParal):
         [chart (M, (x, y)), chart (M, (u, v))]
         sage: M.frames()
         [coordinate frame (M, (d/dx,d/dy)), coordinate frame (M, (d/du,d/dv))]
-        sage: g.comp(c_uv.frame())[:]  # metric components in frame c_uv.frame() expressed in M's default chart (x,y)
+        sage: g[c_uv.frame(),:]  # metric components in frame c_uv.frame() expressed in M's default chart (x,y)
         [ 1/2*x*y + 1/2          1/2*x]
         [         1/2*x -1/2*x*y + 1/2]
         sage: g.view(c_uv.frame())
         g = (1/2*x*y + 1/2) du*du + 1/2*x du*dv + 1/2*x dv*du + (-1/2*x*y + 1/2) dv*dv
-        sage: g.comp(c_uv.frame())[:, c_uv]   # metric components in frame c_uv.frame() expressed in chart (u,v)
+        sage: g[c_uv.frame(),:,c_uv]   # metric components in frame c_uv.frame() expressed in chart (u,v)
         [ 1/8*u^2 - 1/8*v^2 + 1/2            1/4*u + 1/4*v]
         [           1/4*u + 1/4*v -1/8*u^2 + 1/8*v^2 + 1/2]
         sage: g.view(c_uv.frame(), c_uv)
@@ -1503,19 +1541,22 @@ class MetricParal(Metric, TensorFieldParal):
         
         EXAMPLES:
         
-        Ricci scalar of the standard metric on the 2-dimensional sphere::
+        Ricci scalar of the standard metric on the 2-sphere::
         
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
-            sage: a = var('a') # the sphere radius
-            sage: g = M.metric('g')
+            sage: U = M.open_domain('U') # the complement of a meridian (domain of spherical coordinates)
+            sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: a = var('a') # the sphere radius 
+            sage: g = U.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
-            sage: g.view() # standard metric on S^2 with radius a
+            sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
-            sage: r = g.ricci_scalar() ; r
-            scalar field 'r(g)' on the 2-dimensional manifold 'S^2'
-            sage: r.expr()
-            2/a^2        
+            sage: g.ricci_scalar()
+            scalar field 'r(g)' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            sage: g.ricci_scalar().view() # The Ricci scalar is constant:
+            r(g): U --> R
+               (th, ph) |--> 2/a^2
 
         """
         if self._ricci_scalar is None:            
@@ -1567,18 +1608,25 @@ class RiemannMetricParal(MetricParal):
 
     EXAMPLE:
     
-    Standard metric on the 2-sphere `S^2`::
+    Standard metric on the Euclidean plane::
     
-        sage: Manifold._clear_cache_() # for doctests only
-        sage: M = Manifold(2, 'S^2', start_index=1)
-        sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
+        sage: M = Manifold(2, 'R^2', start_index=1)
+        sage: c_cart.<x,y> = M.chart()  # Cartesian coordinates
         sage: g = M.riemann_metric('g') ; g
-        Riemannian metric 'g' on the 2-dimensional manifold 'S^2'
-        sage: g[1,1], g[2,2] = 1, sin(th)^2
+        Riemannian metric 'g' on the 2-dimensional manifold 'R^2'
+        sage: type(g)
+        <class 'sage.geometry.manifolds.metric.RiemannMetricParal'>
+        sage: g.parent()
+        free module TF^(0,2)(R^2) of type-(0,2) tensors fields on the 2-dimensional manifold 'R^2'
+        sage: g[1,1], g[2,2] = 1, 1
         sage: g.view()
-        g = dth*dth + sin(th)^2 dph*dph
-        sage: g.signature() 
+        g = dx*dx + dy*dy
+        sage: g.signature()
         2
+        sage: g.riemann()
+        tensor field 'Riem(g)' of type (1,3) on the 2-dimensional manifold 'R^2'
+        sage: g.riemann().view()  # the Euclidean metric is flat:
+        Riem(g) = 0
 
     """
     def __init__(self, vector_field_module, name, latex_name=None):
@@ -1633,6 +1681,10 @@ class LorentzMetricParal(MetricParal):
         sage: c_cart.<t,x,y,z> = M.chart()
         sage: g = M.lorentz_metric('g') ; g
         Lorentzian metric 'g' on the 4-dimensional manifold 'M'
+        sage: type(g)
+        <class 'sage.geometry.manifolds.metric.LorentzMetricParal'>
+        sage: g.parent()
+        free module TF^(0,2)(M) of type-(0,2) tensors fields on the 4-dimensional manifold 'M'
         sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
         sage: g.view()
         g = -dt*dt + dx*dx + dy*dy + dz*dz
@@ -1641,9 +1693,16 @@ class LorentzMetricParal(MetricParal):
         
     The negative signature convention can be chosen::
     
-        sage: g = M.lorentz_metric('g', signature='negative') 
-        sage: g.signature()
+        sage: g1 = M.lorentz_metric('g', signature='negative') 
+        sage: g1.signature()
         -2
+
+    The Minkowski metric is flat::
+    
+        sage: g.riemann()
+        tensor field 'Riem(g)' of type (1,3) on the 4-dimensional manifold 'M'
+        sage: g.riemann().view()
+        Riem(g) = 0
 
     """
     def __init__(self, vector_field_module, name, signature='positive', 

@@ -414,7 +414,12 @@ class TensorField(ModuleElement):
         sage: t[eV,0,1] = t[eVW,0,1,c_uvW].expr()
         sage: t[eV,1,0] = t[eVW,1,0,c_uvW].expr()
         sage: t[eV,1,1] = t[eVW,1,1,c_uvW].expr()
-        
+
+    Actually, the above operation can by performed in a single line by means
+    of the method :meth:`add_comp_by_continuation`::
+    
+        sage: t.add_comp_by_continuation(eV, W, chart=c_uv)
+    
     At this stage, `t` is fully defined, having components in frames eU and eV, 
     whose domain union is the whole manifold::
     
@@ -425,14 +430,12 @@ class TensorField(ModuleElement):
     
         sage: a = M.vector_field(name='a')
         sage: a[eU,:] = [1,x]
-        sage: a[eV,0] = a[eVW,0,c_uvW].expr()
-        sage: a[eV,1] = a[eVW,1,c_uvW].expr()
+        sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
         sage: a.view(eV)
         a = -(u^4 - v^4 + 2*u^2*v)/(u^2 + v^2) d/du - (2*u^3*v + 2*u*v^3 - u^3 + u*v^2)/(u^2 + v^2) d/dv
         sage: b = M.vector_field(name='b')
         sage: b[eU,:] = [y,-1]
-        sage: b[eV,0] = b[eVW,0,c_uvW].expr()
-        sage: b[eV,1] = b[eVW,1,c_uvW].expr()
+        sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
         sage: b.view(eV)
         b = ((2*u + 1)*v^3 + (2*u^3 - u^2)*v)/(u^2 + v^2) d/du - (u^4 - v^4 + 2*u*v^2)/(u^2 + v^2) d/dv
         
@@ -948,7 +951,80 @@ class TensorField(ModuleElement):
         rst = self.restrict(basis._domain, dest_map=basis._dest_map)
         return rst.add_comp(basis)
 
+    def add_comp_by_continuation(self, frame, subdomain, chart=None):
+        r"""
+        Set components w.r.t to a vector frame by continuation of the
+        coordinate expression of the components in a subframe.  
+        
+        The continuation is performed by demanding that the components have
+        the same coordinate expression as those on the restriction of the frame
+        to a given subdomain. 
+        
+        INPUT:
+        
+        - ``frame`` -- vector frame `e` in which the components are to be set
+        - ``subdomain`` -- subdomain of `e`'s domain in which the
+          components are known or can be evaluated from other components
+        - ``chart`` -- (default: None) coordinate chart on `e`'s domain in 
+          which the extension of the expression of the components is to be 
+          performed; if None, the default's chart of `e`'s domain is assumed
+          
+        EXAMPLE:
+        
+        Components of a vector field on the sphere `S^2`::
+        
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'S^2', start_index=1)
+            sage: # The two open domains covered by stereographic coordinates (North and South): 
+            sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart() # stereographic coordinates
+            sage: transf = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), intersection_name='W', restrictions1= x^2+y^2!=0, restrictions2= u^2+v^2!=0)
+            sage: inv = transf.inverse()
+            sage: W = U.intersection(V) # The complement of the two poles
+            sage: eU = c_xy.frame() ; eV = c_uv.frame()
+            sage: a = M.vector_field('a')
+            sage: a[eU,:] = [x, 2+y]
+        
+        At this stage, the vector field has been defined only on the domain U 
+        (through its components in the frame eU)::
+        
+            sage: a.view(eU)
+            a = x d/dx + (y + 2) d/dy
 
+        The components with respect to the restriction of eV to the common 
+        subdomain W, in terms of the (u,v) coordinates, are obtained by a
+        change-of-frame formula on W::
+        
+            sage: a.view(eV.restrict(W), c_uv.restrict(W))
+            a = (-4*u*v - u) d/du + (2*u^2 - 2*v^2 - v) d/dv
+
+        The continuation consists in extending the definition of the vector 
+        field to the whole domain V by demanding that the components in the 
+        frame eV have the same coordinate expression as the above one::
+        
+            sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
+
+        We have then::
+        
+            sage: a.view(eV)
+            a = (-4*u*v - u) d/du + (2*u^2 - 2*v^2 - v) d/dv
+        
+        and `a` is defined on the entire manifold `S^2`. 
+        
+        """
+        dom = frame._domain
+        if not dom.is_subdomain(self._domain):
+            raise ValueError("The vector frame is not defined on a subdomain" + 
+                             " of the tensor field domain.")
+        if chart is None:
+            chart = dom._def_chart
+        sframe = frame.restrict(subdomain)
+        schart = chart.restrict(subdomain)
+        scomp = self.comp(sframe)
+        resu = self.add_comp(frame)
+        for ind in resu.non_redundant_index_generator():
+            resu[[ind]] = dom.scalar_field({chart: scomp[[ind]].expr(schart)})
+        
     def comp(self, basis=None, from_basis=None):
         r"""
         Return the components in a given vector frame.
@@ -1718,10 +1794,7 @@ class TensorField(ModuleElement):
             sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
             sage: a = M.tensor_field(1,1, name='a')
             sage: a[eU,:] = [[1,x], [2,y]]
-            sage: a[eV,0,0] = a[eVW,0,0,c_uvW].expr()
-            sage: a[eV,0,1] = a[eVW,0,1,c_uvW].expr()
-            sage: a[eV,1,0] = a[eVW,1,0,c_uvW].expr()
-            sage: a[eV,1,1] = a[eVW,1,1,c_uvW].expr()
+            sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
             sage: s = a.self_contract(0,1) ; s
             scalar field on the 2-dimensional manifold 'M'
             sage: s.view()
@@ -1735,12 +1808,20 @@ class TensorField(ModuleElement):
 
             sage: b = M.tensor_field(1,2, name='b') ; b
             tensor field 'b' of type (1,2) on the 2-dimensional manifold 'M'
-            sage: b[eU,:] = [[[1,x], [2,y]], [[0,y-3], [x*y,y^2]]] 
-            sage: for i in M.irange():
-            ....:     for j in M.irange():
-            ....:         for k in M.irange():
-            ....:             b[eV,i,j,k] = b[eVW,i,j,k,c_uvW].expr()
-            ....:             
+            sage: b[eU,:] = [[[1,x], [2,y]], [[0,y-3], [x*y,y^2]]]
+            sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
+            sage: s = b.self_contract(0,1) ; s # contraction on first and second slots
+            1-form on the 2-dimensional manifold 'M'
+            sage: s.view(eU)
+            (x*y + 1) dx + (y^2 + x) dy
+            sage: s.view(eV)
+            (1/4*u^2 - 1/4*(u - 1)*v + 1/4*u + 1/2) du + (1/4*(u - 1)*v - 1/4*v^2 - 1/4*u + 1/2) dv
+            sage: s = b.self_contract(0,2) ; s # contraction on first and third slots
+            1-form on the 2-dimensional manifold 'M'
+            sage: s.view(eU)
+            (y - 2) dx + (y^2 + 2) dy
+            sage: s.view(eV)
+            (1/8*u^2 - 1/4*(u + 1)*v + 1/8*v^2 + 1/4*u) du + (-1/8*u^2 + 1/4*(u - 1)*v - 1/8*v^2 + 1/4*u - 2) dv
             
         """
         # The indices at pos1 and pos2 must be of different types: 
@@ -1802,16 +1883,10 @@ class TensorField(ModuleElement):
             sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
             sage: a = M.tensor_field(1,1, name='a')
             sage: a[eU,:] = [[1,x], [0,2]]
-            sage: a[eV,0,0] = a[eVW,0,0,c_uvW].expr()
-            sage: a[eV,0,1] = a[eVW,0,1,c_uvW].expr()
-            sage: a[eV,1,0] = a[eVW,1,0,c_uvW].expr()
-            sage: a[eV,1,1] = a[eVW,1,1,c_uvW].expr()
+            sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
             sage: b = M.tensor_field(2,0, name='b') 
             sage: b[eU,:] = [[y,-1], [x+y,2]]
-            sage: b[eV,0,0] = b[eVW,0,0,c_uvW].expr()
-            sage: b[eV,0,1] = b[eVW,0,1,c_uvW].expr()
-            sage: b[eV,1,0] = b[eVW,1,0,c_uvW].expr()
-            sage: b[eV,1,1] = b[eVW,1,1,c_uvW].expr()
+            sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
             sage: s = a.contract(b) ; s   # contraction on last index of a and first one of b
             tensor field of type (2,0) on the 2-dimensional manifold 'M'
         
@@ -2000,6 +2075,44 @@ class TensorField(ModuleElement):
         for rst in resu_rst:
             resu._restrictions[rst._domain] = rst
         return resu
+
+    def lie_der(self, vector):
+        r"""
+        Compute the Lie derivative with respect to a vector field.
+        
+        The Lie derivative is stored in the dictionary 
+        :attr:`_lie_derivatives`, so that there is no need to 
+        recompute it at the next call if neither ``self`` nor ``vector``
+        have been modified meanwhile. 
+        
+        INPUT:
+        
+        - ``vector`` -- vector field with respect to which the Lie derivative
+          is to be taken
+          
+        OUTPUT:
+        
+        - the tensor field that is the Lie derivative of ``self`` with respect 
+          to ``vector``
+        
+        EXAMPLES:
+        
+        """
+        if vector._tensor_type != (1,0):
+            raise TypeError("The argument must be a vector field.")
+        if id(vector) not in self._lie_derivatives:
+            # the computation must be performed:
+            resu_rst = []
+            for dom, rst in self._restrictions.iteritems():
+                resu_rst.append(rst.lie_der(vector.restrict(dom)))
+            resu = self._vmodule.tensor(self._tensor_type, 
+                                        sym=resu_rst[0]._sym, 
+                                        antisym=resu_rst[0]._antisym)
+            for rst in resu_rst:
+                resu._restrictions[rst._domain] = rst
+            self._lie_derivatives[id(vector)] = (vector, resu)
+            vector._lie_der_along_self[id(self)] = self
+        return self._lie_derivatives[id(vector)][1]
 
 #******************************************************************************
 
@@ -2502,7 +2615,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
     def lie_der(self, vector):
         r"""
-        Computes the Lie derivative with respect to a vector field.
+        Compute the Lie derivative with respect to a vector field.
         
         The Lie derivative is stored in the dictionary 
         :attr:`_lie_derivatives`, so that there is no need to 
@@ -2563,9 +2676,8 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             True
         
         """
-        from vectorfield import VectorFieldParal
-        if not isinstance(vector, VectorFieldParal):
-            raise TypeError("The argument must be of type VectorFieldParal.")
+        if vector._tensor_type != (1,0):
+            raise TypeError("The argument must be a vector field.")
         if id(vector) not in self._lie_derivatives:
             # A new computation must be performed
             #
