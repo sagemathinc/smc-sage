@@ -464,6 +464,61 @@ class Metric(TensorField):
             self._restrictions[subdomain] = resu
         return self._restrictions[subdomain]
 
+    def set(self, symbiform):
+        r"""
+        Defines the metric from a field of symmetric bilinear forms
+        
+        INPUT:
+    
+        - ``symbiform`` -- instance of
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField` 
+          representing a field of symmetric bilinear forms
+
+        EXAMPLE:
+        
+        Metric defined from a field of symmetric bilinear forms on a 
+        non-parallelizable 2-dimensional manifold::
+    
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: M.declare_union(U,V)   # M is the union of U and V
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+            sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+            sage: inv = transf.inverse()
+            sage: W = U.intersection(V)
+            sage: eU = c_xy.frame() ; eV = c_uv.frame()
+            sage: h = M.sym_bilin_form_field(name='h')
+            sage: h[eU,0,0], h[eU,0,1], h[eU,1,1] = 1+x, x*y, 1-y
+            sage: h.add_comp_by_continuation(eV, W, c_uv)
+            sage: h.view(eU)
+            h = (x + 1) dx*dx + x*y dx*dy + x*y dy*dx + (-y + 1) dy*dy
+            sage: h.view(eV)
+            h = (1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2) du*du + 1/4*u du*dv + 1/4*u dv*du + (-1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2) dv*dv
+            sage: g = M.metric('g')
+            sage: g.set(h)
+            sage: g.view(eU)
+            g = (x + 1) dx*dx + x*y dx*dy + x*y dy*dx + (-y + 1) dy*dy
+            sage: g.view(eV)
+            g = (1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2) du*du + 1/4*u du*dv + 1/4*u dv*du + (-1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2) dv*dv
+
+        """
+        if not isinstance(symbiform, TensorField):
+            raise TypeError("The argument must be a tensor field.")
+        if symbiform._tensor_type != (0,2):
+            raise TypeError("The argument must be of tensor type (0,2).")
+        if symbiform._sym != [(0,1)]:
+            raise TypeError("The argument must be symmetric.")
+        if symbiform._vmodule is not self._vmodule:
+            raise TypeError("The symmetric bilinear form and the metric are " + 
+                            "not defined on the same vector field module.")
+        self._del_derived()
+        self._restrictions.clear()
+        for dom, symbiform_rst in symbiform._restrictions.iteritems():
+            rst = self.restrict(dom)
+            rst.set(symbiform_rst)
+
+
     def inverse(self):
         r"""
         Return the inverse metric.
@@ -1431,20 +1486,22 @@ class MetricParal(Metric, TensorFieldParal):
         
         INPUT:
     
-        - ``symbiform`` -- field of symmetric bilinear forms
+        - ``symbiform`` -- instance of
+          :class:`~sage.geometry.manifolds.tensorfield.TensorFieldParal` 
+          representing a field of symmetric bilinear forms
 
         """
         if not isinstance(symbiform, TensorFieldParal):
             raise TypeError("The argument must be a tensor field with " + 
                             "values on a parallelizable domain.")
-        if not symbiform._tensor_type != (0,2):
+        if symbiform._tensor_type != (0,2):
             raise TypeError("The argument must be of tensor type (0,2).")
-        if not symbiform._sym != [(0,1)]:
+        if symbiform._sym != [(0,1)]:
             raise TypeError("The argument must be symmetric.")
         if symbiform._vmodule is not self._vmodule:
             raise TypeError("The symmetric bilinear form and the metric are " + 
                             "not defined on the same vector field module.")
-        self._init_derived()
+        self._del_derived()
         self._components.clear()
         for frame in symbiform._components:
             self._components[frame] = symbiform._components[frame].copy()
