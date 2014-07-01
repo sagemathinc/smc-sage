@@ -378,6 +378,7 @@ class TensorField(ModuleElement):
         sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
         sage: V = M.open_domain('V') # complement of the South pole
         sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+        sage: M.declare_union(U,V)   # S^2 is the union of U and V
         sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
                                              intersection_name='W', restrictions1= x^2+y^2!=0, \
                                              restrictions2= u^2+v^2!=0)
@@ -566,6 +567,7 @@ class TensorField(ModuleElement):
             sage: c_xy.<x, y> = U.chart()
             sage: V = M.open_domain('V')
             sage: c_uv.<u, v> = V.chart()
+            sage: M.declare_union(U,V)   # M is the union of U and V
             sage: t = M.tensor_field(1, 2, name='t')
             sage: tu = U.tensor_field(1, 2, name='t')
             sage: t.set_restriction(tu)
@@ -976,7 +978,8 @@ class TensorField(ModuleElement):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
             sage: # The two open domains covered by stereographic coordinates (North and South): 
-            sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: U = M.open_domain('U') ; V = M.open_domain('V')
+            sage: M.declare_union(U,V)   # S^2 is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart() # stereographic coordinates
             sage: transf = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), intersection_name='W', restrictions1= x^2+y^2!=0, restrictions2= u^2+v^2!=0)
             sage: inv = transf.inverse()
@@ -1060,6 +1063,7 @@ class TensorField(ModuleElement):
             sage: c_uv.<u, v> = V.chart()
             sage: f = V.default_frame() ; f
             coordinate frame (V, (d/du,d/dv))
+            sage: M.declare_union(U,V)   # M is the union of U and V
             sage: t = M.tensor_field(1,1, name='t')
             sage: t[e,0,0] = - x + y^3
             sage: t[e,0,1] = 2+x
@@ -1130,6 +1134,7 @@ class TensorField(ModuleElement):
             sage: c_uv.<u, v> = V.chart()
             sage: f = V.default_frame() ; f
             coordinate frame (V, (d/du,d/dv))
+            sage: M.declare_union(U,V)   # M is the union of U and V
             sage: t = M.tensor_field(1,1, name='t')
             sage: t[e,0,0] = - x + y^3
             sage: t[e,0,1] = 2+x
@@ -1785,6 +1790,7 @@ class TensorField(ModuleElement):
 
             sage: M = Manifold(2, 'M')
             sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
             sage: inv = transf.inverse()
@@ -1874,6 +1880,7 @@ class TensorField(ModuleElement):
         
             sage: M = Manifold(2, 'M')
             sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
             sage: inv = transf.inverse()

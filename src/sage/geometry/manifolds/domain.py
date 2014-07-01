@@ -186,7 +186,9 @@ class Domain(UniqueRepresentation, Parent):
         self._top_subdomains = set([self]) # domains contained in self but not
             # in another strict subdomain of self
         self._intersections = {} # dict. of intersections with other domains
-        self._unions = {} # dict. of unions with other domains
+                                 # (key: domain name)
+        self._unions = {} # dict. of unions with other domains (key: domain 
+                          # name)
         self._atlas = []  # list of charts defined on subdomains of self
         self._def_chart = None  # default chart
         self._coord_changes = {} # dictionary of transition maps 
@@ -677,6 +679,41 @@ class Domain(UniqueRepresentation, Parent):
             other._unions[self._name] = res
             return res
         
+    def declare_union(self, dom1, dom2):
+        r"""
+        Declare that the domain is the union of two subdomains, i.e. 
+        that 
+        
+        .. MATH::
+    
+            U = U_1 \cup U_2
+
+        where `U` is ``self``,  `U_1\subset U` and `U_2\subset U`. 
+        
+        INPUT: 
+        
+        - ``dom1`` -- subdomain `U_1`
+        - ``dom2`` -- subdomain `U_2`
+
+        EXAMPLE::
+        
+            sage: M = Manifold(2, 'M')
+            sage: A = M.domain('A')
+            sage: B = M.domain('B')
+            sage: M.declare_union(A, B)
+            sage: A.union(B)
+            2-dimensional manifold 'M'
+
+        """
+        if not dom1.is_subdomain(self):
+            raise TypeError("The " + str(dom1) + " is not a subdomain of " + 
+                            "the " + str(self) + ".")
+        if not dom2.is_subdomain(self):
+            raise TypeError("The " + str(dom2) + " is not a subdomain of " + 
+                            "the " + str(self) + ".")
+        dom1._unions[dom2._name] = self
+        dom2._unions[dom1._name] = self
+
     def is_subdomain(self, other):
         r"""
         Return ``True`` iff ``self`` is included in ``other``. 

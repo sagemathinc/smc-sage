@@ -63,6 +63,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
         sage: V = M.open_domain('V') # complement of the South pole
         sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+        sage: M.declare_union(U,V)   # S^2 is the union of U and V
         sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
                                              intersection_name='W', restrictions1= x^2+y^2!=0, \
                                              restrictions2= u^2+v^2!=0)

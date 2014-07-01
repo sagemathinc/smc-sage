@@ -834,6 +834,7 @@ class Chart(UniqueRepresentation, SageObject):
             sage: cU.<x> = U.chart() # Stereographic chart from the North pole
             sage: V = M.open_domain('V') # Complement of the South pole
             sage: cV.<y> = V.chart() # Stereographic chart from the South pole
+            sage: M.declare_union(U,V)   # S^1 is the union of U and V
             sage: trans = cU.transition_map(cV, 1/x, 'W', x!=0, y!=0)
             sage: trans
             coordinate change from chart (W, (x,)) to chart (W, (y,))

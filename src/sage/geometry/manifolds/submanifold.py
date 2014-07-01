@@ -275,6 +275,7 @@ class Submanifold(Manifold):
             iH_*(u) = -sin(t) d/dx + cos(t) d/dy + d/dz
 
         """
+        from tensorfield import TensorFieldParal        
         from sage.tensor.modules.comp import Components, CompWithSym, \
                                                  CompFullySym, CompFullyAntiSym
         dom1 = tensor._domain
@@ -293,6 +294,9 @@ class Submanifold(Manifold):
         if ncon == 0:
             raise NotImplementedError("The case of a scalar field is not " + 
                                       "implemented yet.")
+        if not isinstance(tensor, TensorFieldParal):
+            raise NotImplementedError("The case of a non-parallelizable " + 
+                                      "domain is not implemented yet.")
         # A pair of charts (chart1, chart2) where the computation
         # is feasable is searched, privileging the default chart of the 
         # start domain for chart1

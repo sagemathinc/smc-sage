@@ -295,6 +295,7 @@ class ScalarField(CommutativeAlgebraElement):
         sage: c_xy.<x,y> = U.chart()
         sage: V = M.open_domain('V')
         sage: c_uv.<u,v> = V.chart()
+        sage: M.declare_union(U,V)   # M is the union of U and V
         sage: f = M.scalar_field(x^2)
         sage: f.add_expr(u, c_uv)
         sage: g = M.scalar_field(2*v, c_uv)
@@ -991,6 +992,7 @@ class ScalarField(CommutativeAlgebraElement):
             sage: c_xy.<x,y> = U.chart()
             sage: V = M.open_domain('V')
             sage: c_uv.<u,v> = V.chart()
+            sage: M.declare_union(U,V)   # M is the union of U and V
             sage: f = U.scalar_field(x^2)
             sage: g = M.scalar_field(x+y)
             sage: f.common_charts(g)

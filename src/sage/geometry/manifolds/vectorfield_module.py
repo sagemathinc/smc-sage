@@ -83,6 +83,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
         sage: V = M.open_domain('V') # complement of the South pole
         sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+        sage: M.declare_union(U,V)   # S^2 is the union of U and V
         sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
                                              intersection_name='W', restrictions1= x^2+y^2!=0, \
                                              restrictions2= u^2+v^2!=0)
@@ -699,6 +700,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         sage: U = M.open_domain('U')  # the complement of one point 
         sage: c_t.<t> =  U.chart('t:(0,2*pi)') # the standard angle coordinate
         sage: V = M.open_domain('V') # the complement of the point t=pi
+        sage: M.declare_union(U,V)   # S^1 is the union of U and V
         sage: c_u.<u> = V.chart('u:(0,2*pi)') # the angle t-pi
         sage: t_to_u = c_t.transition_map(c_u, (t-pi,), intersection_name='W', restrictions1 = t!=pi, restrictions2 = u!=pi)
         sage: u_to_t = t_to_u.inverse()

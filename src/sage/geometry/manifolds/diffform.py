@@ -78,6 +78,7 @@ class DiffForm(TensorField):
     
         sage: M = Manifold(2, 'M')
         sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+        sage: M.declare_union(U,V)   # M is the union of U and V
         sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
         sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
         sage: inv = transf.inverse()
@@ -251,6 +252,7 @@ class OneForm(DiffForm):
 
         sage: M = Manifold(2, 'M')
         sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+        sage: M.declare_union(U,V)   # M is the union of U and V
         sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
         sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
         sage: inv = transf.inverse()

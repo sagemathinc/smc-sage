@@ -72,6 +72,11 @@ EXAMPLES:
         sage: N = V.point((0,0), name='N') ; N
         point 'N' on 2-dimensional manifold 'S^2'
 
+    To fully construct the manifold, we declare that it is the union of U 
+    and V::
+    
+        sage: M.declare_union(U,V)
+
     At this stage, the manifold's atlas contains two charts::
     
         sage: M.atlas()
