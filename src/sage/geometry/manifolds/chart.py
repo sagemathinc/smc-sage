@@ -342,6 +342,13 @@ class Chart(UniqueRepresentation, SageObject):
         # superdomains' atlases; moreover the fist defined chart is considered 
         # as the default chart
         for sd in self._domain._superdomains:
+            # the chart is added in the top charts only if its coordinates have
+            # not been used:
+            for chart in sd._atlas:
+                if self._xx == chart._xx:
+                    break
+            else: 
+                sd._top_charts.append(self)
             sd._atlas.append(self)
             if sd._def_chart is None: 
                 sd._def_chart = self
@@ -716,9 +723,11 @@ class Chart(UniqueRepresentation, SageObject):
             for sframe in self._frame._superframes:
                 sframe._subframes.add(res._frame)
                 sframe._restrictions[subdomain] = res._frame
+            # The subchart frame is not a "top frame" in the superdomains 
+            # (including self._domain):
             for dom in self._domain._superdomains:
-                dom._top_frames.remove(res._frame) # since it was added by 
-                                                   # the Chart constructor
+                dom._top_frames.remove(res._frame) # since it was added by the
+                                                   # Chart constructor above
             # Update of domain restrictions:
             self._dom_restrict[subdomain] = res
         return self._dom_restrict[subdomain]

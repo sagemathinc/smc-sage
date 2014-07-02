@@ -634,11 +634,22 @@ class ScalarField(CommutativeAlgebraElement):
             # from that in the chart from_chart, by means of a 
             # change-of-coordinates formula:
             if from_chart is None:
-                for known_chart in self._express:
-                    if (chart, known_chart) in self._domain._coord_changes:
-                        from_chart = known_chart
+                # from_chart in searched among the charts of known expressions
+                # and subcharts of them
+                known_express = self._express.copy()
+                found = False
+                for kchart in known_express:
+                    for skchart in kchart._subcharts:
+                        if (chart, skchart) in self._domain._coord_changes:
+                            from_chart = skchart
+                            found = True
+                            if skchart not in self._express:
+                                self._express[skchart] = FunctionChart(skchart, 
+                                                  self._express[kchart].expr())
+                            break
+                    if found:
                         break
-                if from_chart is None:
+                if not found:
                     raise ValueError("No starting chart could be found to " + 
                            "compute the expression in the " + str(chart))
             change = self._domain._coord_changes[(chart, from_chart)]
@@ -786,6 +797,73 @@ class ScalarField(CommutativeAlgebraElement):
         self._express[chart] = FunctionChart(chart, coord_expression)
         self._del_derived()
 
+    def add_expr_by_continuation(self, chart, subdomain):
+        r"""
+        Set coordinate expression in a chart by continuation of the
+        coordinate expression in a subchart.  
+        
+        The continuation is performed by demanding that the coordinate
+        expression is identical to that in the restriction of the chart to 
+        a given subdomain.  
+        
+        INPUT:
+        
+        - ``chart`` -- coordinate chart `(U,(x^i))` in which the expression of 
+          the scalar field is to set
+        - ``subdomain`` -- open domain `V\subset U` in which the expression
+          in terms of the restriction of the coordinate chart `(U,(x^i))` to 
+          `V` is already known or can be evaluated by a change of coordinates.
+          
+        EXAMPLE:
+        
+        Scalar field on the sphere `S^2`::
+        
+            sage: M = Manifold(2, 'S^2')
+            sage: U = M.open_domain('U') ; V = M.open_domain('V') # the complement of resp. N pole and S pole
+            sage: M.declare_union(U,V)   # S^2 is the union of U and V
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart() # stereographic coordinates
+            sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
+                                             intersection_name='W', restrictions1= x^2+y^2!=0, \
+                                             restrictions2= u^2+v^2!=0)
+            sage: uv_to_xy = xy_to_uv.inverse()
+            sage: W =  U.intersection(V)  # S^2 minus the two poles
+            sage: f = M.scalar_field(atan(x^2+y^2), chart=c_xy, name='f')
+
+        The scalar field has been defined only on the domain covered by the
+        chart c_xy, i.e. `U`::
+        
+            sage: f.view()
+            f: S^2 --> R
+            on U: (x, y) |--> arctan(x^2 + y^2)
+
+        We note that on `W = U\cap V`, the expression of `f` in terms of 
+        coordinates `(u,v)` can be deduced from that in the coordinates 
+        `(x,y)` thanks to the transition map between the two charts::
+        
+            sage: f.view(c_uv.restrict(W))
+            f: S^2 --> R
+            on W: (u, v) |--> arctan(1/(u^2 + v^2))
+            
+        We use this fact to extend the definition of `f` to domain `V`, 
+        covered by the chart c_uv::
+        
+            sage: f.add_expr_by_continuation(c_uv, W)
+            
+        Then, `f` is known on the whole sphere::
+        
+            sage: f.view()
+            f: S^2 --> R
+            on U: (x, y) |--> arctan(x^2 + y^2)
+            on V: (u, v) |--> arctan(1/(u^2 + v^2))
+
+        """
+        if not chart._domain.is_subdomain(self._domain):
+            raise ValueError("The chart is not defined on a subdomain of " + 
+                             "the scalar field domain.")
+        schart = chart.restrict(subdomain)
+        self._express[chart] = FunctionChart(chart, self.expr(schart))
+        self._del_derived()
+
     def _display_expression(self, chart, result):
         r"""
         Helper function for :meth:`view`.
@@ -813,11 +891,16 @@ class ScalarField(CommutativeAlgebraElement):
         r""" 
         Display the expression of the scalar field in a given chart. 
         
+        Without any argument, this function displays the expressions of the
+        scalar field in all the charts defined on the scalar field's domain
+        that are not restrictions of another chart to some subdomain 
+        (the "top charts"). 
+        
         INPUT:
         
         - ``chart`` -- (default: None) chart with respect to which the 
-          coordinate expression is to be displayed; if None, the dispplay is
-          performed in all charts in which the coordinate expression is 
+          coordinate expression is to be displayed; if None, the display is
+          performed in all the top charts in which the coordinate expression is 
           known. 
           
         The output is either text-formatted (console mode) or LaTeX-formatted
@@ -859,7 +942,7 @@ class ScalarField(CommutativeAlgebraElement):
         result.latex = r"\begin{array}{llcl} " + symbol + r"&" + \
                        latex(self._domain) + r"& \longrightarrow & \RR \\"
         if chart is None:
-            for ch in self._domain._atlas:
+            for ch in self._domain._top_charts:
                 self._display_expression(ch, result)
         else:
             self._display_expression(chart, result)             
@@ -929,44 +1012,6 @@ class ScalarField(CommutativeAlgebraElement):
                 resu._latex_name = self._latex_name
                 self._restrictions[subdomain] = resu
         return self._restrictions[subdomain]
-            
-    def pick_a_chart(self):
-        r"""
-        Return a chart for which the scalar field has an expression. 
-        
-        The domain's default chart is privileged. 
-        
-        OUPUT:
-        
-        - name of the chart
-
-        EXAMPLES:
-        
-        A very simple example::
-        
-            sage: Manifold._clear_cache_() # for doctests only
-            sage: M = Manifold(2, 'M')
-            sage: c_xy.<x,y> = M.chart()
-            sage: c_uv.<u,v> = M.chart()
-            sage: f =  M.scalar_field(x*y^2)
-            sage: f.add_expr(u-v, c_uv)
-            sage: f._express # random (dict. output); f has expressions on two charts:
-            {chart (M, (x, y)): x*y^2, chart (M, (u, v)): u - v}
-            sage: M.default_chart()
-            chart (M, (x, y))
-            sage: f.pick_a_chart()  # the domain's default chart (xy-coord) is privileged:
-            chart (M, (x, y))
-            sage: g = M.scalar_field(u+v, c_uv)
-            sage: g._express  # g has no expression on the domain's default chart:
-            {chart (M, (u, v)): u + v}
-            sage: g.pick_a_chart()
-            chart (M, (u, v))
-        
-        """
-        if self._domain._def_chart in self._express:
-            return self._domain._def_chart
-        return self._express.items()[0][0]  
-            
 
     def common_charts(self, other):
         r"""

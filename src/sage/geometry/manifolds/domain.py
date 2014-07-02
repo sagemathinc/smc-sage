@@ -190,6 +190,8 @@ class Domain(UniqueRepresentation, Parent):
         self._unions = {} # dict. of unions with other domains (key: domain 
                           # name)
         self._atlas = []  # list of charts defined on subdomains of self
+        self._top_charts = []  # list of charts defined on subdomains of self
+                        # that are not subcharts of charts on larger subdomains
         self._def_chart = None  # default chart
         self._coord_changes = {} # dictionary of transition maps 
         self._frames = []  # list of vector frames defined on subdomains of self
@@ -463,6 +465,7 @@ class Domain(UniqueRepresentation, Parent):
         for sd in self._subdomains:
             sd._superdomains.add(res)
         res._atlas = list(self._atlas)
+        res._top_charts = list(self._top_charts)
         res._coord_changes = dict(self._coord_changes)
         res._frames = list(self._frames)
         res._top_frames = list(self._top_frames)
@@ -664,6 +667,9 @@ class Domain(UniqueRepresentation, Parent):
             for chart in other._atlas:
                 if chart not in res._atlas:
                     res._atlas.append(chart)
+            for chart in other._top_charts:
+                if chart not in res._top_charts:
+                    res._top_charts.append(chart)
             res._coord_changes.update(other._coord_changes)
             for frame in other._frames:
                 if frame not in res._frames:

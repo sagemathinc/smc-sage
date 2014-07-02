@@ -449,8 +449,6 @@ class TensorField(ModuleElement):
         t(a,b): S^2 --> R
         on U: (x, y) |--> -(2*x - 1)*y - 3*x
         on V: (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
-        on W: (x, y) |--> -(2*x - 1)*y - 3*x
-        on W: (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
 
     The vectors can be defined only on subdomains of `S^2`, the domain of the
     result is then the common subdomain::
@@ -460,7 +458,6 @@ class TensorField(ModuleElement):
         sage: s.view()
         t(a,b): U --> R
            (x, y) |--> -(2*x - 1)*y - 3*x
-        on W: (x, y) |--> -(2*x - 1)*y - 3*x
         on W: (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
         sage: s = t(a.restrict(U), b.restrict(W)) ; s
         scalar field 't(a,b)' on the open domain 'W' on the 2-dimensional manifold 'S^2'
@@ -477,7 +474,7 @@ class TensorField(ModuleElement):
         sage: s.view()
         t(a,b): V --> R
            (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
-        on W: (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
+        on W: (x, y) |--> -(2*x - 1)*y - 3*x
 
     Tests regarding the multiplication by a scalar field::
     
@@ -1024,7 +1021,7 @@ class TensorField(ModuleElement):
         sframe = frame.restrict(subdomain)
         schart = chart.restrict(subdomain)
         scomp = self.comp(sframe)
-        resu = self.add_comp(frame)
+        resu = self.add_comp(frame) # _del_derived is performed here
         for ind in resu.non_redundant_index_generator():
             resu[[ind]] = dom.scalar_field({chart: scomp[[ind]].expr(schart)})
         
@@ -1807,8 +1804,6 @@ class TensorField(ModuleElement):
             M --> R
             on U: (x, y) |--> y + 1
             on V: (u, v) |--> 1/2*u - 1/2*v + 1
-            on W: (x, y) |--> y + 1
-            on W: (u, v) |--> 1/2*u - 1/2*v + 1
 
         Self-contraction of a type-(1,2) tensor field::
 

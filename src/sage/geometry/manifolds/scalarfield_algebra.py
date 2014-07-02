@@ -94,8 +94,6 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         M --> R
         on U: (x, y) |--> 2
         on V: (u, v) |--> 2
-        on W: (x, y) |--> 2
-        on W: (u, v) |--> 2
         
     Those of `C^\infty(W)` are scalar fields on W::
 
@@ -114,8 +112,6 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         M --> R
         on U: (x, y) |--> 0
         on V: (u, v) |--> 0
-        on W: (x, y) |--> 0
-        on W: (u, v) |--> 0
 
     ::
     
@@ -134,8 +130,6 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         M --> R
         on U: (x, y) |--> 1
         on V: (u, v) |--> 1
-        on W: (x, y) |--> 1
-        on W: (u, v) |--> 1
         
     ::
     
@@ -156,8 +150,6 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         M --> R
         on U: (x, y) |--> arctan(x^2 + y^2)
         on V: (u, v) |--> 1/2*pi - arctan(u^2 + v^2)
-        on W: (x, y) |--> arctan(x^2 + y^2)
-        on W: (u, v) |--> 1/2*pi - arctan(u^2 + v^2)
         sage: f.parent()
         algebra of scalar fields on the 2-dimensional manifold 'M'
     
@@ -233,8 +225,6 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         M --> R
         on U: (x, y) |--> 2/3
         on V: (u, v) |--> 2/3
-        on W: (x, y) |--> 2/3
-        on W: (u, v) |--> 2/3
    
     and those from the Symbolic Ring, also leading to constant scalar fields::
     
@@ -244,8 +234,6 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         M --> R
         on U: (x, y) |--> sqrt(2)*pi
         on V: (u, v) |--> sqrt(2)*pi
-        on W: (x, y) |--> sqrt(2)*pi
-        on W: (u, v) |--> sqrt(2)*pi
 
     TESTS OF THE ALGEBRA LAWS:
     
@@ -257,8 +245,6 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         M --> R
         on U: (x, y) |--> sqrt(2)*pi + arctan(x^2 + y^2)
         on V: (u, v) |--> 1/2*pi*(2*sqrt(2) + 1) - arctan(u^2 + v^2)
-        on W: (x, y) |--> sqrt(2)*pi + arctan(x^2 + y^2)
-        on W: (u, v) |--> 1/2*pi*(2*sqrt(2) + 1) - arctan(u^2 + v^2)
     
     ::
     
@@ -268,8 +254,6 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         M --> R
         on U: (x, y) |--> -sqrt(2)*pi + arctan(x^2 + y^2)
         on V: (u, v) |--> -1/2*pi*(2*sqrt(2) - 1) - arctan(u^2 + v^2)
-        on W: (x, y) |--> -sqrt(2)*pi + arctan(x^2 + y^2)
-        on W: (u, v) |--> -1/2*pi*(2*sqrt(2) - 1) - arctan(u^2 + v^2)
     
     ::
     
@@ -279,8 +263,6 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         M --> R
         on U: (x, y) |--> sqrt(2)*pi*arctan(x^2 + y^2)
         on V: (u, v) |--> 1/2*sqrt(2)*(pi^2 - 2*pi*arctan(u^2 + v^2))
-        on W: (x, y) |--> sqrt(2)*pi*arctan(x^2 + y^2)
-        on W: (u, v) |--> 1/2*sqrt(2)*(pi^2 - 2*pi*arctan(u^2 + v^2))
     
     ::
     
@@ -290,8 +272,6 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         M --> R
         on U: (x, y) |--> 1/2*sqrt(2)*arctan(x^2 + y^2)/pi
         on V: (u, v) |--> 1/4*sqrt(2)*(pi - 2*arctan(u^2 + v^2))/pi
-        on W: (x, y) |--> 1/2*sqrt(2)*arctan(x^2 + y^2)/pi
-        on W: (u, v) |--> 1/4*sqrt(2)*(pi - 2*arctan(u^2 + v^2))/pi
 
     ::
     
@@ -321,8 +301,6 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         M --> R
         on U: (x, y) |--> 2*arctan(x^2 + y^2)
         on V: (u, v) |--> pi - 2*arctan(u^2 + v^2)
-        on W: (x, y) |--> 2*arctan(x^2 + y^2)
-        on W: (u, v) |--> pi - 2*arctan(u^2 + v^2)
     
     ::
     

@@ -171,8 +171,6 @@ class Metric(TensorField):
         g(a,b): S^2 --> R
         on U: (x, y) |--> 8*x/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1)
         on V: (u, v) |--> 8*(u^3 + u*v^2)/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1)
-        on W: (x, y) |--> 8*x/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1)
-        on W: (u, v) |--> 8*(u^3 + u*v^2)/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1)
 
     The inverse metric is::
     
@@ -282,8 +280,6 @@ class Metric(TensorField):
         r(g): S^2 --> R
         on U: (x, y) |--> 2
         on V: (u, v) |--> 2
-        on W: (x, y) |--> 2
-        on W: (u, v) |--> 2
     
     In dimension 2, the Riemann tensor can be expressed entirely in terms of
     the Ricci scalar `r`:

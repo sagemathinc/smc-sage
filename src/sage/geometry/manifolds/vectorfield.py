@@ -93,8 +93,6 @@ class VectorField(TensorField):
         v(f): M --> R
         on U: (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
         on V: (t, u) |--> 2*t*u + 2*t
-        on W: (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
-        on W: (t, u) |--> 2*t*u + 2*t
 
     Some checks::
     
@@ -121,7 +119,6 @@ class VectorField(TensorField):
         sage: s.view()
         v(f): U --> R
            (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
-        on W: (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
         on W: (t, u) |--> 2*t*u + 2*t
         sage: s = v.restrict(U)(f.restrict(V)) ; s
         scalar field 'v(f)' on the open domain 'W' on the 2-dimensional manifold 'M'
