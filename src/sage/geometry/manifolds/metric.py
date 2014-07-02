@@ -505,9 +505,9 @@ class Metric(TensorField):
             raise TypeError("The argument must be of tensor type (0,2).")
         if symbiform._sym != [(0,1)]:
             raise TypeError("The argument must be symmetric.")
-        if symbiform._vmodule is not self._vmodule:
-            raise TypeError("The symmetric bilinear form and the metric are " + 
-                            "not defined on the same vector field module.")
+        if not symbiform._domain.is_subdomain(self._domain):
+            raise TypeError("The symmetric bilinear form is not defined " + 
+                            "on the metric domain.")
         self._del_derived()
         self._restrictions.clear()
         for dom, symbiform_rst in symbiform._restrictions.iteritems():

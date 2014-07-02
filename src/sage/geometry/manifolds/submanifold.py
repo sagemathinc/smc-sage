@@ -149,6 +149,12 @@ class Submanifold(Manifold):
                             "class DiffMapping.")
         self._embedding = embedding
 
+    def embedding(self):
+        r"""
+        Return the embedding defining the submanifold.
+        """
+        return self._embedding
+
     def plot(self, coord_ranges, local_chart=None, ambient_chart=None, **kwds):
         r"""
         Plot of a submanifold embedded in `\RR^2` or `\RR^3`

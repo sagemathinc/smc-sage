@@ -132,7 +132,7 @@ class TensorFieldModule(UniqueRepresentation, Module):
         kcon = tensor_type[0]
         lcov = tensor_type[1]
         name = "TF^(" + str(kcon) + "," + str(lcov) + ")(" + domain._name
-        latex_name = "TF^(" + str(kcon) + "," + str(lcov) + r")\left(" + \
+        latex_name = r"TF^{(" + str(kcon) + "," + str(lcov) + r")}\left(" + \
                      domain._latex_name
         if dest_map is domain._identity_map:
             name += ")" 
@@ -341,7 +341,7 @@ class TensorFieldFreeModule(TensorFreeModule):
         kcon = tensor_type[0]
         lcov = tensor_type[1]
         name = "TF^(" + str(kcon) + "," + str(lcov) + ")(" + domain._name
-        latex_name = "TF^(" + str(kcon) + "," + str(lcov) + r")\left(" + \
+        latex_name = r"TF^{(" + str(kcon) + "," + str(lcov) + r")}\left(" + \
                      domain._latex_name
         if dest_map is domain._identity_map:
             name += ")" 
