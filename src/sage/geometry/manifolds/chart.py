@@ -440,6 +440,12 @@ class Chart(UniqueRepresentation, SageObject):
         """
         return point.coord(self)
 
+    def domain(self):
+        r"""
+        Return the domain on which ``self`` is defined.
+        """
+        return self._domain
+        
     def frame(self):
         r""" 
         Return the vector frame (coordinate frame) associated with the chart. 

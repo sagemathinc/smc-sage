@@ -540,21 +540,23 @@ class FreeModuleTensor(ModuleElement):
             result.latex = latex(self) + " = " + expansion_latex
         return result
              
-    def set_name(self, name, latex_name=None):
+    def set_name(self, name=None, latex_name=None):
         r"""
         Set (or change) the text name and LaTeX name of the tensor.
 
         INPUT:
         
-        - ``name`` -- name given to the tensor
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the tensor; 
-          if none is provided, the LaTeX symbol is set to ``name``
+        - ``name`` -- (string; default: None) name given to the tensor
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          tensor; if None while ``name`` is provided, the LaTeX symbol is set 
+          to ``name``.
 
         """
-        self._name = name
-        if latex_name is None:
-            self._latex_name = self._name
-        else:
+        if name is not None:
+            self._name = name
+            if latex_name is None:
+                self._latex_name = self._name
+        if latex_name is not None:
             self._latex_name = latex_name
        
     def _new_instance(self):

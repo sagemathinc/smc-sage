@@ -346,6 +346,18 @@ class Domain(UniqueRepresentation, Parent):
         """
         return self._coframes
 
+    def coord_changes(self):
+        r"""
+        Return the changes of coordinates defined on the domain.
+        """
+        return self._coord_changes
+        
+    def frame_changes(self):
+        r"""
+        Return the changes of vector frames defined on the domain.
+        """
+        return self._frame_changes
+        
     def domain(self, name, latex_name=None, is_open=False):
         r"""
         Create a subdomain of the current domain. 

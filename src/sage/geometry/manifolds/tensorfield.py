@@ -613,6 +613,27 @@ class TensorField(ModuleElement):
         else:
            return self._latex_name
 
+    def set_name(self, name=None, latex_name=None):
+        r"""
+        Set (or change) the text name and LaTeX name of ``self``.
+
+        INPUT:
+        
+        - ``name`` -- (string; default: None) name given to the tensor field
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote 
+          the tensor field; if None while ``name`` is provided, the LaTeX 
+          symbol is set to ``name``.
+
+        """
+        if name is not None:
+            self._name = name
+            if latex_name is None:
+                self._latex_name = self._name
+        if latex_name is not None:
+            self._latex_name = latex_name
+        for rst in self._restrictions.itervalues():
+            rst.set_name(name=name, latex_name=latex_name)
+
     def _new_instance(self):
         r"""
         Create an instance of the same class as ``self`` on the same 

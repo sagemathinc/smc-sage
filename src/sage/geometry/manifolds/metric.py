@@ -335,7 +335,8 @@ class Metric(TensorField):
         
         """
         return self.__class__(self._vmodule, 'unnamed metric', 
-                              signature=self._signature)
+                              signature=self._signature, 
+                              latex_name=r'\mbox{unnamed metric}')
 
     def _init_derived(self):
         r"""
@@ -510,10 +511,14 @@ class Metric(TensorField):
                             "on the metric domain.")
         self._del_derived()
         self._restrictions.clear()
-        for dom, symbiform_rst in symbiform._restrictions.iteritems():
-            rst = self.restrict(dom)
-            rst.set(symbiform_rst)
-
+        if isinstance(symbiform, TensorFieldParal):
+            rst = self.restrict(symbiform._domain)
+            rst.set(symbiform)
+        else:
+            for dom, symbiform_rst in symbiform._restrictions.iteritems():
+                rst = self.restrict(dom)
+                rst.set(symbiform_rst)
+    
 
     def inverse(self):
         r"""
@@ -878,14 +883,10 @@ class Metric(TensorField):
             aux = self*ricup + ric*delta - rscal/(n-1)* self*delta
             self._weyl = riem + 2/(n-2)* aux.antisymmetrize([2,3]) 
             if name is None:
-                self._weyl._name = "C(" + self._name + ")"
-            else:
-                self._weyl._name = name
+                name = "C(" + self._name + ")"
             if latex_name is None:
-                self._weyl._latex_name = r"\mathrm{C}\left(" + self._latex_name \
-                                        + r"\right)"
-            else:
-                self._weyl._latex_name = latex_name
+                latex_name = r"\mathrm{C}\left(" + self._latex_name + r"\right)"
+            self._weyl.set_name(name=name, latex_name=latex_name)
         return self._weyl
 
     def determinant(self, frame=None):
@@ -1216,7 +1217,8 @@ class RiemannMetric(Metric):
         Create a :class:`RiemannMetric` instance on the same domain.
         
         """
-        return self.__class__(self._vmodule, 'unnamed metric')
+        return self.__class__(self._vmodule, 'unnamed metric', 
+                              latex_name=r'\mbox{unnamed metric}')
 
 #*****************************************************************************
 
@@ -1269,8 +1271,9 @@ class LorentzMetric(Metric):
             signature_type = 'positive'
         else:
             signature_type = 'negative'            
-        return self.__class__(self._module, 'unnamed metric', 
-                              signature=signature_type)
+        return self.__class__(self._vmodule, 'unnamed metric', 
+                              signature=signature_type, 
+                              latex_name=r'\mbox{unnamed metric}')
 
 
 
@@ -1697,10 +1700,11 @@ class RiemannMetricParal(MetricParal):
 
     def _new_instance(self):
         r"""
-        Create a :class:`RiemannMetric` instance on the same domain.
+        Create a :class:`RiemannMetricParal` instance on the same domain.
         
         """
-        return self.__class__(self._fmodule, 'unnamed metric')
+        return self.__class__(self._fmodule, 'unnamed metric',
+                              latex_name=r'\mbox{unnamed metric}')
 
 
 #*****************************************************************************
@@ -1778,7 +1782,7 @@ class LorentzMetricParal(MetricParal):
 
     def _new_instance(self):
         r"""
-        Create a :class:`LorentzMetric` instance on the same domain.
+        Create a :class:`LorentzMetricParal` instance on the same domain.
         
         """
         if self._signature >= 0:
@@ -1786,5 +1790,6 @@ class LorentzMetricParal(MetricParal):
         else:
             signature_type = 'negative'            
         return self.__class__(self._fmodule, 'unnamed metric', 
-                              signature=signature_type)
+                              signature=signature_type,
+                              latex_name=r'\mbox{unnamed metric}')
 

@@ -334,6 +334,12 @@ class VectorFrame(FreeModuleBasis):
         
     ###### End of methods redefined by derived classes ######
 
+    def domain(self):
+        r"""
+        Return the domain on which ``self`` is defined.
+        """
+        return self._domain
+
     def coframe(self):
         r""" 
         Return the dual coframe.
