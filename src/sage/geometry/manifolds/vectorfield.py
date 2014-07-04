@@ -163,7 +163,7 @@ class VectorField(TensorField):
         Clear list of quantities that depend on ``self``
         """
         if self._lie_der_along_self != {}:
-            for idtens, tens in self._lie_der_along_self.items():
+            for idtens, tens in self._lie_der_along_self.iteritems():
                 del tens._lie_derivatives[id(self)]
             self._lie_der_along_self.clear()
 

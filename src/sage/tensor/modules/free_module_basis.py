@@ -117,7 +117,7 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         # elements of all tensor modules constructed up to now (including the 
         # base module itself, since it is considered as a type-(1,0) tensor 
         # module)        
-        for t in fmodule._tensor_modules.values():
+        for t in fmodule._tensor_modules.itervalues():
             t._zero_element._components[self] = t._zero_element._new_comp(self)
                                # (since new components are initialized to zero)
         # The dual basis:

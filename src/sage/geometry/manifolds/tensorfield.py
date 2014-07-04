@@ -567,20 +567,21 @@ class TensorField(ModuleElement):
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: t = M.tensor_field(1, 2, name='t')
             sage: tu = U.tensor_field(1, 2, name='t')
-            sage: t.set_restriction(tu)
             sage: tv = V.tensor_field(1, 2, name='t')
-            sage: t.set_restriction(tv)
             sage: tu[0,0,0] = 0
             sage: tv[0,0,0] = 0
+            sage: t.set_restriction(tv)
+            sage: t.set_restriction(tu)
             sage: t.is_zero()
             True
             sage: tv[0,0,0] = 1
+            sage: t.set_restriction(tv)
             sage: t.is_zero()
             False
 
         """
         resu = False
-        for rst in self._restrictions.values():
+        for rst in self._restrictions.itervalues():
             resu = resu or rst.__nonzero__()
         return resu
                 
@@ -665,7 +666,7 @@ class TensorField(ModuleElement):
         Delete the derived quantities
         """
         # First deletes any reference to self in the vectors' dictionary:
-        for vid, val in self._lie_derivatives.items():
+        for vid, val in self._lie_derivatives.iteritems():
             del val[0]._lie_der_along_self[id(self)]
         self._lie_derivatives.clear()
 
@@ -801,7 +802,9 @@ class TensorField(ModuleElement):
         if rst._antisym != self._antisym:
             raise ValueError("The declared restriction has not the same " +
                              "antisymmetries as the current tensor field.")
-        self._restrictions[rst._domain] = rst
+        self._restrictions[rst._domain] = rst.copy()
+        self._restrictions[rst._domain].set_name(name=self._name,
+                                                 latex_name=self._latex_name)
 
     def restrict(self, subdomain, dest_map=None):
         r"""
@@ -913,9 +916,9 @@ class TensorField(ModuleElement):
         Return the components of the tensor field in a given vector frame 
         for assignment.
         
-        The components with respect to other frames on the same domain are 
-        deleted, in order to avoid any inconsistency. To keep them, use the 
-        method :meth:`add_comp` instead.
+        The components with respect to other frames having the same domain 
+        as the provided vector frame are deleted, in order to avoid any 
+        inconsistency. To keep them, use the method :meth:`add_comp` instead.
         
         INPUT:
         
@@ -929,10 +932,6 @@ class TensorField(ModuleElement):
           class :class:`~sage.tensor.modules.comp.Components`; if such 
           components did not exist previously, they are created.  
         
-        EXAMPLES:
-        
-          
-
         """
         if basis is None: 
             basis = self._domain._def_frame
@@ -945,8 +944,9 @@ class TensorField(ModuleElement):
         Return the components of the tensor field in a given vector frame 
         for assignment.
         
-        The components with respect to other frames on the same domain are 
-        kept. To delete them them, use the method :meth:`set_comp` instead.
+        The components with respect to other frames having the same domain 
+        as the provided vector frame are kept. To delete them them, use the 
+        method :meth:`set_comp` instead.
         
         INPUT:
         
@@ -959,10 +959,6 @@ class TensorField(ModuleElement):
         - components in the given frame, as an instance of the 
           class :class:`~sage.tensor.modules.comp.Components`; if such 
           components did not exist previously, they are created.  
-        
-        EXAMPLES:
-        
-          
 
         """
         if basis is None: 
@@ -1261,7 +1257,7 @@ class TensorField(ModuleElement):
         
         """
         resu = self._new_instance()
-        for dom, rst in self._restrictions.items():
+        for dom, rst in self._restrictions.iteritems():
             resu._restrictions[dom] = rst.copy()
         return resu
 
@@ -1302,7 +1298,7 @@ class TensorField(ModuleElement):
             if other._tensor_type != self._tensor_type:
                 return False
             resu = True
-            for dom, rst in self._restrictions.items():
+            for dom, rst in self._restrictions.iteritems():
                 if dom in other._restrictions:
                     resu = resu and bool(rst == other._restrictions[dom])
             return resu
@@ -1332,7 +1328,7 @@ class TensorField(ModuleElement):
     
         """
         resu = self._new_instance()
-        for dom, rst in self._restrictions.items():
+        for dom, rst in self._restrictions.iteritems():
             resu._restrictions[dom] = + rst
         if self._name is not None:
             resu._name = '+' + self._name 
@@ -1350,7 +1346,7 @@ class TensorField(ModuleElement):
     
         """
         resu = self._new_instance()
-        for dom, rst in self._restrictions.items():
+        for dom, rst in self._restrictions.iteritems():
             resu._restrictions[dom] = - rst
         if self._name is not None:
             resu._name = '-' + self._name 
@@ -1446,7 +1442,7 @@ class TensorField(ModuleElement):
             raise NotImplementedError("Left tensor product not implemented.")
         # Left multiplication by a scalar field: 
         resu = self._new_instance()
-        for dom, rst in self._restrictions.items():
+        for dom, rst in self._restrictions.iteritems():
             resu._restrictions[dom] = other.restrict(dom) * rst
         return resu
 
@@ -1470,6 +1466,47 @@ class TensorField(ModuleElement):
         """
         return (-self).__add__(other)
 
+    def __mul__(self, other):
+        r"""
+        Tensor product. 
+        """
+        dom_resu = self._domain.intersection(other._domain)
+        ambient_dom_resu = self._ambient_domain.intersection(
+                                                         other._ambient_domain)
+        self_r = self.restrict(dom_resu)
+        other_r = other.restrict(dom_resu)
+        if ambient_dom_resu.is_manifestly_parallelizable():
+            # call of the FreeModuleTensor version:
+            return FreeModuleTensor.__mul__(self_r, other_r)
+        dest_map = self._vmodule._dest_map
+        dest_map_resu = dest_map.restrict(dom_resu, 
+                                          subcodomain=ambient_dom_resu)
+        vmodule = dom_resu.vector_field_module(dest_map=dest_map_resu)
+        com_dom = []
+        for dom in self_r._restrictions:
+            if dom in other_r._restrictions:
+                com_dom.append(dom)
+        resu_rst = []
+        for dom in com_dom:
+            self_rr = self_r._restrictions[dom]
+            other_rr = other_r._restrictions[dom]
+            resu_rst.append(self_rr * other_rr)
+        k1, l1 = self._tensor_type
+        k2, l2 = other._tensor_type
+        resu = vmodule.tensor((k1+k2, l1+l2), sym=resu_rst[0]._sym, 
+                              antisym=resu_rst[0]._antisym)
+        for rst in resu_rst:
+            resu._restrictions[rst._domain] = rst
+        return resu
+
+    def __div__(self, other):
+        r"""
+        Division (by a scalar field)
+        """
+        resu = self._new_instance()
+        for dom, rst in self._restrictions.iteritems():
+            resu._restrictions[dom] = rst / other
+        return resu
 
     def up(self, metric, pos=None):
         r"""
@@ -1748,7 +1785,7 @@ class TensorField(ModuleElement):
                     for chart in resu_rr._domain._atlas:
                         resu._express[chart] = chart._zero_function
                 else:
-                    for chart, expr in resu_rr._express.items():
+                    for chart, expr in resu_rr._express.iteritems():
                         resu._express[chart] = expr
             if resu == 0:
                 return dom_resu._zero_scalar_field
@@ -1862,7 +1899,7 @@ class TensorField(ModuleElement):
             # scalar field result
             resu = self._domain.scalar_field()
             for rst in resu_rst:
-                for chart, funct in rst._express.items():
+                for chart, funct in rst._express.iteritems():
                     resu._express[chart] = funct
         else:
             # tensor field result
@@ -2011,39 +2048,6 @@ class TensorField(ModuleElement):
             other_rr = other_r._restrictions[dom]
             resu_rst.append(self_rr.contract(pos1, other_rr, pos2))
         resu = vmodule.tensor(tensor_type_resu, sym=resu_rst[0]._sym, 
-                              antisym=resu_rst[0]._antisym)
-        for rst in resu_rst:
-            resu._restrictions[rst._domain] = rst
-        return resu
-
-    def __mul__(self, other):
-        r"""
-        Tensor product. 
-        """
-        dom_resu = self._domain.intersection(other._domain)
-        ambient_dom_resu = self._ambient_domain.intersection(
-                                                         other._ambient_domain)
-        self_r = self.restrict(dom_resu)
-        other_r = other.restrict(dom_resu)
-        if ambient_dom_resu.is_manifestly_parallelizable():
-            # call of the FreeModuleTensor version:
-            return FreeModuleTensor.__mul__(self_r, other_r)
-        dest_map = self._vmodule._dest_map
-        dest_map_resu = dest_map.restrict(dom_resu, 
-                                          subcodomain=ambient_dom_resu)
-        vmodule = dom_resu.vector_field_module(dest_map=dest_map_resu)
-        com_dom = []
-        for dom in self_r._restrictions:
-            if dom in other_r._restrictions:
-                com_dom.append(dom)
-        resu_rst = []
-        for dom in com_dom:
-            self_rr = self_r._restrictions[dom]
-            other_rr = other_r._restrictions[dom]
-            resu_rst.append(self_rr * other_rr)
-        k1, l1 = self._tensor_type
-        k2, l2 = other._tensor_type
-        resu = vmodule.tensor((k1+k2, l1+l2), sym=resu_rst[0]._sym, 
                               antisym=resu_rst[0]._antisym)
         for rst in resu_rst:
             resu._restrictions[rst._domain] = rst
@@ -2817,7 +2821,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
                 raise ValueError("Argument dest_map not compatible with " + 
                                  "self._ambient_domain")
             #!# First one tries to derive the restriction from a tighter domain:
-            #for dom, rst in self._restrictions.items():
+            #for dom, rst in self._restrictions.iteritems():
             #    if subdomain.is_subdomain(dom):
             #        self._restrictions[subdomain] = rst.restrict(subdomain)
             #        break

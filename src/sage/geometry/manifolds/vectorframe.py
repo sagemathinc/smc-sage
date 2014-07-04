@@ -262,7 +262,7 @@ class VectorFrame(FreeModuleBasis):
                 if dest_map_name in sd._vector_field_modules:
                     xsd = sd._vector_field_modules[dest_map_name] #!# to be improved
                     if not isinstance(xsd, FiniteRankFreeModule):
-                        for t in xsd._tensor_modules.values():
+                        for t in xsd._tensor_modules.itervalues():
                             t(0).add_comp(self)
                             # (since new components are initialized to zero)
         if self._dest_map is self._domain._identity_map:
@@ -285,7 +285,7 @@ class VectorFrame(FreeModuleBasis):
         self._restrictions = {} # dict. of the restrictions of self to
                                # subdomains of self._domain, with the 
                                # subdomains as keys
-        # NB: set(self._restrictions.values()) is identical to self._subframes
+        # NB: set(self._restrictions.itervalues()) is identical to self._subframes
         
 
     ###### Methods that must be redefined by derived classes of FreeModuleBasis ######

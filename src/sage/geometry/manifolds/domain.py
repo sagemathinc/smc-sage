@@ -1256,7 +1256,7 @@ class OpenDomain(Domain):
 
         """
         resu = self.domain(name, latex_name=latex_name, is_open=True)
-        for chart, restrictions in coord_def.items():
+        for chart, restrictions in coord_def.iteritems():
             if chart not in self._atlas:
                 raise ValueError("The " + str(chart) + "does not belong to " + 
                     "the atlas of " + str(self))

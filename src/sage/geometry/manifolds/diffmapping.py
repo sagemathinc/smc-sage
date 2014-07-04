@@ -215,7 +215,7 @@ class DiffMapping(SageObject):
                                      " has not been defined on the " + 
                                      str(self._codomain))
                 coord_functions = {(chart1, chart2): coord_functions}
-            for chart_pair, expression in coord_functions.items():
+            for chart_pair, expression in coord_functions.iteritems():
                 n2 = self._codomain._manifold._dim
                 if n2 > 1:
                     if len(expression) != n2:
@@ -281,7 +281,7 @@ class DiffMapping(SageObject):
         """
         if not isinstance(other, DiffMapping):
             return False
-        for charts, coord_functions in self._coord_expression.items():
+        for charts, coord_functions in self._coord_expression.iteritems():
             if charts not in other._coord_expression:
                 return False
             if coord_functions != other._coord_expression[charts]:

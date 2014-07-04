@@ -538,7 +538,7 @@ class Components(SageObject):
 
         """
         result = self._new_instance()
-        for ind, val in self._comp.items():
+        for ind, val in self._comp.iteritems():
             if hasattr(val, 'copy'):
                 result._comp[ind] = val.copy()
             else:
@@ -553,7 +553,7 @@ class Components(SageObject):
         # The zeros are first searched; they are deleted in a second stage, to
         # avoid changing the dictionary while it is read
         zeros = []
-        for ind, value in self._comp.items():
+        for ind, value in self._comp.iteritems():
             if value == 0:
                 zeros.append(ind)
         for ind in zeros:
@@ -880,7 +880,7 @@ class Components(SageObject):
 
         """
         result = self._new_instance()
-        for ind, val in self._comp.items():
+        for ind, val in self._comp.iteritems():
             new_ind = ind[:pos1] + ind[pos2:pos3] + ind[pos1:pos2] + ind[pos3:]
             result._comp[new_ind] = val 
             # the above writing is more efficient than result[new_ind] = val 
@@ -935,7 +935,7 @@ class Components(SageObject):
             # any zero value
             # In other words, the full method should be
             #   return self.comp == {}
-            for val in self._comp.values():
+            for val in self._comp.itervalues():
                 if val != 0:
                     return False
             return True
@@ -1008,7 +1008,7 @@ class Components(SageObject):
     
         """
         result = self._new_instance()
-        for ind, val in self._comp.items():
+        for ind, val in self._comp.iteritems():
              result._comp[ind] = - val
         return result
 
@@ -1043,7 +1043,7 @@ class Components(SageObject):
             raise TypeError("The two sets of components do not have the " + 
                             "same starting index.")
         result = self.copy()
-        for ind, val in other._comp.items():
+        for ind, val in other._comp.iteritems():
             result[[ind]] += val
         return result
 
@@ -1128,8 +1128,8 @@ class Components(SageObject):
         else:
             result = Components(self._ring, self._frame, self._nid + other._nid,
                                 self._sindex, self._output_formatter)
-        for ind_s, val_s in self._comp.items():
-            for ind_o, val_o in other._comp.items():
+        for ind_s, val_s in self._comp.iteritems():
+            for ind_o, val_o in other._comp.iteritems():
                 result._comp[ind_s + ind_o] = val_s * val_o
         return result
         
@@ -1145,7 +1145,7 @@ class Components(SageObject):
         result = self._new_instance()
         if other == 0:
             return result   # because a just created Components is zero
-        for ind, val in self._comp.items():
+        for ind, val in self._comp.iteritems():
             result._comp[ind] = other * val
         return result
 
@@ -1159,7 +1159,7 @@ class Components(SageObject):
             raise NotImplementedError("Division by an object of type " + 
                                       "Components not implemented.")
         result = self._new_instance()
-        for ind, val in self._comp.items():
+        for ind, val in self._comp.iteritems():
             result._comp[ind] = val / other
         return result
 
@@ -1243,7 +1243,7 @@ class Components(SageObject):
                                 self._sindex, self._output_formatter)
             if pos1 > pos2:
                 pos1, pos2 = (pos2, pos1)
-            for ind, val in self._comp.items():
+            for ind, val in self._comp.iteritems():
                 if ind[pos1] == ind[pos2]:
                     # there is a contribution to the contraction
                     ind_res = ind[:pos1] + ind[pos1+1:pos2] + ind[pos2+1:]
@@ -2252,7 +2252,7 @@ class CompWithSym(Components):
             new_s = [new_lpos.index(pos) for pos in s]
             result._antisym.append(tuple(sorted(new_s)))
         # The values:
-        for ind, val in self._comp.items():
+        for ind, val in self._comp.iteritems():
             new_ind = ind[:pos1] + ind[pos2:pos3] + ind[pos1:pos2] + ind[pos3:]
             result[new_ind] = val  
         return result
@@ -2293,7 +2293,7 @@ class CompWithSym(Components):
             if diff_sym == set() and diff_antisym == set():
                 # The symmetries/antisymmetries are identical:
                 result = self.copy()
-                for ind, val in other._comp.items():
+                for ind, val in other._comp.iteritems():
                     result[[ind]] += val
                 return result
             else:
@@ -2363,8 +2363,8 @@ class CompWithSym(Components):
                     antisym.append(ns)
         result = CompWithSym(self._ring, self._frame, self._nid + other._nid, 
                              self._sindex, self._output_formatter, sym, antisym)
-        for ind_s, val_s in self._comp.items():
-            for ind_o, val_o in other._comp.items():
+        for ind_s, val_s in self._comp.iteritems():
+            for ind_o, val_o in other._comp.iteritems():
                 result._comp[ind_s + ind_o] = val_s * val_o
         return result
 
@@ -3536,7 +3536,7 @@ class CompFullySym(CompWithSym):
                 raise TypeError("The two sets of components do not have the " + 
                                 "same starting index.")
             result = self.copy()
-            for ind, val in other._comp.items():
+            for ind, val in other._comp.iteritems():
                 result[[ind]] += val
             return result
         else:
@@ -3730,7 +3730,7 @@ class CompFullyAntiSym(CompWithSym):
                 raise TypeError("The two sets of components do not have the " + 
                                 "same starting index.")
             result = self.copy()
-            for ind, val in other._comp.items():
+            for ind, val in other._comp.iteritems():
                 result[[ind]] += val
             return result
         else:

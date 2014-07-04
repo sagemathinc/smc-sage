@@ -172,12 +172,7 @@ class AutomorphismField(EndomorphismField):
     `W = U\cap V`::
     
         sage: W = U.intersection(V)
-        sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
-        sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
-        sage: a[eV,0,0] = a[eVW,0,0,c_uvW].expr()
-        sage: a[eV,0,1] = a[eVW,0,1,c_uvW].expr()
-        sage: a[eV,1,0] = a[eVW,1,0,c_uvW].expr()
-        sage: a[eV,1,1] = a[eVW,1,1,c_uvW].expr()
+        sage: a.add_comp_by_continuation(eV, W, c_uv)
         
     At this stage, the automorphims field `a` is fully defined::
     
@@ -245,12 +240,7 @@ class AutomorphismField(EndomorphismField):
             sage: eU = c_xy.frame() ; eV = c_uv.frame()
             sage: a[eU,:] = [[1,x], [0,2]]
             sage: W = U.intersection(V)
-            sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
-            sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
-            sage: a[eV,0,0] = a[eVW,0,0,c_uvW].expr()
-            sage: a[eV,0,1] = a[eVW,0,1,c_uvW].expr()
-            sage: a[eV,1,0] = a[eVW,1,0,c_uvW].expr()
-            sage: a[eV,1,1] = a[eVW,1,1,c_uvW].expr()
+            sage: a.add_comp_by_continuation(eV, W, c_uv)
             sage: ia = a.inverse() ; ia
             field of tangent-space automorphisms 'a^(-1)' on the 2-dimensional manifold 'M'
             sage: a[eU,:], ia[eU,:]
@@ -293,7 +283,7 @@ class AutomorphismField(EndomorphismField):
                 inv_latex_name = self._latex_name + r'^{-1}'
             self._inverse = AutomorphismField(self._vmodule, name=inv_name, 
                                               latex_name=inv_latex_name)
-            for dom, rst in self._restrictions.items():
+            for dom, rst in self._restrictions.iteritems():
                 self._inverse._restrictions[dom] = rst.inverse()
         return self._inverse
 
@@ -336,9 +326,6 @@ class TangentIdentityField(AutomorphismField):
         sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
         sage: inv = transf.inverse()
         sage: W = U.intersection(V)
-        sage: eU = c_xy.frame() ; eV = c_uv.frame()
-        sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
-        sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
         sage: a = M.tangent_identity_field() ; a
         field of tangent-space identity maps 'Id' on the 2-dimensional manifold 'M'
         sage: a.parent()
@@ -346,16 +333,17 @@ class TangentIdentityField(AutomorphismField):
         
     The components in any frame on M are Kronecker deltas::
     
+        sage: eU = c_xy.frame() ; eV = c_uv.frame()
         sage: a[eU,:]
         [1 0]
         [0 1]
         sage: a[eV,:]
         [1 0]
         [0 1]
-        sage: a[eUW,:]
+        sage: a[eU.restrict(W),:]
         [1 0]
         [0 1]
-        sage: a[eVW,:]
+        sage: a[eV.restrict(W),:]
         [1 0]
         [0 1]
     
@@ -368,8 +356,7 @@ class TangentIdentityField(AutomorphismField):
     
         sage: v = M.vector_field('v')
         sage: v[eU,:] = [1-y, x*y]
-        sage: v[eV,0] = v[eVW,0,c_uvW].expr()
-        sage: v[eV,1] = v[eVW,1,c_uvW].expr()
+        sage: v.add_comp_by_continuation(eV, W, c_uv)
         sage: a(v)
         vector field 'v' on the 2-dimensional manifold 'M'
         sage: a(v) is v

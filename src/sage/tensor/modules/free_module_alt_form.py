@@ -349,8 +349,8 @@ class FreeModuleAltForm(FreeModuleTensor):
         cmp_r = CompFullyAntiSym(fmodule._ring, basis, rank_r, 
                                  start_index=fmodule._sindex,
                                  output_formatter=fmodule._output_formatter)
-        for ind_s, val_s in cmp_s._comp.items():
-            for ind_o, val_o in cmp_o._comp.items():
+        for ind_s, val_s in cmp_s._comp.iteritems():
+            for ind_o, val_o in cmp_o._comp.iteritems():
                 ind_r = ind_s + ind_o
                 if len(ind_r) == len(set(ind_r)): # all indices are different
                     cmp_r[[ind_r]] += val_s * val_o

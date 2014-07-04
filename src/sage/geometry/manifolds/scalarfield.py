@@ -350,7 +350,7 @@ class ScalarField(CommutativeAlgebraElement):
             if isinstance(coord_expression, FunctionChart):
                 self._express[coord_expression._chart] = coord_expression
             elif isinstance(coord_expression, dict):
-                for chart, expression in coord_expression.items():
+                for chart, expression in coord_expression.iteritems():
                     if isinstance(expression, FunctionChart):
                         self._express[chart] = expression
                     else:
@@ -391,7 +391,7 @@ class ScalarField(CommutativeAlgebraElement):
 
         """
         res = True
-        for funct in self._express.values():
+        for funct in self._express.itervalues():
             res = res and funct.is_zero()
         return not res
 
@@ -448,7 +448,7 @@ class ScalarField(CommutativeAlgebraElement):
         self._restrictions.clear()
         self._exterior_derivative = None 
         # First deletes any reference to self in the vectors' dictionary:
-        for vid, val in self._lie_derivatives.items():
+        for vid, val in self._lie_derivatives.iteritems():
             del val[0]._lie_der_along_self[id(self)]
         self._lie_derivatives.clear()
 
@@ -561,7 +561,7 @@ class ScalarField(CommutativeAlgebraElement):
         
         """
         result = self.__class__(self._domain)  #!# what about the name ?
-        for chart, funct in self._express.items():
+        for chart, funct in self._express.iteritems():
             result._express[chart] = funct.copy()
         return result
 
@@ -1388,7 +1388,7 @@ class ScalarField(CommutativeAlgebraElement):
         if number == 0:
             return self._domain._zero_scalar_field
         result = self.__class__(self._domain)
-        for chart, expr in self._express.items():
+        for chart, expr in self._express.iteritems():
             result._express[chart] = number * expr
         return result
 

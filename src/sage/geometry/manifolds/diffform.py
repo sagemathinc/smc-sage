@@ -84,8 +84,6 @@ class DiffForm(TensorField):
         sage: inv = transf.inverse()
         sage: W = U.intersection(V)
         sage: eU = c_xy.frame() ; eV = c_uv.frame()
-        sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
-        sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
         sage: a = M.diff_form(2, name='a') ; a
         2-form 'a' on the 2-dimensional manifold 'M'
         sage: a.parent()
@@ -94,7 +92,7 @@ class DiffForm(TensorField):
     Setting the components of a::
     
         sage: a[eU,0,1] = x*y^2 + 2*x
-        sage: a[eV,0,1] = a[eVW,0,1,c_uvW].expr()
+        sage: a.add_comp_by_continuation(eV, W, c_uv)
         sage: a.view(eU)
         a = (x*y^2 + 2*x) dx/\dy
         sage: a.view(eV)
@@ -154,7 +152,7 @@ class DiffForm(TensorField):
             rlname = format_unop_latex(r'\mathrm{d}', self._latex_name)
             resu = vmodule.alternating_form(self._tensor_rank+1, name=rname, 
                                             latex_name=rlname)
-            for dom, rst in self._restrictions.items():
+            for dom, rst in self._restrictions.iteritems():
                 resu._restrictions[dom] = rst.exterior_der()
             self._exterior_derivative = resu
         return self._exterior_derivative
@@ -221,6 +219,47 @@ class DiffForm(TensorField):
                                           other_r._restrictions[dom])
         return resu
         
+    def hodge_star(self, metric):
+        r"""
+        Compute the Hodge dual of the differential form. 
+        
+        If ``self`` is a `p`-form `A`, its Hodge dual is the `(n-p)`-form
+        `*A` defined by (`n` being the manifold's dimension)
+        
+        .. MATH::
+            
+            *A_{i_1\ldots i_{n-p}} = \frac{1}{p!} A_{k_1\ldots k_p}
+                \epsilon^{k_1\ldots k_p}_{\qquad\ i_1\ldots i_{n-p}}
+                
+        where `\epsilon` is the volume form associated with some 
+        pseudo-Riemannian metric `g` on the manifold, and the indices 
+        `k_1,\ldots, k_p` are raised with `g`. 
+        
+        INPUT:
+        
+        - ``metric``: the pseudo-Riemannian metric `g` defining the Hodge dual, 
+          via the volume form `\epsilon`; must be an instance of
+          :class:`~sage.geometry.manifolds.metric.Metric`
+        
+        OUTPUT:
+        
+        - the `(n-p)`-form `*A` 
+        
+        EXAMPLES:
+        
+        """
+        from sage.functions.other import factorial
+        from utilities import format_unop_txt, format_unop_latex
+        p = self._tensor_rank
+        eps = metric.volume_form(p)
+        resu = self.contract(0, eps, 0)
+        for j in range(1, p):
+            resu = resu.self_contract(0, p-j)
+        if p > 1:
+            resu = resu / factorial(p)
+        resu.set_name(name=format_unop_txt('*', self._name),
+                     latex_name=format_unop_latex(r'\star ', self._latex_name))
+        return resu
 
 #******************************************************************************
 
@@ -258,8 +297,6 @@ class OneForm(DiffForm):
         sage: inv = transf.inverse()
         sage: W = U.intersection(V)
         sage: eU = c_xy.frame() ; eV = c_uv.frame()
-        sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
-        sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
         sage: a = M.one_form('a') ; a
         1-form 'a' on the 2-dimensional manifold 'M'
         sage: a.parent()
@@ -268,8 +305,7 @@ class OneForm(DiffForm):
     Setting the components of the 1-form in a consistent way::
 
         sage: a[eU,:] = [-y, x]
-        sage: a[eV,0] = a[eVW,0,c_uvW].expr()
-        sage: a[eV,1] = a[eVW,1,c_uvW].expr()
+        sage: a.add_comp_by_continuation(eV, W, c_uv)
         sage: a.view(eU)
         a = -y dx + x dy
         sage: a.view(eV)
@@ -288,8 +324,7 @@ class OneForm(DiffForm):
         
         sage: b = M.one_form('b')
         sage: b[eU,:] = [1+x*y, x^2]
-        sage: b[eV,0] = b[eVW,0,c_uvW].expr()
-        sage: b[eV,1] = b[eVW,1,c_uvW].expr()
+        sage: b.add_comp_by_continuation(eV, W, c_uv)
 
     Adding two 1-forms results in another 1-form::
     
@@ -662,7 +697,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
                                       self._tensor_rank+1, 
                                       start_index=fmodule._sindex,
                                      output_formatter=fmodule._output_formatter)
-                for ind, val in sc._comp.items():
+                for ind, val in sc._comp.iteritems():
                     for i in fmodule.irange():
                         ind_d = (i,) + ind
                         if len(ind_d) == len(set(ind_d)): 
@@ -703,7 +738,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         self_r = self.restrict(dom_resu)
         other_r = other.restrict(dom_resu)
         return FreeModuleAltForm.wedge(self_r, other_r)
-
+        
     def hodge_star(self, metric):
         r"""
         Compute the Hodge dual of the differential form. 
@@ -866,19 +901,14 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         from utilities import format_unop_txt, format_unop_latex
         p = self._tensor_rank
         eps = metric.volume_form(p)
-        if p == 0:
-            resu = self * eps
-        else:
-            resu = self.contract(0, eps, 0)
-            for j in range(1, p):
-                resu = resu.self_contract(0, p-j)
-            if p > 1:
-                resu = resu / factorial(p)
-        # Name and LaTeX name of the result:
-        resu._name = format_unop_txt('*', self._name)
-        resu._latex_name = format_unop_latex(r'\star ', self._latex_name)
+        resu = self.contract(0, eps, 0)
+        for j in range(1, p):
+            resu = resu.self_contract(0, p-j)
+        if p > 1:
+            resu = resu / factorial(p)
+        resu.set_name(name=format_unop_txt('*', self._name),
+                     latex_name=format_unop_latex(r'\star ', self._latex_name))
         return resu
-        
         
 #******************************************************************************
 

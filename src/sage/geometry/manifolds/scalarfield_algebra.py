@@ -369,7 +369,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
             if self._domain.is_subdomain(coord_expression._domain):
                 # restriction of the scalar field to self._domain:
                 sexpress = {}
-                for chart, funct in coord_expression._express.items():
+                for chart, funct in coord_expression._express.iteritems():
                     for schart in self._domain._atlas:
                         if schart in chart._subcharts:
                             sexpress[schart] = funct.expr()

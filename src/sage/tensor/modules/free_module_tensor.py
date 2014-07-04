@@ -1000,7 +1000,7 @@ class FreeModuleTensor(ModuleElement):
 
         """
         resu = self._new_instance()
-        for basis, comp in self._components.items():
+        for basis, comp in self._components.iteritems():
              resu._components[basis] = comp.copy()
         return resu
 

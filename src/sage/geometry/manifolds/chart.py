@@ -2532,13 +2532,13 @@ class CoordChange(SageObject):
             frame2 = self._chart2._frame
             fr_change12 = domain._frame_changes[(frame1,frame2)]
             fr_change21 = domain._frame_changes[(frame2,frame1)]
-            for comp in fr_change12._components[frame1]._comp.values():
+            for comp in fr_change12._components[frame1]._comp.itervalues():
                 comp.function_chart(self._chart1, from_chart=self._chart2)
-            for comp in fr_change12._components[frame2]._comp.values():
+            for comp in fr_change12._components[frame2]._comp.itervalues():
                 comp.function_chart(self._chart1, from_chart=self._chart2)
-            for comp in fr_change21._components[frame1]._comp.values():
+            for comp in fr_change21._components[frame1]._comp.itervalues():
                 comp.function_chart(self._chart2, from_chart=self._chart1)
-            for comp in fr_change21._components[frame2]._comp.values():
+            for comp in fr_change21._components[frame2]._comp.itervalues():
                 comp.function_chart(self._chart2, from_chart=self._chart1)
         return self._inverse
 
@@ -2615,12 +2615,12 @@ class CoordChange(SageObject):
             frame2 = self._chart2._frame
             fr_change12 = domain._frame_changes[(frame1,frame2)]
             fr_change21 = domain._frame_changes[(frame2,frame1)]
-            for comp in fr_change12._components[frame1]._comp.values():
+            for comp in fr_change12._components[frame1]._comp.itervalues():
                 comp.function_chart(self._chart1, from_chart=self._chart2)
-            for comp in fr_change12._components[frame2]._comp.values():
+            for comp in fr_change12._components[frame2]._comp.itervalues():
                 comp.function_chart(self._chart1, from_chart=self._chart2)
-            for comp in fr_change21._components[frame1]._comp.values():
+            for comp in fr_change21._components[frame1]._comp.itervalues():
                 comp.function_chart(self._chart2, from_chart=self._chart1)
-            for comp in fr_change21._components[frame2]._comp.values():
+            for comp in fr_change21._components[frame2]._comp.itervalues():
                 comp.function_chart(self._chart2, from_chart=self._chart1)
     
