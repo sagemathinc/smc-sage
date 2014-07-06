@@ -504,7 +504,6 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
         self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
-        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # Initialization of derived quantities:
         TensorFieldParal._init_derived(self) 
 
@@ -606,7 +605,6 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
         self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
-        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # Initialization of derived quantities:
         TensorFieldParal._init_derived(self) 
 
@@ -771,7 +769,6 @@ class TangentIdentityFieldParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
-        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # Initialization of derived quantities:
         TensorFieldParal._init_derived(self) 
 

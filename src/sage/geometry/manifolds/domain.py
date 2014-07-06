@@ -887,9 +887,13 @@ class Domain(UniqueRepresentation, Parent):
         from chart import Chart
         if not isinstance(chart, Chart):
             raise TypeError(str(chart) + " is not a chart.")
-        if chart not in self._atlas:
-            raise ValueError("The chart must be defined on the " + 
-                             str(self))
+        if chart._domain is not self:
+            if self.is_manifestly_coordinate_domain():
+                raise TypeError("The chart domain must coincide with the " + 
+                                str(self) + ".")
+            if chart not in self._atlas:
+                raise ValueError("The chart must be defined on the " + 
+                                 str(self))
         self._def_chart = chart
 
     def coord_change(self, chart1, chart2):
@@ -986,8 +990,12 @@ class Domain(UniqueRepresentation, Parent):
         from vectorframe import VectorFrame
         if not isinstance(frame, VectorFrame):
             raise TypeError(str(frame) + " is not a vector frame.")
-        if not frame._domain.is_subdomain(self):
-            raise TypeError("The frame must be defined on the domain.")
+        if frame._domain is not self:
+            if self.is_manifestly_parallelizable():
+                raise TypeError("The frame domain must coincide with the " + 
+                                str(self) + ".")
+            if not frame._domain.is_subdomain(self):
+                raise TypeError("The frame must be defined on the domain.")
         self._def_frame = frame
         frame._fmodule.set_default_basis(frame)
 

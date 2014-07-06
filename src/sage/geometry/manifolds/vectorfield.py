@@ -349,8 +349,6 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
         self._ambient_domain = vector_field_module._ambient_domain
         # VectorField attributes:
         self._vmodule = vector_field_module
-        self._restrictions = {} # dict. of restrictions of self on subdomains of 
-                               # self._domain, with the subdomains as keys
         # Initialization of derived quantities:
         TensorFieldParal._init_derived(self)
         VectorField._init_derived(self) 

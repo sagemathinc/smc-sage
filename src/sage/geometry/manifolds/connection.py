@@ -1398,8 +1398,8 @@ class LeviCivitaConnection(AffConnection):
                     if chart in other._subcharts and chart is not other:
                         break 
                 else:
-                    # the chart is not any subchart and therefore the *
-                    # Christoffel relative to it are computed:
+                    # the chart is not any subchart and therefore the
+                    # Christoffel symbols relative to it are computed:
                     self.coef(chart._frame)
         
     def _repr_(self):

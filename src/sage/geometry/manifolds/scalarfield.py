@@ -437,8 +437,9 @@ class ScalarField(CommutativeAlgebraElement):
         r"""
         Initialize the derived quantities
         """
-        self._restrictions = {} # dict. of restrictions to subdomains of self._domain
-        self._exterior_derivative = None # differential
+        self._restrictions = {} # dict. of restrictions of self on subdomains  
+                                # of self._domain, with the subdomains as keys
+        self._differential = None # differential
         self._lie_derivatives = {} # collection of Lie derivatives of self
 
     def _del_derived(self):
@@ -446,7 +447,7 @@ class ScalarField(CommutativeAlgebraElement):
         Delete the derived quantities
         """
         self._restrictions.clear()
-        self._exterior_derivative = None 
+        self._differential = None 
         # First deletes any reference to self in the vectors' dictionary:
         for vid, val in self._lie_derivatives.iteritems():
             del val[0]._lie_der_along_self[id(self)]
@@ -1417,6 +1418,10 @@ class ScalarField(CommutativeAlgebraElement):
         r"""
         Return the exterior derivative of the scalar field. 
                 
+        NB: for a scalar field, the exterior derivative is nothing but the
+        differential of the field. Accordingly, this method simply calls
+        :meth:`differential`. 
+        
         OUTPUT:
         
         - the 1-form exterior derivative of ``self``. 
@@ -1465,18 +1470,7 @@ class ScalarField(CommutativeAlgebraElement):
             True
 
         """
-        from utilities import format_unop_txt, format_unop_latex
-        if self._exterior_derivative is None:
-            # A new computation is necessary:
-            rname = format_unop_txt('d', self._name)
-            rlname = format_unop_latex(r'\mathrm{d}', self._latex_name)
-            self._exterior_derivative = self._domain.one_form(name=rname, 
-                                                             latex_name=rlname)
-            for chart, f in self._express.iteritems():
-                for i in self._manifold.irange():
-                    self._exterior_derivative.add_comp(chart._frame)[i, chart] \
-                        = f.diff(i)
-        return self._exterior_derivative
+        return self.differential()
 
     def differential(self):
         r"""
@@ -1504,7 +1498,18 @@ class ScalarField(CommutativeAlgebraElement):
             \mathrm{d}f
             
         """
-        return self.exterior_der()
+        from utilities import format_unop_txt, format_unop_latex
+        if self._differential is None:
+            # A new computation is necessary:
+            rname = format_unop_txt('d', self._name)
+            rlname = format_unop_latex(r'\mathrm{d}', self._latex_name)
+            self._differential = self._domain.one_form(name=rname, 
+                                                             latex_name=rlname)
+            for chart, f in self._express.iteritems():
+                for i in self._manifold.irange():
+                    self._differential.add_comp(chart._frame)[i, chart] \
+                        = f.diff(i)
+        return self._differential
 
     def lie_der(self, vector):
         r"""
@@ -1961,25 +1966,25 @@ class ZeroScalarField(ScalarField):
 
     #########  End of CommutativeAlgebraElement arithmetic operators ########
 
-    def exterior_der(self):
+    def differential(self):
         r"""
         Return the exterior derivative of the scalar field, which is zero in 
         the present case. 
                 
         OUTPUT:
         
-        - the (vanishing) 1-form exterior derivative of ``self``. 
+        - the (vanishing) 1-form differential of ``self``. 
                 
         """
         from utilities import format_unop_txt, format_unop_latex
-        if self._exterior_derivative is None:
+        if self._differential is None:
             # A new computation is necessary:
             rname = format_unop_txt('d', self._name)
             rlname = format_unop_latex(r'\mathrm{d}', self._latex_name)
-            self._exterior_derivative = self._domain.one_form(name=rname, 
+            self._differential = self._domain.one_form(name=rname, 
                                                              latex_name=rlname)
             for chart in self._domain._atlas:
-                self._exterior_derivative.add_comp(chart._frame) # since a newly
+                self._differential.add_comp(chart._frame) # since a newly
                                             # created set of components is zero
-        return self._exterior_derivative
+        return self._differential
 

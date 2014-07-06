@@ -308,6 +308,10 @@ def simplify_sqrt_real(expr):
     sexpr = str(expr)
     if 'sqrt(' not in sexpr:  # no sqrt to simplify
         return expr
+    if 'D[' in sexpr:
+        return expr    #!# the code below is not capable of simplifying 
+                       # expressions with symbolic derivatives denoted by Pynac 
+                       # symbols of the type D[0]
     pos_sqrts = []   # positions of the sqrt's in sexpr
     the_sqrts = []   # the sqrt sub-expressions in sexpr
     for pos in range(len(sexpr)):

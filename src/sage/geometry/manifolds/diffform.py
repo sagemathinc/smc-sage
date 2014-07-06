@@ -574,7 +574,6 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
-        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # initialization of derived quantities:
         self._init_derived()
         
@@ -1009,7 +1008,6 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
         self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
-        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
         # initialization of derived quantities:
         DiffFormParal._init_derived(self) 
         

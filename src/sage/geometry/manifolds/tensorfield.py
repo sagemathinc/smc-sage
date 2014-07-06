@@ -1898,9 +1898,17 @@ class TensorField(ModuleElement):
         if (k_con, l_cov) == (1,1):
             # scalar field result
             resu = self._domain.scalar_field()
+            all_zero = True
             for rst in resu_rst:
-                for chart, funct in rst._express.iteritems():
-                    resu._express[chart] = funct
+                if rst == 0:
+                    for chart in rst._domain._atlas:
+                        resu._express[chart] = 0
+                else:
+                    all_zero = False
+                    for chart, funct in rst._express.iteritems():
+                        resu._express[chart] = funct
+            if all_zero:
+                resu = self._domain._zero_scalar_field
         else:
             # tensor field result
             resu = self._vmodule.tensor((k_con-1, l_cov-1), 
@@ -2388,7 +2396,11 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
-        self._restrictions = {} # dict. of restrictions on subdomains of self._domain        
+        # NB: the TensorField attribute self._restrictions is considered as a 
+        #     derived quantity in the present case (the primary attribute 
+        #     being self._components, which is initialized by 
+        #     FreeModuleTensor.__init__ ); accordingly self._restrictions is
+        #     initialized by _init_derived() and cleared by _del_derived(). 
         # Initialization of derived quantities:
         self._init_derived() 
 
@@ -2413,6 +2425,8 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         """
         FreeModuleTensor._init_derived(self) 
         TensorField._init_derived(self)
+        self._restrictions = {} # dict. of restrictions of self on subdomains  
+                                # of self._domain, with the subdomains as keys
 
     def _del_derived(self):
         r"""
@@ -2420,7 +2434,8 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         """
         FreeModuleTensor._del_derived(self) 
         TensorField._del_derived(self)
-
+        self._restrictions.clear()
+        
     def set_comp(self, basis=None):
         r"""
         Return the components of the tensor field in a given vector frame 

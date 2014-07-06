@@ -440,12 +440,14 @@ class Metric(TensorField):
         if subdomain not in self._restrictions:
             # Construct the restriction at the tensor field level:
             resu = TensorField.restrict(self, subdomain, dest_map=dest_map)
-            # the signature is not handled by TensorField.restrict:
+            # the type is correctly handled by TensorField.restrict, i.e.
+            # resu is of type self.__class__, but the signature is not handled 
+            # by TensorField.restrict; we have to set it here:
             resu._signature = self._signature
             resu._signature_pm = self._signature_pm
             resu._indic_signat = self._indic_signat
             # Restrictions of derived quantities:
-            resu._inverse = self._inverse.restrict(subdomain)
+            resu._inverse = self.inverse().restrict(subdomain)
             if self._connection is not None:
                 resu._connection = self._connection.restrict(subdomain)
             if self._ricci_scalar is not None:
@@ -1449,7 +1451,7 @@ class MetricParal(Metric, TensorFieldParal):
           
         OUTPUT:
         
-        - instance of :class:`Metric` representing the restriction.
+        - instance of :class:`MetricParal` representing the restriction.
         
         """
         if subdomain == self._domain:
@@ -1457,12 +1459,14 @@ class MetricParal(Metric, TensorFieldParal):
         if subdomain not in self._restrictions:
             # Construct the restriction at the tensor field level:
             resu = TensorFieldParal.restrict(self, subdomain, dest_map=dest_map)
-            # the signature is not handled by TensorField.restrict:
+            # the type is correctly handled by TensorFieldParal.restrict, i.e.
+            # resu is of type self.__class__, but the signature is not handled 
+            # by TensorFieldParal.restrict; we have to set it here:
             resu._signature = self._signature
             resu._signature_pm = self._signature_pm
             resu._indic_signat = self._indic_signat
             # Restrictions of derived quantities:
-            resu._inverse = self._inverse.restrict(subdomain)
+            resu._inverse = self.inverse().restrict(subdomain)
             if self._connection is not None:
                 resu._connection = self._connection.restrict(subdomain)
             if self._ricci_scalar is not None:
