@@ -1631,7 +1631,7 @@ class LeviCivitaConnection(AffConnection):
             resu = self._domain.tensor_field(1, 2, antisym=(1,2))
             for frame in self._coefficients:
                 # Initialization of the frame components to zero: 
-                resu.set_comp(frame) 
+                resu.add_comp(frame) 
             self._torsion = resu
         return self._torsion 
 

@@ -1641,14 +1641,13 @@ class MetricParal(Metric, TensorFieldParal):
                 for j in manif.irange(start=i+1):
                     rsum2 += cig[[i,j]] * cric[[i,j]]
             self._ricci_scalar = rsum1 + 2*rsum2
-            self._ricci_scalar._domain = self._domain #?# not necessary ?
             if name is None:
                 self._ricci_scalar._name = "r(" + self._name + ")"
             else:
                 self._ricci_scalar._name = name
             if latex_name is None:
                 self._ricci_scalar._latex_name = r"\mathrm{r}\left(" + \
-                                            self._latex_name + r"\right)"
+                                                 self._latex_name + r"\right)"
             else:
                 self._ricci_scalar._latex_name = latex_name
         return self._ricci_scalar 

@@ -1621,9 +1621,18 @@ class ScalarField(CommutativeAlgebraElement):
         
         """
         from utilities import format_unop_txt, format_unop_latex
-        resu = self * metric.volume_form()
-        resu._name = format_unop_txt('*', self._name)
-        resu._latex_name = format_unop_latex(r'\star ', self._latex_name)
+        eps = metric.volume_form()
+        dom_resu = self._domain.intersection(eps._domain) # result domain
+        resu = self.restrict(dom_resu) * eps.restrict(dom_resu)
+        if self._name is None:
+            resu_name = None
+        else:
+            resu_name = format_unop_txt('*', self._name)
+        if self._latex_name is None:
+            resu_latex_name = None
+        else:
+            resu_latex_name = format_unop_latex(r'\star ', self._latex_name)
+        resu.set_name(name=resu_name, latex_name=resu_latex_name)
         return resu
 
 
