@@ -2428,13 +2428,20 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         self._restrictions = {} # dict. of restrictions of self on subdomains  
                                 # of self._domain, with the subdomains as keys
 
-    def _del_derived(self):
+    def _del_derived(self, del_restrictions=True):
         r"""
         Delete the derived quantities
+        
+        INPUT:
+        
+        - ``del_restrictions`` -- (default: True) determines whether the
+          restrictions of ``self`` to subdomains are deleted. 
+        
         """
         FreeModuleTensor._del_derived(self) 
         TensorField._del_derived(self)
-        self._restrictions.clear()
+        if del_restrictions:
+            self._restrictions.clear()
         
     def set_comp(self, basis=None):
         r"""
@@ -2457,18 +2464,25 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
           class :class:`~sage.tensor.modules.comp.Components`; if such 
           components did not exist previously, they are created.  
         
-        EXAMPLES:
-                  
-
         """
         if basis is None: 
             basis = self._fmodule._def_basis
         if basis._domain == self._domain:
+            # Setting components on the tensor field domain:
             return FreeModuleTensor.set_comp(self, basis=basis)
         else:
-            # setting components on a subdomain:
-            self._del_derived() # deletes the derived quantities
+            # Setting components on a subdomain:
+            #
+            # Creating or saving the restriction to the subdomain:
             rst = self.restrict(basis._domain, dest_map=basis._dest_map)
+            # Deleting all the components on self._domain and the derived
+            # quantities:
+            self._components.clear()
+            self._del_derived()
+            # Restoring the restriction to the subdomain (which has been 
+            # deleted by _del_derived):
+            self._restrictions[basis._domain] = rst
+            # The set_comp operation is performed on the subdomain:
             return rst.set_comp(basis=basis)
 
     def add_comp(self, basis=None):
@@ -2490,22 +2504,23 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         - components in the given frame, as an instance of the 
           class :class:`~sage.tensor.modules.comp.Components`; if such 
           components did not exist previously, they are created.  
-        
-        EXAMPLES:
-        
-          
 
         """
         if basis is None: 
             basis = self._fmodule._def_basis
         if basis._domain == self._domain:
+            # Adding components on the tensor field domain:
             return FreeModuleTensor.add_comp(self, basis=basis)
         else:
-            # adding components on a subdomain:
-            self._del_derived() # deletes the derived quantities
+            # Adding components on a subdomain:
+            # 
+            # Creating or saving the restriction to the subdomain:
             rst = self.restrict(basis._domain, dest_map=basis._dest_map)
+            # Deleting the derived quantities except for the restrictions to
+            # subdomains:
+            self._del_derived(del_restrictions=False)
+            # The add_comp operation is performed on the subdomain:
             return rst.add_comp(basis=basis)
-
 
     def comp(self, basis=None, from_basis=None):
         r"""
@@ -2535,6 +2550,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         if basis is None: 
             basis = self._fmodule._def_basis
         if basis._domain == self._domain:
+            # components on the tensor field domain:
             return FreeModuleTensor.comp(self, basis=basis, 
                                          from_basis=from_basis)
         else:

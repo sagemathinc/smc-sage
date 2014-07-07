@@ -522,11 +522,17 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
         """
         return self.__class__(self._fmodule)
 
-    def _del_derived(self):
+    def _del_derived(self, del_restrictions=True):
         r"""
         Delete the derived quantities
+        
+        INPUT:
+        
+        - ``del_restrictions`` -- (default: True) determines whether the
+          restrictions of ``self`` to subdomains are deleted. 
+        
         """
-        TensorFieldParal._del_derived(self)
+        TensorFieldParal._del_derived(self, del_restrictions=del_restrictions)
 
     def __call__(self, *arg):
         r"""
@@ -617,12 +623,19 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
             description += "'%s' " % self._name
         return self._final_repr(description)
         
-    def _del_derived(self):
+    def _del_derived(self, del_restrictions=True):
         r"""
-        Delete the derived quantities.
+        Delete the derived quantities
+        
+        INPUT:
+        
+        - ``del_restrictions`` -- (default: True) determines whether the
+          restrictions of ``self`` to subdomains are deleted. 
+        
         """
         # First delete the derived quantities pertaining to the mother class:
-        EndomorphismFieldParal._del_derived(self)
+        EndomorphismFieldParal._del_derived(self, 
+                                            del_restrictions=del_restrictions)
         # then deletes the inverse automorphism:
         self._inverse = None
         
@@ -781,12 +794,19 @@ class TangentIdentityFieldParal(FreeModuleIdentityMap, AutomorphismFieldParal):
             description += "'%s' " % self._name
         return self._final_repr(description)
 
-    def _del_derived(self):
+    def _del_derived(self, del_restrictions=True):
         r"""
         Delete the derived quantities
+        
+        INPUT:
+        
+        - ``del_restrictions`` -- (default: True) determines whether the
+          restrictions of ``self`` to subdomains are deleted. 
+        
         """
         # AutomorphismFieldParal._del_derived is bypassed:
-        EndomorphismFieldParal._del_derived(self)
+        EndomorphismFieldParal._del_derived(self, 
+                                            del_restrictions=del_restrictions)
 
     def __call__(self, *arg):
         r"""

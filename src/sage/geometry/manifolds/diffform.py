@@ -600,11 +600,17 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         TensorFieldParal._init_derived(self)  
         self._exterior_derivative = None
 
-    def _del_derived(self):
+    def _del_derived(self, del_restrictions=True):
         r"""
         Delete the derived quantities
+        
+        INPUT:
+        
+        - ``del_restrictions`` -- (default: True) determines whether the
+          restrictions of ``self`` to subdomains are deleted. 
+        
         """
-        TensorFieldParal._del_derived(self)
+        TensorFieldParal._del_derived(self, del_restrictions=del_restrictions)
         self._exterior_derivative = None
 
     def __call__(self, *args):

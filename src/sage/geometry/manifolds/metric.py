@@ -1417,12 +1417,18 @@ class MetricParal(Metric, TensorFieldParal):
         TensorFieldParal._init_derived(self) 
         Metric._init_derived(self) 
 
-    def _del_derived(self):
+    def _del_derived(self, del_restrictions=True):
         r"""
         Delete the derived quantities
+        
+        INPUT:
+        
+        - ``del_restrictions`` -- (default: True) determines whether the
+          restrictions of ``self`` to subdomains are deleted. 
+        
         """
         # The derived quantities from the mother classes are deleted:
-        TensorFieldParal._del_derived(self)
+        TensorFieldParal._del_derived(self, del_restrictions=del_restrictions)
         Metric._del_derived(self)
 
     def _del_inverse(self):

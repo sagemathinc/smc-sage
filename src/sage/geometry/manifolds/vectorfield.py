@@ -368,11 +368,17 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
         """
         return self.__class__(self._fmodule)
 
-    def _del_derived(self):
+    def _del_derived(self, del_restrictions=True):
         r"""
         Delete the derived quantities
+        
+        INPUT:
+        
+        - ``del_restrictions`` -- (default: True) determines whether the
+          restrictions of ``self`` to subdomains are deleted. 
+        
         """
-        TensorFieldParal._del_derived(self)
+        TensorFieldParal._del_derived(self, del_restrictions=del_restrictions)
         VectorField._del_derived(self)
         self._del_dependencies()
         
