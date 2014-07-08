@@ -572,6 +572,58 @@ class VectorFrame(FreeModuleBasis):
         r"""
         Return the value of the frame at a given point on the manifold, i.e. a
         basis of the tangent vector space. 
+        
+        INPUT:
+        
+        - ``point`` -- (instance of
+          :class:`~sage.geometry.manifolds.point.Point`) point `p` in the 
+          domain of ``self`` (denoted `e` hereafter)
+        
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.tensor.modules.free_module_basis.FreeModuleBasis`
+          representing the basis `e(p)` of the tangent vector space `T_p M` 
+          (`M` being the manifold on which ``self`` is defined) 
+          
+        EXAMPLES:
+
+        Basis of a tangent space on a 2-dimensional manifold::
+        
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M.point((-1,2), name='p')
+            sage: e = X.frame() ; e
+            coordinate frame (M, (d/dx,d/dy))
+            sage: ep = e.at(p) ; ep
+            basis (d/dx,d/dy) on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: type(ep)
+            <class 'sage.tensor.modules.free_module_basis.FreeModuleBasis'>
+            sage: ep[0]
+            tangent vector d/dx at point 'p' on 2-dimensional manifold 'M'
+            sage: ep[1]
+            tangent vector d/dy at point 'p' on 2-dimensional manifold 'M'
+
+        Note that the symbols used to denote the vectors are same as those 
+        for the vector fields of the frame. An example of a frame that 
+        is a not a coordinate one::
+        
+            sage: f = M.vector_frame('f') ; f
+            vector frame (M, (f_0,f_1))
+            sage: fp = f.at(p) ; fp
+            basis (f_0,f_1) on the tangent space at point 'p' on 2-dimensional manifold 'M'
+        
+        The dual bases::
+        
+            sage: e.coframe()
+            coordinate coframe (M, (dx,dy))
+            sage: ep.dual_basis()
+            dual basis (dx,dy) on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: f.coframe()
+            coframe (M, (f^0,f^1))
+            sage: fp.dual_basis()
+            dual basis (f^0,f^1) on the tangent space at point 'p' on 2-dimensional manifold 'M'
+
         """
         if point not in self._domain:
             raise TypeError("The " + str(point) + " is not a point in the "
@@ -805,6 +857,49 @@ class CoFrame(FreeModuleCoBasis):
         """
         return "coframe " + self._name
 
+    def at(self, point):
+        r"""
+        Return the value of the coframe at a given point on the manifold, i.e. 
+        a basis of the dual of the tangent vector space. 
+        
+        INPUT:
+        
+        - ``point`` -- (instance of
+          :class:`~sage.geometry.manifolds.point.Point`) point `p` in the 
+          domain of ``self`` (denoted `f` hereafter)
+        
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.tensor.modules.free_module_basis.FreeModuleCoBasis`
+          representing the basis `f(p)` of the vector space `T_p^* M`, 
+          dual of the tangent space to `M` at `p` 
+          (`M` being the manifold on which ``self`` is defined) 
+          
+        EXAMPLES:
+
+        Cobasis of a tangent space on a 2-dimensional manifold::
+
+            sage: from sage.geometry.manifolds.tangentspace import TangentSpace # for doctests only
+            sage: TangentSpace._clear_cache_() ; Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M.point((-1,2), name='p')
+            sage: f = X.coframe() ; f
+            coordinate coframe (M, (dx,dy))
+            sage: fp = f.at(p) ; fp
+            dual basis (dx,dy) on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: type(fp)
+            <class 'sage.tensor.modules.free_module_basis.FreeModuleCoBasis'>
+            sage: fp[0]
+            linear form dx on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: fp[1]
+            linear form dy on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: fp is X.frame().at(p).dual_basis()
+            True
+
+        """
+        return self._basis.at(point).dual_basis()
 
 #******************************************************************************
 

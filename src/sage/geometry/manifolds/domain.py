@@ -1406,8 +1406,6 @@ class OpenDomain(Domain):
           if none is provided, the identity is assumed (case of a vector frame 
           *on* `U`)
         - ``from_frame`` -- (default: None) vector frame `\tilde e` on the 
-          codomain `V` of the destination map `\Phi`; 
-        - ``from_frame`` -- (default: None) vector frame `\tilde e` on the 
           codomain `V` of the destination map `\Phi`; the returned frame `e` is 
           then such that `\forall p \in U, e(p) = \tilde e(\Phi(p))`
     

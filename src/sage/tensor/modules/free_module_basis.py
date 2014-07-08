@@ -144,7 +144,7 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         
         """
         return FreeModuleCoBasis(self, self._symbol, 
-                                                latex_symbol=self._latex_symbol)
+                                               latex_symbol=self._latex_symbol)
 
     def _new_instance(self, symbol, latex_symbol=None):
         r"""

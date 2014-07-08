@@ -37,8 +37,6 @@ class TangentVector(FiniteRankFreeModuleElement):
         point 'P' on 2-dimensional manifold 'R^2'
         sage: T = p.tangent_space(); T
         tangent space at a point 'P' on 2-dimensional manifold 'R^2'
-        sage: v = T.tangent_vector('V'); v
-        tangent vector V at point 'P' on 2-dimensional manifold 'R^2'
 
     Check if vector `v` belongs to `T`::
 
@@ -128,8 +126,10 @@ class TangentSpace(FiniteRankFreeModule):
             if point in frame._domain:
                 basis = self.basis(symbol=frame._symbol, 
                                    latex_symbol=frame._latex_symbol)
+                # Names of basis vectors set to those of the frame vector 
+                # fields:
                 n = manif._dim
-                for i in range(manif._dim):
+                for i in range(n):
                     basis._vec[i]._name = frame._vec[i]._name
                     basis._vec[i]._latex_name = frame._vec[i]._latex_name
                 basis._name = "(" + \
@@ -139,7 +139,18 @@ class TangentSpace(FiniteRankFreeModule):
                      r"\right)"
                 basis._symbol = basis._name
                 basis._latex_symbol = basis._latex_name
- 
+                # Names of cobasis linear forms set to those of the coframe 
+                # 1-forms:
+                coframe = frame.coframe()
+                cobasis = basis.dual_basis()
+                for i in range(n):
+                    cobasis._form[i]._name = coframe._form[i]._name
+                    cobasis._form[i]._latex_name = coframe._form[i]._latex_name
+                cobasis._name = "(" + \
+                     ",".join([cobasis._form[i]._name for i in range(n)]) + ")"
+                cobasis._latex_name = r"\left(" + \
+                  ",".join([cobasis._form[i]._latex_name for i in range(n)])+ \
+                  r"\right)"
                 
     def _repr_(self):
         r"""
