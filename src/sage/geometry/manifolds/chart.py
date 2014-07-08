@@ -1625,7 +1625,7 @@ class FunctionChart(SageObject):
         
         EXAMPLES:
         
-        Factorization on a 2-dimensional manifold::
+        Factorization on a 2-dimensional chart::
         
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
@@ -1634,11 +1634,74 @@ class FunctionChart(SageObject):
             x^2 + 2*x*y + y^2
             sage: f.factor()
             (x + y)^2
-            sage: f # the method factor() has changed f:
+        
+        The method factor() has changed f::
+        
+            sage: f 
             (x + y)^2
 
         """
         self._express = self._express.factor()
+        self._del_derived()
+        return self
+
+    def simplify(self):
+        r"""
+        Simplifies the coordinate expression. 
+        
+        OUTPUT:
+        
+        - ``self``, with ``self._express`` simplifyed
+        
+        EXAMPLES:
+
+        Simplification on a 2-dimensional chart::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(cos(x)^2+sin(x)^2 + sqrt(x^2))
+            sage: f
+            cos(x)^2 + sin(x)^2 + sqrt(x^2)
+            sage: f.simplify()
+            abs(x) + 1
+        
+        The method simplify() has changed f::
+        
+            sage: f
+            abs(x) + 1
+            
+
+        Another example::
+        
+            sage: f = X.function((x^2-1)/(x+1))
+            sage: f
+            (x^2 - 1)/(x + 1)
+            sage: f.simplify()
+            x - 1
+
+        Examples taking into account the declared range of a coordinate::
+        
+            sage: M =  Manifold(2, 'M_1')
+            sage: X.<x,y> = M.chart('x:(0,+oo) y')
+            sage: f = X.function(sqrt(x^2))
+            sage: f
+            sqrt(x^2)
+            sage: f.simplify()
+            x
+            
+        ::
+        
+            sage: forget()  # to clear the previous assumption on x
+            sage: M =  Manifold(2, 'M_2')
+            sage: X.<x,y> = M.chart('x:(-oo,0) y')
+            sage: f = X.function(sqrt(x^2))
+            sage: f
+            sqrt(x^2)
+            sage: f.simplify()
+            -x
+
+        """
+        self._express = simplify_chain(self._express)
         self._del_derived()
         return self
         

@@ -432,9 +432,7 @@ class Point(Element):
         r"""
         Returns the tangent space at self.
         """
-
         from tangentspace import TangentSpace
-
         if self._tangent_space is not None:
             return self._tangent_space
         else: 

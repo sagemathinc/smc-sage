@@ -567,6 +567,28 @@ class VectorFrame(FreeModuleBasis):
                         e_j = self._vec[j-si]
                         self._structure_coef[[k,i,j]] = ce_k(e_j.lie_der(e_i))
         return self._structure_coef
+
+    def at(self, point):
+        r"""
+        Return the value of the frame at a given point on the manifold, i.e. a
+        basis of the tangent vector space. 
+        """
+        if point not in self._domain:
+            raise TypeError("The " + str(point) + " is not a point in the "
+                            "domain of " + str(self) + ".")
+        ts = point.tangent_space()
+        # If the basis has already been constructed, it is simply returned:
+        for basis in ts._known_bases:
+            if self._symbol == basis._symbol:
+                return basis
+        # If this point is reached, the basis has to be constructed from 
+        # scratch:
+        basis = ts.basis(symbol=self._symbol, latex_symbol=self._latex_symbol)
+        n = self._manifold._dim
+        for i in range(n):
+            basis._vec[i]._name = self._vec[i]._name
+            basis._vec[i]._latex_name = self._vec[i]._latex_name
+        return basis
             
 #******************************************************************************
 

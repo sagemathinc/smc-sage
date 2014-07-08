@@ -1432,18 +1432,21 @@ class TensorField(ModuleElement):
             resu._latex_name = self._latex_name + '-' + other._latex_name
         return resu
 
-    def _rmul_(self, other):
+    def _rmul_(self, scalar):
         r"""
-        Multiplication on the left by a scalar field (``other``)
+        Multiplication on the left by a scalar field (``scalar``)
+        
+        This is actually the multiplication by an element of the ring over
+        which the tensor field module is constructed. 
         
         """
         #!# The following test is probably not necessary:
-        if isinstance(other, TensorField):
+        if isinstance(scalar, TensorField):
             raise NotImplementedError("Left tensor product not implemented.")
         # Left multiplication by a scalar field: 
         resu = self._new_instance()
         for dom, rst in self._restrictions.iteritems():
-            resu._restrictions[dom] = other.restrict(dom) * rst
+            resu._restrictions[dom] = scalar.restrict(dom) * rst
         return resu
 
     ######### End of ModuleElement arithmetic operators ########
@@ -1499,13 +1502,13 @@ class TensorField(ModuleElement):
             resu._restrictions[rst._domain] = rst
         return resu
 
-    def __div__(self, other):
+    def __div__(self, scalar):
         r"""
         Division (by a scalar field)
         """
         resu = self._new_instance()
         for dom, rst in self._restrictions.iteritems():
-            resu._restrictions[dom] = rst / other
+            resu._restrictions[dom] = rst / scalar
         return resu
 
     def up(self, metric, pos=None):
