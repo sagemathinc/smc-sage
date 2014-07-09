@@ -151,7 +151,8 @@ class TangentSpace(FiniteRankFreeModule):
                 cobasis._latex_name = r"\left(" + \
                   ",".join([cobasis._form[i]._latex_name for i in range(n)])+ \
                   r"\right)"
-                
+                self._point._frame_bases[frame] = basis
+
     def _repr_(self):
         r"""
         String representation of the object.

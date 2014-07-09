@@ -117,7 +117,6 @@ class Point(Element):
         Element.__init__(self, domain)
         self._manifold = domain._manifold
         self._domain = domain
-        self._tangent_space=None
         self._coordinates = {}
         if coords is not None: 
             if len(coords) != self._manifold._dim: 
@@ -145,6 +144,11 @@ class Point(Element):
             self._latex_name = self._name
         else:
             self._latex_name = latex_name
+        self._tangent_space = None # tangent vector space at the point (not
+                                   # constructed yet)
+        self._frame_bases = {} # dictionary of bases of the tangent vector 
+                               # derived from vector frames (keys: vector 
+                               # frames)
 
     def _repr_(self):
         r"""

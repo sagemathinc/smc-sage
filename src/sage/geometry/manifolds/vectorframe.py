@@ -625,21 +625,41 @@ class VectorFrame(FreeModuleBasis):
             dual basis (f^0,f^1) on the tangent space at point 'p' on 2-dimensional manifold 'M'
 
         """
+        # If the basis has already been constructed, it is simply returned:
+        if self in point._frame_bases:
+            return point._frame_bases[self]
+        # If this point is reached, the basis has to be constructed from 
+        # scratch:
         if point not in self._domain:
             raise TypeError("The " + str(point) + " is not a point in the "
                             "domain of " + str(self) + ".")
         ts = point.tangent_space()
-        # If the basis has already been constructed, it is simply returned:
-        for basis in ts._known_bases:
-            if self._symbol == basis._symbol:
-                return basis
-        # If this point is reached, the basis has to be constructed from 
-        # scratch:
         basis = ts.basis(symbol=self._symbol, latex_symbol=self._latex_symbol)
+        # Names of basis vectors set to those of the frame vector fields:
         n = self._manifold._dim
         for i in range(n):
             basis._vec[i]._name = self._vec[i]._name
             basis._vec[i]._latex_name = self._vec[i]._latex_name
+        basis._name = "(" + \
+                ",".join([basis._vec[i]._name for i in range(n)]) + ")"
+        basis._latex_name = r"\left(" + \
+             ",".join([basis._vec[i]._latex_name for i in range(n)])+ \
+             r"\right)"
+        basis._symbol = basis._name
+        basis._latex_symbol = basis._latex_name
+        # Names of cobasis linear forms set to those of the coframe 
+        # 1-forms:
+        coframe = self.coframe()
+        cobasis = basis.dual_basis()
+        for i in range(n):
+            cobasis._form[i]._name = coframe._form[i]._name
+            cobasis._form[i]._latex_name = coframe._form[i]._latex_name
+        cobasis._name = "(" + \
+             ",".join([cobasis._form[i]._name for i in range(n)]) + ")"
+        cobasis._latex_name = r"\left(" + \
+          ",".join([cobasis._form[i]._latex_name for i in range(n)])+ \
+          r"\right)"
+        point._frame_bases[self] = basis
         return basis
             
 #******************************************************************************

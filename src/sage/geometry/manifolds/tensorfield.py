@@ -2935,3 +2935,91 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         # This is to ensure the call to the TensorField version instead of
         # the FreeModuleTensor one
         return TensorField.__mul__(self, other)
+
+    def at(self, point):
+        r"""
+        Value of the tensor field at a given point on the manifold.
+        
+        The returned object is a tensor on the tangent space at the given 
+        point. 
+        
+        INPUT:
+        
+        - ``point`` -- (instance of
+          :class:`~sage.geometry.manifolds.point.Point`) point `p` in the 
+          domain of ``self`` (denoted `t` hereafter)
+        
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`
+          representing the tensor `f(p)` on the tangent vector space `T_p M` 
+          (`M` being the manifold on which ``self`` is defined) 
+          
+        EXAMPLES:
+
+        Tensor on a tangent space of a 2-dimensional manifold::
+        
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart()
+            sage: p = M.point((-2,3), name='p')
+            sage: v = M.vector_field('v')
+            sage: v[:] = [y, x^2] ; v.view()
+            v = y d/dx + x^2 d/dy
+            sage: vp = v.at(p) ; vp
+            tangent vector v at point 'p' on 2-dimensional manifold 'M'
+            sage: vp.parent()
+            tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: vp.view()
+            v = 3 d/dx + 4 d/dy
+            sage: w = M.one_form('w')
+            sage: w[:] = [-x, 1+y] ; w.view()
+            w = -x dx + (y + 1) dy
+            sage: wp = w.at(p) ; wp
+            linear form w on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: wp.parent()
+            dual of the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: wp.view()
+            w = 2 dx + 4 dy
+            sage: t = M.endomorphism_field('t')
+            sage: t[0,0], t[0,1], t[1,1] = 1+x, x*y, 1-y
+            sage: t.view()
+            t = (x + 1) d/dx*dx + x*y d/dx*dy + (-y + 1) d/dy*dy
+            sage: tp = t.at(p) ; tp
+            endomorphism t on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: tp.parent()
+            free module of type-(1,1) tensors on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: tp.view()
+            t = -d/dx*dx - 6 d/dx*dy - 2 d/dy*dy
+
+        """
+        if point not in self._domain:
+            raise TypeError("The " + str(point) + " is not a point in the "
+                            "domain of " + str(self) + ".")
+        ts = point.tangent_space()
+        resu = ts.tensor(self._tensor_type, name=self._name, 
+                         latex_name=self._latex_name, sym=self._sym, 
+                         antisym=self._antisym)
+        for frame, comp in self._components.iteritems():
+            comp_resu = resu.add_comp(frame.at(point))
+            for ind, val in comp._comp.iteritems():
+                comp_resu._comp[ind] = val(point) 
+        return resu
+
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
