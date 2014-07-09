@@ -243,7 +243,6 @@ class Point(Element):
             {chart (M, (u, v)): (a - b, a + b), chart (M, (w, z)): (a^3 - 3*a^2*b + 3*a*b^2 - b^3, a^3 + 3*a^2*b + 3*a*b^2 + b^3)}
 
         """
-        atlas = self._manifold._atlas
         if chart is None:
             dom = self._domain 
             chart = dom._def_chart
@@ -258,37 +257,55 @@ class Point(Element):
             # Check whether chart corresponds to a superchart of a chart 
             # in which the coordinates are known:
             for ochart in self._coordinates:
-                if chart in ochart._supercharts:
+                if chart in ochart._supercharts or chart in ochart._subcharts:
                     self._coordinates[chart] = self._coordinates[ochart]
                     return self._coordinates[chart]
             # If this point is reached, some change of coordinates must be 
             # performed
             if old_chart is not None:
                 s_old_chart = old_chart
+                s_chart = chart
             else:
-                # a chart must be find as a starting point of the computation
-                # the domain's default chart is privileged:
+                # A chart must be found as a starting point of the computation
+                # The domain's default chart is privileged:
                 if def_chart in self._coordinates \
                         and (def_chart, chart) in dom._coord_changes:
                     old_chart = def_chart
                     s_old_chart = def_chart
+                    s_chart = chart
                 else:
                     for ochart in self._coordinates:
                         for subchart in ochart._subcharts:
                             if (subchart, chart) in dom._coord_changes:
                                 old_chart = ochart
                                 s_old_chart = subchart
+                                s_chart = chart
                                 break
                         if old_chart is not None:
                             break
-            if old_chart is not None:
-                chcoord = dom._coord_changes[(s_old_chart, chart)]
-                self._coordinates[chart] = \
-                                    chcoord(*self._coordinates[old_chart])
-            else:
+                if old_chart is None:
+                    # Some search involving the subcharts of chart is 
+                    # performed:
+                    for schart in chart._subcharts:
+                        for ochart in self._coordinates:
+                            for subchart in ochart._subcharts:
+                                if (subchart, schart) in dom._coord_changes:
+                                    old_chart = ochart
+                                    s_old_chart = subchart
+                                    s_chart = schart
+                                    break
+                            if old_chart is not None:
+                                break
+                        if old_chart is not None:
+                            break
+            if old_chart is None:
                 raise ValueError("The coordinates of " + str(self) + \
                     " in the " + str(chart) + " cannot be computed" + \
                     " by means of known changes of charts.")
+            else:
+                chcoord = dom._coord_changes[(s_old_chart, s_chart)]
+                self._coordinates[chart] = \
+                                    chcoord(*self._coordinates[old_chart])
         return self._coordinates[chart]
         
     def set_coord(self, coords, chart=None):

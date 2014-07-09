@@ -605,29 +605,63 @@ class VectorFrame(FreeModuleBasis):
             tangent vector d/dy at point 'p' on 2-dimensional manifold 'M'
 
         Note that the symbols used to denote the vectors are same as those 
-        for the vector fields of the frame. An example of a frame that 
-        is a not a coordinate one::
+        for the vector fields of the frame. At this stage, ep is the unique
+        basis on the tangent space at p::
         
-            sage: f = M.vector_frame('f') ; f
+            sage: Tp = p.tangent_space()
+            sage: Tp.bases()
+            [basis (d/dx,d/dy) on the tangent space at point 'p' on 2-dimensional manifold 'M']
+           
+        Let us consider a vector frame that is a not a coordinate one::
+        
+            sage: aut = M.automorphism_field()
+            sage: aut[:] = [[1+y^2, 0], [0, 2]]
+            sage: f = e.new_frame(aut, 'f') ; f 
             vector frame (M, (f_0,f_1))
             sage: fp = f.at(p) ; fp
             basis (f_0,f_1) on the tangent space at point 'p' on 2-dimensional manifold 'M'
+
+        There are now two bases on the tangent space::
         
+            sage: Tp.bases()
+            [basis (d/dx,d/dy) on the tangent space at point 'p' on 2-dimensional manifold 'M',
+             basis (f_0,f_1) on the tangent space at point 'p' on 2-dimensional manifold 'M']
+
+        Moreover, the changes of bases in the tangent space have been computed 
+        from the known relation between the frames e and f (automorphism field
+        aut defined above)::
+    
+            sage: Tp.basis_change(ep, fp)
+            automorphism on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: Tp.basis_change(ep, fp).view()
+            5 d/dx*dx + 2 d/dy*dy
+            sage: Tp.basis_change(fp, ep)
+            automorphism on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: Tp.basis_change(fp, ep).view()
+            1/5 d/dx*dx + 1/2 d/dy*dy
+
         The dual bases::
         
             sage: e.coframe()
             coordinate coframe (M, (dx,dy))
             sage: ep.dual_basis()
             dual basis (dx,dy) on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: ep.dual_basis() is e.coframe().at(p)
+            True
             sage: f.coframe()
             coframe (M, (f^0,f^1))
             sage: fp.dual_basis()
             dual basis (f^0,f^1) on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: fp.dual_basis() is f.coframe().at(p)
+            True
 
         """
         # If the basis has already been constructed, it is simply returned:
         if self in point._frame_bases:
             return point._frame_bases[self]
+        for frame in point._frame_bases:
+            if self in frame._subframes or self in frame._superframes:
+                return point._frame_bases[frame]
         # If this point is reached, the basis has to be constructed from 
         # scratch:
         if point not in self._domain:
@@ -660,6 +694,49 @@ class VectorFrame(FreeModuleBasis):
           ",".join([cobasis._form[i]._latex_name for i in range(n)])+ \
           r"\right)"
         point._frame_bases[self] = basis
+        # Update of the change of bases in the tangent space:
+        for frame_pair, automorph in self._domain._frame_changes.iteritems():
+            frame1 = frame_pair[0] ; frame2 = frame_pair[1]
+            if frame1 is self:
+                for frame in point._frame_bases:
+                    if frame2 in frame._subframes:
+                        fr2 = frame
+                        break
+                if fr2 is not None:
+                    basis1 = basis
+                    basis2 = point._frame_bases[fr2]
+                    auto = ts.automorphism()
+                    for frame, comp in automorph._components.iteritems():
+                        bas = None
+                        if frame is frame1:
+                            bas = basis1
+                        if frame is frame2:
+                            bas = basis2
+                        if bas is not None:
+                            cauto = auto.add_comp(bas)
+                            for ind, val in comp._comp.iteritems():
+                                cauto._comp[ind] = val(point) 
+                    ts._basis_changes[(basis1, basis2)] = auto
+            if frame2 is self:
+                for frame in point._frame_bases:
+                    if frame1 in frame._subframes:
+                        fr1 = frame
+                        break
+                if fr1 is not None:
+                    basis1 = point._frame_bases[fr1]
+                    basis2 = basis
+                    auto = ts.automorphism()
+                    for frame, comp in automorph._components.iteritems():
+                        bas = None
+                        if frame is frame1:
+                            bas = basis1
+                        if frame is frame2:
+                            bas = basis2
+                        if bas is not None:
+                            cauto = auto.add_comp(bas)
+                            for ind, val in comp._comp.iteritems():
+                                cauto._comp[ind] = val(point) 
+                    ts._basis_changes[(basis1, basis2)] = auto
         return basis
             
 #******************************************************************************

@@ -1175,7 +1175,7 @@ class ScalarField(CommutativeAlgebraElement):
         - ``chart`` -- (default: None) chart in which the coordinates of p 
           are to be considered; if none is provided, a chart in which both p's 
           coordinates and the expression of ``self`` are known is searched, 
-          starting from the default chart of self._domain will be used
+          starting from the default chart of self._domain
         
         OUTPUT:
 
@@ -1187,7 +1187,8 @@ class ScalarField(CommutativeAlgebraElement):
         if p not in self._manifold: 
             raise ValueError("The point " + str(p) +
                              " does not belong to the " + str(self._manifold))
-        if chart is None: 
+        if chart is None:
+            # A common chart is searched:
             def_chart = self._domain._def_chart
             if def_chart in p._coordinates and def_chart in self._express:
                 chart = def_chart
@@ -1196,6 +1197,25 @@ class ScalarField(CommutativeAlgebraElement):
                     if chart_p in self._express:
                         chart = chart_p
                         break
+        if chart is None:
+            # A change of coordinates is attempted for p:
+            for chart_s in self._express:
+                try:
+                    p.coord(chart_s)
+                    chart = chart_s
+                    break
+                except ValueError:
+                    pass
+            else:
+                # A change of coordinates is attempted on the scalar field
+                # expressions:
+                for chart_p in p._coordinates:
+                    try:
+                        self.function_chart(chart_p)
+                        chart = chart_p
+                        break
+                    except (TypeError, ValueError):
+                        pass
         if chart is None:
             raise ValueError("No common chart has been found to evaluate " \
                 "the action of " + str(self) + " on the " + str(p) + ".")

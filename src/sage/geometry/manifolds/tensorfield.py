@@ -1950,8 +1950,6 @@ class TensorField(ModuleElement):
             sage: inv = transf.inverse()
             sage: W = U.intersection(V)
             sage: eU = c_xy.frame() ; eV = c_uv.frame()
-            sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
-            sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
             sage: a = M.tensor_field(1,1, name='a')
             sage: a[eU,:] = [[1,x], [0,2]]
             sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
@@ -2151,6 +2149,67 @@ class TensorField(ModuleElement):
             self._lie_derivatives[id(vector)] = (vector, resu)
             vector._lie_der_along_self[id(self)] = self
         return self._lie_derivatives[id(vector)][1]
+
+    def at(self, point):
+        r"""
+        Value of the tensor field at a given point on the manifold.
+        
+        The returned object is a tensor on the tangent space at the given 
+        point. 
+        
+        INPUT:
+        
+        - ``point`` -- (instance of
+          :class:`~sage.geometry.manifolds.point.Point`) point `p` in the 
+          domain of ``self`` (denoted `t` hereafter)
+        
+        OUTPUT:
+        
+        - instance of 
+          :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`
+          representing the tensor `t(p)` on the tangent vector space `T_p M` 
+          (`M` being the manifold on which ``self`` is defined) 
+          
+        EXAMPLES:
+
+        Tensor on a tangent space of a non-parallelizable 2-dimensional 
+        manifold::
+        
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: M.declare_union(U,V)   # M is the union of U and V
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+            sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+            sage: inv = transf.inverse()
+            sage: W = U.intersection(V)
+            sage: eU = c_xy.frame() ; eV = c_uv.frame()
+            sage: a = M.tensor_field(1,1, name='a')
+            sage: a[eU,:] = [[1+y,x], [0,x+y]]
+            sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
+            sage: a.view(eU)
+            a = (y + 1) d/dx*dx + x d/dx*dy + (x + y) d/dy*dy
+            sage: a.view(eV)
+            a = (u + 1/2) d/du*du + (-1/2*u - 1/2*v + 1/2) d/du*dv + 1/2 d/dv*du + (1/2*u - 1/2*v + 1/2) d/dv*dv
+            sage: p = M.point((2,3), chart=c_xy, name='p')
+            sage: ap = a.at(p) ; ap
+            endomorphism a on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: ap.parent()
+            free module of type-(1,1) tensors on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: ap.view()
+            a = 4 d/dx*dx + 2 d/dx*dy + 5 d/dy*dy
+            sage: ap.view(eV.at(p))
+            a = 11/2 d/du*du - 3/2 d/du*dv + 1/2 d/dv*du + 7/2 d/dv*dv
+            sage: p.coord(c_uv) # to check the above expression
+            (5, -1)
+
+        """
+        if point not in self._domain:
+            raise TypeError("The " + str(point) + " is not a point in the "
+                            "domain of " + str(self) + ".")
+        for dom, rst in self._restrictions.iteritems():
+            if point in dom:
+                return rst.at(point)
 
 #******************************************************************************
 
@@ -2953,13 +3012,16 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         
         - instance of 
           :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`
-          representing the tensor `f(p)` on the tangent vector space `T_p M` 
+          representing the tensor `t(p)` on the tangent vector space `T_p M` 
           (`M` being the manifold on which ``self`` is defined) 
           
         EXAMPLES:
 
         Tensor on a tangent space of a 2-dimensional manifold::
         
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: from sage.geometry.manifolds.tangentspace import TangentSpace # for doctests only
+            sage: TangentSpace._clear_cache_() ; Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart()
             sage: p = M.point((-2,3), name='p')
