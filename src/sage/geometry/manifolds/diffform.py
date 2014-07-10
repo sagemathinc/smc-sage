@@ -87,7 +87,7 @@ class DiffForm(TensorField):
         sage: a = M.diff_form(2, name='a') ; a
         2-form 'a' on the 2-dimensional manifold 'M'
         sage: a.parent()
-        module TF^(0,2)(M) of type-(0,2) tensors fields on the 2-dimensional manifold 'M'
+        module T^(0,2)(M) of type-(0,2) tensors fields on the 2-dimensional manifold 'M'
     
     Setting the components of a::
     
@@ -300,7 +300,7 @@ class OneForm(DiffForm):
         sage: a = M.one_form('a') ; a
         1-form 'a' on the 2-dimensional manifold 'M'
         sage: a.parent()
-        module TF^(0,1)(M) of type-(0,1) tensors fields on the 2-dimensional manifold 'M'
+        module T^(0,1)(M) of type-(0,1) tensors fields on the 2-dimensional manifold 'M'
 
     Setting the components of the 1-form in a consistent way::
 
@@ -410,7 +410,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     A differential form is a tensor field of purely covariant type::
     
         sage: a.parent()
-        free module TF^(0,2)(M) of type-(0,2) tensors fields on the 4-dimensional manifold 'M'
+        free module T^(0,2)(M) of type-(0,2) tensors fields on the 4-dimensional manifold 'M'
         sage: a._tensor_type  
         (0, 2)
 
@@ -950,7 +950,7 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
         sage: isinstance(om, sage.geometry.manifolds.diffform.DiffFormParal)
         True
         sage: om.parent()
-        free module TF^(0,1)(M) of type-(0,1) tensors fields on the 3-dimensional manifold 'M'
+        free module T^(0,1)(M) of type-(0,1) tensors fields on the 3-dimensional manifold 'M'
         sage: om._tensor_type
         (0, 1)
         

@@ -818,7 +818,7 @@ class AffConnection(SageObject):
             sage: t = nab.torsion() ; t
             tensor field of type (1,2) on the 2-dimensional manifold 'M'
             sage: t.parent()
-            module TF^(1,2)(M) of type-(1,2) tensors fields on the 2-dimensional manifold 'M'          
+            module T^(1,2)(M) of type-(1,2) tensors fields on the 2-dimensional manifold 'M'          
             sage: t[eU,:]
             [[[0, x - y], [-x + y, 0]], [[0, -x*y], [x*y, 0]]]
             sage: t[eV,:]
@@ -884,7 +884,7 @@ class AffConnection(SageObject):
             sage: r = nab.riemann() ; r
             tensor field of type (1,3) on the 3-dimensional manifold 'M'
             sage: r.parent()
-            free module TF^(1,3)(M) of type-(1,3) tensors fields on the 3-dimensional manifold 'M'
+            free module T^(1,3)(M) of type-(1,3) tensors fields on the 3-dimensional manifold 'M'
             sage: r.symmetries()
             no symmetry;  antisymmetry: (2, 3)
             sage: r[:]
@@ -921,7 +921,7 @@ class AffConnection(SageObject):
             sage: r = nab.riemann() ; r
             tensor field of type (1,3) on the 2-dimensional manifold 'M'
             sage: r.parent()
-            module TF^(1,3)(M) of type-(1,3) tensors fields on the 2-dimensional manifold 'M'
+            module T^(1,3)(M) of type-(1,3) tensors fields on the 2-dimensional manifold 'M'
             sage: r.view(eU)
             (x^2*y - x*y^2) d/dx*dx*dx*dy + (-x^2*y + x*y^2) d/dx*dx*dy*dx + d/dx*dy*dx*dy - d/dx*dy*dy*dx - (x^2 - 1)*y d/dy*dx*dx*dy + (x^2 - 1)*y d/dy*dx*dy*dx + (-x^2*y + x*y^2) d/dy*dy*dx*dy + (x^2*y - x*y^2) d/dy*dy*dy*dx
             sage: r.view(eV)

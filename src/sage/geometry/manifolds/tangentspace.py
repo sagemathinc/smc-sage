@@ -98,7 +98,7 @@ class TangentSpace(FiniteRankFreeModule):
         sage: Tp.dim()
         2
 
-    The tangent space is automatically endoved with bases deduced from the
+    The tangent space is automatically endowed with bases deduced from the
     vector frames around the point::
     
         sage: Tp.bases()

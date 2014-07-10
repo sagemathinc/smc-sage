@@ -1619,7 +1619,7 @@ class OpenDomain(Domain):
             sage: U = M.open_domain('U')
             sage: c_xyz.<x,y,z> = U.chart()
             sage: TU = U.tensor_field_module((2,1)) ; TU
-            free module TF^(2,1)(U) of type-(2,1) tensors fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            free module T^(2,1)(U) of type-(2,1) tensors fields on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: TU.category()
             Category of modules over algebra of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'            
             sage: TU.base_ring()
@@ -1820,7 +1820,7 @@ class OpenDomain(Domain):
         fields on `U`::
 
             sage: t.parent()
-            free module TF^(2,0)(U) of type-(2,0) tensors fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            free module T^(2,0)(U) of type-(2,0) tensors fields on the open domain 'U' on the 3-dimensional manifold 'M'
             sage: t in U.tensor_field_module((2,0))
             True
             
@@ -1868,7 +1868,7 @@ class OpenDomain(Domain):
         Such a object is a tensor field of rank 2 and type (0,2)::
         
             sage: t.parent()
-            free module TF^(0,2)(M) of type-(0,2) tensors fields on the 3-dimensional manifold 'M'
+            free module T^(0,2)(M) of type-(0,2) tensors fields on the 3-dimensional manifold 'M'
             sage: t._tensor_rank
             2
             sage: t._tensor_type
@@ -1999,7 +1999,7 @@ class OpenDomain(Domain):
             sage: t = M.endomorphism_field('T'); t
             field of endomorphisms 'T' on the 3-dimensional manifold 'M'
             sage: t.parent()
-            free module TF^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
+            free module T^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
 
         See the documentation of class 
         :class:`~sage.geometry.manifolds.rank2field.EndomorphismField` for more 
@@ -2048,7 +2048,7 @@ class OpenDomain(Domain):
             sage: a = M.automorphism_field('A') ; a
             field of tangent-space automorphisms 'A' on the 3-dimensional manifold 'M'
             sage: a.parent()
-            free module TF^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
+            free module T^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
 
         See the documentation of class 
         :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` for more 
@@ -2340,7 +2340,7 @@ class OpenDomain(Domain):
             sage: om = A.one_form('omega', r'\omega') ; om  
             1-form 'omega' on the open domain 'A' on the 3-dimensional manifold 'M'
             sage: om.parent()
-            free module TF^(0,1)(A) of type-(0,1) tensors fields on the open domain 'A' on the 3-dimensional manifold 'M'
+            free module T^(0,1)(A) of type-(0,1) tensors fields on the open domain 'A' on the 3-dimensional manifold 'M'
 
         See the documentation of class 
         :class:`~sage.geometry.manifolds.diffform.OneForm` for more examples.

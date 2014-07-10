@@ -160,7 +160,7 @@ class AutomorphismField(EndomorphismField):
         sage: a = M.automorphism_field('a') ; a
         field of tangent-space automorphisms 'a' on the 2-dimensional manifold 'M'
         sage: a.parent()
-        module TF^(1,1)(M) of type-(1,1) tensors fields on the 2-dimensional manifold 'M'
+        module T^(1,1)(M) of type-(1,1) tensors fields on the 2-dimensional manifold 'M'
 
     We first define the components of `a` w.r.t the coordinate frame on `U`::
 
@@ -329,7 +329,7 @@ class TangentIdentityField(AutomorphismField):
         sage: a = M.tangent_identity_field() ; a
         field of tangent-space identity maps 'Id' on the 2-dimensional manifold 'M'
         sage: a.parent()
-        module TF^(1,1)(M) of type-(1,1) tensors fields on the 2-dimensional manifold 'M'
+        module T^(1,1)(M) of type-(1,1) tensors fields on the 2-dimensional manifold 'M'
         
     The components in any frame on M are Kronecker deltas::
     
@@ -455,7 +455,7 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
     A field of endomorphisms is a tensor field of rank 2 and of type (1,1)::
     
         sage: t.parent()
-        free module TF^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
+        free module T^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
         sage: t._tensor_rank
         2
         sage: t._tensor_type
@@ -585,7 +585,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
     An automorphism is a type-(1,1) tensor::
     
         sage: rot.parent()
-        free module TF^(1,1)(R^2) of type-(1,1) tensors fields on the 2-dimensional manifold 'R^2'
+        free module T^(1,1)(R^2) of type-(1,1) tensors fields on the 2-dimensional manifold 'R^2'
     
     The inverse automorphism is obtained via the method :meth:`inverse`::
     
@@ -718,7 +718,7 @@ class TangentIdentityFieldParal(FreeModuleIdentityMap, AutomorphismFieldParal):
     The tangent-space identity map is a type-(1,1) tensor::
     
         sage: a.parent()
-        free module TF^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
+        free module T^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
         sage: a[:]
         [1 0 0]
         [0 1 0]

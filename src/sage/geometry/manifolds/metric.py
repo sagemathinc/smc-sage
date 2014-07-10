@@ -101,7 +101,7 @@ class Metric(TensorField):
     The metric is considered as a tensor field of type (0,2) on `S^2`::
     
         sage: g.parent()
-        module TF^(0,2)(S^2) of type-(0,2) tensors fields on the 2-dimensional manifold 'S^2'
+        module T^(0,2)(S^2) of type-(0,2) tensors fields on the 2-dimensional manifold 'S^2'
 
     We define g by its components on domain U (factorizing them to have a nicer
     view)::
@@ -145,7 +145,7 @@ class Metric(TensorField):
         sage: g.restrict(U)
         pseudo-Riemannian metric 'g' on the open domain 'U' on the 2-dimensional manifold 'S^2'
         sage: g.restrict(U).parent()
-        free module TF^(0,2)(U) of type-(0,2) tensors fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+        free module T^(0,2)(U) of type-(0,2) tensors fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
 
     The parent of `g|_U` is a free module because is `U` is a parallelizable 
     domain, contrary to `S^2`. Actually, `g` and `g|_U` have different Python
@@ -177,7 +177,7 @@ class Metric(TensorField):
         sage: ginv = g.inverse() ; ginv
         tensor field 'inv_g' of type (2,0) on the 2-dimensional manifold 'S^2'
         sage: ginv.parent()
-        module TF^(2,0)(S^2) of type-(2,0) tensors fields on the 2-dimensional manifold 'S^2'
+        module T^(2,0)(S^2) of type-(2,0) tensors fields on the 2-dimensional manifold 'S^2'
         sage: latex(ginv)
         g^{-1}
         sage: ginv.view(eU) # again the components are expanded
@@ -1336,7 +1336,7 @@ class MetricParal(Metric, TensorFieldParal):
     :class:`~sage.geometry.manifolds.tensorfield.TensorField`::
     
         sage: g.parent()
-        free module TF^(0,2)(M) of type-(0,2) tensors fields on the 2-dimensional manifold 'M'
+        free module T^(0,2)(M) of type-(0,2) tensors fields on the 2-dimensional manifold 'M'
         sage: g._tensor_type
         (0, 2)
         sage: g.symmetries()  # g is symmetric:
@@ -1683,7 +1683,7 @@ class RiemannMetricParal(MetricParal):
         sage: type(g)
         <class 'sage.geometry.manifolds.metric.RiemannMetricParal'>
         sage: g.parent()
-        free module TF^(0,2)(R^2) of type-(0,2) tensors fields on the 2-dimensional manifold 'R^2'
+        free module T^(0,2)(R^2) of type-(0,2) tensors fields on the 2-dimensional manifold 'R^2'
         sage: g[1,1], g[2,2] = 1, 1
         sage: g.view()
         g = dx*dx + dy*dy
@@ -1751,7 +1751,7 @@ class LorentzMetricParal(MetricParal):
         sage: type(g)
         <class 'sage.geometry.manifolds.metric.LorentzMetricParal'>
         sage: g.parent()
-        free module TF^(0,2)(M) of type-(0,2) tensors fields on the 4-dimensional manifold 'M'
+        free module T^(0,2)(M) of type-(0,2) tensors fields on the 4-dimensional manifold 'M'
         sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
         sage: g.view()
         g = -dt*dt + dx*dx + dy*dy + dz*dz

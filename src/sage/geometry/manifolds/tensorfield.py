@@ -387,7 +387,7 @@ class TensorField(ModuleElement):
         sage: t = M.tensor_field(0,2, name='t') ; t
         tensor field 't' of type (0,2) on the 2-dimensional manifold 'S^2'
         sage: t.parent()
-        module TF^(0,2)(S^2) of type-(0,2) tensors fields on the 2-dimensional manifold 'S^2'
+        module T^(0,2)(S^2) of type-(0,2) tensors fields on the 2-dimensional manifold 'S^2'
         sage: t.parent().category()
         Category of modules over algebra of scalar fields on the 2-dimensional manifold 'S^2'
 
@@ -1999,6 +1999,39 @@ class TensorField(ModuleElement):
             sage: s == s0.restrict(W)
             True
 
+        Case of a scalar field result::
+        
+            sage: a = M.one_form('a')
+            sage: a[eU,:] = [y, 1+x]
+            sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
+            sage: b = M.vector_field('b')
+            sage: b[eU,:] = [x, y^2]
+            sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
+            sage: a.view(eU)
+            a = y dx + (x + 1) dy
+            sage: b.view(eU)
+            b = x d/dx + y^2 d/dy
+            sage: s = a.contract(b) ; s
+            scalar field on the 2-dimensional manifold 'M'
+            sage: s.view()
+            M --> R
+            on U: (x, y) |--> (x + 1)*y^2 + x*y
+            on V: (u, v) |--> 1/8*u^3 - 1/8*u*v^2 + 1/8*v^3 + 1/2*u^2 - 1/8*(u^2 + 4*u)*v
+            sage: s == b.contract(a)
+            True
+
+        Case of a vanishing scalar field result::
+        
+            sage: b = M.vector_field('b')
+            sage: b[eU,:] = [1+x, -y]
+            sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
+            sage: s = a.contract(b) ; s
+            zero scalar field on the 2-dimensional manifold 'M'
+            sage: s.view()
+            M --> R
+            on U: (x, y) |--> 0
+            on V: (u, v) |--> 0
+
         """
         nargs = len(args)
         if nargs == 1:
@@ -2039,14 +2072,9 @@ class TensorField(ModuleElement):
         k1, l1 = self._tensor_type
         k2, l2 = other._tensor_type
         tensor_type_resu = (k1+k2-1, l1+l2-1)
-        if ambient_dom_resu.is_manifestly_parallelizable() or \
-                                                     tensor_type_resu == (0,0):
+        if ambient_dom_resu.is_manifestly_parallelizable():
             # call of the FreeModuleTensor version:
             return FreeModuleTensor.contract(self_r, pos1, other_r, pos2)
-        dest_map = self._vmodule._dest_map
-        dest_map_resu = dest_map.restrict(dom_resu, 
-                                          subcodomain=ambient_dom_resu)
-        vmodule = dom_resu.vector_field_module(dest_map=dest_map_resu)
         com_dom = []
         for dom in self_r._restrictions:
             if dom in other_r._restrictions:
@@ -2056,8 +2084,29 @@ class TensorField(ModuleElement):
             self_rr = self_r._restrictions[dom]
             other_rr = other_r._restrictions[dom]
             resu_rst.append(self_rr.contract(pos1, other_rr, pos2))
-        resu = vmodule.tensor(tensor_type_resu, sym=resu_rst[0]._sym, 
-                              antisym=resu_rst[0]._antisym)
+        if tensor_type_resu == (0,0):
+            # scalar field result
+            resu = dom_resu.scalar_field()
+            all_zero = True
+            for rst in resu_rst:
+                if rst == 0:
+                    for chart in rst._domain._atlas:
+                        resu._express[chart] = 0
+                else:
+                    all_zero = False
+                    for chart, funct in rst._express.iteritems():
+                        resu._express[chart] = funct
+            if all_zero:
+                resu = dom_resu._zero_scalar_field
+        else:
+            # tensor field result
+            dest_map = self._vmodule._dest_map
+            dest_map_resu = dest_map.restrict(dom_resu, 
+                                              subcodomain=ambient_dom_resu)
+            vmodule = dom_resu.vector_field_module(dest_map=dest_map_resu)
+    
+            resu = vmodule.tensor(tensor_type_resu, sym=resu_rst[0]._sym, 
+                                  antisym=resu_rst[0]._antisym)
         for rst in resu_rst:
             resu._restrictions[rst._domain] = rst
         return resu
@@ -2273,7 +2322,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
     `C^\infty(M)` of scalar fields on `M`::
     
         sage: t.parent()
-        free module TF^(2,0)(M) of type-(2,0) tensors fields on the 3-dimensional manifold 'M'
+        free module T^(2,0)(M) of type-(2,0) tensors fields on the 3-dimensional manifold 'M'
         sage: t.parent().base_ring()
         algebra of scalar fields on the 3-dimensional manifold 'M'
 

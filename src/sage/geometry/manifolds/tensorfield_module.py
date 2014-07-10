@@ -60,7 +60,7 @@ class TensorFieldModule(UniqueRepresentation, Module):
                                              restrictions2= u^2+v^2!=0)
         sage: uv_to_xy = xy_to_uv.inverse()
         sage: T20 = M.tensor_field_module((2,0)) ; T20
-        module TF^(2,0)(M) of type-(2,0) tensors fields on the 2-dimensional manifold 'M'
+        module T^(2,0)(M) of type-(2,0) tensors fields on the 2-dimensional manifold 'M'
         
     `T^{(2,0)}(M)` is a module over the algebra `C^\infty(M)`::
     
@@ -116,8 +116,8 @@ class TensorFieldModule(UniqueRepresentation, Module):
     
         sage: T20U.coerce_map_from(T20)
         Conversion map:
-          From: module TF^(2,0)(M) of type-(2,0) tensors fields on the 2-dimensional manifold 'M'
-          To:   free module TF^(2,0)(U) of type-(2,0) tensors fields on the open domain 'U' on the 2-dimensional manifold 'M'
+          From: module T^(2,0)(M) of type-(2,0) tensors fields on the 2-dimensional manifold 'M'
+          To:   free module T^(2,0)(U) of type-(2,0) tensors fields on the open domain 'U' on the 2-dimensional manifold 'M'
 
     The conversion map is actually the *restriction* of tensor fields defined 
     on `M` to `U`. 
@@ -131,8 +131,8 @@ class TensorFieldModule(UniqueRepresentation, Module):
         dest_map = vector_field_module._dest_map
         kcon = tensor_type[0]
         lcov = tensor_type[1]
-        name = "TF^(" + str(kcon) + "," + str(lcov) + ")(" + domain._name
-        latex_name = r"TF^{(" + str(kcon) + "," + str(lcov) + r")}\left(" + \
+        name = "T^(" + str(kcon) + "," + str(lcov) + ")(" + domain._name
+        latex_name = r"\mathcal{T}^{(" + str(kcon) + "," + str(lcov) + r")}\left(" + \
                      domain._latex_name
         if dest_map is domain._identity_map:
             name += ")" 
@@ -277,7 +277,7 @@ class TensorFieldFreeModule(TensorFreeModule):
         sage: M = Manifold(3, 'R^3')
         sage: c_xyz.<x,y,z> = M.chart()  # Cartesian coordinates 
         sage: T20 = M.tensor_field_module((2,0)) ; T20
-        free module TF^(2,0)(R^3) of type-(2,0) tensors fields on the 3-dimensional manifold 'R^3'
+        free module T^(2,0)(R^3) of type-(2,0) tensors fields on the 3-dimensional manifold 'R^3'
 
     `T^{(2,0)}(\RR^3)` is a module over the algebra `C^\infty(\RR^3)`::
 
@@ -325,8 +325,8 @@ class TensorFieldFreeModule(TensorFreeModule):
         False
         sage: T20U.coerce_map_from(T20)
         Conversion map:
-          From: free module TF^(2,0)(R^3) of type-(2,0) tensors fields on the 3-dimensional manifold 'R^3'
-          To:   free module TF^(2,0)(U) of type-(2,0) tensors fields on the open domain 'U' on the 3-dimensional manifold 'R^3'
+          From: free module T^(2,0)(R^3) of type-(2,0) tensors fields on the 3-dimensional manifold 'R^3'
+          To:   free module T^(2,0)(U) of type-(2,0) tensors fields on the open domain 'U' on the 3-dimensional manifold 'R^3'
         
     The conversion map is actually the *restriction* of tensor fields defined 
     on `\RR^3` to `U`. 
@@ -340,8 +340,8 @@ class TensorFieldFreeModule(TensorFreeModule):
         dest_map = vector_field_module._dest_map
         kcon = tensor_type[0]
         lcov = tensor_type[1]
-        name = "TF^(" + str(kcon) + "," + str(lcov) + ")(" + domain._name
-        latex_name = r"TF^{(" + str(kcon) + "," + str(lcov) + r")}\left(" + \
+        name = "T^(" + str(kcon) + "," + str(lcov) + ")(" + domain._name
+        latex_name = r"\mathcal{T}^{(" + str(kcon) + "," + str(lcov) + r")}\left(" + \
                      domain._latex_name
         if dest_map is domain._identity_map:
             name += ")" 
