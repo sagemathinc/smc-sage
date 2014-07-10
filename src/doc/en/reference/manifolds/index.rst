@@ -8,6 +8,8 @@ More documentation (in particular example worksheets) can be found on the
    :maxdepth: 2
 
    manifold
+   
+   sage/geometry/manifolds/tangentspace
 
    sage/geometry/manifolds/diffmapping
 

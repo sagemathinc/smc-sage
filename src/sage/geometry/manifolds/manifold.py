@@ -117,7 +117,7 @@ EXAMPLES:
         sage: S in W
         False
 
-    The North pole lies in `V\setminus U` and the South pole in `U\setminus V`::
+    The North pole lies in `V` and the South pole in `U`::
     
         sage: N in V, N in U
         (True, False)
@@ -139,7 +139,8 @@ EXAMPLES:
     Being the *default chart* means that its mention can be omitted when 
     specifying some point coordinates::
     
-        sage: p = M.point((1,2))  # a point is created with coordinates (1,2)
+        sage: p = M.point((1,2), name='p')  # a point is created with coordinates (1,2) in the default chart
+        sage: p = M.point((1,2), chart=stereoN, name='p') # the full declaration, equivalent to the above one
         sage: p._coordinates # random (dictionary output):
         {chart (W, (x, y)): (1, 2), chart (U, (x, y)): (1, 2)}
         sage: p.coord() # if the chart is not specified, the default chart coordinates are returned:
@@ -155,7 +156,32 @@ EXAMPLES:
         True
         sage: p == M((1,2))
         True
-        
+    
+    The tangent vector space at point p::
+    
+        sage: Tp = p.tangent_space() ; Tp
+        tangent space at point 'p' on 2-dimensional manifold 'S^2'
+        sage: Tp.category()
+        Category of vector spaces over Symbolic Ring
+        sage: Tp.dim()
+        2
+
+    A scalar field on the sphere::
+    
+        sage: f = M.scalar_field({stereoN: atan(x^2+y^2), stereoS: pi/2-atan(u^2+v^2)}, name='f')
+        sage: f
+        scalar field 'f' on the 2-dimensional manifold 'S^2'
+        sage: f.view()
+        f: S^2 --> R
+        on U: (x, y) |--> arctan(x^2 + y^2)
+        on V: (u, v) |--> 1/2*pi - arctan(u^2 + v^2)
+        sage: f(p)
+        arctan(5)
+        sage: f.parent()
+        algebra of scalar fields on the 2-dimensional manifold 'S^2'
+        sage: f.parent().category()
+        Category of commutative algebras over Symbolic Ring
+
     A manifold has a default vector frame, which, unless otherwise specified, 
     is the coordinate frame associated with the first defined chart::
     
@@ -163,19 +189,64 @@ EXAMPLES:
         coordinate frame (U, (d/dx,d/dy))
         sage: latex(M.default_frame())
         \left(U ,\left(\frac{\partial}{\partial x },\frac{\partial}{\partial y }\right)\right)
-        
-    A manifold has a predefined zero scalar field, mapping all the points to 0; 
-    it is an instance of 
-    :class:`~sage.geometry.manifolds.scalarfield.ZeroScalarField`::
+        sage: M.default_frame() is stereoN.frame()
+        True
+
+    A vector field on the manifold::
     
-        sage: M._zero_scalar_field
-        zero scalar field on the 2-dimensional manifold 'S^2'
-        sage: M._zero_scalar_field(p)
-        0
-        sage: M._zero_scalar_field(N)
-        0
-        sage: M._zero_scalar_field(S)
-        0
+        sage: w = M.vector_field('w')
+        sage: w[stereoN.frame(), :] = [x, y]
+        sage: w.add_comp_by_continuation(stereoS.frame(), W, stereoS)
+        sage: w.view() # view in the default frame (stereoN.frame())
+        w = x d/dx + y d/dy
+        sage: w.view(stereoS.frame())
+        w = -u d/du - v d/dv
+        sage: w.parent()
+        module X(S^2) of vector fields on the 2-dimensional manifold 'S^2'
+        sage: w.parent().category()
+        Category of modules over algebra of scalar fields on the 2-dimensional manifold 'S^2'
+
+    Vector fields act on scalar fields::
+    
+        sage: w(f)
+        scalar field 'w(f)' on the 2-dimensional manifold 'S^2'
+        sage: w(f).view()
+        w(f): S^2 --> R
+        on U: (x, y) |--> 2*(x^2 + y^2)/(x^4 + 2*x^2*y^2 + y^4 + 1)
+        on V: (u, v) |--> 2*(u^2 + v^2)/(u^4 + 2*u^2*v^2 + v^4 + 1)
+        sage: w(f) == f.differential()(w)
+        True
+
+    The value of the vector field at point p::
+    
+        sage: w.at(p)
+        tangent vector w at point 'p' on 2-dimensional manifold 'S^2'
+        sage: w.at(p).view()
+        w = d/dx + 2 d/dy
+        sage: w.at(p).parent()
+        tangent space at point 'p' on 2-dimensional manifold 'S^2'
+
+    A 1-form on the manifold::
+    
+        sage: df = f.differential() ; df
+        1-form 'df' on the 2-dimensional manifold 'S^2'
+        sage: df.view()
+        df = 2*x/(x^4 + 2*x^2*y^2 + y^4 + 1) dx + 2*y/(x^4 + 2*x^2*y^2 + y^4 + 1) dy
+        sage: df.view(stereoS.frame())
+        df = -2*u/(u^4 + 2*u^2*v^2 + v^4 + 1) du - 2*v/(u^4 + 2*u^2*v^2 + v^4 + 1) dv
+        sage: df.parent()
+        module T^(0,1)(S^2) of type-(0,1) tensors fields on the 2-dimensional manifold 'S^2'
+        sage: df.parent().category()
+        Category of modules over algebra of scalar fields on the 2-dimensional manifold 'S^2'
+ 
+    The value of the 1-form at point p::
+        
+        sage: df.at(p)
+        linear form df on the tangent space at point 'p' on 2-dimensional manifold 'S^2'
+        sage: df.at(p).view()
+        df = 1/13 dx + 2/13 dy
+        sage: df.at(p).parent()
+        dual of the tangent space at point 'p' on 2-dimensional manifold 'S^2'
         
 """
 
@@ -219,17 +290,8 @@ class Manifold(OpenDomain):
         sage: latex(M)
         \mathcal{M}
                 
-    The input parameter ``start_index`` becomes the attribute :attr:`sindex`
-    of the manifold::
-    
-        sage: M = Manifold(4, 'M')  # default value of start_index is 0
-        sage: M._sindex
-        0
-        sage: M = Manifold(4, 'M', start_index=1)
-        sage: M._sindex
-        1
-        
-    It defines the range of indices on the manifold::
+    The input parameter ``start_index`` defines the range of indices on the 
+    manifold::
     
         sage: M = Manifold(4, 'M')
         sage: list(M.irange())
@@ -247,8 +309,7 @@ class Manifold(OpenDomain):
 
     The corresponding Sage *Elements* are points::
     
-        sage: M.chart('t x y z')
-        chart (M, (t, x, y, z))
+        sage: X.<t, x, y, z> = M.chart()
         sage: p = M.an_element(); p
         point on 4-dimensional manifold 'M'
         sage: p.parent()
@@ -261,6 +322,13 @@ class Manifold(OpenDomain):
     
         sage: isinstance(p, sage.geometry.manifolds.point.Point)
         True
+
+    A manifold has a predefined zero scalar field, mapping all the points to 0; 
+    it is an instance of 
+    :class:`~sage.geometry.manifolds.scalarfield.ZeroScalarField`::
+    
+        sage: M._zero_scalar_field
+        zero scalar field on the 4-dimensional manifold 'M'
 
     The manifold passes all the tests of the test suite relative to the 
     category of Sets::
