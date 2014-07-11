@@ -1,13 +1,16 @@
 r"""
-Vector field module
+Vector field modules
 
 The set of vector fields along an open subset `U` of some manifold `S`
 with values in a open subset `V` of a manifold `M` (possibly `S=M` and `U=V`)
 is a module over the algebra `C^\infty(U)` of differentiable scalar fields 
-on `U`. If `V` is parallelizable, it is a free module and is represented 
-by the class :class:`VectorFieldFreeModule`, while if `V` is not
-parallelizable, it is represented by class :class:`VectorFieldModule`. 
+on `U`. It is a free module iff `V` is parallelizable.
+Accordingly, two classes are devoted to vector field modules:
 
+- :class:`VectorFieldModule` for vector fields with values in a 
+  generic (in practice, not parallelizable) open set `V`
+- :class:`VectorFieldFreeModule` for vector fields with values in a 
+  parallelizable open set `V`
 
 AUTHORS:
 

@@ -1,6 +1,16 @@
 r"""
-Tensor field module. 
+Tensor field modules
 
+The set of tensor fields along an open subset `U` of some manifold `S`
+with values in a open subset `V` of a manifold `M` (possibly `S=M` and `U=V`)
+is a module over the algebra `C^\infty(U)` of differentiable scalar fields 
+on `U`. It is a free module iff `V` is parallelizable.
+Accordingly, two classes are devoted to tensor field modules:
+
+- :class:`TensorFieldModule` for tensor fields with values in a generic (in 
+  practice, not parallelizable) open set `V`
+- :class:`TensorFieldFreeModule` for tensor fields with values in a 
+  parallelizable open set `V`
 
 AUTHORS:
 

@@ -45,11 +45,6 @@ A tensor field of type (1,1) on a 2-dimensional manifold::
     sage: t.tensor_rank()
     2
 
-A just-created tensor field has no components::
-
-    sage: t._components
-    {}
-
 Components w.r.t. the manifold's default frame are created by providing the
 relevant indices inside square brackets::
 
@@ -62,16 +57,16 @@ Unset components are initialized to zero::
     [  0   0]
 
 The full set of components w.r.t. a given vector frame is returned by the 
-method :meth:`comp`; it is an instance of the class 
-:class:`~sage.tensor.modules.comp.Components`::
+method :meth:`comp`; it is an instance 
+of the class :class:`~sage.tensor.modules.comp.Components`::
 
     sage: t.comp(c_xy.frame())
     2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy)) 
     sage: print type(t.comp(c_xy.frame()))
     <class 'sage.tensor.modules.comp.Components'>
 
-The vector frame can be skipped, it is then assumed to be the
-manifold's default frame::
+If no vector frame is mentionned in the argument of :meth:`comp`, it is 
+assumed to be the manifold's default frame::
 
     sage: M.default_frame()
     coordinate frame (M, (d/dx,d/dy))
@@ -85,12 +80,14 @@ fields on the manifold, and therefore instances of the class
 
     sage: t[[1,1]]
     scalar field on the 2-dimensional manifold 'M'
-    sage: t[[1,1]].expr()
-    x^2
+    sage: t[[1,1]].view()
+    M --> R
+    (x, y) |--> x^2
     sage: t[[1,2]]
     zero scalar field on the 2-dimensional manifold 'M'
-    sage: t[[1,2]].expr()
-    0
+    sage: t[[1,2]].view()
+    M --> R
+    (x, y) |--> 0
     
 A direct access to the coordinate expression of some component is obtained
 via the single square brackets::
@@ -100,8 +97,6 @@ via the single square brackets::
     sage: t[1,1] is t[[1,1]].function_chart() # the coordinate function
     True
     sage: t[1,1] is t[[1,1]].function_chart(c_xy)
-    True
-    sage: t[1,1] == t[[1,1]].expr() # check the value of the coordinate function
     True
     sage: t[1,1].expr() is t[[1,1]].expr() # the symbolic expression
     True
@@ -158,55 +153,43 @@ All the components can be set at once via [:]::
     [  1  -x]
     [x*y   2]
     
-The different sets of components, corresponding to representations of the
-tensor in different vector frames, are stored in the dictionary 
-:attr:`components`, each item being an instance of the class 
-:class:`~sage.tensor.modules.comp.Components`::
-
-    sage: t._components
-    {coordinate frame (M, (d/dx,d/dy)): 2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy))}
-    sage: print type(t._components[c_xy.frame()])
-    <class 'sage.tensor.modules.comp.Components'>
-    sage: print type(t.comp())
-    <class 'sage.tensor.modules.comp.Components'>
-    sage: t.comp() is t._components[c_xy.frame()]
-    True
-
 To set the components in a vector frame different from the manifold's 
-default one, the method :meth:`set_comp` must be employed::
+default one, the method :meth:`set_comp` can be employed::
 
     sage: e = M.vector_frame('e')
-    sage: t.set_comp(e)[1,1], t.set_comp(e)[1,2] = (x+y, 0)
-    sage: t.set_comp(e)[2,1], t.set_comp(e)[2,2] = (y, -3*x)
+    sage: t.set_comp(e)[1,1] = x+y
+    sage: t.set_comp(e)[2,1], t.set_comp(e)[2,2] = y, -3*x
+    
+but, as a shortcut, one may simply specify the frame as the first argument
+of the square brackets::
+
+    sage: t[e,1,1] = x+y
+    sage: t[e,2,1], t[e,2,2] = y, -3*x
     sage: t.comp(e)
     2-indices components w.r.t. vector frame (M, (e_1,e_2))
     sage: t.comp(e)[:]
+    [x + y     0]
+    [    y  -3*x]
+    sage: t[e,:]  # a shortcut of the above
     [x + y     0]
     [    y  -3*x]
 
 All the components in some frame can be set at once, via the operator
 [:]::
 
-    sage: t.set_comp(e)[:] = [[x+y, 0], [y, -3*x]]
-    sage: t.comp(e)[:]  # same as above:
+    sage: t[e,:] = [[x+y, 0], [y, -3*x]]
+    sage: t[e,:]  # same as above:
     [x + y     0]
     [    y  -3*x]
 
 To avoid any insconstency between the various components, the method 
 :meth:`set_comp` clears the components in other frames. 
-Accordingly, the components in the frame c_xy.frame() have been deleted::
-
-    sage: t._components
-    {vector frame (M, (e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_1,e_2))}
-
 To keep the other components, one must use the method :meth:`add_comp`::
 
     sage: t = M.tensor_field(1, 1, 'T')  # Let us restart 
     sage: t[:] = [[1, -x], [x*y, 2]]  # by first setting the components in the frame c_xy.frame()
     sage: # We now set the components in the frame e with add_comp:
     sage: t.add_comp(e)[:] = [[x+y, 0], [y, -3*x]]
-    sage: t._components  # Both set of components are present:
-    {coordinate frame (M, (d/dx,d/dy)): 2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy)), vector frame (M, (e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_1,e_2))}
 
 The expansion of the tensor field in a given frame is displayed via the 
 method :meth:`view` (the symbol * stands for tensor product)::
@@ -216,9 +199,9 @@ method :meth:`view` (the symbol * stands for tensor product)::
     sage: t.view(e)
     T = (x + y) e_1*e^1 + y e_2*e^1 - 3*x e_2*e^2
 
-A tensor field acts as a multilinear map on 1-forms and vector fields; 
-in the present case, T being of type (1,1), it acts on pairs 
-(1-form, vector)::
+By definition, a tensor field acts as a multilinear map on 1-forms and vector 
+fields; in the present case, T being of type (1,1), it acts on pairs 
+(1-form, vector field)::
 
     sage: a = M.one_form('a')
     sage: a[:] = (1, x)
@@ -226,14 +209,16 @@ in the present case, T being of type (1,1), it acts on pairs
     sage: v[:] = (y, 2)
     sage: t(a,v)
     scalar field 'T(a,V)' on the 2-dimensional manifold 'M'
-    sage: t(a,v).expr()
-    x^2*y^2 + 2*x + y
+    sage: t(a,v).view()
+    T(a,V): M --> R
+       (x, y) |--> x^2*y^2 + 2*x + y
+       (u, v) |--> 1/16*u^4 - 1/8*u^2*v^2 + 1/16*v^4 + 3/2*u + 1/2*v
     sage: latex(t(a,v))
     T\left(a,V\right)
 
 Check by means of the component expression of t(a,v)::
 
-    sage: t[1,1]*a[1]*v[1] + t[1,2]*a[1]*v[2] + t[2,1]*a[2]*v[1] + t[2,2]*a[2]*v[2] - t(a,v).expr()
+    sage: t(a,v).expr() - t[1,1]*a[1]*v[1] - t[1,2]*a[1]*v[2] - t[2,1]*a[2]*v[1] - t[2,2]*a[2]*v[2]
     0
 
 A scalar field (rank-0 tensor field)::
@@ -248,7 +233,10 @@ A scalar field acts on points on the manifold::
     sage: p = M.point((1,2))
     sage: f(p)
     4
-    
+
+See :class:`~sage.geometry.manifolds.scalarfield.ScalarField` for more details
+on scalar fields. 
+   
 A vector field (rank-1 contravariant tensor field)::
 
     sage: v = M.vector_field('v') ; v
@@ -294,8 +282,9 @@ the non-zero and non-redundant components are stored::
 
 More generally, tensor symmetries or antisymmetries can be specified via
 the keywords ``sym`` and ``antisym``. For instance a rank-4 covariant 
-tensor symmetric with respect to its first two arguments and 
-antisymmetric with respect to its last two ones is declared as follows::
+tensor symmetric with respect to its first two arguments (no. 0 and no. 1) and 
+antisymmetric with respect to its last two ones (no. 2 and no. 3) is declared 
+as follows::
 
     sage: t = M.tensor_field(0, 4, 'T', sym=(0,1), antisym=(2,3))
     sage: t[1,2,1,2] = 3
@@ -1854,8 +1843,6 @@ class TensorField(ModuleElement):
             sage: inv = transf.inverse()
             sage: W = U.intersection(V)
             sage: eU = c_xy.frame() ; eV = c_uv.frame()
-            sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
-            sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
             sage: a = M.tensor_field(1,1, name='a')
             sage: a[eU,:] = [[1,x], [2,y]]
             sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
@@ -2386,7 +2373,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
     Internally, the components w.r.t. various vector frames are stored in the
     dictionary :attr:`_components`::
 
-        sage: t._components
+        sage: t._components  # random (dictionary output)
         {vector frame (M, (e_0,e_1,e_2)): 2-indices components w.r.t. vector frame (M, (e_0,e_1,e_2)), vector frame (M, (f_0,f_1,f_2)): 2-indices components w.r.t. vector frame (M, (f_0,f_1,f_2))}
 
     Symmetries and antisymmetries are declared via the keywords ``sym`` and
