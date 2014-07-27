@@ -1033,6 +1033,306 @@ class Chart(UniqueRepresentation, SageObject):
         """
         return MultiFunctionChart(self, *expressions)
 
+    def plot(self, ambient_chart, coords=None, ranges=None, nb_values=9, 
+             steps=None, fixed_coords=None, ambient_coords=None, mapping=None, 
+             color='red', style='-', thickness=1, plot_points=75):
+        r"""
+        Plot the chart (as a "grid") in terms of another one.
+        
+        The "grid" is formed by lines along which a coordinate varies, the
+        other coordinates being kept fixed; it is drawn in terms of 
+        two (2D graphics) or three (3D graphics) coordinates of another chart,
+        called hereafter the *ambient chart*.
+        
+        The ambient chart is related to the current chart (``self``) either by 
+        a transition map if both charts are defined on the same manifold, or by
+        the coordinate expression of a differential mapping. In the latter case,
+        the two charts may be defined on two different manifolds. 
+        
+        INPUT:
+        
+        - ``ambient_chart`` -- the ambient chart (see above)
+        - ``coords`` -- (default: None) a single coordinate or a tuple of 
+          coordinates of ``self`` specifying which coordinate lines are to be 
+          drawn; if None, all the coordinates of ``self`` are considered
+        - ``ranges`` -- (default: None) dictionary with keys the coordinates
+          to be drawn and values tuples ``(x_min,x_max)`` specifying the 
+          coordinate range for the plot; if None, the entire coordinate range 
+          declared during the chart construction is considered (with -Infinity 
+          replaced by -4 and +Infinity by 4)
+        - ``nb_values`` -- (default: 9) either an integer or a dictionary with
+          keys the coordinates to be drawn and values the number of constant 
+          values of the coordinate to be considered; if ``nb_values`` is a 
+          single integer, it represents the number of constant values for all 
+          coordinates
+        - ``steps`` -- (default: None) dictionary with keys the coordinates
+          to be drawn and values the step between each constant value of 
+          the coordinate; if None, the step is computed from the coordinate 
+          range (specified in ``ranges``) and ``nb_values``. On the contrary
+          if the step is provided for some coordinate, the corresponding 
+          number of constant values is deduced from it and the coordinate range. 
+        - ``fixed_coords`` -- (default: None) dictionary with keys the
+          coordinates of ``self`` that are not drawn and with values the fixed
+          value of these coordinates
+        - ``ambient_coords`` -- (default: None) tuple containing the 2 or 3 
+          coordinates of the ambient chart in terms of which the plot is 
+          performed; if None, all the coordinates of the ambient chart are 
+          considered
+        - ``mapping`` -- (default: None) differential mapping (instance
+          of :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
+          providing the link between ``self`` and the ambient chart (cf. 
+          above); if None, both charts are supposed to be defined on the same
+          manifold and related by some transition map (see 
+          :meth:`transition_map`)
+        - ``color`` -- (default: 'red') either a single color or a dictionary
+          of colors, with keys the coordinates to be drawn, representing the 
+          colors of the lines along which the coordinate varies, the other 
+          being kept constant; if ``color`` is a single color, it is used for 
+          all coordinate lines
+        - ``style`` -- (default: '-') either a single line style or a dictionary
+          of line styles, with keys the coordinates to be drawn, representing 
+          the style of the lines along which the coordinate varies, the other 
+          being kept constant; if ``style`` is a single style, it is used for
+          all coordinate lines
+        - ``thickness`` -- (default: 1) either a single line thickness or a 
+          dictionary of line thicknesses, with keys the coordinates to be drawn, 
+          representing the thickness of the lines along which the coordinate 
+          varies, the other being kept constant; if ``thickness`` is a single 
+          value, it is used for all coordinate lines
+        - ``plot_points`` -- (default: 75) either a single number of points or 
+          a dictionary of integers, with keys the coordinates to be drawn, 
+          representing the number of points to plot the lines along which the 
+          coordinate varies, the other being kept constant; if ``plot_points`` 
+          is a single integer, it is used for all coordinate lines
+        
+        OUTPUT:
+        
+        - a graphic object, either an instance of
+          :class:`~sage.plot.graphics.Graphics` for a 2D plot (i.e. based on
+          2 coordinates of the ambient chart) or an instance of 
+          :class:`~sage.plot.plot3d.base.Graphics3d` for a 3D plot (i.e. 
+          based on 3 coordinates of the ambient chart)
+          
+        EXAMPLES:
+        
+        Grid of polar coordinates in terms of the Cartesian ones in the 
+        Euclidean plane::
+        
+            sage: R2 = Manifold(2, 'R^2', r'\mathbb{R}^2')
+            sage: c_cart.<x,y> = R2.chart() # Cartesian coordinates
+            sage: U = R2.open_domain('U', coord_def={c_cart: (y!=0, x<0)}) # the complement of the segment y=0 and x>0
+            sage: c_pol.<r,ph> = U.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # polar coordinates on U
+            sage: pol_to_cart = c_pol.transition_map(c_cart, [r*cos(ph), r*sin(ph)])
+            sage: g = c_pol.plot(c_cart)
+            sage: type(g)
+            <class 'sage.plot.graphics.Graphics'>
+            sage: show(g) # graphical display
+
+        Call with non-default values::
+        
+            sage: g = c_pol.plot(c_cart, ranges={ph:(pi/4,pi)}, nb_values={r:7, ph:17}, \
+            ....:                color={r:'red', ph:'green'}, style={r:'-', ph:'--'})
+
+
+        """
+        from sage.rings.infinity import Infinity
+        from sage.misc.functional import numerical_approx
+        from sage.misc.latex import latex
+        from sage.plot.graphics import Graphics
+        from sage.plot.line import line
+        from diffmapping import DiffMapping
+        if not isinstance(ambient_chart, Chart):
+            raise TypeError("The first argument must be a chart.")
+        # 1/ Determination of the relation between self and ambient_chart
+        #    ------------------------------------------------------------
+        transf = None # to be the MultiFunctionChart relating self to 
+                      # ambient_chart
+        if mapping is None:
+            if not self._domain.is_subdomain(ambient_chart._domain):
+                raise TypeError("The domain of " + str(self) + 
+                                " is not included in that of " + 
+                                str(ambient_chart))
+            coord_changes = ambient_chart._domain._coord_changes
+            for chart_pair in coord_changes:
+                if chart_pair == (self, ambient_chart):
+                    transf = coord_changes[chart_pair]._transf
+                    break
+            else:
+                # Search for a subchart
+                for chart_pair in coord_changes:
+                    for schart in ambient_chart._subcharts:
+                        if chart_pair == (self, schart):
+                            transf = coord_changes[chart_pair]._transf
+        else:
+            if not isinstance(mapping, DiffMapping):
+                raise TypeError("The argument 'mapping' must be a " + 
+                                "differential mapping.")
+            if not self._domain.is_subdomain(mapping._domain):
+                raise TypeError("The domain of " + str(self) + 
+                                " is not included in that of " + 
+                                str(mapping))
+            if not ambient_chart._domain.is_subdomain(mapping._codomain):
+                raise TypeError("The domain of " + str(ambient_chart) + 
+                                " is not included in the codomain of " + 
+                                str(mapping))
+            for chart_pair in mapping._coord_expression:
+                if chart_pair == (self, ambient_chart):
+                    transf = mapping._coord_expression[chart_pair]
+                    break
+            else:
+                # Search for a subchart
+                for chart_pair in mapping._coord_expression:
+                    for schart in ambient_chart._subcharts:
+                        if chart_pair == (self, schart):
+                            transf = mapping._coord_expression[chart_pair]
+        if transf is None:
+            raise ValueError("No relation has been found between " +
+                             str(self) + " and " + str(ambient_chart))
+#        print "transf: ", transf
+        # 2/ Treatment of input parameters
+        #    -----------------------------
+        nc = self._manifold._dim
+        if coords is None:
+            coords = self._xx
+        elif not isinstance(coords, tuple):
+            coords = tuple(coords)
+        if len(coords) > nc:
+            raise TypeError("Too much coordinates.")
+        if ambient_coords is None:
+            ambient_coords = ambient_chart._xx
+        elif not isinstance(ambient_coords, tuple):
+            ambient_coords = tuple(ambient_coords)
+        nca = len(ambient_coords)
+        if nca != 2 and nca !=3:
+            raise TypeError("Bad number of ambient coordinates: " + str(nca))
+        if ranges is None:
+            ranges = {}
+        ranges0 = {}
+        for coord in coords:
+            if coord in ranges:
+                ranges0[coord] = (numerical_approx(ranges[coord][0]), 
+                                  numerical_approx(ranges[coord][1]))
+            else:
+                bounds = self._bounds[self._xx.index(coord)]
+                if bounds[0][0] == -Infinity:
+                    xmin = numerical_approx(-4)
+                elif bounds[0][1]:
+                    xmin = numerical_approx(bounds[0][0])
+                else:
+                    xmin = numerical_approx(bounds[0][0] + 1.e-3)
+                if bounds[1][0] == Infinity:
+                    xmax = numerical_approx(4)
+                elif bounds[1][1]:
+                    xmax = numerical_approx(bounds[1][0])
+                else:
+                    xmax = numerical_approx(bounds[1][0] - 1.e-3)
+                ranges0[coord] = (xmin, xmax)
+        ranges = ranges0
+#        print "ranges: ", ranges
+        if not isinstance(nb_values, dict):
+            nb_values0 = {}
+            for coord in coords:
+                nb_values0[coord] = nb_values
+            nb_values = nb_values0
+#        print "coords: ", coords
+        if steps is None:
+            steps = {}
+        for coord in coords:
+            if coord not in steps:
+                steps[coord] = (ranges[coord][1] - ranges[coord][0])/ \
+                               (nb_values[coord]-1)
+            else:
+                nb_values[coord] = 1 + int(
+                           (ranges[coord][1] - ranges[coord][0])/ steps[coord])
+#        print "nb_values: ", nb_values
+#        print "steps: ", steps
+        if not isinstance(color, dict):
+            color0 = {}
+            for coord in coords:
+                color0[coord] = color
+            color = color0
+        if not isinstance(style, dict):
+            style0 = {}
+            for coord in coords:
+                style0[coord] = style
+            style = style0
+        if not isinstance(thickness, dict):
+            thickness0 = {}
+            for coord in coords:
+                thickness0[coord] = thickness
+            thickness = thickness0
+        if not isinstance(plot_points, dict):
+            plot_points0 = {}
+            for coord in coords:
+                plot_points0[coord] = plot_points
+            plot_points = plot_points0
+#        print "fixed_coords: ", fixed_coords
+#        print "ambient_coords: ", ambient_coords
+#        print "color: ", color
+#        print "style: ", style
+#        print "plot_points: ", plot_points
+        # 3/ Plots
+        #    -----
+        xx0 = [0] * nc
+        if fixed_coords is not None:
+            if len(fixed_coords) != nc - len(coords):
+                raise TypeError("Bad number of fixed coordinates.")
+            for fc, val in fixed_coords.iteritems():
+                xx0[self._xx.index(fc)] = val
+        ind_a = [ambient_chart._xx.index(ac) for ac in ambient_coords]
+#        print "xx0, ind_a: ", xx0, ind_a
+        resu = Graphics()
+        for coord in coords:
+#            print "coord: ", coord
+            rem_coords = list(coords)
+            rem_coords.remove(coord)
+            xx_list = [xx0]
+            if len(rem_coords) >= 1:
+                xx_list = self._plot_xx_list(xx_list, rem_coords, ranges, 
+                                             steps, nb_values)
+#            print "xx_list: ", xx_list
+            xmin = ranges[coord][0]
+            xmax = ranges[coord][1]
+            nbp = plot_points[coord]
+            dx = (xmax - xmin) / (nbp-1)
+            ind_coord = self._xx.index(coord)
+            for xx in xx_list:
+                curve = []
+                xc = xmin
+                xp = list(xx)
+                for i in range(nbp):
+                    xp[ind_coord] = xc
+                    yp = transf(*xp, simplify=False)
+                    curve.append( [numerical_approx(yp[j]) for j in ind_a] )
+                    xc += dx
+                resu += line(curve, color=color[coord], linestyle=style[coord],
+                             thickness=thickness[coord])
+        if nca==2:  # 2D graphic
+            resu.set_aspect_ratio(1)
+            resu.axes_labels([r'$'+latex(ac)+r'$' for ac in ambient_coords])
+        else: # 3D graphic
+            # resu.axes_labels([str(ac) for ac in ambient_coords]) 
+            pass           
+        return resu
+                
+    def _plot_xx_list(self, xx_list, rem_coords, ranges, steps, nb_values):
+        coord = rem_coords[0]
+        xmin = ranges[coord][0]
+        sx = steps[coord]
+        resu = []
+        for xx in xx_list:
+            xc = xmin
+            for i in range(nb_values[coord]):
+                nxx = list(xx)
+                nxx[self._xx.index(coord)] = xc
+                resu.append(nxx)
+                xc += sx
+        if len(rem_coords) == 1:
+            return resu
+        else:
+            rem_coords.remove(coord)
+            return self._plot_xx_list(resu, rem_coords, ranges, steps, 
+                                      nb_values)
 
 #*****************************************************************************
 
@@ -1252,7 +1552,7 @@ class FunctionChart(SageObject):
         """
         return FunctionChart(self._chart, self._express)
         
-    def __call__(self, *coords):
+    def __call__(self, *coords, **options):
         r"""
         Computes the value of the function at specified coordinates.
         
@@ -1260,6 +1560,8 @@ class FunctionChart(SageObject):
         
         - ``*coords`` -- list of coordinates `(x^1,...,x^n)` where the 
           function `f` is to be evaluated 
+        - ``**options`` -- allows to pass ``simplify=False`` to disable the 
+          call of the simplification chain on the result
         
         OUTPUT:
         
@@ -1267,14 +1569,22 @@ class FunctionChart(SageObject):
          
         """
         #!# This should be the Python 2.7 form: 
-        # substitutions = {self._chart._xx[j]: coords[j] for j in range(self._nc)}
+        # substitutions = {self._chart._xx[j]: coords[j] for j in 
+        #                                                      range(self._nc)}
         #
         # Here we use a form compatible with Python 2.6:
         substitutions = dict([(self._chart._xx[j], coords[j]) for j in 
-                                                               range(self._nc)])
+                                                              range(self._nc)])
         resu = self._express.subs(substitutions)
-        return simplify_chain(resu)
-                     
+        if 'simplify' in options:
+            if options['simplify']:
+                return simplify_chain(resu)
+            else:
+                return resu 
+        else:
+            return simplify_chain(resu)
+
+
     def diff(self, coord):
         r""" 
         Partial derivative with respect to a coordinate.
@@ -2263,7 +2573,7 @@ class MultiFunctionChart(SageObject):
         """
         return self._functions[index]
         
-    def __call__(self, *coords):
+    def __call__(self, *coords, **options):
         r"""
         Compute the values of the functions at specified coordinates.
         
@@ -2271,13 +2581,16 @@ class MultiFunctionChart(SageObject):
         
         - ``*coords`` -- list of coordinates where the functions are to be
           evaluated 
+        - ``**options`` -- allows to pass ``simplify=False`` to disable the 
+          call of the simplification chain on the result
         
         OUTPUT:
         
         - the values of the `m` functions.   
          
         """
-        return tuple( self._functions[i](*coords) for i in range(self._nf) )
+        return tuple( self._functions[i](*coords, **options) for i in 
+                                                              range(self._nf) )
 
     def jacobian(self):
         r"""
