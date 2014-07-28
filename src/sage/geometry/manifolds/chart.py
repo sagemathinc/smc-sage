@@ -1033,9 +1033,9 @@ class Chart(UniqueRepresentation, SageObject):
         """
         return MultiFunctionChart(self, *expressions)
 
-    def plot(self, ambient_chart, coords=None, ranges=None, nb_values=9, 
-             steps=None, fixed_coords=None, ambient_coords=None, mapping=None, 
-             color='red', style='-', thickness=1, plot_points=75):
+    def plot(self, ambient_chart, fixed_coords=None, ranges=None, nb_values=9, 
+             steps=None, ambient_coords=None, mapping=None, color='red', 
+             style='-', thickness=1, plot_points=75):
         r"""
         Plot the chart (as a "grid") in terms of another one.
         
@@ -1046,15 +1046,17 @@ class Chart(UniqueRepresentation, SageObject):
         
         The ambient chart is related to the current chart (``self``) either by 
         a transition map if both charts are defined on the same manifold, or by
-        the coordinate expression of a differential mapping. In the latter case,
-        the two charts may be defined on two different manifolds. 
+        the coordinate expression of some differentiable mapping (typically an
+        immersion). In the latter case, the two charts may be defined on two 
+        different manifolds. 
         
         INPUT:
         
         - ``ambient_chart`` -- the ambient chart (see above)
-        - ``coords`` -- (default: None) a single coordinate or a tuple of 
-          coordinates of ``self`` specifying which coordinate lines are to be 
-          drawn; if None, all the coordinates of ``self`` are considered
+        - ``fixed_coords`` -- (default: None) dictionary with keys the
+          coordinates of ``self`` that are not drawn and with values the fixed
+          value of these coordinates; if None, all the coordinates of ``self``
+          are drawn
         - ``ranges`` -- (default: None) dictionary with keys the coordinates
           to be drawn and values tuples ``(x_min,x_max)`` specifying the 
           coordinate range for the plot; if None, the entire coordinate range 
@@ -1071,14 +1073,11 @@ class Chart(UniqueRepresentation, SageObject):
           range (specified in ``ranges``) and ``nb_values``. On the contrary
           if the step is provided for some coordinate, the corresponding 
           number of constant values is deduced from it and the coordinate range. 
-        - ``fixed_coords`` -- (default: None) dictionary with keys the
-          coordinates of ``self`` that are not drawn and with values the fixed
-          value of these coordinates
         - ``ambient_coords`` -- (default: None) tuple containing the 2 or 3 
           coordinates of the ambient chart in terms of which the plot is 
           performed; if None, all the coordinates of the ambient chart are 
           considered
-        - ``mapping`` -- (default: None) differential mapping (instance
+        - ``mapping`` -- (default: None) differentiable mapping (instance
           of :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
           providing the link between ``self`` and the ambient chart (cf. 
           above); if None, both charts are supposed to be defined on the same
@@ -1115,10 +1114,10 @@ class Chart(UniqueRepresentation, SageObject):
           
         EXAMPLES:
         
-        Grid of polar coordinates in terms of the Cartesian ones in the 
+        Grid of polar coordinates in terms of Cartesian coordinates in the 
         Euclidean plane::
         
-            sage: R2 = Manifold(2, 'R^2', r'\mathbb{R}^2')
+            sage: R2 = Manifold(2, 'R^2') # the Euclidean plane
             sage: c_cart.<x,y> = R2.chart() # Cartesian coordinates
             sage: U = R2.open_domain('U', coord_def={c_cart: (y!=0, x<0)}) # the complement of the segment y=0 and x>0
             sage: c_pol.<r,ph> = U.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # polar coordinates on U
@@ -1133,7 +1132,51 @@ class Chart(UniqueRepresentation, SageObject):
             sage: g = c_pol.plot(c_cart, ranges={ph:(pi/4,pi)}, nb_values={r:7, ph:17}, \
             ....:                color={r:'red', ph:'green'}, style={r:'-', ph:'--'})
 
+        A single coordinate line can be drawn::
+        
+            sage: g = c_pol.plot(c_cart, fixed_coords={r: 2}) # draw a circle of radius r=2 
+            sage: g = c_pol.plot(c_cart, fixed_coords={ph: pi/4}) # draw a segment at phi=pi/4
 
+        An example with the ambient chart given by the coordinate expression of 
+        some differentiable mapping: 3D plot of the stereographic charts on the 
+        2-sphere::
+         
+            sage: S2 = Manifold(2, 'S^2') # the 2-sphere
+            sage: U = S2.open_domain('U') ; V = S2.open_domain('V') # complement of the North and South pole, respectively
+            sage: S2.declare_union(U,V)
+            sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+            sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+            sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
+                                             intersection_name='W', restrictions1= x^2+y^2!=0, \
+                                             restrictions2= u^2+v^2!=0)
+            sage: uv_to_xy = xy_to_uv.inverse()
+            sage: R3 = Manifold(3, 'R^3') # the Euclidean space R^3
+            sage: c_cart.<X,Y,Z> = R3.chart()  # Cartesian coordinates on R^3
+            sage: Phi = S2.diff_mapping(R3, {(c_xy, c_cart): [2*x/(1+x^2+y^2), \
+                                              2*y/(1+x^2+y^2), (x^2+y^2-1)/(1+x^2+y^2)], \
+                                             (c_uv, c_cart): [2*u/(1+u^2+v^2), \
+                                              2*v/(1+u^2+v^2), (1-u^2-v^2)/(1+u^2+v^2)]}, \
+                                        name='Phi', latex_name=r'\Phi') # Embedding of S^2 in R^3
+            sage: g = c_xy.plot(c_cart, mapping=Phi)
+            sage: show(g) # 3D graphic display
+            sage: type(g)
+            <class 'sage.plot.plot3d.base.Graphics3dGroup'>
+            
+        The North and South stereographic charts on the same plot::
+        
+            sage: g2 = c_uv.plot(c_cart, mapping=Phi, color='green')
+            sage: show(g+g2)
+        
+        South stereographic chart drawned in terms of the North one (we split
+        the plot in four parts to avoid the singularity at (u,v)=(0,0))::
+
+            sage: W = U.intersection(V) # the domain common to both charts 
+            sage: gSN1 = c_uv.restrict(W).plot(c_xy, ranges={u:[-6,-0.02], v:[-6,-0.02]}, nb_values=25, plot_points=150)
+            sage: gSN2 = c_uv.restrict(W).plot(c_xy, ranges={u:[-6,-0.02], v:[0.02,6]}, nb_values=25, plot_points=150)
+            sage: gSN3 = c_uv.restrict(W).plot(c_xy, ranges={u:[0.02,6], v:[-6,-0.02]}, nb_values=25, plot_points=150)
+            sage: gSN4 = c_uv.restrict(W).plot(c_xy, ranges={u:[0.02,6], v:[0.02,6]}, nb_values=25, plot_points=150)
+            sage: show(gSN1+gSN2+gSN3+gSN4, xmin=-3, xmax=3, ymin=-3, ymax=3)
+                
         """
         from sage.rings.infinity import Infinity
         from sage.misc.functional import numerical_approx
@@ -1166,7 +1209,7 @@ class Chart(UniqueRepresentation, SageObject):
         else:
             if not isinstance(mapping, DiffMapping):
                 raise TypeError("The argument 'mapping' must be a " + 
-                                "differential mapping.")
+                                "differentiable mapping.")
             if not self._domain.is_subdomain(mapping._domain):
                 raise TypeError("The domain of " + str(self) + 
                                 " is not included in that of " + 
@@ -1192,12 +1235,15 @@ class Chart(UniqueRepresentation, SageObject):
         # 2/ Treatment of input parameters
         #    -----------------------------
         nc = self._manifold._dim
-        if coords is None:
+        if fixed_coords is None:
             coords = self._xx
-        elif not isinstance(coords, tuple):
+        else:
+            fixed_coord_list = fixed_coords.keys()
+            coords = []
+            for coord in self._xx:
+                if coord not in fixed_coord_list:
+                    coords.append(coord)
             coords = tuple(coords)
-        if len(coords) > nc:
-            raise TypeError("Too much coordinates.")
         if ambient_coords is None:
             ambient_coords = ambient_chart._xx
         elif not isinstance(ambient_coords, tuple):
