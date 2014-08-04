@@ -1033,9 +1033,9 @@ class Chart(UniqueRepresentation, SageObject):
         """
         return MultiFunctionChart(self, *expressions)
 
-    def plot(self, ambient_chart, fixed_coords=None, ranges=None, nb_values=9, 
-             steps=None, ambient_coords=None, mapping=None, color='red', 
-             style='-', thickness=1, plot_points=75):
+    def plot(self, ambient_chart, fixed_coords=None, ranges=None, max_value=8,
+             nb_values=9, steps=None, ambient_coords=None, mapping=None, 
+             color='red',  style='-', thickness=1, plot_points=75):
         r"""
         Plot the chart (as a "grid") in terms of another one.
         
@@ -1061,7 +1061,13 @@ class Chart(UniqueRepresentation, SageObject):
           to be drawn and values tuples ``(x_min,x_max)`` specifying the 
           coordinate range for the plot; if None, the entire coordinate range 
           declared during the chart construction is considered (with -Infinity 
-          replaced by -4 and +Infinity by 4)
+          replaced by ``-max_value`` and +Infinity by ``max_value``)
+        - ``max_value`` -- (default: 8) numerical value substituted to 
+          +Infinity if the latter is the upper bound of the range of a 
+          coordinate for which the plot is performed over the entire coordinate
+          range (i.e. for which no specific plot range has been set in 
+          ``ranges``); similarly ``-max_value`` is the numerical valued 
+          substituted for -Infinity 
         - ``nb_values`` -- (default: 9) either an integer or a dictionary with
           keys the coordinates to be drawn and values the number of constant 
           values of the coordinate to be considered; if ``nb_values`` is a 
@@ -1092,7 +1098,7 @@ class Chart(UniqueRepresentation, SageObject):
           of line styles, with keys the coordinates to be drawn, representing 
           the style of the lines along which the coordinate varies, the other 
           being kept constant; if ``style`` is a single style, it is used for
-          all coordinate lines
+          all coordinate lines; NB: ``style`` is effective only for 2D plots
         - ``thickness`` -- (default: 1) either a single line thickness or a 
           dictionary of line thicknesses, with keys the coordinates to be drawn, 
           representing the thickness of the lines along which the coordinate 
@@ -1170,13 +1176,21 @@ class Chart(UniqueRepresentation, SageObject):
         South stereographic chart drawned in terms of the North one (we split
         the plot in four parts to avoid the singularity at (u,v)=(0,0))::
 
-            sage: W = U.intersection(V) # the domain common to both charts 
-            sage: gSN1 = c_uv.restrict(W).plot(c_xy, ranges={u:[-6,-0.02], v:[-6,-0.02]}, nb_values=25, plot_points=150)
-            sage: gSN2 = c_uv.restrict(W).plot(c_xy, ranges={u:[-6,-0.02], v:[0.02,6]}, nb_values=25, plot_points=150)
-            sage: gSN3 = c_uv.restrict(W).plot(c_xy, ranges={u:[0.02,6], v:[-6,-0.02]}, nb_values=25, plot_points=150)
-            sage: gSN4 = c_uv.restrict(W).plot(c_xy, ranges={u:[0.02,6], v:[0.02,6]}, nb_values=25, plot_points=150)
+            sage: W = U.intersection(V) # the domain common to both charts
+            sage: c_uvW = c_uv.restrict(W) # chart (W,(u,v))
+            sage: gSN1 = c_uvW.plot(c_xy, ranges={u:[-6,-0.02], v:[-6,-0.02]}, nb_values=25, plot_points=150)
+            sage: gSN2 = c_uvW.plot(c_xy, ranges={u:[-6,-0.02], v:[0.02,6]}, nb_values=25, plot_points=150)
+            sage: gSN3 = c_uvW.plot(c_xy, ranges={u:[0.02,6], v:[-6,-0.02]}, nb_values=25, plot_points=150)
+            sage: gSN4 = c_uvW.plot(c_xy, ranges={u:[0.02,6], v:[0.02,6]}, nb_values=25, plot_points=150)
             sage: show(gSN1+gSN2+gSN3+gSN4, xmin=-3, xmax=3, ymin=-3, ymax=3)
-                
+        
+        The coordinate line u=1 (red) and the coordinate line v=1 (green) on
+        the same plot::
+        
+            sage: gu1 = c_uvW.plot(c_xy, fixed_coords={u:1}, ranges={v:(-12, 12)}, plot_points=200)
+            sage: gv1 = c_uvW.plot(c_xy, fixed_coords={v:1}, ranges={u:(-12, 12)}, plot_points=200, color='green')
+            sage: show(gu1+gv1)
+  
         """
         from sage.rings.infinity import Infinity
         from sage.misc.functional import numerical_approx
@@ -1261,13 +1275,13 @@ class Chart(UniqueRepresentation, SageObject):
             else:
                 bounds = self._bounds[self._xx.index(coord)]
                 if bounds[0][0] == -Infinity:
-                    xmin = numerical_approx(-4)
+                    xmin = numerical_approx(-max_value)
                 elif bounds[0][1]:
                     xmin = numerical_approx(bounds[0][0])
                 else:
                     xmin = numerical_approx(bounds[0][0] + 1.e-3)
                 if bounds[1][0] == Infinity:
-                    xmax = numerical_approx(4)
+                    xmax = numerical_approx(max_value)
                 elif bounds[1][1]:
                     xmax = numerical_approx(bounds[1][0])
                 else:
