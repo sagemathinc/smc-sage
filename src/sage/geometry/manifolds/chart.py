@@ -1035,7 +1035,8 @@ class Chart(UniqueRepresentation, SageObject):
 
     def plot(self, ambient_chart, fixed_coords=None, ranges=None, max_value=8,
              nb_values=9, steps=None, ambient_coords=None, mapping=None, 
-             color='red',  style='-', thickness=1, plot_points=75):
+             parameters=None, color='red',  style='-', thickness=1, 
+             plot_points=75, label_axes=True):
         r"""
         Plot the chart (as a "grid") in terms of another one.
         
@@ -1089,6 +1090,9 @@ class Chart(UniqueRepresentation, SageObject):
           above); if None, both charts are supposed to be defined on the same
           manifold and related by some transition map (see 
           :meth:`transition_map`)
+        - ``parameters`` -- (default: None) dictionary giving the numerical
+          values of the parameters that may appear in the relation between
+          the two coordinate systems
         - ``color`` -- (default: 'red') either a single color or a dictionary
           of colors, with keys the coordinates to be drawn, representing the 
           colors of the lines along which the coordinate varies, the other 
@@ -1109,6 +1113,10 @@ class Chart(UniqueRepresentation, SageObject):
           representing the number of points to plot the lines along which the 
           coordinate varies, the other being kept constant; if ``plot_points`` 
           is a single integer, it is used for all coordinate lines
+        - ``label_axes`` -- (default: True) boolean determining whether the
+          labels of the ambient coordinate axes shall be added to the graph;
+          can be set to False if the graph is 3D and must be superposed with
+          another graph.
         
         OUTPUT:
         
@@ -1167,7 +1175,11 @@ class Chart(UniqueRepresentation, SageObject):
             sage: show(g) # 3D graphic display
             sage: type(g)
             <class 'sage.plot.plot3d.base.Graphics3dGroup'>
-            
+
+        The same plot without the (X,Y,Z) axes labels::
+        
+            sage: g = c_xy.plot(c_cart, mapping=Phi, label_axes=False)
+
         The North and South stereographic charts on the same plot::
         
             sage: g2 = c_uv.plot(c_cart, mapping=Phi, color='green')
@@ -1187,10 +1199,14 @@ class Chart(UniqueRepresentation, SageObject):
         The coordinate line u=1 (red) and the coordinate line v=1 (green) on
         the same plot::
         
-            sage: gu1 = c_uvW.plot(c_xy, fixed_coords={u:1}, ranges={v:(-12, 12)}, plot_points=200)
-            sage: gv1 = c_uvW.plot(c_xy, fixed_coords={v:1}, ranges={u:(-12, 12)}, plot_points=200, color='green')
+            sage: gu1 = c_uvW.plot(c_xy, fixed_coords={u:1}, max_value=20, plot_points=200)
+            sage: gv1 = c_uvW.plot(c_xy, fixed_coords={v:1}, max_value=20, plot_points=200, color='green')
             sage: show(gu1+gv1)
   
+        Note that we have set ``max_value=20`` to have a wider range for the 
+        coordinates u and v, i.e. to have [-20,20] instead of the default 
+        [-8,8].
+        
         """
         from sage.rings.infinity import Infinity
         from sage.misc.functional import numerical_approx
@@ -1198,6 +1214,7 @@ class Chart(UniqueRepresentation, SageObject):
         from sage.plot.graphics import Graphics
         from sage.plot.line import line
         from diffmapping import DiffMapping
+        from utilities import set_axes_labels
         if not isinstance(ambient_chart, Chart):
             raise TypeError("The first argument must be a chart.")
         # 1/ Determination of the relation between self and ambient_chart
@@ -1360,19 +1377,31 @@ class Chart(UniqueRepresentation, SageObject):
                 curve = []
                 xc = xmin
                 xp = list(xx)
-                for i in range(nbp):
-                    xp[ind_coord] = xc
-                    yp = transf(*xp, simplify=False)
-                    curve.append( [numerical_approx(yp[j]) for j in ind_a] )
-                    xc += dx
+                if parameters is None:
+                    for i in range(nbp):
+                        xp[ind_coord] = xc
+                        yp = transf(*xp, simplify=False)
+                        curve.append( [numerical_approx(yp[j]) for j in ind_a] )
+                        xc += dx
+                else:
+                    for i in range(nbp):
+                        xp[ind_coord] = xc
+                        yp = transf(*xp, simplify=False)
+                        curve.append( 
+                            [numerical_approx( yp[j].substitute(parameters) ) 
+                                                              for j in ind_a] )
+                        xc += dx
                 resu += line(curve, color=color[coord], linestyle=style[coord],
                              thickness=thickness[coord])
         if nca==2:  # 2D graphic
             resu.set_aspect_ratio(1)
-            resu.axes_labels([r'$'+latex(ac)+r'$' for ac in ambient_coords])
+            if label_axes:
+                resu.axes_labels([r'$'+latex(ac)+r'$' for ac in ambient_coords])
         else: # 3D graphic
-            # resu.axes_labels([str(ac) for ac in ambient_coords]) 
-            pass           
+            resu.aspect_ratio(1)
+            if label_axes:
+                labels = [str(ac) for ac in ambient_coords]
+                resu = set_axes_labels(resu, *labels)
         return resu
                 
     def _plot_xx_list(self, xx_list, rem_coords, ranges, steps, nb_values):
