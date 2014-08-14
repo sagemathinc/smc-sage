@@ -906,6 +906,10 @@ class FreeModuleTensor(ModuleElement):
     def __getitem__(self, args):
         r"""
         Return a component w.r.t. some basis.
+        
+        NB: if ``args`` is a string, this method acts as a shortcut for 
+        tensor contractions and symmetrizations, the string containing 
+        abstract indices.
 
         INPUT:
         
@@ -1499,6 +1503,25 @@ class FreeModuleTensor(ModuleElement):
             15
             sage: a.self_contract(1,0)  # the order of the slots does not matter
             15
+            
+        Instead of the explicit call to the method :meth:`self_contract`, one
+        may use the index notation with Einstein convention (summation over
+        repeated indices); it suffices to pass the indices as a string inside
+        square brackets::
+        
+            sage: a['^i_i']
+            15
+
+        The letter 'i' to denote the repeated index can be replaced by any
+        other letter::
+        
+            sage: a['^s_s']
+            15
+
+        Moreover, the symbol '^' can be omitted::
+        
+            sage: a['i_i']
+            15
 
         The contraction on two slots having the same tensor type cannot occur::
         
@@ -1541,6 +1564,27 @@ class FreeModuleTensor(ModuleElement):
             sage: s[:] == matrix( [[sum(t[k,i,k,j] for k in M.irange()) for j in M.irange()] for i in M.irange()] )  # check
             True
             
+        Use of index notation instead of :meth:`self_contract`::
+        
+            sage: t['^k_kij'] == t.self_contract(0,1)
+            True
+            sage: t['^k_{kij}'] == t.self_contract(0,1) # LaTeX notation
+            True
+            sage: t['^k_ikj'] == t.self_contract(0,2)
+            True
+            sage: t['^k_ijk'] == t.self_contract(0,3)
+            True
+
+        Index symbols not involved in the contraction may be replaced by
+        dots::
+        
+            sage: t['^k_k..'] == t.self_contract(0,1)
+            True
+            sage: t['^k_.k.'] == t.self_contract(0,2)
+            True
+            sage: t['^k_..k'] == t.self_contract(0,3)
+            True
+        
         """
         # The indices at pos1 and pos2 must be of different types: 
         k_con = self._tensor_type[0]
@@ -1603,7 +1647,17 @@ class FreeModuleTensor(ModuleElement):
             True
             sage: s == a.contract(b, 0)
             True
-           
+        
+        Instead of the explicit call to the method :meth:`contract`, the index 
+        notation can be used to specify the contraction, via Einstein 
+        conventation (summation on repeated indices); it suffices to pass the 
+        indices as a string inside square brackets::
+        
+            sage: s1 = a['_i']*b['^i'] ; s1
+            2
+            sage: s1 == s
+            True
+
         In the present case, performing the contraction is identical to 
         applying the linear form to the module element::
         
@@ -1641,6 +1695,23 @@ class FreeModuleTensor(ModuleElement):
             sage: a.contract(b) == b.contract(a, 1) 
             True
             
+        Using the index notation with Einstein convention::
+        
+            sage: a['^i_j']*b['^j'] == a.contract(b)
+            True
+
+        The index i can be replaced by a dot::
+        
+            sage: a['^._j']*b['^j'] == a.contract(b)
+            True
+
+        and the symbol '^' may be omitted, the distinction between 
+        contravariant and covariant indices being the position with respect to 
+        the symbol '_'::
+        
+            sage: a['._j']*b['j'] == a.contract(b)
+            True
+                        
         Contraction is possible only between a contravariant index and a 
         covariant one::
         
@@ -1675,6 +1746,21 @@ class FreeModuleTensor(ModuleElement):
             ....:             
             True True True True True True True True True True True True True True True True True True True True True True True True True True True
 
+        Using index notation::
+        
+            sage: a['il_j']*b['_kl'] == a.contract(1, b, 1)
+            True
+            
+        LaTeX notation are allowed::
+        
+            sage: a['^{il}_j']*b['_{kl}'] == a.contract(1, b, 1)
+            True
+
+        Indices not involved in the contraction may be replaced by dots::
+        
+            sage: a['.l_.']*b['_.l'] == a.contract(1, b, 1)
+            True
+       
         The two tensors do not have to be defined on the same basis for the 
         contraction to take place, reflecting the fact that the contraction is 
         basis-independent::
@@ -1792,8 +1878,9 @@ class FreeModuleTensor(ModuleElement):
             ....:         
             True True True True True True True True True
     
-        Instead of invoking the method :meth:`symmetrize`, the index notation 
-        with parentheses can be used to perform the symmetrization::
+        Instead of invoking the method :meth:`symmetrize`, one may use the 
+        index notation with parentheses to denote the symmetrization; it 
+        suffices to pass the indices as a string inside square brackets::
         
             sage: t['(ij)']
             type-(2,0) tensor on the rank-3 free module M over the Rational Field
@@ -2058,7 +2145,9 @@ class FreeModuleTensor(ModuleElement):
             True
 
         Instead of invoking the method :meth:`antisymmetrize`, one can use
-        the index notation with square brackets::
+        the index notation with square brackets denoting the 
+        antisymmetrization; it suffices to pass the indices as a string 
+        inside square brackets::
         
             sage: s1 = t['_[ij]k'] ; s1
             type-(0,3) tensor on the rank-3 free module M over the Rational Field

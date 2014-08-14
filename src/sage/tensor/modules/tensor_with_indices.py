@@ -23,17 +23,18 @@ class TensorWithIndices(SageObject):
     Tensors in index notation
     """
     def __init__(self, tensor, indices):
-        self._tensor = tensor
+        self._tensor = tensor # may be changed below
         self._changed = False # indicates whether self contains an altered 
                               # version of the original tensor (True if 
-                              # symmetries are indicated in the indices)
+                              # symmetries or contractions are indicated in the 
+                              # indices)
         # Suppress all '{' and '}' comming from LaTeX notations:
         indices = indices.replace('{','').replace('}','')
         # Suppress the first '^':
         if indices[0] == '^':
             indices = indices[1:]
         if '^' in indices:
-            raise TypeError("The contravariant indices must be placed first.")
+            raise IndexError("The contravariant indices must be placed first.")
         con_cov = indices.split('_')
         con = con_cov[0]
         # Contravariant indices
@@ -58,14 +59,14 @@ class TensorWithIndices(SageObject):
             self._changed = True # self does no longer contain the original tensor
             con = con.replace('[','').replace(']','')
         if len(con) != self._tensor._tensor_type[0]:
-            raise TypeError("Number of contravariant indices not compatible " + 
+            raise IndexError("Number of contravariant indices not compatible " + 
                             "with the tensor type.")
         self._con = con
         # Covariant indices
         # -----------------
         if len(con_cov) == 1:
             if tensor._tensor_type[1] != 0:
-                raise TypeError("Number of covariant indices not compatible " + 
+                raise IndexError("Number of covariant indices not compatible " + 
                                 "with the tensor type.")
             self._cov = ''
         elif len(con_cov) == 2:
@@ -96,11 +97,32 @@ class TensorWithIndices(SageObject):
                                      # tensor
                 cov = cov.replace('[','').replace(']','')
             if len(cov) != tensor._tensor_type[1]:
-                raise TypeError("Number of covariant indices not compatible " + 
+                raise IndexError("Number of covariant indices not compatible " + 
                                 "with the tensor type.")
             self._cov = cov
         else:
-            raise TypeError("Two many '_' in the list of indices.")
+            raise IndexError("Two many '_' in the list of indices.")
+        # Treatment of possible self-contractions:
+        # ---------------------------------------
+        contraction_pairs = []
+        for ind in self._con:
+            if ind != '.' and ind in self._cov:
+                pos1 = self._con.index(ind)
+                pos2 = self._tensor._tensor_type[0] + self._cov.index(ind)
+                contraction_pairs.append((pos1, pos2))
+        if len(contraction_pairs) > 1:
+            raise NotImplementedError("Multiple contractions are not " + 
+                                      "implemented yet.")
+        if len(contraction_pairs) == 1:
+            pos1 = contraction_pairs[0][0]
+            pos2 = contraction_pairs[0][1]
+            self._tensor = self._tensor.self_contract(pos1, pos2)
+            self._changed = True # self does no longer contain the original 
+                                 # tensor
+            ind = self._con[pos1]
+            self._con = self._con.replace(ind, '')
+            self._cov = self._cov.replace(ind, '')
+
 
     def _repr_(self):
         r"""
@@ -142,7 +164,7 @@ class TensorWithIndices(SageObject):
                     pos2 = other._tensor._tensor_type[0] + other._cov.index(ind)
                     contraction_pairs.append((pos1, pos2))
                 if  ind in other._con:
-                    raise TypeError("The index " + str(ind) + " appears twice "
+                    raise IndexError("The index " + str(ind) + " appears twice "
                                     + "in a contravariant position.")
         for ind in self._cov:
             if ind != '.':
@@ -151,7 +173,7 @@ class TensorWithIndices(SageObject):
                     pos2 = other._con.index(ind)
                     contraction_pairs.append((pos1, pos2))
                 if ind in other._cov:
-                    raise TypeError("The index " + str(ind) + " appears twice "
+                    raise IndexError("The index " + str(ind) + " appears twice "
                                     + "in a covariant position.")
         if contraction_pairs == []:
             # No contraction is performed: the tensor product is returned
