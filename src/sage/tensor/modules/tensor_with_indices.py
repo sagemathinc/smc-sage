@@ -1,5 +1,5 @@
 r"""
-Tensors in index notation
+Index notation for tensors.
 
 AUTHORS:
 
@@ -20,7 +20,111 @@ from sage.structure.sage_object import SageObject
 
 class TensorWithIndices(SageObject):
     r"""
-    Tensors in index notation
+    Index notation for tensors.
+    
+    This is a technical class to allow one to write some tensor operations 
+    (contractions and symmetrizations) in index notation.
+    
+    INPUT:
+    
+    - ``tensor`` -- a tensor (or a tensor field)
+    - ``indices`` -- string containing the indices, as single letters; the
+      contravariant indices must be stated first and separated from the 
+      covariant indices by the character '_'. 
+    
+    EXAMPLES:
+    
+    Index representation of tensors on a rank-3 free module::
+    
+        sage: M = FiniteRankFreeModule(QQ, 3, name='M')
+        sage: e = M.basis('e')
+        sage: a = M.tensor((2,0), name='a')
+        sage: a[:] = [[1,2,3], [4,5,6], [7,8,9]]
+        sage: b = M.tensor((0,2), name='b')
+        sage: b[:] = [[-1,2,-3], [-4,5,6], [7,-8,9]]
+        sage: t = a*b ; t.set_name('t') ; t
+        type-(2,2) tensor t on the rank-3 free module M over the Rational Field
+        sage: from sage.tensor.modules.tensor_with_indices import TensorWithIndices
+        sage: T = TensorWithIndices(t, '^ij_kl') ; T
+        t^ij_kl
+
+    The :class:`TensorWithIndices` object is returned by the square 
+    bracket operator acting on the tensor and fed with the string specifying
+    the indices::
+    
+        sage: a['^ij']
+        a^ij
+        sage: type(a['^ij'])
+        <class 'sage.tensor.modules.tensor_with_indices.TensorWithIndices'>
+        sage: b['_ef']
+        b_ef
+        sage: t['^ij_kl']
+        t^ij_kl
+        
+    The symbol '^' may be omitted, since the distinction between covariant 
+    and contravariant indices is performed by the index position relative to 
+    the symbol '_'::
+    
+        sage: t['ij_kl']
+        t^ij_kl
+
+    Also, LaTeX notation may be used::
+     
+        sage: t['^{ij}_{kl}']
+        t^ij_kl
+
+    If some operation is asked in the index notation, the resulting tensor
+    is returned, not a :class:`TensorWithIndices` object; for instance, for 
+    a symmetrization::
+    
+        sage: s = t['^(ij)_kl'] ; s  # the symmetrization on i,j is indicated by parentheses
+        type-(2,2) tensor on the rank-3 free module M over the Rational Field
+        sage: s.symmetries()
+        symmetry: (0, 1);  no antisymmetry
+        sage: s == t.symmetrize((0,1))
+        True
+    
+    The letters denoting the indices can be chosen freely; since they carry no
+    information, they can even be replaced by dots::
+    
+        sage: t['^(..)_..'] == t.symmetrize((0,1))
+        True
+
+    Similarly, for an antisymmetrization::
+    
+        sage: s = t['^ij_[kl]'] ; s # the symmetrization on k,l is indicated by square brackets
+        type-(2,2) tensor on the rank-3 free module M over the Rational Field
+        sage: s.symmetries()
+        no symmetry;  antisymmetry: (2, 3)
+        sage: s == t.antisymmetrize((2,3))
+        True
+
+    Another example of an operation indicated by indices is a contraction::
+    
+        sage: s = t['^ki_kj'] ; s  # contraction on the repeated index k
+        endomorphism on the rank-3 free module M over the Rational Field
+        sage: s == t.self_contract(0,2)
+        True
+
+    Indices not involved in the contraction may be replaced by dots::
+    
+        sage: s == t['^k._k.']
+        True
+
+    The contraction of two tensors is indicated by repeated indices and 
+    the * operator::
+    
+        sage: s = a['^ik']*b['_kj'] ; s
+        endomorphism on the rank-3 free module M over the Rational Field
+        sage: s == a.contract(1, b, 0)
+        True
+        sage: s = t['^.k_..']*b['_.k'] ; s
+        type-(1,3) tensor on the rank-3 free module M over the Rational Field
+        sage: s == t.contract(1, b, 1)
+        True
+        sage: t['^{ik}_{jl}']*b['_{mk}'] == s # LaTeX notation
+        True
+    
     """
     def __init__(self, tensor, indices):
         self._tensor = tensor # may be changed below
