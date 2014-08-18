@@ -6,6 +6,7 @@ Modules
 
    sage/modules/module
    sage/modules/free_module
+   sage/modules/free_module_integer
    sage/modules/free_module_element
    sage/tensor/modules/finite_rank_free_module
 
@@ -24,5 +25,7 @@ Modules
    sage/modules/fg_pid/fgp_module
    sage/modules/fg_pid/fgp_element
    sage/modules/fg_pid/fgp_morphism
+
+   sage/modules/diamond_cutting
 
 .. include:: ../footer.txt
