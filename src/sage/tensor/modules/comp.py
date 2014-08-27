@@ -1324,6 +1324,179 @@ class Components(SageObject):
         #   self_contract()), but it is not optimal (unnecessary terms are 
         #   evaluated when performing the tensor product self*other)
 
+    def ncontract(self, other, *contractions):
+        r""" 
+        Contraction on one or many indices with another instance of
+        :class:`Components`. 
+        
+        """
+        #
+        # Protections
+        #
+        if other._frame != self._frame:
+            raise TypeError("The two sets of components are not defined on " +
+                            "the same frame.")
+        if other._sindex != self._sindex:
+            raise TypeError("The two sets of components do not have the " + 
+                            "same starting index.")
+        #
+        # Initializations
+        # 
+        if not contractions:
+            contractions = ((self._nid-1, 0),)
+        ncontr = len(contractions)
+        res_nid = self._nid + other._nid - 2*ncontr
+        print "contractions: ", contractions
+        # 
+        # Special case of a scalar result
+        #
+        if res_nid == 0:
+            # To generate the indices tuples (of size ncontr) involved in the 
+            # the contraction, we create an empty instance of Components with
+            # ncontr indices and call the method index_generator() on it:
+            comp_for_contr = Components(self._ring, self._frame, ncontr, 
+                                        start_index=self._sindex) 
+            res = 0
+            for ind in comp_for_contr.index_generator():
+                res += self[[ind]] * other[[ind]]
+            return res
+        #
+        # Positions of self and other indices in the result
+        #  (None = the position is involved in a contraction and therefore 
+        #   does not appear in the final result)
+        #
+        pos_s = [None for i in range(self._nid)]  # initialization
+        pos_o = [None for i in range(other._nid)] # initialization
+        shift = 0
+        for pos in range(self._nid):
+            for contract_pair in contractions:
+                if pos == contract_pair[0]:
+                    shift += 1
+                    break
+            else:
+                pos_s[pos] = pos - shift
+        for pos in range(other._nid):
+            for contract_pair in contractions:
+                if pos == contract_pair[1]:
+                    shift += 1
+                    break
+            else:
+                pos_o[pos] = self._nid + pos - shift
+        rev_s = [pos_s.index(i) for i in range(self._nid-ncontr)]
+        rev_o = [pos_o.index(i) for i in range(self._nid-ncontr, res_nid)]
+        print "pos_s: ", pos_s
+        print "pos_o: ", pos_o
+        print "rev_s: ", rev_s
+        print "rev_o: ", rev_o
+        #
+        # Determination of the symmetries of the result
+        #
+        max_len_sym = 0 # maximum length of symmetries in the result
+        max_len_antisym = 0 # maximum length of antisymmetries in the result
+        if res_nid > 1:  # no need to search for symmetries if res_nid == 1
+            if isinstance(self, CompWithSym):
+                s_sym = self._sym
+                s_antisym = self._antisym
+            else:
+                s_sym = []
+                s_antisym = []
+            if isinstance(other, CompWithSym):
+                o_sym = other._sym
+                o_antisym = other._antisym
+            else:
+                o_sym = []
+                o_antisym = []
+            print "s_sym, s_antisym: ", s_sym, s_antisym
+            print "o_sym, o_antisym: ", o_sym, o_antisym
+            res_sym = []
+            res_antisym = []
+            for isym in s_sym:
+                r_isym = []
+                for pos in isym:
+                    if pos_s[pos] is not None:
+                        r_isym.append(pos_s[pos])
+                if len(r_isym) > 1:
+                    res_sym.append(r_isym)
+                    max_len_sym = max(max_len_sym, len(r_isym))
+            for isym in s_antisym:
+                r_isym = []
+                for pos in isym:
+                    if pos_s[pos] is not None:
+                        r_isym.append(pos_s[pos])
+                if len(r_isym) > 1:
+                    res_antisym.append(r_isym)
+                    max_len_antisym = max(max_len_antisym, len(r_isym))
+            for isym in o_sym:
+                r_isym = []
+                for pos in isym:
+                    if pos_o[pos] is not None:
+                        r_isym.append(pos_o[pos])
+                if len(r_isym) > 1:
+                    res_sym.append(r_isym)
+                    max_len_sym = max(max_len_sym, len(r_isym))
+            for isym in o_antisym:
+                r_isym = []
+                for pos in isym:
+                    if pos_o[pos] is not None:
+                        r_isym.append(pos_o[pos])
+                if len(r_isym) > 1:
+                    res_antisym.append(r_isym)
+                    max_len_antisym = max(max_len_antisym, len(r_isym))
+            print "res_sym: ", res_sym
+            print "res_antisym: ", res_antisym
+            print "max_len_sym: ", max_len_sym 
+            print "max_len_antisym: ", max_len_antisym 
+        #
+        # Construction of the result object in view of the remaining symmetries:
+        #
+        if max_len_sym == 0 and max_len_antisym == 0:
+            res = Components(self._ring, self._frame, res_nid, 
+                             start_index=self._sindex, 
+                             output_formatter=self._output_formatter)
+        elif max_len_sym == res_nid:
+            res = CompFullySym(self._ring, self._frame, res_nid, 
+                               start_index=self._sindex, 
+                               output_formatter=self._output_formatter)
+        elif max_len_antisym == res_nid:
+            res = CompFullyAntiSym(self._ring, self._frame, res_nid, 
+                                   start_index=self._sindex, 
+                                   output_formatter=self._output_formatter)
+        else:
+            res = CompWithSym(self._ring, self._frame, res_nid, 
+                              start_index=self._sindex, 
+                              output_formatter=self._output_formatter, 
+                              sym=res_sym, antisym=res_antisym)
+        #
+        # Performing the contraction
+        #
+        # To generate the indices tuples (of size ncontr) involved in the 
+        # the contraction, we create an empty instance of Components with
+        # ncontr indices and call the method index_generator() on it:
+        comp_for_contr = Components(self._ring, self._frame, ncontr, 
+                                    start_index=self._sindex) 
+        shift_o = self._nid - ncontr
+        for ind in res.non_redundant_index_generator():
+            # print "ind : ", ind
+            ind_s = [None for i in range(self._nid)]  # initialization
+            ind_o = [None for i in range(other._nid)] # initialization
+            for i, pos in enumerate(rev_s):
+                ind_s[pos] = ind[i]
+            for i, pos in enumerate(rev_o):
+                ind_o[pos] = ind[shift_o+i]
+            sm = 0
+            for ind_c in comp_for_contr.index_generator():
+                ic = 0
+                for pos_s, pos_o in contractions:
+                    k = ind_c[ic]
+                    ind_s[pos_s] = k
+                    ind_o[pos_o] = k
+                    ic += 1
+                # print "ind_s, ind_o : ", ind_s, ind_o
+                sm += self[[ind_s]] * other[[ind_o]]
+            res[[ind]] = sm
+        return res
+        
+
     def index_generator(self):
         r"""
         Generator of indices. 
