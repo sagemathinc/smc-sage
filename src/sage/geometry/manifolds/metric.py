@@ -820,7 +820,7 @@ class Metric(TensorField):
 
         """
         if self._ricci_scalar is None:
-            resu = (self.inverse().contract(self.ricci())).self_contract(0,1)
+            resu = self.inverse().contract(0, 1, self.ricci(), 0, 1)
             if name is None:
                 name = "r(" + self._name + ")"
             if latex_name is None:
