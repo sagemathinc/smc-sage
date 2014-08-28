@@ -1250,22 +1250,27 @@ class Components(SageObject):
                     result[[ind_res]] += val
             return result
 
-
-    def contract(self, pos1, other, pos2):
+    def contract(self, *args):
         r""" 
-        Index contraction with another instance of :class:`Components`. 
+        Contraction on one or many indices with another instance of
+        :class:`Components`. 
         
         INPUT:
             
-        - ``pos1`` -- position of the first index (in ``self``) for the 
-          contraction (with the convention position=0 for the first slot)
+        - ``pos1`` -- positions of the indices in ``self`` involved in the
+          contraction; ``pos1`` must be a sequence of integers, with 0 standing
+          for the first index position, 1 for the second one, etc. If ``pos1`` 
+          is not provided, a single contraction on the last index position of
+          ``self`` is assumed
         - ``other`` -- the set of components to contract with
-        - ``pos2`` -- position of the second index (in ``other``) for the 
-          contraction (with the convention position=0 for the first slot)
+        - ``pos2`` -- positions of the indices in ``other`` involved in the
+          contraction, with the same conventions as for ``pos1``. If ``pos2``
+          is not provided, a single contraction on the first index position of
+          ``other`` is assumed
           
         OUTPUT:
         
-        - set of components resulting from the (pos1, pos2) contraction
+        - set of components resulting from the contraction
        
         EXAMPLES:
 
@@ -1311,42 +1316,37 @@ class Components(SageObject):
             True
 
         """
-        if not isinstance(other, Components):
-            raise TypeError("For the contraction, other must be an instance " +
-                            "of Components.")
-        if pos1 < 0 or pos1 > self._nid - 1:
-            raise IndexError("pos1 out of range.")
-        if pos2 < 0 or pos2 > other._nid - 1:
-            raise IndexError("pos2 out of range.")
-        return (self*other).self_contract(pos1, 
-                                          pos2+self._nid) 
-        #!# the above is correct (in particular the symmetries are delt by 
-        #   self_contract()), but it is not optimal (unnecessary terms are 
-        #   evaluated when performing the tensor product self*other)
-
-    def ncontract(self, other, *contractions):
-        r""" 
-        Contraction on one or many indices with another instance of
-        :class:`Components`. 
-        
-        """
         #
-        # Protections
+        # Treatment of the input
         #
+        nargs = len(args)
+        for i, arg in enumerate(args):
+            if isinstance(arg, Components):
+                other = arg
+                it = i
+                break
+        else:
+            raise TypeError("A set of components must be provided in the " + 
+                            "argument list.")
+        if it == 0:
+            pos1 = (self._nid - 1,)
+        else:
+            pos1 = args[:it]
+        if it == nargs-1:
+            pos2 = (0,)
+        else:
+            pos2 = args[it+1:]
+        ncontr = len(pos1) # number of contractions
+        if len(pos2) != ncontr:
+            raise TypeError("Different number of indices for the contraction.")
         if other._frame != self._frame:
             raise TypeError("The two sets of components are not defined on " +
                             "the same frame.")
         if other._sindex != self._sindex:
             raise TypeError("The two sets of components do not have the " + 
                             "same starting index.")
-        #
-        # Initializations
-        # 
-        if not contractions:
-            contractions = ((self._nid-1, 0),)
-        ncontr = len(contractions)
+        contractions = [(pos1[i], pos2[i]) for i in range(ncontr)]
         res_nid = self._nid + other._nid - 2*ncontr
-        print "contractions: ", contractions
         # 
         # Special case of a scalar result
         #
@@ -1384,10 +1384,6 @@ class Components(SageObject):
                 pos_o[pos] = self._nid + pos - shift
         rev_s = [pos_s.index(i) for i in range(self._nid-ncontr)]
         rev_o = [pos_o.index(i) for i in range(self._nid-ncontr, res_nid)]
-        print "pos_s: ", pos_s
-        print "pos_o: ", pos_o
-        print "rev_s: ", rev_s
-        print "rev_o: ", rev_o
         #
         # Determination of the symmetries of the result
         #
@@ -1406,8 +1402,8 @@ class Components(SageObject):
             else:
                 o_sym = []
                 o_antisym = []
-            print "s_sym, s_antisym: ", s_sym, s_antisym
-            print "o_sym, o_antisym: ", o_sym, o_antisym
+            # print "s_sym, s_antisym: ", s_sym, s_antisym
+            # print "o_sym, o_antisym: ", o_sym, o_antisym
             res_sym = []
             res_antisym = []
             for isym in s_sym:
@@ -1442,10 +1438,10 @@ class Components(SageObject):
                 if len(r_isym) > 1:
                     res_antisym.append(r_isym)
                     max_len_antisym = max(max_len_antisym, len(r_isym))
-            print "res_sym: ", res_sym
-            print "res_antisym: ", res_antisym
-            print "max_len_sym: ", max_len_sym 
-            print "max_len_antisym: ", max_len_antisym 
+            # print "res_sym: ", res_sym
+            # print "res_antisym: ", res_antisym
+            # print "max_len_sym: ", max_len_sym 
+            # print "max_len_antisym: ", max_len_antisym 
         #
         # Construction of the result object in view of the remaining symmetries:
         #
@@ -1476,7 +1472,6 @@ class Components(SageObject):
                                     start_index=self._sindex) 
         shift_o = self._nid - ncontr
         for ind in res.non_redundant_index_generator():
-            # print "ind : ", ind
             ind_s = [None for i in range(self._nid)]  # initialization
             ind_o = [None for i in range(other._nid)] # initialization
             for i, pos in enumerate(rev_s):
@@ -1491,7 +1486,6 @@ class Components(SageObject):
                     ind_s[pos_s] = k
                     ind_o[pos_o] = k
                     ic += 1
-                # print "ind_s, ind_o : ", ind_s, ind_o
                 sm += self[[ind_s]] * other[[ind_o]]
             res[[ind]] = sm
         return res

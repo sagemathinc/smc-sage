@@ -215,7 +215,7 @@ class TensorWithIndices(SageObject):
                 pos2 = self._tensor._tensor_type[0] + self._cov.index(ind)
                 contraction_pairs.append((pos1, pos2))
         if len(contraction_pairs) > 1:
-            raise NotImplementedError("Multiple contractions are not " + 
+            raise NotImplementedError("Multiple self-contractions are not " + 
                                       "implemented yet.")
         if len(contraction_pairs) == 1:
             pos1 = contraction_pairs[0][0]
@@ -282,11 +282,10 @@ class TensorWithIndices(SageObject):
         if contraction_pairs == []:
             # No contraction is performed: the tensor product is returned
             return self._tensor * other._tensor
-        if len(contraction_pairs) > 1:
-            raise NotImplementedError("Multiple contractions are not " + 
-                                      "implemented yet.")
-        pos1 = contraction_pairs[0][0]
-        pos2 = contraction_pairs[0][1]
-        return self._tensor.contract(pos1, other._tensor, pos2)
+        ncontr = len(contraction_pairs)
+        pos1 = [contraction_pairs[i][0] for i in range(ncontr)]
+        pos2 = [contraction_pairs[i][1] for i in range(ncontr)]
+        args = pos1 + [other._tensor] + pos2
+        return self._tensor.contract(*args)
 
         

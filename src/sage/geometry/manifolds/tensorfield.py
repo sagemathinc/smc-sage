@@ -1998,21 +1998,26 @@ class TensorField(ModuleElement):
 
     def contract(self, *args):
         r""" 
-        Contraction with another tensor field.  
+        Contraction with another tensor field, on one or more indices.  
         
         INPUT:
             
-        - ``pos1`` -- position of the first index (in ``self``) for the 
-          contraction; if not given, the last index position is assumed
-        - ``other`` -- the tensor to contract with
-        - ``pos2`` -- position of the second index (in ``other``) for the 
-          contraction; if not given, the first index position is assumed
+        - ``pos1`` -- positions of the indices in ``self`` involved in the
+          contraction; ``pos1`` must be a sequence of integers, with 0 standing
+          for the first index position, 1 for the second one, etc. If ``pos1`` 
+          is not provided, a single contraction on the last index position of
+          ``self`` is assumed
+        - ``other`` -- the tensor field to contract with
+        - ``pos2`` -- positions of the indices in ``other`` involved in the
+          contraction, with the same conventions as for ``pos1``. If ``pos2``
+          is not provided, a single contraction on the first index position of
+          ``other`` is assumed
           
         OUTPUT:
         
-        - tensor resulting from the (pos1, pos2) contraction of ``self`` with 
-          ``other``
-       
+        - tensor field resulting from the contraction at the positions 
+          ``pos1`` and ``pos2`` of ``self`` with ``other``
+      
         EXAMPLES:
         
         Contractions of a type-(1,1) tensor field with a type-(2,0) one on 
@@ -2134,30 +2139,25 @@ class TensorField(ModuleElement):
 
         """
         nargs = len(args)
-        if nargs == 1:
-            pos1 = self._tensor_rank - 1
-            other = args[0]
-            pos2 = 0
-        elif nargs == 2:
-            if isinstance(args[0], TensorField):
-                pos1 = self._tensor_rank - 1
-                other = args[0]
-                pos2 = args[1]
-            else:
-                pos1 = args[0]
-                other = args[1]
-                pos2 = 0
-        elif nargs == 3:
-            pos1 = args[0]
-            other = args[1]
-            pos2 = args[2]
+        for i, arg in enumerate(args):
+            if isinstance(arg, TensorField):
+                other = arg
+                it = i
+                break
         else:
-            raise TypeError("Wrong number of arguments in contract(): " + 
-                str(nargs) + 
-                " arguments provided, while between 1 and 3 are expected.")
-        if not isinstance(other, TensorField):
-            raise TypeError("For the contraction, other must be a tensor " + 
-                            "field.")            
+            raise TypeError("A tensor field must be provided in the " +
+                            "argument list.")
+        if it == 0:
+            pos1 = (self._tensor_rank - 1,)
+        else:
+            pos1 = args[:it]
+        if it == nargs-1:
+            pos2 = (0,)
+        else:
+            pos2 = args[it+1:]
+        ncontr = len(pos1) # number of contractions
+        if len(pos2) != ncontr:
+            raise TypeError("Different number of indices for the contraction.")
         if self._domain.is_subdomain(other._domain):
             if not self._ambient_domain.is_subdomain(other._ambient_domain):
                 raise TypeError("Incompatible ambient domains for contraction.")
@@ -2171,10 +2171,11 @@ class TensorField(ModuleElement):
         other_r = other.restrict(dom_resu)
         k1, l1 = self._tensor_type
         k2, l2 = other._tensor_type
-        tensor_type_resu = (k1+k2-1, l1+l2-1)
+        tensor_type_resu = (k1+k2-ncontr, l1+l2-ncontr)
         if ambient_dom_resu.is_manifestly_parallelizable():
             # call of the FreeModuleTensor version:
-            return FreeModuleTensor.contract(self_r, pos1, other_r, pos2)
+            args = pos1 + (other_r,) + pos2 
+            return FreeModuleTensor.contract(self_r, *args)
         com_dom = []
         for dom in self_r._restrictions:
             if dom in other_r._restrictions:
@@ -2183,7 +2184,8 @@ class TensorField(ModuleElement):
         for dom in com_dom:
             self_rr = self_r._restrictions[dom]
             other_rr = other_r._restrictions[dom]
-            resu_rst.append(self_rr.contract(pos1, other_rr, pos2))
+            args = pos1 + (other_rr,) + pos2
+            resu_rst.append(self_rr.contract(*args))
         if tensor_type_resu == (0,0):
             # scalar field result
             resu = dom_resu.scalar_field()
@@ -3121,21 +3123,30 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
     def contract(self, *args):
         r""" 
-        Contraction with another tensor field.
+        Contraction with another tensor field, on one or more indices.  
         
         INPUT:
             
-        - ``pos1`` -- position of the first index (in ``self``) for the 
-          contraction; if not given, the last index position is assumed
-        - ``other`` -- the tensor to contract with
-        - ``pos2`` -- position of the second index (in ``other``) for the 
-          contraction; if not given, the first index position is assumed
+        - ``pos1`` -- positions of the indices in ``self`` involved in the
+          contraction; ``pos1`` must be a sequence of integers, with 0 standing
+          for the first index position, 1 for the second one, etc. If ``pos1`` 
+          is not provided, a single contraction on the last index position of
+          ``self`` is assumed
+        - ``other`` -- the tensor field to contract with
+        - ``pos2`` -- positions of the indices in ``other`` involved in the
+          contraction, with the same conventions as for ``pos1``. If ``pos2``
+          is not provided, a single contraction on the first index position of
+          ``other`` is assumed
           
         OUTPUT:
         
-        - tensor resulting from the (pos1, pos2) contraction of ``self`` with 
-          ``other``
-       
+        - tensor field resulting from the contraction at the positions 
+          ``pos1`` and ``pos2`` of ``self`` with ``other``
+        
+        EXAMPLES:
+        
+        See :meth:`TensorField.contract`.
+        
         """
         # This is to ensure the call to the TensorField version instead of
         # the FreeModuleTensor one

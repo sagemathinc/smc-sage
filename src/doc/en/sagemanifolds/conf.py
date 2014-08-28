@@ -18,7 +18,7 @@ from common.conf import *
 # General information about the project.
 project = u"SageManifolds Reference Manual"
 name = 'sagemanifolds_ref'
-release = "0.5"
+release = "0.6"
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
