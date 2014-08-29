@@ -1296,10 +1296,28 @@ class Components(SageObject):
             [12, 24, 36]
             sage: [sum(a[j]*b[i,j] for j in range(3)) for i in range(3)]  # check
             [12, 24, 36]
+        
+        Contraction on 2 indices::
+        
+            sage: c = a*b ; c 
+            3-indices components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s = c.contract(1,2, b, 0,1) ; s  
+            1-index components w.r.t. [
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
+            ]
+            sage: s[:]
+            [-285, 570, 855]
+            sage: [sum(sum(c[i,j,k]*b[j,k] for k in range(3)) for j in range(3)) for i in range(3)] # check
+            [-285, 570, 855]  
 
         Consistency check with :meth:`self_contract`::
 
-            sage: a[:] = (1,2,-3)
             sage: b = a*a ; b   # the tensor product of a with itself
             fully symmetric 2-indices components w.r.t. [
             (1, 0, 0),
@@ -1307,9 +1325,9 @@ class Components(SageObject):
             (0, 0, 1)
             ]
             sage: b[:]
-            [ 1  2 -3]
-            [ 2  4 -6]
-            [-3 -6  9]
+            [ 1 -2 -3]
+            [-2  4  6]
+            [-3  6  9]
             sage: b.self_contract(0,1)
             14
             sage: a.contract(0, a, 0) == b.self_contract(0,1)

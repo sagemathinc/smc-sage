@@ -2102,6 +2102,26 @@ class TensorField(ModuleElement):
             sage: s == s0.restrict(W)
             True
 
+        The contraction can be performed on more than one index: c being a type-(2,2) tensor,
+        contracting the indices in positions 2 and 3 of c with respectively those in positions 0 and 1 of b is::
+
+            sage: c = a*a ; c
+            tensor field of type (2,2) on the 2-dimensional manifold 'M'
+            sage: s = c.contract(2,3, b, 0,1) ; s 
+            tensor field of type (2,0) on the 2-dimensional manifold 'M'
+            sage: s == c['^.._kl']*b['^kl']  # the same double contraction in index notation
+            True
+
+        The symmetries are either conserved or destroyed by the contraction::
+        
+            sage: c = c.symmetrize((0,1)).antisymmetrize((2,3))
+            sage: c.symmetries()
+            symmetry: (0, 1);  antisymmetry: (2, 3)
+            sage: s = b.contract(0, c, 2) ; s
+            tensor field of type (3,1) on the 2-dimensional manifold 'M'
+            sage: s.symmetries()
+            symmetry: (1, 2);  no antisymmetry
+
         Case of a scalar field result::
         
             sage: a = M.one_form('a')

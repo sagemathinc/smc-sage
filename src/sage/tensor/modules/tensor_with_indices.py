@@ -125,6 +125,13 @@ class TensorWithIndices(SageObject):
         sage: t['^{ik}_{jl}']*b['_{mk}'] == s # LaTeX notation
         True
     
+    Contraction on two indices::
+    
+        sage: s = a['^kl']*b['_kl'] ; s
+        105
+        sage: s == a.contract(0,1, b, 0,1)
+        True
+
     """
     def __init__(self, tensor, indices):
         self._tensor = tensor # may be changed below

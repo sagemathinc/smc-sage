@@ -1787,6 +1787,23 @@ class FreeModuleTensor(ModuleElement):
             sage: s1 == s  # ... and yields the same result as previously:
             True
 
+        The contraction can be performed on more than a single index; for 
+        instance a 2-indices contraction of a type-(2,1) tensor with a 
+        type-(1,2) one is::
+        
+            sage: a  # a is a tensor of type-(2,1)
+            type-(2,1) tensor on the rank-3 free module M over the Integer Ring
+            sage: b = M([1,-1,2])*b ; b # a tensor of type (1,2)
+            type-(1,2) tensor on the rank-3 free module M over the Integer Ring
+            sage: s = a.contract(1,2,b,1,0) ; s # the double contraction 
+            endomorphism on the rank-3 free module M over the Integer Ring
+            sage: s[:]
+            [ -36   30   15]
+            [-252  210  105]
+            [-204  170   85]
+            sage: s == a['^.k_l']*b['^l_k.']  # the same thing in index notation
+            True
+            
         """
         #
         # Treatment of the input
