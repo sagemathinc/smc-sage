@@ -132,6 +132,23 @@ class TensorWithIndices(SageObject):
         sage: s == a.contract(0,1, b, 0,1)
         True
 
+    Some minimal arithmetics::
+    
+        sage: 2*a['^ij']
+        X^ij
+        sage: (2*a['^ij'])._tensor == 2*a
+        True
+        sage: 2*t['ij_kl']
+        X^ij_kl
+        sage: +a['^ij']
+        +a^ij
+        sage: +t['ij_kl']
+        +t^ij_kl
+        sage: -a['^ij']
+        -a^ij
+        sage: -t['ij_kl']
+        -t^ij_kl
+
     """
     def __init__(self, tensor, indices):
         self._tensor = tensor # may be changed below
@@ -295,4 +312,34 @@ class TensorWithIndices(SageObject):
         args = pos1 + [other._tensor] + pos2
         return self._tensor.contract(*args)
 
+    def __rmul__(self, other):
+        r"""
+        Multiplication on the left by ``other``. 
         
+        """
+        return TensorWithIndices(other*self._tensor, 
+                                 self._con + '_' + self._cov)
+
+    def __pos__(self):
+        r"""
+        Unary plus operator. 
+        
+        OUTPUT:
+        
+        - an exact copy of ``self``
+    
+        """
+        return TensorWithIndices(+self._tensor, 
+                                 self._con + '_' + self._cov)
+                                 
+    def __neg__(self):
+        r"""
+        Unary minus operator. 
+        
+        OUTPUT:
+        
+        - - ``self``
+    
+        """
+        return TensorWithIndices(-self._tensor, 
+                                 self._con + '_' + self._cov)

@@ -2833,7 +2833,21 @@ class CoordChange(SageObject):
         [[cos(ph)*sin(th), r*cos(ph)*cos(th), -r*sin(ph)*sin(th)], [sin(ph)*sin(th), r*cos(th)*sin(ph), r*cos(ph)*sin(th)], [cos(th), -r*sin(th), 0]]
         sage: ch._jacobian_det  # Jacobian determinant
         r^2*sin(th)
-        
+    
+    Two successive change of coordinates can be composed by means of the operator \*,
+    which in the present context stands for `\circ`::
+    
+        sage: c_cart2.<u,v,w> = M.chart()
+        sage: ch2 = c_cart.coord_change(c_cart2, x+y, x-y, z-x-y)
+        sage: ch3 = ch2 * ch ; ch3
+        coordinate change from chart (R3, (r, th, ph)) to chart (R3, (u, v, w))
+        sage: ch3(r,th,ph)
+        (r*(cos(ph) + sin(ph))*sin(th),
+         r*(cos(ph) - sin(ph))*sin(th),
+         -r*(cos(ph) + sin(ph))*sin(th) + r*cos(th))
+        sage: ch3 is M.coord_change(c_spher, c_cart2)
+        True
+
     """
     def __init__(self, chart1, chart2, *transformations): 
         from sage.matrix.constructor import matrix
@@ -3089,3 +3103,40 @@ class CoordChange(SageObject):
             for comp in fr_change21._components[frame2]._comp.itervalues():
                 comp.function_chart(self._chart2, from_chart=self._chart1)
     
+    def __mul__(self, other):
+        r""" 
+        Composition with another change of coordinates
+        
+        INPUT:
+        
+        - ``other`` -- another change of coordinate, the final chart of 
+          it is the initial chart of ``self``
+          
+        OUTPUT:
+        
+        - the change of coordinates X_1 --> X_3, where X_1 is the initial 
+          chart of ``other`` and X_3 is the final chart of ``self``
+        
+        EXAMPLE:
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: U.<u,v> = M.chart()
+            sage: X_to_U = X.transition_map(U, (x+y, x-y))
+            sage: W.<w,z> = M.chart()
+            sage: U_to_W = U.transition_map(W, (u+cos(u)/2, v-sin(v)/2))
+            sage: X_to_W = U_to_W * X_to_U ; X_to_W
+            coordinate change from chart (M, (x, y)) to chart (M, (w, z))
+            sage: X_to_W(x,y)
+            (1/2*cos(x)*cos(y) - 1/2*sin(x)*sin(y) + x + y,
+             -1/2*cos(y)*sin(x) + 1/2*cos(x)*sin(y) + x - y)
+
+        """
+        if not isinstance(other, CoordChange):
+            raise TypeError(str(other) + " is not a change of coordinate.")
+        if other._chart2 != self._chart1:
+            raise ValueError("Composition not possible: " + 
+                             str(other._chart2) + " is different from "
+                             + str(self._chart1))
+        transf = self(*(other._transf.expr()))
+        return CoordChange(other._chart1, self._chart2, *transf)

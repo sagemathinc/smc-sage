@@ -461,3 +461,23 @@ class Point(Element):
             (self._manifold)._tangent_spaces[self] = res
             return res 
 
+    def plot(self, ambient_chart, color='black'):
+        r"""
+        Plot the point in a Cartesian graph based on the coordinates of
+        some chart, called hereafter the *ambient chart*.
+
+        INPUT:
+        
+        - ``ambient_chart`` -- the ambient chart (see above)
+
+        OUTPUT:
+        
+        - a graphic object, either an instance of
+          :class:`~sage.plot.graphics.Graphics` for a 2D plot (i.e. based on
+          2 coordinates of the ambient chart) or an instance of 
+          :class:`~sage.plot.plot3d.base.Graphics3d` for a 3D plot (i.e. 
+          based on 3 coordinates of the ambient chart)
+        
+        """
+        pass
+        
