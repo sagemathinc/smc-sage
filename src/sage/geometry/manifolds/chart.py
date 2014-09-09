@@ -1151,6 +1151,11 @@ class Chart(UniqueRepresentation, SageObject):
             sage: g = c_pol.plot(c_cart, fixed_coords={r: 2}) # draw a circle of radius r=2 
             sage: g = c_pol.plot(c_cart, fixed_coords={ph: pi/4}) # draw a segment at phi=pi/4
 
+        A chart can be plot in terms of itself, resulting in a rectangular grid::
+        
+            sage: g = c_cart.plot(c_cart)
+            sage: show(g) # a rectangular grid
+            
         An example with the ambient chart given by the coordinate expression of 
         some differentiable mapping: 3D plot of the stereographic charts on the 
         2-sphere::
@@ -1207,6 +1212,14 @@ class Chart(UniqueRepresentation, SageObject):
         coordinates u and v, i.e. to have [-20,20] instead of the default 
         [-8,8].
         
+        ::
+        
+        A 3-dimensional chart plotted in terms of itself results in a 3D 
+        rectangular grid::
+        
+            sage: g = c_cart.plot(c_cart, nb_values=5)
+            sage: show(g)  # a 3D mesh cube
+        
         """
         from sage.rings.infinity import Infinity
         from sage.misc.functional import numerical_approx
@@ -1219,50 +1232,52 @@ class Chart(UniqueRepresentation, SageObject):
             raise TypeError("The first argument must be a chart.")
         # 1/ Determination of the relation between self and ambient_chart
         #    ------------------------------------------------------------
-        transf = None # to be the MultiFunctionChart relating self to 
-                      # ambient_chart
-        if mapping is None:
-            if not self._domain.is_subdomain(ambient_chart._domain):
-                raise TypeError("The domain of " + str(self) + 
-                                " is not included in that of " + 
-                                str(ambient_chart))
-            coord_changes = ambient_chart._domain._coord_changes
-            for chart_pair in coord_changes:
-                if chart_pair == (self, ambient_chart):
-                    transf = coord_changes[chart_pair]._transf
-                    break
-            else:
-                # Search for a subchart
-                for chart_pair in coord_changes:
-                    for schart in ambient_chart._subcharts:
-                        if chart_pair == (self, schart):
-                            transf = coord_changes[chart_pair]._transf
+        if ambient_chart == self:
+            transf = self.multifunction(*(self._xx))
         else:
-            if not isinstance(mapping, DiffMapping):
-                raise TypeError("The argument 'mapping' must be a " + 
-                                "differentiable mapping.")
-            if not self._domain.is_subdomain(mapping._domain):
-                raise TypeError("The domain of " + str(self) + 
-                                " is not included in that of " + 
-                                str(mapping))
-            if not ambient_chart._domain.is_subdomain(mapping._codomain):
-                raise TypeError("The domain of " + str(ambient_chart) + 
-                                " is not included in the codomain of " + 
-                                str(mapping))
-            for chart_pair in mapping._coord_expression:
-                if chart_pair == (self, ambient_chart):
-                    transf = mapping._coord_expression[chart_pair]
-                    break
+            transf = None # to be the MultiFunctionChart relating self to 
+                          # ambient_chart
+            if mapping is None:
+                if not self._domain.is_subdomain(ambient_chart._domain):
+                    raise TypeError("The domain of " + str(self) + 
+                                    " is not included in that of " + 
+                                    str(ambient_chart))
+                coord_changes = ambient_chart._domain._coord_changes
+                for chart_pair in coord_changes:
+                    if chart_pair == (self, ambient_chart):
+                        transf = coord_changes[chart_pair]._transf
+                        break
+                else:
+                    # Search for a subchart
+                    for chart_pair in coord_changes:
+                        for schart in ambient_chart._subcharts:
+                            if chart_pair == (self, schart):
+                                transf = coord_changes[chart_pair]._transf
             else:
-                # Search for a subchart
+                if not isinstance(mapping, DiffMapping):
+                    raise TypeError("The argument 'mapping' must be a " + 
+                                    "differentiable mapping.")
+                if not self._domain.is_subdomain(mapping._domain):
+                    raise TypeError("The domain of " + str(self) + 
+                                    " is not included in that of " + 
+                                    str(mapping))
+                if not ambient_chart._domain.is_subdomain(mapping._codomain):
+                    raise TypeError("The domain of " + str(ambient_chart) + 
+                                    " is not included in the codomain of " + 
+                                    str(mapping))
                 for chart_pair in mapping._coord_expression:
-                    for schart in ambient_chart._subcharts:
-                        if chart_pair == (self, schart):
-                            transf = mapping._coord_expression[chart_pair]
-        if transf is None:
-            raise ValueError("No relation has been found between " +
-                             str(self) + " and " + str(ambient_chart))
-#        print "transf: ", transf
+                    if chart_pair == (self, ambient_chart):
+                        transf = mapping._coord_expression[chart_pair]
+                        break
+                else:
+                    # Search for a subchart
+                    for chart_pair in mapping._coord_expression:
+                        for schart in ambient_chart._subcharts:
+                            if chart_pair == (self, schart):
+                                transf = mapping._coord_expression[chart_pair]
+            if transf is None:
+                raise ValueError("No relation has been found between " +
+                                 str(self) + " and " + str(ambient_chart))
         # 2/ Treatment of input parameters
         #    -----------------------------
         nc = self._manifold._dim
@@ -1305,13 +1320,11 @@ class Chart(UniqueRepresentation, SageObject):
                     xmax = numerical_approx(bounds[1][0] - 1.e-3)
                 ranges0[coord] = (xmin, xmax)
         ranges = ranges0
-#        print "ranges: ", ranges
         if not isinstance(nb_values, dict):
             nb_values0 = {}
             for coord in coords:
                 nb_values0[coord] = nb_values
             nb_values = nb_values0
-#        print "coords: ", coords
         if steps is None:
             steps = {}
         for coord in coords:
@@ -1321,8 +1334,6 @@ class Chart(UniqueRepresentation, SageObject):
             else:
                 nb_values[coord] = 1 + int(
                            (ranges[coord][1] - ranges[coord][0])/ steps[coord])
-#        print "nb_values: ", nb_values
-#        print "steps: ", steps
         if not isinstance(color, dict):
             color0 = {}
             for coord in coords:
@@ -1343,11 +1354,6 @@ class Chart(UniqueRepresentation, SageObject):
             for coord in coords:
                 plot_points0[coord] = plot_points
             plot_points = plot_points0
-#        print "fixed_coords: ", fixed_coords
-#        print "ambient_coords: ", ambient_coords
-#        print "color: ", color
-#        print "style: ", style
-#        print "plot_points: ", plot_points
         # 3/ Plots
         #    -----
         xx0 = [0] * nc
@@ -1357,17 +1363,14 @@ class Chart(UniqueRepresentation, SageObject):
             for fc, val in fixed_coords.iteritems():
                 xx0[self._xx.index(fc)] = val
         ind_a = [ambient_chart._xx.index(ac) for ac in ambient_coords]
-#        print "xx0, ind_a: ", xx0, ind_a
         resu = Graphics()
         for coord in coords:
-#            print "coord: ", coord
             rem_coords = list(coords)
             rem_coords.remove(coord)
             xx_list = [xx0]
             if len(rem_coords) >= 1:
                 xx_list = self._plot_xx_list(xx_list, rem_coords, ranges, 
                                              steps, nb_values)
-#            print "xx_list: ", xx_list
             xmin = ranges[coord][0]
             xmax = ranges[coord][1]
             nbp = plot_points[coord]

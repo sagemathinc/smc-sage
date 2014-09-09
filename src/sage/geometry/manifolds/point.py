@@ -461,7 +461,9 @@ class Point(Element):
             (self._manifold)._tangent_spaces[self] = res
             return res 
 
-    def plot(self, ambient_chart, color='black'):
+    def plot(self, ambient_chart, ambient_coords=None, size=10, color='black', 
+             label=None, label_color=None, fontsize=10, label_offset=0.1, 
+             parameters=None):
         r"""
         Plot the point in a Cartesian graph based on the coordinates of
         some chart, called hereafter the *ambient chart*.
@@ -469,6 +471,13 @@ class Point(Element):
         INPUT:
         
         - ``ambient_chart`` -- the ambient chart (see above)
+        - ``ambient_coords`` -- (default: None) tuple containing the 2 or 3 
+          coordinates of the ambient chart in terms of which the plot is 
+          performed; if None, all the coordinates of the ambient chart are 
+          considered
+        - ``parameters`` -- (default: None) dictionary giving the numerical
+          values of the parameters that may appear in the relation between
+          the two coordinate systems
 
         OUTPUT:
         
@@ -479,5 +488,32 @@ class Point(Element):
           based on 3 coordinates of the ambient chart)
         
         """
-        pass
-        
+        from sage.plot.point import point2d
+        from sage.plot.text import text
+        from sage.plot.plot3d.shapes2 import point3d, text3d
+        if ambient_coords is None:
+            ambient_coords = ambient_chart._xx
+        elif not isinstance(ambient_coords, tuple):
+            ambient_coords = tuple(ambient_coords)
+        nca = len(ambient_coords)
+        if nca != 2 and nca !=3:
+            raise TypeError("Bad number of ambient coordinates: " + str(nca))
+        coords = self.coord(ambient_chart)
+        xx = ambient_chart[:]
+        xp = [coords[xx.index(c)] for c in ambient_coords]
+        if parameters is not None:
+            xps = [coord.substitute(parameters) for coord in xp]
+            xp = xps
+        xlab = [coord + label_offset for coord in xp]
+        if label_color is None:
+            label_color = color
+        if nca == 2:
+            if label is None:
+                label = r'$' + self._latex_name + r'$'
+            return point2d(xp, color=color, size=size) + \
+                   text(label, xlab, fontsize=fontsize, color=label_color)
+        else:
+            if label is None:
+                label = self._name
+            return point3d(xp, color=color, size=size) + \
+                   text3d(label, xlab, fontsize=fontsize, color=label_color)
