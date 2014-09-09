@@ -3202,7 +3202,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
           
         EXAMPLES:
 
-        Tensor on a tangent space of a 2-dimensional manifold::
+        Vector in a tangent space of a 2-dimensional manifold::
         
             sage: Manifold._clear_cache_() # for doctests only
             sage: from sage.geometry.manifolds.tangentspace import TangentSpace # for doctests only
@@ -3219,6 +3219,9 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: vp.view()
             v = 3 d/dx + 4 d/dy
+            
+        A 1-form gives birth to a linear form in the tangent space::
+        
             sage: w = M.one_form('w')
             sage: w[:] = [-x, 1+y] ; w.view()
             w = -x dx + (y + 1) dy
@@ -3228,6 +3231,9 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             dual of the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: wp.view()
             w = 2 dx + 4 dy
+        
+        A field of endomorphisms yields an endomorphism in the tangent space::
+         
             sage: t = M.endomorphism_field('t')
             sage: t[0,0], t[0,1], t[1,1] = 1+x, x*y, 1-y
             sage: t.view()
@@ -3238,6 +3244,19 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             free module of type-(1,1) tensors on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: tp.view()
             t = -d/dx*dx - 6 d/dx*dy - 2 d/dy*dy
+
+        A 2-form yields an alternating form of degree 2 in the tangent space::
+
+            sage: a = M.diff_form(2, name='a')
+            sage: a[0,1] = x*y
+            sage: a.view()
+            a = x*y dx/\dy
+            sage: ap = a.at(p) ; ap
+            alternating form a of degree 2 on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: ap.parent()
+            free module of type-(0,2) tensors on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: ap.view()
+            a = -6 dx/\dy
 
         """
         if point not in self._domain:
