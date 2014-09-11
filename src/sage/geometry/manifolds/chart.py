@@ -1212,8 +1212,6 @@ class Chart(UniqueRepresentation, SageObject):
         coordinates u and v, i.e. to have [-20,20] instead of the default 
         [-8,8].
         
-        ::
-        
         A 3-dimensional chart plotted in terms of itself results in a 3D 
         rectangular grid::
         
