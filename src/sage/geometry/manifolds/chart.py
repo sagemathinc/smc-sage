@@ -265,6 +265,9 @@ class Chart(UniqueRepresentation, SageObject):
         False
         sage: # the result is False for the zero functions are not defined on the same chart
     
+    Chart grids can be drawn in 2D or 3D graphics thanks to the method 
+    :meth:`plot`. 
+
     """
     def __init__(self, domain, coordinates='', names=None): 
         from sage.symbolic.ring import SR
@@ -1217,6 +1220,17 @@ class Chart(UniqueRepresentation, SageObject):
         
             sage: g = c_cart.plot(c_cart, nb_values=5)
             sage: show(g)  # a 3D mesh cube
+            
+        A 4-dimensional chart plotted in terms of itself (the plot is 
+        performed for at most 3 coordinates, which must be specified via
+        the argument ``ambient_coords``)::
+        
+            sage: M = Manifold(4, 'M')
+            sage: X.<t,x,y,z> = M.chart()
+            sage: g = X.plot(X, ambient_coords=(t,x,y), nb_values=5)  # the coordinate z is not depicted
+            sage: show(g)  # a 3D mesh cube
+            sage: g = X.plot(X, ambient_coords=(t,y), nb_values=5) # the coordinates x and z are not depicted
+            sage: show(g)  # a 2D mesh square
         
         """
         from sage.rings.infinity import Infinity
@@ -1230,8 +1244,19 @@ class Chart(UniqueRepresentation, SageObject):
             raise TypeError("The first argument must be a chart.")
         # 1/ Determination of the relation between self and ambient_chart
         #    ------------------------------------------------------------
+        nc = self._manifold._dim
         if ambient_chart == self:
             transf = self.multifunction(*(self._xx))
+            if nc > 3:
+                if ambient_coords is None:
+                    raise TypeError("The argument 'ambient_coords' must be " + 
+                                    "provided.")
+                if len(ambient_coords) > 3:
+                    raise ValueError("Too many ambient coordinates.")
+                fixed_coords = {}
+                for coord in self._xx:
+                    if coord not in ambient_coords:
+                        fixed_coords[coord] = 0
         else:
             transf = None # to be the MultiFunctionChart relating self to 
                           # ambient_chart
@@ -1278,7 +1303,6 @@ class Chart(UniqueRepresentation, SageObject):
                                  str(self) + " and " + str(ambient_chart))
         # 2/ Treatment of input parameters
         #    -----------------------------
-        nc = self._manifold._dim
         if fixed_coords is None:
             coords = self._xx
         else:
