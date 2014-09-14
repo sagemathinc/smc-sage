@@ -788,7 +788,7 @@ class Chart(UniqueRepresentation, SageObject):
                     if not combine:
                         return False
                 else:
-                    if not restrict.subs(substitutions):
+                    if not bool(restrict.subs(substitutions)):
                         return False
         # All tests have been passed:
         return True
@@ -1405,16 +1405,21 @@ class Chart(UniqueRepresentation, SageObject):
                 if parameters is None:
                     for i in range(nbp):
                         xp[ind_coord] = xc
-                        yp = transf(*xp, simplify=False)
-                        curve.append( [numerical_approx(yp[j]) for j in ind_a] )
+                        #!# if self.valid_coordinates(*xp):
+                        if True:
+                            yp = transf(*xp, simplify=False)
+                            curve.append( [numerical_approx(yp[j]) 
+                                           for j in ind_a] )
                         xc += dx
                 else:
                     for i in range(nbp):
                         xp[ind_coord] = xc
-                        yp = transf(*xp, simplify=False)
-                        curve.append( 
-                            [numerical_approx( yp[j].substitute(parameters) ) 
-                                                              for j in ind_a] )
+                        #!# if self.valid_coordinates(*xp):
+                        if True:
+                            yp = transf(*xp, simplify=False)
+                            curve.append( 
+                              [numerical_approx( yp[j].substitute(parameters) ) 
+                               for j in ind_a] )
                         xc += dx
                 resu += line(curve, color=color[coord], linestyle=style[coord],
                              thickness=thickness[coord])
@@ -3165,3 +3170,15 @@ class CoordChange(SageObject):
                              + str(self._chart1))
         transf = self(*(other._transf.expr()))
         return CoordChange(other._chart1, self._chart2, *transf)
+
+    def restrict(self, dom1, dom2=None):
+        r"""
+        Restriction to subdomains.
+        """
+        if dom2 is None:
+            dom2 = dom1
+        return CoordChange(self._chart1.restrict(dom1), 
+                           self._chart2.restrict(dom2),
+                           *(self._transf.expr()))
+                           
+    
