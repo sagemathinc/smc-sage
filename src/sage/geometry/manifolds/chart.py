@@ -741,7 +741,7 @@ class Chart(UniqueRepresentation, SageObject):
             self._dom_restrict[subdomain] = res
         return self._dom_restrict[subdomain]
         
-    def valid_coordinates(self, *coordinates):
+    def valid_coordinates(self, *coordinates, **kwds):
         r""" 
         Check whether a tuple of coordinates can be the coordinates of a 
         point in the chart domain.
@@ -749,21 +749,38 @@ class Chart(UniqueRepresentation, SageObject):
         INPUT:
         
         - ``*coordinates`` -- coordinate values
-
+        - ``**kwds`` -- options:
+        
+          - ``tolerance=0``, to set the absolute tolerance in the test of 
+            coordinate ranges
+          - ``parameters=None``, to set some numerical values to parameters
+        
+        
         OUTPUT:
         
-        - True if the coordinate values are admissible in the chart domain. 
+        - True if the coordinate values are admissible in the chart range. 
 
         """
         n = len(coordinates)
         if n != self._manifold._dim:
             return False
+        if 'tolerance' in kwds:
+            tolerance = kwds['tolerance']
+        else:
+            tolerance = 0
+        if 'parameters' in kwds:
+            parameters = kwds['parameters']
+        else:
+            parameters = None
         # Check of the coordinate ranges:
         for x, bounds in zip(coordinates, self._bounds):
-            xmin = bounds[0][0]
+            xmin = bounds[0][0] - tolerance
             min_included = bounds[0][1]
-            xmax = bounds[1][0]
+            xmax = bounds[1][0] + tolerance
             max_included = bounds[1][1]
+            if parameters:
+                xmin = xmin.subs(parameters)
+                xmax = xmax.subs(parameters)
             if min_included:
                 if x < xmin:
                     return False
@@ -780,6 +797,8 @@ class Chart(UniqueRepresentation, SageObject):
         if self._restrictions != []:
             substitutions = dict([(self._xx[j], coordinates[j]) for j in 
                                                                     range(n)])
+            if parameters:
+                substitutions.update(parameters)
             for restrict in self._restrictions:
                 if isinstance(restrict, tuple): # case of or conditions
                     combine = False
@@ -1198,10 +1217,10 @@ class Chart(UniqueRepresentation, SageObject):
 
             sage: W = U.intersection(V) # the domain common to both charts
             sage: c_uvW = c_uv.restrict(W) # chart (W,(u,v))
-            sage: gSN1 = c_uvW.plot(c_xy, ranges={u:[-6,-0.02], v:[-6,-0.02]}, nb_values=25, plot_points=150)
-            sage: gSN2 = c_uvW.plot(c_xy, ranges={u:[-6,-0.02], v:[0.02,6]}, nb_values=25, plot_points=150)
-            sage: gSN3 = c_uvW.plot(c_xy, ranges={u:[0.02,6], v:[-6,-0.02]}, nb_values=25, plot_points=150)
-            sage: gSN4 = c_uvW.plot(c_xy, ranges={u:[0.02,6], v:[0.02,6]}, nb_values=25, plot_points=150)
+            sage: gSN1 = c_uvW.plot(c_xy, ranges={u:[-6.,-0.02], v:[-6.,-0.02]}, nb_values=20, plot_points=100)
+            sage: gSN2 = c_uvW.plot(c_xy, ranges={u:[-6.,-0.02], v:[0.02,6.]}, nb_values=20, plot_points=100)
+            sage: gSN3 = c_uvW.plot(c_xy, ranges={u:[0.02,6.], v:[-6.,-0.02]}, nb_values=20, plot_points=100)
+            sage: gSN4 = c_uvW.plot(c_xy, ranges={u:[0.02,6.], v:[0.02,6.]}, nb_values=20, plot_points=100)
             sage: show(gSN1+gSN2+gSN3+gSN4, xmin=-3, xmax=3, ymin=-3, ymax=3)
         
         The coordinate line u=1 (red) and the coordinate line v=1 (green) on
@@ -1405,8 +1424,8 @@ class Chart(UniqueRepresentation, SageObject):
                 if parameters is None:
                     for i in range(nbp):
                         xp[ind_coord] = xc
-                        #!# if self.valid_coordinates(*xp):
-                        if True:
+                        if self.valid_coordinates(*xp, tolerance=1e-13):
+                        #if True:
                             yp = transf(*xp, simplify=False)
                             curve.append( [numerical_approx(yp[j]) 
                                            for j in ind_a] )
@@ -1414,8 +1433,9 @@ class Chart(UniqueRepresentation, SageObject):
                 else:
                     for i in range(nbp):
                         xp[ind_coord] = xc
-                        #!# if self.valid_coordinates(*xp):
-                        if True:
+                        if self.valid_coordinates(*xp, tolerance=1e-13, 
+                                                  parameters=parameters):
+                        #if True:
                             yp = transf(*xp, simplify=False)
                             curve.append( 
                               [numerical_approx( yp[j].substitute(parameters) ) 
