@@ -282,8 +282,6 @@ def simple_determinant(aa):
         sign = not sign
     return res
 
-
-
 def simplify_sqrt_real(expr):
     r"""
     Simplify sqrt in symbolic expressions in the real domain.
@@ -300,6 +298,17 @@ def simplify_sqrt_real(expr):
         -x + 1
         sage: simplify_sqrt_real( sqrt(x^2) + sqrt(x^2-2*x+1) )
         -2*x + 1
+        
+    This improves over Sage's 
+    :meth:`~sage.symbolic.expression.Expression.simplify_radical` which yields
+    incorrect results when x<0:
+    
+        sage: sqrt(x^2).simplify_radical() # wrong output
+        x
+        sage: sqrt(x^2-2*x+1).simplify_radical() # wrong output
+        x - 1
+        sage: ( sqrt(x^2) + sqrt(x^2-2*x+1) ).simplify_radical() # wrong output
+        2*x - 1
 
     """
     from sage.symbolic.ring import SR
@@ -333,7 +342,12 @@ def simplify_sqrt_real(expr):
         simpl = SR(x._maxima_().radcan())
         # the absolute value of radcan's output is taken, the call to simplify() 
         # taking into account possible assumptions regarding the sign of simpl:
-        new_expr += sexpr[pos0:pos] + '(' + str(abs(simpl).simplify()) + ')'
+        ssimpl = str(abs(simpl).simplify())
+        # search for abs(1/sqrt(...)) term to simplify it into 1/sqrt(...):
+        pstart = ssimpl.find('abs(1/sqrt(')
+        if pstart != -1:
+            ssimpl = ssimpl[:pstart] + ssimpl[pstart+3:] # getting rid of 'abs'
+        new_expr += sexpr[pos0:pos] + '(' + ssimpl + ')'
         pos0 = pos + len(the_sqrts[i])
     new_expr += sexpr[pos0:]
     return SR(new_expr)
