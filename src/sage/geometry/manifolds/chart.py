@@ -1261,6 +1261,7 @@ class Chart(UniqueRepresentation, SageObject):
         from utilities import set_axes_labels
         if not isinstance(ambient_chart, Chart):
             raise TypeError("The first argument must be a chart.")
+        #
         # 1/ Determination of the relation between self and ambient_chart
         #    ------------------------------------------------------------
         nc = self._manifold._dim
@@ -1320,6 +1321,7 @@ class Chart(UniqueRepresentation, SageObject):
             if transf is None:
                 raise ValueError("No relation has been found between " +
                                  str(self) + " and " + str(ambient_chart))
+        #
         # 2/ Treatment of input parameters
         #    -----------------------------
         if fixed_coords is None:
@@ -1395,6 +1397,7 @@ class Chart(UniqueRepresentation, SageObject):
             for coord in coords:
                 plot_points0[coord] = plot_points
             plot_points = plot_points0
+        #
         # 3/ Plots
         #    -----
         xx0 = [0] * nc
@@ -1406,43 +1409,71 @@ class Chart(UniqueRepresentation, SageObject):
         ind_a = [ambient_chart._xx.index(ac) for ac in ambient_coords]
         resu = Graphics()
         for coord in coords:
+            color_c, style_c = color[coord], style[coord]
+            thickness_c = thickness[coord]
             rem_coords = list(coords)
             rem_coords.remove(coord)
             xx_list = [xx0]
             if len(rem_coords) >= 1:
                 xx_list = self._plot_xx_list(xx_list, rem_coords, ranges, 
                                              steps, nb_values)
-            xmin = ranges[coord][0]
-            xmax = ranges[coord][1]
+            xmin, xmax = ranges[coord]
             nbp = plot_points[coord]
             dx = (xmax - xmin) / (nbp-1)
             ind_coord = self._xx.index(coord)
             for xx in xx_list:
                 curve = []
+                first_invalid = False # initialization
                 xc = xmin
                 xp = list(xx)
                 if parameters is None:
                     for i in range(nbp):
                         xp[ind_coord] = xc
                         if self.valid_coordinates(*xp, tolerance=1e-13):
-                        #if True:
                             yp = transf(*xp, simplify=False)
                             curve.append( [numerical_approx(yp[j]) 
                                            for j in ind_a] )
+                            first_invalid = True # next invalid point will be
+                                                 # the first one
+                        else:
+                            if first_invalid:
+                                # the curve is stopped at previous point and 
+                                # added to the graph:
+                                resu += line(curve, color=color_c, 
+                                             linestyle=style_c,
+                                             thickness=thickness_c)
+                                curve = [] # a new curve will start at the 
+                                           # next valid point
+                            first_invalid = False # next invalid point will not
+                                                  # be the first one
                         xc += dx
                 else:
                     for i in range(nbp):
                         xp[ind_coord] = xc
                         if self.valid_coordinates(*xp, tolerance=1e-13, 
                                                   parameters=parameters):
-                        #if True:
                             yp = transf(*xp, simplify=False)
                             curve.append( 
                               [numerical_approx( yp[j].substitute(parameters) ) 
                                for j in ind_a] )
+                            first_invalid = True # next invalid point will be
+                                                 # the first one
+                        else:
+                            if first_invalid:
+                                # the curve is stopped at previous point and 
+                                # added to the graph:
+                                resu += line(curve, color=color_c, 
+                                             linestyle=style_c,
+                                             thickness=thickness_c)
+                                curve = [] # a new curve will start at the 
+                                           # next valid point
+                            first_invalid = False # next invalid point will not
+                                                  # be the first one
                         xc += dx
-                resu += line(curve, color=color[coord], linestyle=style[coord],
-                             thickness=thickness[coord])
+                if curve != []:
+                    resu += line(curve, color=color_c, 
+                                 linestyle=style_c,
+                                 thickness=thickness_c)
         if nca==2:  # 2D graphic
             resu.set_aspect_ratio(1)
             if label_axes:
