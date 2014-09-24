@@ -62,7 +62,7 @@ class AffConnection(SageObject):
         
     where `T^{(k,l)}(M)` stands for the `C^\infty(M)`-module of tensor fields
     of type `(k,l)` on `M` (with the convention `T^{(0,0)}(M):=C^\infty(M)`).
-    For a vector field `v`,  the covariant derivate `\nabla v` is a 
+    For a vector field `v`,  the covariant derivative `\nabla v` is a 
     type-(1,1) tensor field such that 
     
     .. MATH::
@@ -1392,7 +1392,7 @@ class LeviCivitaConnection(AffConnection):
     Given a differentiable manifold `M` endowed with a pseudo-Riemannian 
     metric `g` and denoting by `\mathcal{X}(M)` 
     the `C^\infty(M)`-module of vector fields on `M`, the 
-    *Levi-Civita connection associated with* `g` is an operator
+    *Levi-Civita connection associated with* `g` is the unique operator
 
     .. MATH::
 
@@ -1427,7 +1427,7 @@ class LeviCivitaConnection(AffConnection):
         
     where `T^{(k,l)}(M)` stands for the `C^\infty(M)`-module of tensor fields
     of type `(k,l)` on `M` (with the convention `T^{(0,0)}(M):=C^\infty(M)`).
-    For a vector field `v`,  the covariant derivate `\nabla v` is a 
+    For a vector field `v`,  the covariant derivative `\nabla v` is a 
     type-(1,1) tensor field such that 
     
     .. MATH::
