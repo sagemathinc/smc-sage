@@ -696,7 +696,7 @@ class TensorField(ModuleElement):
         - pair (k,l), where k is the contravariant rank and l is the covariant 
           rank
         
-        EXAMPLE::
+        EXAMPLES::
         
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
@@ -720,7 +720,7 @@ class TensorField(ModuleElement):
         - integer k+l, where k is the contravariant rank and l is the covariant 
           rank
         
-        EXAMPLE::
+        EXAMPLES::
 
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart()
@@ -975,7 +975,7 @@ class TensorField(ModuleElement):
           which the extension of the expression of the components is to be 
           performed; if None, the default's chart of `e`'s domain is assumed
           
-        EXAMPLE:
+        EXAMPLES:
         
         Components of a vector field on the sphere `S^2`::
         
@@ -1053,7 +1053,7 @@ class TensorField(ModuleElement):
         - components in the vector frame ``basis``, as an instance of the 
           class :class:`~sage.tensor.modules.comp.Components` 
 
-        EXAMPLE:
+        EXAMPLES:
         
         Components of a type-(1,1) tensor field defined on two open domains::
 
@@ -1125,7 +1125,7 @@ class TensorField(ModuleElement):
           if none is provided, the default chart of the vector frame domain
           is assumed.
         
-        EXAMPLE:
+        EXAMPLES:
         
         Display of a type-(1,1) tensor field defined on two open domains::
         
@@ -1859,16 +1859,17 @@ class TensorField(ModuleElement):
             resu._latex_name = res_latex
             return resu
 
-    def self_contract(self, pos1, pos2):
+    def trace(self, pos1=0, pos2=1):
         r""" 
-        Contraction on two slots of the tensor field. 
+        Trace (contraction) on two slots of the tensor field. 
         
         INPUT:
             
-        - ``pos1`` -- position of the first index for the contraction, with the
-          convention ``pos1=0`` for the first slot
-        - ``pos2`` -- position of the second index for the contraction, with 
-          the same convention as for ``pos1``. 
+        - ``pos1`` -- (default: 0) position of the first index for the 
+          contraction, with the convention ``pos1=0`` for the first slot
+        - ``pos2`` -- (default: 1) position of the second index for the 
+          contraction, with the same convention as for ``pos1``. The variance 
+          type of ``pos2`` must be opposite to that of ``pos1``
           
         OUTPUT:
         
@@ -1876,7 +1877,7 @@ class TensorField(ModuleElement):
        
         EXAMPLES:
 
-        Self-contraction of a type-(1,1) tensor field on a 2-dimensional 
+        Trace of a type-(1,1) tensor field on a 2-dimensional 
         non-parallelizable manifold::
 
             sage: M = Manifold(2, 'M')
@@ -1890,14 +1891,16 @@ class TensorField(ModuleElement):
             sage: a = M.tensor_field(1,1, name='a')
             sage: a[eU,:] = [[1,x], [2,y]]
             sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
-            sage: s = a.self_contract(0,1) ; s
+            sage: s = a.trace() ; s
             scalar field on the 2-dimensional manifold 'M'
             sage: s.view()
             M --> R
             on U: (x, y) |--> y + 1
             on V: (u, v) |--> 1/2*u - 1/2*v + 1
+            sage: s == a.trace(0,1) # explicit mention of the positions
+            True
 
-        Instead of the explicit call to the method :meth:`self_contract`, one
+        Instead of the explicit call to the method :meth:`trace`, one
         may use the index notation with Einstein convention (summation over
         repeated indices); it suffices to pass the indices as a string inside
         square brackets::
@@ -1912,13 +1915,13 @@ class TensorField(ModuleElement):
             sage: a['^b_b'] == s
             True
         
-        Self-contraction of a type-(1,2) tensor field::
+        Trace of a type-(1,2) tensor field::
 
             sage: b = M.tensor_field(1,2, name='b') ; b
             tensor field 'b' of type (1,2) on the 2-dimensional manifold 'M'
             sage: b[eU,:] = [[[1,x], [2,y]], [[0,y-3], [x*y,y^2]]]
             sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
-            sage: s = b.self_contract(0,1) ; s # contraction on first and second slots
+            sage: s = b.trace(0,1) ; s # contraction on first and second slots
             1-form on the 2-dimensional manifold 'M'
             sage: s.view(eU)
             (x*y + 1) dx + (y^2 + x) dy
@@ -1949,7 +1952,7 @@ class TensorField(ModuleElement):
 
         Contraction on first and third slots::
             
-            sage: s = b.self_contract(0,2) ; s
+            sage: s = b.trace(0,2) ; s
             1-form on the 2-dimensional manifold 'M'
             sage: s.view(eU)
             (y - 2) dx + (y^2 + 2) dy
@@ -1973,7 +1976,7 @@ class TensorField(ModuleElement):
                              "not allowed.")
         resu_rst = []
         for rst in self._restrictions.itervalues():
-            resu_rst.append(rst.self_contract(pos1, pos2))
+            resu_rst.append(rst.trace(pos1, pos2))
         if (k_con, l_cov) == (1,1):
             # scalar field result
             resu = self._domain.scalar_field()
@@ -2114,7 +2117,7 @@ class TensorField(ModuleElement):
 
         The symmetries are either conserved or destroyed by the contraction::
         
-            sage: c = c.symmetrize((0,1)).antisymmetrize((2,3))
+            sage: c = c.symmetrize(0,1).antisymmetrize(2,3)
             sage: c.symmetries()
             symmetry: (0, 1);  antisymmetry: (2, 3)
             sage: s = b.contract(0, c, 2) ; s
@@ -2233,7 +2236,7 @@ class TensorField(ModuleElement):
             resu._restrictions[rst._domain] = rst
         return resu
 
-    def symmetrize(self, pos=None):
+    def symmetrize(self, *pos):
         r"""
         Symmetrization over some arguments.
         
@@ -2248,6 +2251,36 @@ class TensorField(ModuleElement):
         
         - the symmetrized tensor field (instance of :class:`TensorField`)
         
+        EXAMPLES:
+        
+        Symmetrization of a type-(0,2) tensor field on a 2-dimensional 
+        non-parallelizable manifold::
+
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: M.declare_union(U,V)   # M is the union of U and V
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+            sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+            sage: inv = transf.inverse()
+            sage: W = U.intersection(V)
+            sage: eU = c_xy.frame() ; eV = c_uv.frame()
+            sage: a = M.tensor_field(0,2, name='a')
+            sage: a[eU,:] = [[1,x], [2,y]]
+            sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
+            sage: a[eV,:]
+            [ 1/4*u + 3/4 -1/4*u + 3/4]
+            [ 1/4*v - 1/4 -1/4*v - 1/4]
+            sage: s = a.symmetrize() ; s
+            field of symmetric bilinear forms on the 2-dimensional manifold 'M'
+            sage: s[eU,:]
+            [        1 1/2*x + 1]
+            [1/2*x + 1         y]
+            sage: s[eV,:]
+            [         1/4*u + 3/4 -1/8*u + 1/8*v + 1/4]
+            [-1/8*u + 1/8*v + 1/4         -1/4*v - 1/4]
+            sage: s == a.symmetrize(0,1)  # explicit positions
+            True
+
         See 
         :meth:`sage.tensor.modules.free_module_tensor.FreeModuleTensor.symmetrize`
         for more details and examples.
@@ -2255,14 +2288,14 @@ class TensorField(ModuleElement):
         """
         resu_rst = []
         for rst in self._restrictions.itervalues():
-            resu_rst.append(rst.symmetrize(pos))
+            resu_rst.append(rst.symmetrize(*pos))
         resu = self._vmodule.tensor(self._tensor_type, sym=resu_rst[0]._sym, 
                                     antisym=resu_rst[0]._antisym)
         for rst in resu_rst:
             resu._restrictions[rst._domain] = rst
         return resu
 
-    def antisymmetrize(self, pos=None):
+    def antisymmetrize(self, *pos):
         r"""
         Antisymmetrization over some arguments.
         
@@ -2277,6 +2310,39 @@ class TensorField(ModuleElement):
         
         - the antisymmetrized tensor field (instance of :class:`TensorField`)
 
+        
+        EXAMPLES:
+        
+        Antisymmetrization of a type-(0,2) tensor field on a 2-dimensional 
+        non-parallelizable manifold::
+
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: M.declare_union(U,V)   # M is the union of U and V
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+            sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+            sage: inv = transf.inverse()
+            sage: W = U.intersection(V)
+            sage: eU = c_xy.frame() ; eV = c_uv.frame()
+            sage: a = M.tensor_field(0,2, name='a')
+            sage: a[eU,:] = [[1,x], [2,y]]
+            sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
+            sage: a[eV,:]
+            [ 1/4*u + 3/4 -1/4*u + 3/4]
+            [ 1/4*v - 1/4 -1/4*v - 1/4]
+            sage: s = a.antisymmetrize() ; s
+            2-form on the 2-dimensional manifold 'M'
+            sage: s[eU,:]
+            [         0  1/2*x - 1]
+            [-1/2*x + 1          0]
+            sage: s[eV,:]
+            [                   0 -1/8*u - 1/8*v + 1/2]
+            [ 1/8*u + 1/8*v - 1/2                    0]
+            sage: s == a.antisymmetrize(0,1)  # explicit positions
+            True
+            sage: s == a.antisymmetrize(1,0)  # the order of positions does not matter
+            True
+
         See 
         :meth:`sage.tensor.modules.free_module_tensor.FreeModuleTensor.antisymmetrize`
         for more details and examples.
@@ -2284,7 +2350,7 @@ class TensorField(ModuleElement):
         """
         resu_rst = []
         for rst in self._restrictions.itervalues():
-            resu_rst.append(rst.antisymmetrize(pos))
+            resu_rst.append(rst.antisymmetrize(*pos))
         resu = self._vmodule.tensor(self._tensor_type, sym=resu_rst[0]._sym, 
                                     antisym=resu_rst[0]._antisym)
         for rst in resu_rst:
@@ -2309,6 +2375,10 @@ class TensorField(ModuleElement):
         
         - the tensor field that is the Lie derivative of ``self`` with respect 
           to ``vector``
+        
+        EXAMPLES:
+        
+        see :meth:`TensorFieldParal.lie_der`
         
         """
         if vector._tensor_type != (1,0):
@@ -2781,9 +2851,6 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         
         - components in the vector frame ``basis``, as an instance of the 
           class :class:`~sage.tensor.modules.comp.Components` 
-
-        EXAMPLE:
-        
  
         """
         if basis is None: 

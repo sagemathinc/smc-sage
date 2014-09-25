@@ -81,13 +81,13 @@ class TensorWithIndices(SageObject):
         type-(2,2) tensor on the rank-3 free module M over the Rational Field
         sage: s.symmetries()
         symmetry: (0, 1);  no antisymmetry
-        sage: s == t.symmetrize((0,1))
+        sage: s == t.symmetrize(0,1)
         True
     
     The letters denoting the indices can be chosen freely; since they carry no
     information, they can even be replaced by dots::
     
-        sage: t['^(..)_..'] == t.symmetrize((0,1))
+        sage: t['^(..)_..'] == t.symmetrize(0,1)
         True
 
     Similarly, for an antisymmetrization::
@@ -96,14 +96,14 @@ class TensorWithIndices(SageObject):
         type-(2,2) tensor on the rank-3 free module M over the Rational Field
         sage: s.symmetries()
         no symmetry;  antisymmetry: (2, 3)
-        sage: s == t.antisymmetrize((2,3))
+        sage: s == t.antisymmetrize(2,3)
         True
 
     Another example of an operation indicated by indices is a contraction::
     
         sage: s = t['^ki_kj'] ; s  # contraction on the repeated index k
         endomorphism on the rank-3 free module M over the Rational Field
-        sage: s == t.self_contract(0,2)
+        sage: s == t.trace(0,2)
         True
 
     Indices not involved in the contraction may be replaced by dots::
@@ -174,7 +174,7 @@ class TensorWithIndices(SageObject):
             if con.find('(', sym1+1) != -1 or '[' in con:
                 raise NotImplementedError("Multiple symmetries are not " + 
                                           "treated yet.")
-            self._tensor = self._tensor.symmetrize(range(sym1, sym2+1))
+            self._tensor = self._tensor.symmetrize(*(range(sym1, sym2+1)))
             self._changed = True # self does no longer contain the original tensor
             con = con.replace('(','').replace(')','')
         if '[' in con:
@@ -183,7 +183,7 @@ class TensorWithIndices(SageObject):
             if con.find('[', sym1+1) != -1 or '(' in con:
                 raise NotImplementedError("Multiple symmetries are not " + 
                                           "treated yet.")
-            self._tensor = self._tensor.antisymmetrize(range(sym1, sym2+1))
+            self._tensor = self._tensor.antisymmetrize(*(range(sym1, sym2+1)))
             self._changed = True # self does no longer contain the original tensor
             con = con.replace('[','').replace(']','')
         if len(con) != self._tensor._tensor_type[0]:
@@ -208,7 +208,8 @@ class TensorWithIndices(SageObject):
                                               "treated yet.")
                 csym1 = sym1 + self._tensor._tensor_type[0]
                 csym2 = sym2 + self._tensor._tensor_type[0]
-                self._tensor = self._tensor.symmetrize(range(csym1, csym2+1))
+                self._tensor = self._tensor.symmetrize(
+                                                      *(range(csym1, csym2+1)))
                 self._changed = True # self does no longer contain the original 
                                      # tensor
                 cov = cov.replace('(','').replace(')','')
@@ -220,7 +221,8 @@ class TensorWithIndices(SageObject):
                                               "treated yet.")
                 csym1 = sym1 + self._tensor._tensor_type[0]
                 csym2 = sym2 + self._tensor._tensor_type[0]
-                self._tensor = self._tensor.antisymmetrize(range(csym1, csym2+1))
+                self._tensor = self._tensor.antisymmetrize(
+                                                      *(range(csym1, csym2+1)))
                 self._changed = True # self does no longer contain the original 
                                      # tensor
                 cov = cov.replace('[','').replace(']','')
@@ -244,7 +246,7 @@ class TensorWithIndices(SageObject):
         if len(contraction_pairs) == 1:
             pos1 = contraction_pairs[0][0]
             pos2 = contraction_pairs[0][1]
-            self._tensor = self._tensor.self_contract(pos1, pos2)
+            self._tensor = self._tensor.trace(pos1, pos2)
             self._changed = True # self does no longer contain the original 
                                  # tensor
             ind = self._con[pos1]

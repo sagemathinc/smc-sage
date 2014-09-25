@@ -1056,7 +1056,7 @@ class Chart(UniqueRepresentation, SageObject):
         return MultiFunctionChart(self, *expressions)
 
     def plot(self, ambient_chart, fixed_coords=None, ranges=None, max_value=8,
-             nb_values=9, steps=None, ambient_coords=None, mapping=None, 
+             nb_values=None, steps=None, ambient_coords=None, mapping=None, 
              parameters=None, color='red',  style='-', thickness=1, 
              plot_points=75, label_axes=True):
         r"""
@@ -1091,11 +1091,12 @@ class Chart(UniqueRepresentation, SageObject):
           range (i.e. for which no specific plot range has been set in 
           ``ranges``); similarly ``-max_value`` is the numerical valued 
           substituted for -Infinity 
-        - ``nb_values`` -- (default: 9) either an integer or a dictionary with
-          keys the coordinates to be drawn and values the number of constant 
-          values of the coordinate to be considered; if ``nb_values`` is a 
-          single integer, it represents the number of constant values for all 
-          coordinates
+        - ``nb_values`` -- (default: None) either an integer or a dictionary 
+          with keys the coordinates to be drawn and values the number of 
+          constant values of the coordinate to be considered; if ``nb_values`` 
+          is a single integer, it represents the number of constant values for all 
+          coordinates; if ``nb_values`` is None, it is set to 9 for a 2D plot
+          and to 5 for a 3D plot
         - ``steps`` -- (default: None) dictionary with keys the coordinates
           to be drawn and values the step between each constant value of 
           the coordinate; if None, the step is computed from the coordinate 
@@ -1237,7 +1238,7 @@ class Chart(UniqueRepresentation, SageObject):
         A 3-dimensional chart plotted in terms of itself results in a 3D 
         rectangular grid::
         
-            sage: g = c_cart.plot(c_cart, nb_values=5)
+            sage: g = c_cart.plot(c_cart)
             sage: show(g)  # a 3D mesh cube
             
         A 4-dimensional chart plotted in terms of itself (the plot is 
@@ -1246,9 +1247,9 @@ class Chart(UniqueRepresentation, SageObject):
         
             sage: M = Manifold(4, 'M')
             sage: X.<t,x,y,z> = M.chart()
-            sage: g = X.plot(X, ambient_coords=(t,x,y), nb_values=5)  # the coordinate z is not depicted
+            sage: g = X.plot(X, ambient_coords=(t,x,y))  # the coordinate z is not depicted
             sage: show(g)  # a 3D mesh cube
-            sage: g = X.plot(X, ambient_coords=(t,y), nb_values=5) # the coordinates x and z are not depicted
+            sage: g = X.plot(X, ambient_coords=(t,y)) # the coordinates x and z are not depicted
             sage: show(g)  # a 2D mesh square
         
         """
@@ -1363,6 +1364,11 @@ class Chart(UniqueRepresentation, SageObject):
                     xmax = numerical_approx(bounds[1][0] - 1.e-3)
                 ranges0[coord] = (xmin, xmax)
         ranges = ranges0
+        if nb_values is None:
+            if nca == 2: # 2D plot
+                nb_values = 9
+            else:   # 3D plot
+                nb_values = 5
         if not isinstance(nb_values, dict):
             nb_values0 = {}
             for coord in coords:

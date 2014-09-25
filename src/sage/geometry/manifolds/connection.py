@@ -1052,7 +1052,7 @@ class AffConnection(SageObject):
        
         """
         if self._ricci is None:
-            self._ricci = self.riemann().self_contract(0,2)
+            self._ricci = self.riemann().trace(0,2)
         return self._ricci 
         
     def connection_form(self, i, j, frame=None):

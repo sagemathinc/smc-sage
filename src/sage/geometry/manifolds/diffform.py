@@ -907,7 +907,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         eps = metric.volume_form(p)
         resu = self.contract(0, eps, 0)
         for j in range(1, p):
-            resu = resu.self_contract(0, p-j)
+            resu = resu.trace(0, p-j)
         if p > 1:
             resu = resu / factorial(p)
         resu.set_name(name=format_unop_txt('*', self._name),
