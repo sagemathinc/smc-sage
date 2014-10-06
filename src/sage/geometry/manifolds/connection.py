@@ -94,7 +94,7 @@ class AffConnection(SageObject):
       :class:`~sage.geometry.manifolds.domain.Domain`)
     - ``name`` -- name given to the affine connection
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the affine 
-      connection
+      connection; if None, it is set to ``name``.
 
     EXAMPLES:
     

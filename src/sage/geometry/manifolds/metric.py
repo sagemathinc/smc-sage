@@ -553,10 +553,11 @@ class Metric(TensorField):
         INPUT:
         
         - ``name`` -- (default: None) name given to the Levi-Civita connection; 
-          if none, it is formed from the metric name
+          if None, it is formed from the metric name
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
-          Levi-Civita connection; if none, it is formed from the symbol 
-          `\nabla` and the metric symbol
+          Levi-Civita connection; if None, it is set to ``name``, or if the
+          latter is None as well, it formed from the symbol `\nabla` and the 
+          metric symbol
           
         OUTPUT:
         
@@ -595,11 +596,15 @@ class Metric(TensorField):
         """
         from connection import LeviCivitaConnection
         if self._connection is None:
+            if latex_name is None:
+                if name is None:
+                    latex_name = r'\nabla_{' + self._latex_name + '}'
+                else:
+                    latex_name = name
             if name is None:
                 name = 'nabla_' + self._name
-            if latex_name is None:
-                latex_name = r'\nabla_{' + self._latex_name + '}'
-            self._connection = LeviCivitaConnection(self, name, latex_name)
+            self._connection = LeviCivitaConnection(self, name, 
+                                                    latex_name=latex_name)
         return self._connection
 
     def christoffel_symbols(self, chart=None):
