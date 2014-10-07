@@ -366,6 +366,9 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         r"""
         Return the basis length, i.e. the rank of the free module.
         
+        NB: the method  __len__()  is required for the basis to act as a 
+        "frame" in the class :class:`~sage.tensor.modules.comp.Components`. 
+        
         EXAMPLES::
         
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
