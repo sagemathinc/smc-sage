@@ -2,16 +2,16 @@ r"""
 Components as indexed sets of ring elements.  
 
 The class :class:`Components` is a technical class to take in charge the 
-storage of ring elements that represent the components of 
-some "mathematical entity" with respect to some "frame". 
+storage and manipulation of **indexed elements of a commutative ring** that represent the 
+components of some "mathematical entity" with respect to some "frame". 
 Examples of *entity/frame* are *vector/vector-space basis* or 
 *vector field/vector frame on some manifold*. More generally, the components
 can be those of a tensor on a free module or those of a tensor field on a 
 manifold. They can also be non-tensorial quantities, like connection 
 coefficients or structure coefficients of a vector frame. 
 
-The individual components are assumed to belong to a given ring and are 
-labelled by *indices*, which are tuples of integers.
+The individual components are assumed to belong to a given commutative ring 
+and are labelled by *indices*, which are *tuples of integers*.
 The following operations are implemented on components with respect 
 to a given frame:
 
@@ -23,13 +23,16 @@ to a given frame:
 
 Various subclasses of class :class:`Components` are
 
-* :class:`CompWithSym` for storing components with symmetries or antisymmetries
+* :class:`CompWithSym` for components with symmetries or antisymmetries w.r.t. 
+  index permutations
   
-  * :class:`CompFullySym` for storing fully symmetric components
+  * :class:`CompFullySym` for fully symmetric components w.r.t. index 
+    permutations
 
     * :class:`KroneckerDelta` for the Kronecker delta symbol 
   
-  * :class:`CompFullyAntiSym` for storing fully antisymmetric components
+  * :class:`CompFullyAntiSym` for fully antisymmetric components w.r.t. index 
+    permutations
 
 AUTHORS:
 
@@ -250,7 +253,7 @@ class Components(SageObject):
      
     INPUT:
     
-    - ``ring`` -- ring in which each component takes its value
+    - ``ring`` -- commutative ring in which each component takes its value
     - ``frame`` -- frame with respect to which the components are defined; 
       whatever type ``frame`` is, it should have a method ``__len__()``
       implemented, so that ``len(frame)`` returns the dimension, i.e. the size
@@ -2276,7 +2279,7 @@ class CompWithSym(Components):
 
     INPUT:
     
-    - ``ring`` -- ring in which each component takes its value
+    - ``ring`` -- commutative ring in which each component takes its value
     - ``frame`` -- frame with respect to which the components are defined; 
       whatever type ``frame`` is, it should have some method ``__len__()``
       implemented, so that ``len(frame)`` returns the dimension, i.e. the size
@@ -3906,8 +3909,9 @@ class CompWithSym(Components):
 
 class CompFullySym(CompWithSym):
     r"""
-    Class for storing fully symmetric components with respect to a given 
-    "frame".
+    Indexed set of ring elements forming some components with respect to a 
+    given "frame" that are fully symmetric with respect to any permutation
+    of the indices. 
     
     The "frame" can be a basis of some vector space or a vector frame on some 
     manifold (i.e. a field of bases). 
@@ -3915,7 +3919,7 @@ class CompFullySym(CompWithSym):
     
     INPUT:
 
-    - ``ring`` -- ring in which each component takes its value
+    - ``ring`` -- commutative ring in which each component takes its value
     - ``frame`` -- frame with respect to which the components are defined; 
       whatever type ``frame`` is, it should have some method ``__len__()``
       implemented, so that ``len(frame)`` returns the dimension, i.e. the size
@@ -4285,8 +4289,9 @@ class CompFullySym(CompWithSym):
 
 class CompFullyAntiSym(CompWithSym):
     r"""
-    Class for storing fully antisymmetric components with respect to a given 
-    "frame".
+    Indexed set of ring elements forming some components with respect to a 
+    given "frame" that are fully antisymmetric with respect to any permutation
+    of the indices. 
     
     The "frame" can be a basis of some vector space or a vector frame on some 
     manifold (i.e. a field of bases). 
@@ -4294,7 +4299,7 @@ class CompFullyAntiSym(CompWithSym):
     
     INPUT:
 
-    - ``ring`` -- ring in which each component takes its value
+    - ``ring`` -- commutative ring in which each component takes its value
     - ``frame`` -- frame with respect to which the components are defined; 
       whatever type ``frame`` is, it should have some method ``__len__()``
       implemented, so that ``len(frame)`` returns the dimension, i.e. the size
@@ -4533,7 +4538,7 @@ class KroneckerDelta(CompFullySym):
             
     INPUT:
 
-    - ``ring`` -- ring in which each component takes its value
+    - ``ring`` -- commutative ring in which each component takes its value
     - ``frame`` -- frame with respect to which the components are defined; 
       whatever type ``frame`` is, it should have some method ``__len__()``
       implemented, so that ``len(frame)`` returns the dimension, i.e. the size

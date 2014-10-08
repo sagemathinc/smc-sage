@@ -1306,10 +1306,10 @@ class FreeModuleTensor(ModuleElement):
             sage: t.pick_a_basis()
             basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
             sage: f = M.basis('f')
-            sage: t.add_comp(f)[2,1] = -7  # the components in basis e are not erased
+            sage: t.add_comp(f)[2,1] = -4  # the components in basis e are not erased
             sage: t.pick_a_basis()
             basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring
-            sage: t.set_comp(f)[2,1] = -7  # the components in basis e not erased
+            sage: t.set_comp(f)[2,1] = -4  # the components in basis e not erased
             sage: t.pick_a_basis()
             basis (f_0,f_1,f_2) on the rank-3 free module M over the Integer Ring
 

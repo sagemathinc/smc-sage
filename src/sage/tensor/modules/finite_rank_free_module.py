@@ -343,7 +343,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         sage: v.view(e, format_spec=10)  # 10 bits of precision 
         0.33 e_0 - 2.0 e_2
         
-    All the tests from the suite for the category 
+    All tests from the suite for the category 
     :class:`~sage.categories.modules.Modules` are passed::
         
         sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
