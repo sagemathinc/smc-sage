@@ -680,16 +680,22 @@ cdef public stdstring* py_latex_fderivative(unsigned id, object params,
             else: 
                 op = '\\dfrac{\partial}{\partial '
 
-            cmpos = [0]*(len(params)+1)
+            cmpos = [None]*len(args)
 
             for x in params:
                 s = str(args[int(x)])
+                # check if variable is composed of other variables 
                 if "*" in s or "/" in s or "+" in s or "-" in s or "^" in s:
-                    cmpos[int(x)] = 1
-                else: 
+                    cmpos[int(x)] = True
+                else:
                     pass  
 
-            ostr = ''.join([op, '\partial '.join([''.join(['\\left(' if cmpos[int(x)] else '', latex(args[int(x)]), '\\right)^{' if cmpos[int(x)] else '^{', str(params.count(int(x)) if  params.count(int(x)) > 1 else ""), '}']) for x in list(set(params))]), '}'])
+            ostr = ''.join([op, '\partial '.join([''.join(['\\left(' if cmpos[int(x)] else '', latex(args[int(x)]), '\\right)^{' if cmpos[int(x)] else '^{', str(params.count(int(x)) if params.count(int(x)) > 1 else ""), '}']) for x in list(set(params))]), '}'])
+
+#            ostr = ''.join([op, '\partial '.join([''.join([latex(args[int(x)]), '^{', str(params.count(int(x)) if  params.count(int(x)) > 1 else ""), '}']) for x in list(set(params))]), '}'])
+
+
+
 
             bra = False
 
