@@ -32,30 +32,36 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
     INPUT:
     
-    - ``fmodule1`` -- domain of the homomorphism; must be
-      an instance of 
-      class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`
-    - ``fmodule2`` -- codomain of the homomorphism; must be
-      an instance of 
-      class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`
+    - ``parent`` -- hom-set Hom(M,N) to which the homomorphism belongs
     - ``name`` -- (string; default: None) name given to the homomorphism
     - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
       to the homomorphism; if None, ``name`` will be used. 
     
     """
 
-    def __init__(self, fmodule1, fmodule2, name=None, latex_name=None):
+    def __init__(self, parent, matrix_rep, basis1=None, basis2=None, 
+                 name=None, latex_name=None):
         r"""
         TESTS::
         """
-        if not isinstance(fmodule1, FiniteRankFreeModule):
-            raise TypeError("The argument fmodule1 must be a free module of" + 
-                            " finite rank.")
-        if not isinstance(fmodule2, FiniteRankFreeModule):
-            raise TypeError("The argument fmodule2 must be a free module of" + 
-                            " finite rank.")
-        parent = Hom(fmodule1, fmodule2) 
+        from sage.matrix.constructor import matrix
         Morphism.__init__(self, parent)
+        fmodule1 = parent.domain()
+        fmodule2 = parent.codomain()
+        if basis1 is None:
+            basis1 = fmodule1.default_basis()
+        elif basis1 not in fmodule1.bases():
+            raise TypeError(str(basis1) + " is not a basis on the " + \
+                            str(fmodule1) + ".")
+        if basis2 is None:
+            basis2 = fmodule2.default_basis()
+        elif basis2 not in fmodule2.bases():
+            raise TypeError(str(basis2) + " is not a basis on the " + \
+                            str(fmodule2) + ".")
+        ring = fmodule1.base_ring()
+        n1 = fmodule1.rank()
+        n2 = fmodule2.rank()
+        self._matrices = {(basis1, basis2): matrix(ring, n2, n1, matrix_rep)}
         self._name = name
         if latex_name is None:
             self._latex_name = self._name

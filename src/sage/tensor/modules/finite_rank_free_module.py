@@ -39,10 +39,6 @@ and not to
 TODO:
 
 - implement submodules
-- implement free module homomorphisms (at the moment, only two specific kinds
-  of homomorphisms are implemented: endomorphisms, cf. :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphism`,
-  and linear forms, cf. 
-  :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm`)
 - create a FreeModules category (cf. the *TODO* statement in the documentation 
   of :class:`~sage.categories.modules.Modules`: *Implement a FreeModules(R) 
   category, when so prompted by a concrete use case*)

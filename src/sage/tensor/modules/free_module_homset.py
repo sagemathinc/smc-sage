@@ -81,4 +81,19 @@ class FreeModuleHomset(Homset):
             return r'\mbox{' + str(self) + r'}'
         else:
            return self._latex_name
+            
+    def __call__(self, *args, **kwds):
+        r"""
+        To bypass Homset.__call__ and enforce the call to _element_constructor_
+        """
+        from sage.structure.parent import Parent
+        return Parent.__call__(self, *args, **kwds)
         
+    #### Methods required for any Parent 
+
+    def _element_constructor_(self, matrix_rep, basis1=None, basis2=None,
+                              name=None, latex_name=None):
+        return self.element_class(self, matrix_rep, basis1=basis1, 
+                                  basis2=basis2, name=name, 
+                                  latex_name=latex_name)
+    
