@@ -1,5 +1,5 @@
 r"""
-Tensor free modules
+Tensor products of free modules
 
 
 The class :class:`TensorFreeModule` implements the tensor products of the type  

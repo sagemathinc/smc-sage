@@ -485,6 +485,30 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         description += "over the " + str(self._ring)
         return description
     
+    def _Hom_(self, other, category=None):
+        r"""
+        Construct the set of homomorphisms self --> other. 
+        
+        INPUT: 
+        
+        - ``other`` -- another free module of finite rank over the same ring
+          as ``self``
+          
+        - ``category`` -- (default: None) not used here (to ensure 
+          compatibility with generic hook ``_Hom_``)
+           
+        OUTPUT:
+        
+        - the hom-set Hom(M,N), where M is ``self`` and N is ``other``
+        
+        EXAMPLES:: 
+        
+            ??
+        
+        """
+        from free_module_homset import FreeModuleHomset
+        return FreeModuleHomset(self, other)
+        
     def tensor_module(self, k, l):
         r"""
         Return the free module of all tensors of type (k,l) defined on 
