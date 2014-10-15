@@ -499,7 +499,12 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         
         EXAMPLES:: 
         
-            ??
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
+            sage: H = M._Hom_(N) ; H
+            Set of Morphisms from rank-3 free module M over the Integer Ring to rank-2 free module N over the Integer Ring in Category of modules over Integer Ring
+            sage: H = Hom(M,N) ; H  # indirect doctest
+            Set of Morphisms from rank-3 free module M over the Integer Ring to rank-2 free module N over the Integer Ring in Category of modules over Integer Ring
         
         """
         from free_module_homset import FreeModuleHomset
@@ -1594,3 +1599,86 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         if compute_inverse:
             self._basis_changes[(basis2, basis1)] = change_of_basis.inverse()
  
+    def hom(self, codomain, matrix_rep, basis1=None, basis2=None, name=None, 
+            latex_name=None):
+        r"""
+        Homomorphism to another free module. 
+            
+        Return a homomorphism
+        
+        .. MATH::
+    
+            \phi:\ M \longrightarrow N, 
+            
+        where `M` is ``self`` and  `N` is another free module of finite rank 
+        over the same ring `R` as ``self``.  
+
+        .. NOTE::
+        
+            This method is a redefinition of 
+            :meth:`sage.structure.parent.Parent.hom` because the latter assumes
+            that ``self`` has some privileged generators, while an instance of
+            :class:`FiniteRankFreeModule` has no privileged basis. 
+        
+        INPUT:
+        
+        - ``codomain`` -- the target module `N`
+        - ``matrix_rep`` -- matrix representation of the homomorphism with 
+          respect to the bases ``basis1`` and ``basis2``; this entry can 
+          actually be any material from which a matrix of size rank(N)*rank(M) 
+          of elements of `R` can be constructed
+        - ``basis1`` -- (default: None) basis of ``self`` defining the matrix
+          representation; if None, the module's default basis is assumed
+        - ``basis2`` -- (default: None) basis of module `N` defining the matrix
+          representation; if None, the module's default basis is assumed
+        - ``name`` -- (string; default: None) name given to the homomorphism
+        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+          homomorphism; if None, ``name`` will be used. 
+        
+        OUTPUT:
+        
+        - the homomorphism `\phi: M \rightarrow N` corresponding to the given
+          specifications, as an instance of 
+          :class:`~sage.tensor.modules.free_module_morphism.FiniteRankFreeModuleMorphism`
+          
+        EXAMPLES:
+        
+        Homomorphism between two free modules over `\ZZ`::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
+            sage: e = M.basis('e')
+            sage: f = N.basis('f')
+            sage: phi = M.hom(N, [[-1,2,0], [5,1,2]]) ; phi
+            Generic morphism:
+              From: rank-3 free module M over the Integer Ring
+              To:   rank-2 free module N over the Integer Ring
+              
+        Homomorphism defined by a matrix w.r.t. bases that are not the
+        default ones::
+    
+            sage: ep = M.basis('ep', latex_symbol=r"e'")
+            sage: fp = N.basis('fp', latex_symbol=r"f'")
+            sage: phi = M.hom(N, [[3,2,1], [1,2,3]], basis1=ep, basis2=fp) ; phi
+            Generic morphism:
+              From: rank-3 free module M over the Integer Ring
+              To:   rank-2 free module N over the Integer Ring
+    
+        Call with all arguments specified::
+        
+            sage: phi = M.hom(N, [[3,2,1], [1,2,3]], basis1=ep, basis2=fp, name='phi', latex_name=r'\phi')
+        
+        The parent::
+        
+            sage: phi.parent() is Hom(M,N)
+            True
+        
+        See class 
+        :class:`~sage.tensor.modules.free_module_morphism.FiniteRankFreeModuleMorphism`
+        for more documentation. 
+        
+        """
+        from sage.categories.homset import Hom
+        homset = Hom(self, codomain)
+        return homset(matrix_rep, basis1=basis1, basis2=basis2, name=name, 
+                      latex_name=latex_name)
