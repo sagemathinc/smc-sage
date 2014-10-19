@@ -43,13 +43,13 @@ class FiniteRankFreeModuleMorphism(Morphism):
     
     - ``parent`` -- hom-set Hom(M,N) to which the homomorphism belongs
     - ``matrix_rep`` -- matrix representation of the homomorphism with 
-      respect to the bases ``basis1`` and ``basis2``; this entry can actually
+      respect to the bases ``bases``; this entry can actually
       be any material from which a matrix of size rank(N)*rank(M) of 
       elements of `R` can be constructed
-    - ``basis1`` -- (default: None) basis of module `M` defining the matrix
-      representation; if None, the module's default basis is assumed
-    - ``basis2`` -- (default: None) basis of module `N` defining the matrix
-      representation; if None, the module's default basis is assumed
+    - ``bases`` -- (default: None) pair (basis_M, basis_N) defining the 
+      matrix representation, basis_M being a basis of module `M` and
+      basis_N a basis of module `N` ; if None the pair formed by the 
+      default bases of each module is assumed. 
     - ``name`` -- (string; default: None) name given to the homomorphism
     - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
       homomorphism; if None, ``name`` will be used. 
@@ -74,7 +74,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
     matrix is relative to the default bases of modules M and N, so that
     the above is equivalent to::
     
-        sage: phi = H([[2,-1,3], [1,0,-4]], basis1=e, basis2=f, name='phi', latex_name=r'\phi') ; phi
+        sage: phi = H([[2,-1,3], [1,0,-4]], bases=(e,f), name='phi', latex_name=r'\phi') ; phi
         Generic morphism:
           From: rank-3 free module M over the Integer Ring
           To:   rank-2 free module N over the Integer Ring
@@ -83,7 +83,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
     :meth:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule.hom`
     on the domain::
     
-        sage: phi = M.hom(N, [[2,-1,3], [1,0,-4]], basis1=e, basis2=f, name='phi', latex_name=r'\phi') ; phi
+        sage: phi = M.hom(N, [[2,-1,3], [1,0,-4]], bases=(e,f), name='phi', latex_name=r'\phi') ; phi
         Generic morphism:
           From: rank-3 free module M over the Integer Ring
           To:   rank-2 free module N over the Integer Ring
@@ -122,8 +122,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
         [ 1  0 -4]
 
     """
-    def __init__(self, parent, matrix_rep, basis1=None, basis2=None, 
-                 name=None, latex_name=None):
+    def __init__(self, parent, matrix_rep, bases=None, name=None, 
+                 latex_name=None):
         r"""
         TESTS::
         """
@@ -132,24 +132,27 @@ class FiniteRankFreeModuleMorphism(Morphism):
         Morphism.__init__(self, parent)
         fmodule1 = parent.domain()
         fmodule2 = parent.codomain()
-        if basis1 is None:
-            def_basis = fmodule1.default_basis()
-            if def_basis is None:
+        if bases is None:
+            def_basis1 = fmodule1.default_basis()
+            if def_basis1 is None:
                 raise ValueError("The " + str(fmodule1) + " has no default " + 
                                  "basis.")
-            basis1 = def_basis
-        elif basis1 not in fmodule1.bases():
-            raise TypeError(str(basis1) + " is not a basis on the " + \
-                            str(fmodule1) + ".")
-        if basis2 is None:
-            def_basis = fmodule2.default_basis()
-            if def_basis is None:
+            def_basis2 = fmodule2.default_basis()
+            if def_basis2 is None:
                 raise ValueError("The " + str(fmodule2) + " has no default " + 
                                  "basis.")
-            basis2 = def_basis
-        elif basis2 not in fmodule2.bases():
-            raise TypeError(str(basis2) + " is not a basis on the " + \
-                            str(fmodule2) + ".")
+            bases = (def_basis1, def_basis2)
+        else:
+            bases = tuple(bases)  # insures bases is a tuple
+            if len(bases) != 2:
+                raise TypeError("The argument bases must contain 2 bases.")
+            if bases[0] not in fmodule1.bases():
+                raise TypeError(str(bases[0]) + " is not a basis on the " + \
+                                str(fmodule1) + ".")
+            if bases[1] not in fmodule2.bases():
+                raise TypeError(str(bases[1]) + " is not a basis on the " + \
+                                str(fmodule2) + ".")
+
         if isinstance(matrix_rep, ConstantFunction):
             # Construction of the zero morphism
             if matrix_rep().is_zero():
@@ -157,7 +160,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
         ring = fmodule1.base_ring()
         n1 = fmodule1.rank()
         n2 = fmodule2.rank()
-        self._matrices = {(basis1, basis2): matrix(ring, n2, n1, matrix_rep)}
+        self._matrices = {bases: matrix(ring, n2, n1, matrix_rep)}
         self._name = name
         if latex_name is None:
             self._latex_name = self._name
@@ -196,6 +199,35 @@ class FiniteRankFreeModuleMorphism(Morphism):
             return r'\mbox{' + str(self) + r'}'
         else:
            return self._latex_name
+
+    def __nonzero__(self):
+        r"""
+        Return True if ``self`` is nonzero and False otherwise. 
+        
+        This method is called by self.is_zero(). 
+        
+        EXAMPLES::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
+            sage: e = M.basis('e') ; f = N.basis('f')
+            sage: phi = M.hom(N, [[2,-1,3], [1,0,-4]])
+            sage: phi.__nonzero__()
+            True
+            sage: phi.is_zero() # indirect doctest
+            False
+            sage: phi = M.hom(N, 0)
+            sage: phi.__nonzero__()
+            False
+            sage: phi.is_zero() # indirect doctest
+            True
+            sage: Hom(M,N).zero().__nonzero__()
+            False
+
+        """
+        # Some matrix representation is picked at random:
+        matrix_rep = self._matrices.items()[0][1]
+        return not matrix_rep.is_zero()         
 
     def matrix(self, basis1=None, basis2=None):
         r"""

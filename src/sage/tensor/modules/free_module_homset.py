@@ -90,7 +90,7 @@ class FreeModuleHomset(Homset):
     
         sage: ep = M.basis('ep', latex_symbol=r"e'")
         sage: fp = N.basis('fp', latex_symbol=r"f'")
-        sage: phi2 = H([[3,2,1], [1,2,3]], basis1=ep, basis2=fp) ; phi2
+        sage: phi2 = H([[3,2,1], [1,2,3]], bases=(ep,fp)) ; phi2
         Generic morphism:
           From: rank-3 free module M over the Integer Ring
           To:   rank-2 free module N over the Integer Ring
@@ -174,8 +174,8 @@ class FreeModuleHomset(Homset):
         
     #### Methods required for any Parent 
 
-    def _element_constructor_(self, matrix_rep, basis1=None, basis2=None,
-                              name=None, latex_name=None):
+    def _element_constructor_(self, matrix_rep, bases=None, name=None, 
+                              latex_name=None):
         r"""
         Construct an element of ``self``, i.e. a homomorphism M --> N, where
         M is the domain of ``self`` and N its codomain. 
@@ -186,17 +186,16 @@ class FreeModuleHomset(Homset):
           respect to the bases ``basis1`` and ``basis2``; this entry can actually
           be any material from which a matrix of size rank(N)*rank(M) can be 
           constructed
-        - ``basis1`` -- (default: None) basis of module `M` defining the matrix
-          representation; if None, the module's default basis is assumed
-        - ``basis2`` -- (default: None) basis of module `N` defining the matrix
-          representation; if None, the module's default basis is assumed
+        - ``bases`` -- (default: None) pair (basis_M, basis_N) defining the 
+          matrix representation, basis_M being a basis of module `M` and
+          basis_N a basis of module `N` ; if None the pair formed by the 
+          default bases of each module is assumed. 
         - ``name`` -- (string; default: None) name given to the homomorphism
         - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
           homomorphism; if None, ``name`` will be used. 
           
         """
-        return self.element_class(self, matrix_rep, basis1=basis1, 
-                                  basis2=basis2, name=name, 
+        return self.element_class(self, matrix_rep, bases=bases, name=name, 
                                   latex_name=latex_name)
     
     def _an_element_(self):
