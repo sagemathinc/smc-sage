@@ -233,6 +233,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
         r"""
         Return the matrix of ``self`` w.r.t to a pair of bases. 
 
+        If the matrix is not known already, it is computed from the matrix in
+        another pair of bases by means of the change-of-bases formula. 
+        
         INPUT:
         
         - ``basis1`` -- (default: None) basis of the domain of ``self``; if 
@@ -251,8 +254,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
         
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
-            sage: e = M.basis('e')
-            sage: f = N.basis('f')
+            sage: e = M.basis('e') ; f = N.basis('f')
             sage: phi = M.hom(N, [[-1,2,0], [5,1,2]])
             sage: phi.matrix()     # default bases
             [-1  2  0]
@@ -263,7 +265,46 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: type(phi.matrix())
             <type 'sage.matrix.matrix_integer_dense.Matrix_integer_dense'>
 
+        Matrix in bases different from those in which the homomorphism has
+        been defined::
+        
+            sage: a = M.automorphism()
+            sage: a[0,2], a[1,0], a[2,1] = 1, -1, -1
+            sage: a[:]
+            [ 0  0  1]
+            [-1  0  0]
+            [ 0 -1  0]
+            sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
+            sage: b = N.automorphism()
+            sage: b[0,1], b[1,0] = -1, 1
+            sage: b[:]
+            [ 0 -1]
+            [ 1  0]
+            sage: fp = f.new_basis(b, 'fp', latex_symbol="f'")
+            sage: phi.matrix(ep, fp)
+            [-1 -2  5]
+            [ 2  0  1]
+
+        Check of the change-of-bases formula::
+        
+            sage: phi.matrix(ep, fp) == matrix(b.inverse()[:]) * phi.matrix(e,f) * matrix(a[:])
+            True
+
+        Single change of basis::
+        
+            sage: phi.matrix(ep, f)
+            [-2  0 -1]
+            [-1 -2  5]
+            sage: phi.matrix(ep,f) == phi.matrix(e,f) * matrix(a[:])
+            True
+            sage: phi.matrix(e, fp)
+            [ 5  1  2]
+            [ 1 -2  0]
+            sage: phi.matrix(e, fp) == matrix(b.inverse()[:]) * phi.matrix(e,f)
+            True
+
         """
+        from sage.matrix.constructor import matrix
         fmodule1 = self.domain()
         fmodule2 = self.codomain()
         if basis1 is None:
@@ -277,7 +318,49 @@ class FiniteRankFreeModuleMorphism(Morphism):
             raise TypeError(str(basis2) + " is not a basis on the " + \
                             str(fmodule2) + ".")
         if (basis1, basis2) not in self._matrices:
-            raise KeyError("The matrix of " + str(self) + " is not known " + \
-                           "w.r.t. " + str(basis1) + " and " + str(basis2) + \
-                           ".")
+            b1_list = [bases[0] for bases in self._matrices]
+            b2_list = [bases[1] for bases in self._matrices]
+            if basis1 in b1_list:
+                for b2 in b2_list:
+                    if (basis2, b2) in fmodule2._basis_changes:
+                        nb2 = b2
+                        break
+                else:
+                    raise ValueError("No start basis could be found for " + 
+                                     "applying the change-of-bases formula.")
+                change2 = fmodule2._basis_changes[(basis2, nb2)]
+                mat2 = matrix( [[change2[[i,j]] for j in fmodule2.irange()] 
+                                                  for i in fmodule2.irange()] )
+                self._matrices[(basis1, basis2)] = \
+                                            mat2 * self._matrices[(basis1,nb2)]
+            elif basis2 in b2_list:
+                for b1 in b1_list:
+                    if (b1, basis1) in fmodule1._basis_changes:
+                        nb1 = b1
+                        break
+                else:
+                    raise ValueError("No start basis could be found for " + 
+                                     "applying the change-of-bases formula.")
+                change1 = fmodule1._basis_changes[(nb1, basis1)]
+                mat1 = matrix( [[change1[[i,j]] for j in fmodule1.irange()]
+                                                  for i in fmodule1.irange()] )
+                self._matrices[(basis1, basis2)] = \
+                                            self._matrices[(nb1,basis2)] * mat1
+            else: # most general change-of-basis formula
+                for (b1, b2) in self._matrices:
+                    if (b1, basis1) in fmodule1._basis_changes and \
+                       (basis2, b2) in fmodule2._basis_changes:
+                        nb1, nb2 = b1, b2
+                        break
+                else:
+                    raise ValueError("No start basis could be found for " + 
+                                     "applying the change-of-bases formula.")
+                change1 = fmodule1._basis_changes[(nb1, basis1)]
+                change2 = fmodule2._basis_changes[(basis2, nb2)]
+                mat1 = matrix( [[change1[[i,j]] for j in fmodule1.irange()]
+                                                  for i in fmodule1.irange()] )
+                mat2 = matrix( [[change2[[i,j]] for j in fmodule2.irange()] 
+                                                  for i in fmodule2.irange()] )
+                self._matrices[(basis1, basis2)] = \
+                                        mat2 * self._matrices[(nb1,nb2)] * mat1
         return self._matrices[(basis1, basis2)]
