@@ -229,6 +229,103 @@ class FiniteRankFreeModuleMorphism(Morphism):
         matrix_rep = self._matrices.items()[0][1]
         return not matrix_rep.is_zero()         
 
+    def _call_(self, element):
+        r"""
+        Action of the homomorphism ``self`` on some free module element
+
+        INPUT:
+        
+        - ``element`` -- element of the domain of ``self``
+        
+        OUTPUT:
+        
+        - the image of ``element`` by ``self``
+        
+        EXAMPLE:
+        
+        Images of a homomorphism between two `\ZZ`-modules::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
+            sage: e = M.basis('e') ; f = N.basis('f')
+            sage: phi = M.hom(N, [[-1,2,0], [5,1,2]], name='phi', latex_name=r'\phi')
+            sage: v = M([1,2,3], basis=e, name='v')
+            sage: w = phi(v) ; w
+            element phi(v) of the rank-2 free module N over the Integer Ring
+            sage: w.view()
+            phi(v) = 3 f_0 + 13 f_1
+            
+        Tests::
+        
+            sage: for i in range(2):
+            ....:     print w[i] == sum( phi.matrix()[i,j]*v[j] for j in range(3) ),
+            ....:     
+            True True
+            sage: phi.matrix(e,f)
+            [-1  2  0]
+            [ 5  1  2]
+            sage: phi(e[0]).view()
+            phi(e_0) = -f_0 + 5 f_1
+            sage: phi(e[1]).view()
+            phi(e_1) = 2 f_0 + f_1
+            sage: phi(e[2]).view()
+            phi(e_2) = 2 f_1
+            
+        Image of an element that is not defined on the default basis::
+        
+            sage: a = M.automorphism()
+            sage: a[0,2], a[1,0], a[2,1] = 1, -1, -1
+            sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
+            sage: v = M([1,2,3], basis=ep, name='v')
+            sage: w = phi(v) ; w
+            element phi(v) of the rank-2 free module N over the Integer Ring
+            sage: w.view()
+            phi(v) = -5 f_0 + 10 f_1
+            sage: for i in range(2):
+            ....:     print w[i] == sum( phi.matrix(ep,f)[i,j]*v[ep,j] for j in range(3) ),
+            ....:     
+            True True
+            
+        """
+        dom = self.parent().domain()
+        sindex = dom._sindex
+        codom = self.parent().codomain()
+        basis_codom = codom.default_basis()
+        # Search for a common basis to compute the result
+        for basis in element._components:
+            try:
+                self.matrix(basis, basis_codom)
+                basis_dom = basis
+                break
+            except ValueError:
+                continue
+        else:
+            raise ValueError("No common basis found to evaluate the image " + 
+                             "of " + str(element) + " by " + str(self) + ".")
+        # Components of the result obtained by matrix multiplication
+        mat = self.matrix(basis_dom, basis_codom)
+        vcomp = element._components[basis_dom]
+        tresu = []
+        for i in range(codom.rank()):
+            s = 0
+            for j in range(dom.rank()):
+                s += mat[i,j] * vcomp[[j+sindex]]
+            tresu.append(s)
+        # Name of the result
+        if self._name is not None and element._name is not None:
+            resu_name = self._name + '(' + element._name + ')'
+        else:
+            resu_name = None
+        if self._latex_name is not None and element._latex_name is not None:
+            resu_latex_name = self._latex_name + r'\left(' + \
+                              element._latex_name + r'\right)'
+        else:
+            resu_latex_name = None
+        # Creation of the result
+        return codom(tresu, basis=basis_codom, name=resu_name, 
+                     latex_name=resu_latex_name)
+
+
     def matrix(self, basis1=None, basis2=None):
         r"""
         Return the matrix of ``self`` w.r.t to a pair of bases. 
@@ -364,3 +461,36 @@ class FiniteRankFreeModuleMorphism(Morphism):
                 self._matrices[(basis1, basis2)] = \
                                         mat2 * self._matrices[(nb1,nb2)] * mat1
         return self._matrices[(basis1, basis2)]
+
+    def _common_bases(self, other):
+        r"""
+        Return a pair of bases in which ``self`` and ``other`` have a known 
+        matrix representation. 
+        
+        INPUT:
+        
+        - ``other`` -- another homomorphism in the same hom-set
+        
+        OUTPUT:
+        
+        - a pair of bases in which ``self`` and ``other`` have a known 
+          matrix representation. 
+          
+        """
+        resu = None
+        for bases in self._matrices:
+            try:
+                other.matrix(bases)
+                resu = bases
+                break
+            except ValueError:
+                continue
+        if resu is None:
+            for bases in other._matrices:
+                try:
+                    self.matrix(bases)
+                    resu = bases
+                    break
+                except ValueError:
+                    continue
+        return resu
