@@ -19,6 +19,7 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
+from sage.rings.integer import Integer
 from sage.categories.morphism import Morphism
 from sage.categories.homset import Hom
 from finite_rank_free_module import FiniteRankFreeModule
@@ -166,6 +167,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
             self._latex_name = self._name
         else:
             self._latex_name = latex_name
+    #
+    # SageObject methods
+    #
 
     def _latex_(self):
         r"""
@@ -200,6 +204,118 @@ class FiniteRankFreeModuleMorphism(Morphism):
         else:
            return self._latex_name
 
+    def __eq__(self, other):
+        r"""
+        Comparison (equality) operator. 
+        
+        INPUT:
+        
+        - ``other`` -- a free module morphism (or 0)
+        
+        OUTPUT:
+        
+        - True if ``self`` is equal to ``other`` and False otherwise
+        
+        EXAMPLES::
+
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
+            sage: e = M.basis('e') ; f = N.basis('f')
+            sage: phi = M.hom(N, [[-1,2,0], [5,1,2]], name='phi', latex_name=r'\phi')
+            sage: psi = M.hom(N, [[-1,2,0], [5,1,2]])
+            sage: phi.__eq__(psi)
+            True
+            sage: phi == psi
+            True
+            sage: psi = M.hom(N, [[1,1,0], [4,1,3]])
+            sage: phi.__eq__(psi)
+            False
+
+        Comparison of homomorphisms defined on different bases::
+        
+            sage: a = M.automorphism() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
+            sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
+            sage: psi = M.hom(N, [[-2,0,-1], [-1,-2, 5]], bases=(ep,f))
+            sage: phi.__eq__(psi)
+            True
+            sage: phi.matrix(e,f) == psi.matrix(e,f)  # check
+            True
+
+        Comparison of homomorphisms having the same matrix but defined on
+        different modules::
+        
+            sage: N1 = FiniteRankFreeModule(ZZ, 2, name='N1')
+            sage: f1 = N1.basis('f')
+            sage: phi1 = M.hom(N1, [[-1,2,0], [5,1,2]])
+            sage: phi.matrix() == phi1.matrix() # same matrix in the default bases
+            True
+            sage: phi.__eq__(phi1)  
+            False
+
+        Comparison to zero::
+        
+            sage: phi.__eq__(0)
+            False
+            sage: phi = M.hom(N, 0)
+            sage: phi.__eq__(0)
+            True
+            sage: phi == 0
+            True
+            sage: phi.__eq__(Hom(M,N).zero())
+            True
+
+        """
+        if isinstance(other, (int, Integer)): # other should be 0
+            if other == 0:
+                return self.is_zero()
+            else:
+                return False
+        elif not isinstance(other, FiniteRankFreeModuleMorphism):
+            return False
+        elif self.parent() != other.parent():
+            return False
+        else:
+            bases = self._common_bases(other)
+            return bool( self.matrix(*bases) == other.matrix(*bases) )
+
+    def __ne__(self, other):
+        r"""
+        Inequality operator. 
+        
+        INPUT:
+        
+        - ``other`` -- a free module morphism (or 0)
+        
+        OUTPUT:
+        
+        - True if ``self`` is different from ``other`` and False otherwise
+        
+        EXAMPLES::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
+            sage: e = M.basis('e') ; f = N.basis('f')
+            sage: phi = M.hom(N, [[-1,2,0], [5,1,2]], name='phi', latex_name=r'\phi')
+            sage: psi = M.hom(N, [[-1,2,0], [5,1,2]])
+            sage: phi.__ne__(psi)
+            False
+            sage: psi = M.hom(N, [[1,1,0], [4,1,3]])
+            sage: phi.__ne__(psi)
+            True
+            sage: phi != psi
+            True
+            sage: phi.__ne__('junk')
+            True
+            sage: Hom(M,N).zero().__ne__(0)
+            False
+
+        """
+        return not self.__eq__(other)
+ 
+    #
+    # Required module methods
+    # 
+
     def __nonzero__(self):
         r"""
         Return True if ``self`` is nonzero and False otherwise. 
@@ -228,6 +344,86 @@ class FiniteRankFreeModuleMorphism(Morphism):
         # Some matrix representation is picked at random:
         matrix_rep = self._matrices.items()[0][1]
         return not matrix_rep.is_zero()         
+
+    # 
+    #  Other module methods
+    # 
+
+    def __pos__(self):
+        r"""
+        Unary plus operator. 
+        
+        OUTPUT:
+        
+        - an exact copy of ``self``
+    
+        EXAMPLE::
+
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
+            sage: e = M.basis('e') ; f = N.basis('f')
+            sage: phi = M.hom(N, [[-1,2,0], [5,1,2]], name='phi', latex_name=r'\phi')
+            sage: s = phi.__pos__() ; s
+            Generic morphism:
+              From: rank-3 free module M over the Integer Ring
+              To:   rank-2 free module N over the Integer Ring
+            sage: s == +phi
+            True
+            sage: s == phi
+            True
+            sage: s is phi
+            False
+
+        """
+        resu = self.__class__(self.parent(), 0)  # 0 = provisory value
+        for bases, mat in self._matrices.iteritems():
+            resu._matrices[bases] = +mat
+        if self._name is not None:
+            resu._name = '+' + self._name 
+        if self._latex_name is not None:
+            resu._latex_name = '+' + self._latex_name
+        return resu
+
+    def __neg__(self):
+        r"""
+        Unary minus operator. 
+        
+        OUTPUT:
+        
+        - the homomorphism `-f`, where `f` is ``self``
+    
+        EXAMPLE::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
+            sage: e = M.basis('e') ; f = N.basis('f')
+            sage: phi = M.hom(N, [[-1,2,0], [5,1,2]], name='phi', latex_name=r'\phi')
+            sage: s = phi.__neg__() ; s
+            Generic morphism:
+              From: rank-3 free module M over the Integer Ring
+              To:   rank-2 free module N over the Integer Ring
+            sage: s == -phi
+            True
+            sage: s.matrix()
+            [ 1 -2  0]
+            [-5 -1 -2]
+            sage: s.matrix() == -phi.matrix()
+            True
+                            
+        """
+        resu = self.__class__(self.parent(), 0)  # 0 = provisory value
+        for bases, mat in self._matrices.iteritems():
+            resu._matrices[bases] = -mat
+        if self._name is not None:
+            resu._name = '-' + self._name 
+        if self._latex_name is not None:
+            resu._latex_name = '-' + self._latex_name
+        return resu
+
+        
+    #
+    # Map methods
+    #
 
     def _call_(self, element):
         r"""
@@ -285,7 +481,12 @@ class FiniteRankFreeModuleMorphism(Morphism):
             ....:     print w[i] == sum( phi.matrix(ep,f)[i,j]*v[ep,j] for j in range(3) ),
             ....:     
             True True
-            
+        
+        Check of homomorphism properties::
+        
+            sage: phi(M.zero()) == N.zero()
+            True
+        
         """
         dom = self.parent().domain()
         sindex = dom._sindex
@@ -480,7 +681,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
         resu = None
         for bases in self._matrices:
             try:
-                other.matrix(bases)
+                other.matrix(*bases)
                 resu = bases
                 break
             except ValueError:
@@ -488,7 +689,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
         if resu is None:
             for bases in other._matrices:
                 try:
-                    self.matrix(bases)
+                    self.matrix(*bases)
                     resu = bases
                     break
                 except ValueError:

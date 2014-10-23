@@ -1453,7 +1453,6 @@ class FreeModuleTensor(ModuleElement):
         OUTPUT:
         
         - the tensor `-T`, where `T` is ``self``
-
     
         EXAMPLE::
         
