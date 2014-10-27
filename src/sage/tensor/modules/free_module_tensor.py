@@ -60,6 +60,8 @@ EXAMPLES:
         True
         sage: t in M.tensor_module(1,1)
         True
+        sage: t.base_module() is M
+        True
         
     Setting some component of the tensor in a given basis::
     
@@ -200,7 +202,9 @@ class FreeModuleTensor(ModuleElement):
         sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
         sage: t = M.tensor((1,1), name='t') ; t
         endomorphism t on the rank-3 free module M over the Integer Ring
-
+        sage: t.base_module()
+        rank-3 free module M over the Integer Ring
+    
     Tensors are *Element* objects whose parents are tensor free modules::
     
         sage: t.parent()
@@ -430,6 +434,29 @@ class FreeModuleTensor(ModuleElement):
         """
         return self._tensor_rank
 
+    def base_module(self):
+        r"""
+        Return the module on which ``self`` is defined.
+        
+        OUTPUT:
+        
+        - instance of :class:`FiniteRankFreeModule` representing the free 
+          module on which the tensor is defined. 
+        
+        EXAMPLES::
+
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: M.an_element().base_module()
+            rank-3 free module M over the Integer Ring
+            sage: t = M.tensor((2,1))
+            sage: t.base_module()
+            rank-3 free module M over the Integer Ring
+            sage: t.base_module() is M
+            True
+
+        """
+        return self._fmodule
+        
     def symmetries(self):
         r"""
         Print the list of symmetries and antisymmetries.
@@ -482,7 +509,7 @@ class FreeModuleTensor(ModuleElement):
           which the tensor is expanded; if none is provided, the module's 
           default basis is assumed
         - ``format_spec`` -- (default: None) format specification passed to 
-          ``self._fmodule._output_formatter`` to format the output.
+          ``self.base_module()._output_formatter`` to format the output.
 
         EXAMPLES:
         
@@ -1172,7 +1199,7 @@ class FreeModuleTensor(ModuleElement):
         If the current components of ``self`` and ``other`` are all relative to
         different bases, a common basis is searched by performing a component
         transformation, via the transformations listed in 
-        ``self._fmodule._basis_changes``, still privileging transformations to 
+        ``self.base_module()._basis_changes``, still privileging transformations to 
         the free module's default basis.
         
         INPUT:

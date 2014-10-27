@@ -22,6 +22,7 @@ AUTHORS:
 
 from sage.categories.homset import Homset
 from free_module_morphism import FiniteRankFreeModuleMorphism
+from free_module_tensor import FreeModuleTensor
 
 class FreeModuleHomset(Homset):
     r"""
@@ -105,6 +106,31 @@ class FreeModuleHomset(Homset):
         [0 0 0]
         [0 0 0]
 
+    The test suite for H is passed::
+    
+        sage: TestSuite(H).run(verbose=True)
+        running ._test_additive_associativity() . . . pass
+        running ._test_an_element() . . . pass
+        running ._test_category() . . . pass
+        running ._test_elements() . . .
+          Running the test suite of self.an_element()
+          running ._test_category() . . . pass
+          running ._test_eq() . . . pass
+          running ._test_nonzero_equal() . . . pass
+          running ._test_not_implemented_methods() . . . pass
+          running ._test_pickling() . . . pass
+          pass
+        running ._test_elements_eq_reflexive() . . . pass
+        running ._test_elements_eq_symmetric() . . . pass
+        running ._test_elements_eq_transitive() . . . pass
+        running ._test_elements_neq() . . . pass
+        running ._test_eq() . . . pass
+        running ._test_not_implemented_methods() . . . pass
+        running ._test_pickling() . . . pass
+        running ._test_some_elements() . . . pass
+        running ._test_zero() . . . pass
+
+    
     """
 
     Element = FiniteRankFreeModuleMorphism
@@ -167,7 +193,7 @@ class FreeModuleHomset(Homset):
             
     def __call__(self, *args, **kwds):
         r"""
-        To bypass Homset.__call__ and enforce the call to _element_constructor_
+        To bypass Homset.__call__, enforcing Parent.__call__ instead.
         """
         from sage.structure.parent import Parent
         return Parent.__call__(self, *args, **kwds)
@@ -193,11 +219,79 @@ class FreeModuleHomset(Homset):
         - ``name`` -- (string; default: None) name given to the homomorphism
         - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
           homomorphism; if None, ``name`` will be used. 
-          
-        """
-        return self.element_class(self, matrix_rep, bases=bases, name=name, 
-                                  latex_name=latex_name)
+         
+        EXAMPLES:
     
+        Construction of a homomorphism between two free `\ZZ`-modules::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
+            sage: e = M.basis('e') ; f = N.basis('f')
+            sage: H = Hom(M,N)
+            sage: phi = H._element_constructor_([[2,-1,3], [1,0,-4]], bases=(e,f), name='phi', latex_name=r'\phi')
+            sage: phi
+            Generic morphism:
+              From: rank-3 free module M over the Integer Ring
+              To:   rank-2 free module N over the Integer Ring
+            sage: phi.matrix(e,f)
+            [ 2 -1  3]
+            [ 1  0 -4]
+            sage: phi == H([[2,-1,3], [1,0,-4]], bases=(e,f), name='phi', latex_name=r'\phi')
+            True
+
+        Construction of an endomorphism::
+        
+            sage: EM = End(M) 
+            sage: phi = EM._element_constructor_([[1,2,3],[4,5,6],[7,8,9]], name='phi', latex_name=r'\phi')
+            sage: phi
+            Generic endomorphism of rank-3 free module M over the Integer Ring
+            sage: phi.matrix(e,e)
+            [1 2 3]
+            [4 5 6]
+            [7 8 9]
+
+        Coercion of a type-(1,1) tensor to an endomorphism::
+        
+            sage: a = M.tensor((1,1))
+            sage: a[:] = [[1,2,3],[4,5,6],[7,8,9]]
+            sage: EM = End(M)             
+            sage: phi_a = EM._element_constructor_(a) ; phi_a
+            Generic endomorphism of rank-3 free module M over the Integer Ring
+            sage: phi_a.matrix(e,e)
+            [1 2 3]
+            [4 5 6]
+            [7 8 9]
+            sage: phi_a == phi
+            True
+            sage: phi_a1 = EM(a) ; phi_a1  # indirect doctest
+            Generic endomorphism of rank-3 free module M over the Integer Ring
+            sage: phi_a1 == phi
+            True
+
+        """
+        if isinstance(matrix_rep, FreeModuleTensor):
+            # coercion of a type-(1,1) tensor to an endomorphism
+            tensor = matrix_rep # for readability
+            if tensor.tensor_type() == (1,1) and \
+                                         self.is_endomorphism_set() and \
+                                         tensor.base_module() is self.domain():
+                basis = tensor.pick_a_basis()
+                tcomp = tensor.comp(basis)
+                fmodule = tensor.base_module()
+                mat = [[ tcomp[[i,j]] for j in fmodule.irange()] \
+                                                     for i in fmodule.irange()]
+                resu = self.element_class(self, mat, bases=(basis,basis), 
+                                          name=tensor._name, 
+                                          latex_name=tensor._latex_name)
+            else:
+                raise TypeError("Cannot coerce the " + str(tensor) +
+                                " to an element of " + str(self) + ".")
+        else:
+            # Standard construction:
+            resu = self.element_class(self, matrix_rep, bases=bases, name=name, 
+                                      latex_name=latex_name)
+        return resu
+        
     def _an_element_(self):
         r"""
         Construct some (unamed) element.
@@ -211,4 +305,16 @@ class FreeModuleHomset(Homset):
         matrix_rep = [[ring.an_element() for i in range(m)] for j in range(n)]
         return self.element_class(self, matrix_rep)
             
+    def _coerce_map_from_(self, other):
+        r"""
+        Determine whether coercion to self exists from other parent.
+        """
+        if isinstance(other, FreeModuleTensor):
+            # Coercion of a type-(1,1) tensor to an endomorphism:
+            if other.tensor_type() == (1,1):
+                if self.is_endomorphism_set() and \
+                                          other.base_module() is self.domain():
+                    return True
+        return False
+
     #### End of methods required for any Parent 

@@ -430,7 +430,19 @@ class ScalarField(CommutativeAlgebraElement):
         Non-equality operator.
         """
         return not self.__eq__(other)
+    
+    def __cmp__(self, other):
+        r"""
+        Old-style (Python 2) comparison operator.
         
+        This is provisory, until migration to Python 3 is achieved.
+        
+        """
+        if self.__eq__(other):
+            return 0
+        else:
+            return -1
+            
     ####### End of required methods for an algebra element (beside arithmetic) #######
 
     def _init_derived(self):

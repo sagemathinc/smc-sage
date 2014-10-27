@@ -338,8 +338,8 @@ class TensorFreeModule(FiniteRankFreeModule):
         
         OUTPUT:
         
-        - instance of :class:`FiniteRankFreeModule` representing the free module 
-          on which the tensor module is defined. 
+        - instance of :class:`FiniteRankFreeModule` representing the free 
+          module on which the tensor module is defined. 
         
         EXAMPLE:
 
