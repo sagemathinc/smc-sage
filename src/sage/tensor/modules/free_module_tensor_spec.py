@@ -15,11 +15,6 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
 
-TODO:
-
-* Implement these specific tensors as elements of a parent class for free 
-  module endomorphisms, with coercion to the module of type-(1,1) tensors. 
-
 """
 #******************************************************************************
 #       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>

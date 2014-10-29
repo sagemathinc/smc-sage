@@ -20,7 +20,7 @@ AUTHORS:
 #******************************************************************************
 
 from sage.rings.integer import Integer
-from sage.categories.morphism import Morphism
+from sage.categories.morphism import Morphism, IdentityMorphism
 from sage.categories.homset import Hom
 from finite_rank_free_module import FiniteRankFreeModule
 
@@ -368,7 +368,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         """
         # Some matrix representation is picked at random:
-        matrix_rep = self._matrices.items()[0][1]
+        matrix_rep = self._matrices.values()[0]
         return not matrix_rep.is_zero()         
 
     def _add_(self, other):
@@ -783,7 +783,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         """
         # Some matrix representation is picked at random:
-        matrix_rep = self._matrices.items()[0][1]
+        matrix_rep = self._matrices.values()[0]
         return matrix_rep.right_kernel().rank() == 0
 
     def is_surjective(self):
@@ -812,7 +812,62 @@ class FiniteRankFreeModuleMorphism(Morphism):
                               "FiniteRankFreeModuleMorphism.is_surjective() " + 
                               "has not been implemented yet.")
     #
-    # End of Map methods
+    # Morphism methods
+    #
+
+    def is_identity(self):
+        r"""
+        Check whether ``self`` is the identity morphism.
+        
+        EXAMPLES::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
+            sage: e = M.basis('e')
+            sage: phi = M.endomorphism_map([[1,0], [0,1]])
+            sage: phi.is_identity()
+            True
+            sage: (phi+phi).is_identity()
+            False
+            sage: End(M).zero().is_identity()
+            False
+            sage: a = M.automorphism() ; a[0,1], a[1,0] = 1, -1
+            sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
+            sage: phi = M.endomorphism_map([[1,0], [0,1]], basis=ep)
+            sage: phi.is_identity()
+            True
+    
+        Example illustrating that the identity can be constructed from a 
+        matrix that is not the identity one, provided that it is relative to 
+        different bases::
+        
+            sage: phi = M.hom(M, [[0,1], [-1,0]], bases=(ep,e))
+            sage: phi.is_identity()
+            True
+
+        Of course, if we ask for the matrix in a single basis, it is the 
+        identity matrix::
+        
+            sage: phi.matrix(e)
+            [1 0]
+            [0 1]
+            sage: phi.matrix(ep)
+            [1 0]
+            [0 1]
+
+        """
+        # The identity is an endomorphism:
+        fmodule = self.domain()
+        if fmodule != self.codomain():
+            return False  
+        # Some basis in which ``self`` has a representation is picked at random:
+        basis = self._matrices.keys()[0][0]
+        for i in fmodule.irange():
+            if self(basis[i]) != basis[i]:
+                return False
+        return True
+        
+    #
+    # End of Morphism methods
     #
 
     def matrix(self, basis1=None, basis2=None):
@@ -827,7 +882,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
         - ``basis1`` -- (default: None) basis of the domain of ``self``; if 
           None, the domain's default basis is assumed
         - ``basis2`` -- (default: None) basis of the codomain of ``self``; if 
-          None, the codomain's default basis is assumed
+          None, ``basis2`` is set to ``basis1`` if ``self`` is an endomorphism,
+          otherwise, ``basis2`` is set to the codomain's default basis.
         
         OUTPUT:
         
@@ -891,6 +947,22 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: phi.matrix(e, fp) == matrix(b.inverse()[:]) * phi.matrix(e,f)
             True
 
+        Matrix of an endomorphism::
+        
+            sage: phi = M.endomorphism_map([[1,2,3], [4,5,6], [7,8,9]], basis=ep)
+            sage: phi.matrix(ep)
+            [1 2 3]
+            [4 5 6]
+            [7 8 9]
+            sage: phi.matrix(ep,ep)  # same as above
+            [1 2 3]
+            [4 5 6]
+            [7 8 9]
+            sage: phi.matrix()  # matrix w.r.t to the module's default basis
+            [ 9 -7 -8]
+            [-3  1  2]
+            [-6  4  5]
+
         """
         from sage.matrix.constructor import matrix
         fmodule1 = self.domain()
@@ -901,7 +973,10 @@ class FiniteRankFreeModuleMorphism(Morphism):
             raise TypeError(str(basis1) + " is not a basis on the " + \
                             str(fmodule1) + ".")
         if basis2 is None:
-            basis2 = fmodule2.default_basis()
+            if self.is_endomorphism():
+                basis2 = basis1
+            else:
+                basis2 = fmodule2.default_basis()
         elif basis2 not in fmodule2.bases():
             raise TypeError(str(basis2) + " is not a basis on the " + \
                             str(fmodule2) + ".")
@@ -985,3 +1060,29 @@ class FiniteRankFreeModuleMorphism(Morphism):
                 except ValueError:
                     continue
         return resu
+
+
+#******************************************************************************
+
+class FreeModuleIdentityMorphism(FiniteRankFreeModuleMorphism,
+                                 IdentityMorphism):
+    r"""
+    Identity endomorphism of a free module of finite rank.
+    
+    """
+    def __init__(self, parent, name=None, latex_name=None):
+        r"""
+        TESTS::
+        """
+        # Matrix representation in the module's default basis:
+        zero = parent.base_ring().zero()
+        one = parent.base_ring().one()
+        size = parent.base_module().rank()
+        matrix_rep = []
+        for i in range(size):
+            row = [zero]*size
+            row[i] = one
+            matrix_rep.append(row)
+        FiniteRankFreeModuleMorphism.__init__(self, parent, matrix_rep, 
+                                              name=name, latex_name=latex_name)
+        

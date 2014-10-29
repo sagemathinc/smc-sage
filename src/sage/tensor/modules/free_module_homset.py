@@ -130,7 +130,33 @@ class FreeModuleHomset(Homset):
         running ._test_some_elements() . . . pass
         running ._test_zero() . . . pass
 
+    The set of homomorphisms `M\rightarrow M`, i.e. endomorphisms, is 
+    obtained by the function ``End``::
     
+        sage: End(M)
+        Set of Morphisms from rank-3 free module M over the Integer Ring to rank-3 free module M over the Integer Ring in Category of modules over Integer Ring
+        
+    ``End(M)`` is actually identical to ``Hom(M,M)``::
+    
+        sage: End(M) is Hom(M,M)
+        True
+
+    There is a canonical identification between endomorphisms of `M` and 
+    tensors of type (1,1) on `M`. Accordingly, coercion maps have been 
+    implemented between `\mathrm{End}(M)` and `T^{(1,1)}(M)` (the module of
+    all type-(1,1) tensor on `M`, see 
+    :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule`)::
+        
+        sage: T11 = M.tensor_module(1,1) ; T11
+        free module of type-(1,1) tensors on the rank-3 free module M over the Integer Ring
+        sage: End(M).has_coerce_map_from(T11)
+        True
+        sage: T11.has_coerce_map_from(End(M))
+        True
+
+    See :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule` for
+    examples of the above coercions.
+
     """
 
     Element = FiniteRankFreeModuleMorphism
@@ -309,7 +335,8 @@ class FreeModuleHomset(Homset):
         r"""
         Determine whether coercion to self exists from other parent.
         """
-        if isinstance(other, FreeModuleTensor):
+        from tensor_free_module import TensorFreeModule
+        if isinstance(other, TensorFreeModule):
             # Coercion of a type-(1,1) tensor to an endomorphism:
             if other.tensor_type() == (1,1):
                 if self.is_endomorphism_set() and \
