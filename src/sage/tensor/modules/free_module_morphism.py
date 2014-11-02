@@ -138,6 +138,18 @@ class FiniteRankFreeModuleMorphism(Morphism):
                  latex_name=None):
         r"""
         TESTS::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
+            sage: e = M.basis('e') ; f = N.basis('f')
+            sage: from sage.tensor.modules.free_module_morphism import FiniteRankFreeModuleMorphism
+            sage: phi = FiniteRankFreeModuleMorphism(Hom(M,N), [[1,0,-3], [2,1,4]], name='phi', latex_name=r'\phi')
+            sage: phi.matrix(e,f)
+            [ 1  0 -3]
+            [ 2  1  4]
+            sage: latex(phi)
+            \phi
+
         """
         from sage.matrix.constructor import matrix
         from sage.misc.constant_function import ConstantFunction
@@ -1068,21 +1080,98 @@ class FreeModuleIdentityMorphism(FiniteRankFreeModuleMorphism,
                                  IdentityMorphism):
     r"""
     Identity endomorphism of a free module of finite rank.
+
+    INPUT:
+    
+    - ``parent`` -- hom-set End(M)=Hom(M,M), where M is the free module on 
+      which the identity morphism is defined
+    - ``name`` -- (string; default: 'Id') name given to the identiy morphism
+    - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+      identity morphism; if None and ``name`` is 'Id', it is set to 
+      '\\mathrm{Id}'
+      
+    EXAMPLES:
+    
     
     """
-    def __init__(self, parent, name=None, latex_name=None):
+    def __init__(self, parent, name='Id', latex_name=None):
         r"""
         TESTS::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: e = M.basis('e')
+            sage: from sage.tensor.modules.free_module_morphism import FreeModuleIdentityMorphism
+            sage: Id = FreeModuleIdentityMorphism(End(M)) ; Id
+            Identity endomorphism of rank-3 free module M over the Integer Ring
+            sage: Id.matrix(e)
+            [1 0 0]
+            [0 1 0]
+            [0 0 1]
+
         """
         # Matrix representation in the module's default basis:
         zero = parent.base_ring().zero()
         one = parent.base_ring().one()
-        size = parent.base_module().rank()
+        size = parent.domain().rank()
         matrix_rep = []
         for i in range(size):
             row = [zero]*size
             row[i] = one
             matrix_rep.append(row)
+        if latex_name is None and name == 'Id':
+            latex_name = r'\mathrm{Id}'
         FiniteRankFreeModuleMorphism.__init__(self, parent, matrix_rep, 
                                               name=name, latex_name=latex_name)
         
+    def matrix(self, basis1=None, basis2=None):
+        r"""
+        Return the matrix of ``self`` w.r.t to a pair of bases. 
+
+        If the matrix is not known already, it is computed from the matrix in
+        another pair of bases by means of the change-of-bases formula. 
+        
+        INPUT:
+        
+        - ``basis1`` -- (default: None) basis of the domain of ``self``; if 
+          None, the domain's default basis is assumed
+        - ``basis2`` -- (default: None) basis of the domain of ``self``; if 
+          None, ``basis2`` is set to ``basis1``.
+          
+        OUTPUT:
+        
+        - the matrix representing representing the identity endomorphism 
+        ``self`` w.r.t to bases ``basis1`` and ``basis2``; more precisely, 
+          the columns of this matrix are formed by the components w.r.t. 
+          ``basis2`` of the elements of ``basis1``.
+        
+        EXAMPLES:
+        
+
+        """
+        from sage.matrix.constructor import matrix
+        fmodule = self.domain()
+        if basis1 is None:
+            basis1 = fmodule.default_basis()
+        elif basis1 not in fmodule.bases():
+            raise TypeError(str(basis1) + " is not a basis on the " + \
+                            str(fmodule) + ".")
+        if basis2 is None:
+                basis2 = basis1
+        elif basis2 not in fmodule.bases():
+            raise TypeError(str(basis2) + " is not a basis on the " + \
+                            str(fmodule) + ".")
+        if (basis1, basis2) not in self._matrices:
+            if basis1 == basis1:
+                zero = fmodule.base_ring().zero()
+                one = fmodule.base_ring().one()
+                size = fmodule.rank()
+                mat = []
+                for i in range(size):
+                    row = [zero]*size
+                    row[i] = one
+                    mat.append(row)
+                self._matrices[(basis1, basis2)] = matrix(mat)
+            else:
+                return FiniteRankFreeModuleMorphism.matrix(self, basis1=basis1, 
+                                                           basis2=basis2)
+        return self._matrices[(basis1, basis2)]
