@@ -55,7 +55,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
     - ``name`` -- (string; default: None) name given to the homomorphism
     - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
       homomorphism; if None, ``name`` will be used. 
-    
+
+
     EXAMPLES:
     
     A homomorphism between two free modules over `\ZZ` is contructed 
@@ -1139,10 +1140,10 @@ class FreeModuleIdentityMorphism(FiniteRankFreeModuleMorphism,
           
         OUTPUT:
         
-        - the matrix representing representing the identity endomorphism 
-        ``self`` w.r.t to bases ``basis1`` and ``basis2``; more precisely, 
-          the columns of this matrix are formed by the components w.r.t. 
-          ``basis2`` of the elements of ``basis1``.
+        - the matrix representing representing the identity endomorphism ``self`` 
+          w.r.t to bases ``basis1`` and ``basis2``; more precisely, the 
+          columns of this matrix are formed by the components w.r.t. ``basis2``
+          of the elements of ``basis1``.
         
         EXAMPLES:
         
