@@ -183,7 +183,7 @@ class FreeModuleHomset(Homset):
             raise TypeError("fmodule1 = " + str(fmodule2) + " is not an " + 
                             "instance of FiniteRankFreeModule.")
         if fmodule1.base_ring() != fmodule2.base_ring():
-            raise ValueError("The domain and codomain are not defined over " + 
+            raise TypeError("The domain and codomain are not defined over " + 
                             "the same ring.")
         Homset.__init__(self, fmodule1, fmodule2)
         if name is None:
