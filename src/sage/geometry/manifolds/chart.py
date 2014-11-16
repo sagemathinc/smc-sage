@@ -3049,7 +3049,7 @@ class CoordChange(SageObject):
                                                            for i in range(n2) ]
         equations = [ xp2[i] == self._transf._functions[i]._express 
                                                            for i in range(n2) ]
-        solutions = solve(equations, x1, solution_dict=True)
+        solutions = solve(equations, *x1, solution_dict=True)
         #!# This should be the Python 2.7 form: 
         #           substitutions = {xp2[i]: x2[i] for i in range(n2)}
         # Here we use a form compatible with Python 2.6:

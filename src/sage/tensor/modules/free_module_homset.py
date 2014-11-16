@@ -61,7 +61,7 @@ class FreeModuleHomset(Homset):
         sage: type(H)
         <class 'sage.tensor.modules.free_module_homset.FreeModuleHomset_with_category_with_equality_by_id'>
         sage: H.category()
-        Category of hom sets in Category of modules over Integer Ring
+        Category of homsets of modules over Integer Ring
 
     Hom-sets are cached::
     

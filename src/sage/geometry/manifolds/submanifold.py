@@ -188,6 +188,7 @@ class Submanifold(Manifold):
             sage: c_uv.<u,v> = W.chart(r'u:(0,2*pi) v:(0,2*pi)') # cyclic coordinates on T
             sage: T.def_embedding(T.diff_mapping(M, [(2+cos(u))*cos(v),(2+cos(u))*sin(v),sin(u)]))
             sage: T.plot([(0,2*pi), (0,2*pi)], aspect_ratio=1)
+            Graphics3d Object
 
         Plot of a helix embedded in `\RR^3`::
             
@@ -195,6 +196,7 @@ class Submanifold(Manifold):
             sage: c_param.<t> = H.chart()
             sage: H.def_embedding(H.diff_mapping(M, [cos(t), sin(t), t]))
             sage: H.plot([0,20])
+            Graphics3d Object
            
         Plot of an Archimedean spiral embedded in `\RR^2`::
         
@@ -204,6 +206,7 @@ class Submanifold(Manifold):
             sage: c_param.<t> = S.chart()
             sage: S.def_embedding(S.diff_mapping(M, [t*cos(t), t*sin(t)]))
             sage: S.plot([0,40])
+            Graphics object consisting of 1 graphics primitive
 
         """
         from sage.plot.plot import parametric_plot
