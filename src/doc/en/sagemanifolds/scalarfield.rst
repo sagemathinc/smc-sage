@@ -1,0 +1,24 @@
+.. nodoctest
+
+.. _sage.geometry.manifolds.scalarfield:
+
+Scalar fields
+=============
+
+Scalar field algebras
+---------------------
+
+.. automodule:: sage.geometry.manifolds.scalarfield_algebra
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   
+Scalar fields
+-------------
+
+.. automodule:: sage.geometry.manifolds.scalarfield
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   
+
