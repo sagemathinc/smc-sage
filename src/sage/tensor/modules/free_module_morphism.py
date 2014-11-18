@@ -47,7 +47,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
       respect to the bases ``bases``; this entry can actually
       be any material from which a matrix of size rank(N)*rank(M) of 
       elements of `R` can be constructed; the *columns* of the matrix give
-      the images of the basis of `M` (see convention below)
+      the images of the basis of `M` (see the convention in the example below)
     - ``bases`` -- (default: None) pair (basis_M, basis_N) defining the 
       matrix representation, basis_M being a basis of module `M` and
       basis_N a basis of module `N` ; if None the pair formed by the 
@@ -1077,8 +1077,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
 #******************************************************************************
 
-class FreeModuleIdentityMorphism(FiniteRankFreeModuleMorphism,
-                                 IdentityMorphism):
+class FreeModuleIdentityMorphism(IdentityMorphism, 
+                                 FiniteRankFreeModuleMorphism):
     r"""
     Identity endomorphism of a free module of finite rank.
 
@@ -1093,7 +1093,36 @@ class FreeModuleIdentityMorphism(FiniteRankFreeModuleMorphism,
       
     EXAMPLES:
     
+    Identity endomorphism of a free modules over `\ZZ`::
     
+        sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+        sage: e = M.basis('e')
+        sage: Id = M.identity_morphism() ; Id
+        Identity endomorphism of rank-3 free module M over the Integer Ring
+        sage: Id.parent()
+        Set of Morphisms from rank-3 free module M over the Integer Ring to rank-3 free module M over the Integer Ring in Category of modules over Integer Ring
+        sage: Id.parent() is End(M)
+        True
+        sage: type(Id)
+        <class 'sage.tensor.modules.free_module_morphism.FreeModuleIdentityMorphism'>
+    
+    The matrix of Id with respect to the basis e is of course the identity 
+    matrix::
+    
+        sage: Id.matrix(e)
+        [1 0 0]
+        [0 1 0]
+        [0 0 1]
+
+    The identity acting on a module element::
+    
+        sage: v = M.an_element() ; v.view()
+        e_0 + e_1 + e_2
+        sage: Id(v).view()
+        e_0 + e_1 + e_2
+        sage: Id(v) is v
+        True
+
     """
     def __init__(self, parent, name='Id', latex_name=None):
         r"""

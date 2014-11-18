@@ -595,15 +595,15 @@ class FreeModuleTensor(ModuleElement):
                     bases_txt.append(cobasis[ind[k]]._name)
                     bases_latex.append(latex(cobasis[ind[k]]))
                 basis_term_txt = "*".join(bases_txt)    
-                basis_term_latex = r"\otimes ".join(bases_latex)    
-                if coef == 1:
+                basis_term_latex = r"\otimes ".join(bases_latex)
+                coef_txt = repr(coef)    
+                if coef_txt == "1":
                     terms_txt.append(basis_term_txt)
                     terms_latex.append(basis_term_latex)
-                elif coef == -1:
+                elif coef_txt == "-1":
                     terms_txt.append("-" + basis_term_txt)
                     terms_latex.append("-" + basis_term_latex)
                 else:
-                    coef_txt = repr(coef)
                     coef_latex = latex(coef)
                     if is_atomic(coef_txt):
                         terms_txt.append(coef_txt + " " + basis_term_txt)
