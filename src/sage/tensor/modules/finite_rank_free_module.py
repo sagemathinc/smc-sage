@@ -1771,22 +1771,14 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         return End(self)(matrix_rep, bases=(basis,basis), name=name, 
                          latex_name=latex_name)
 
-    def identity_morphism(self, name='Id', latex_name=None):
+    def identity_morphism(self):
         r"""
         Return the identity endomorphism of ``self``.
-    
-        INPUT:
-        
-        - ``name`` -- (string; default: 'Id') name given to the identiy 
-          morphism
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
-          identity morphism; if None and ``name`` is 'Id', it is set to 
-          '\\mathrm{Id}'
-        
+            
         OUTPUT:
         
         - the identity map of ``self`` as an instance of 
-          :class:`~sage.tensor.modules.free_module_morphism.FreeModuleIdentityMorphism`
+          :class:`~sage.tensor.modules.free_module_morphism.FiniteRankFreeModuleMorphism`
 
         EXAMPLES:
         
@@ -1798,12 +1790,16 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             Identity endomorphism of rank-3 free module M over the Integer Ring
             sage: latex(Id)
             \mathrm{Id}
+            
+        The identity endomorphism is actually the unit of End(M)::
+        
+            sage: Id is End(M).one()
+            True
 
         """ 
         from sage.categories.homset import End
-        from sage.tensor.modules.free_module_morphism import FreeModuleIdentityMorphism
         if self._identity_morphism is None:
-            self._identity_morphism = FreeModuleIdentityMorphism(End(self))
+            self._identity_morphism = End(self).one()
         return self._identity_morphism
 
         

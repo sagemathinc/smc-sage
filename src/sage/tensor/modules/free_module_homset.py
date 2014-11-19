@@ -23,6 +23,7 @@ AUTHORS:
 from sage.categories.homset import Homset
 from free_module_morphism import FiniteRankFreeModuleMorphism
 from free_module_tensor import FreeModuleTensor
+from free_module_tensor_spec import FreeModuleIdentityMap
 
 class FreeModuleHomset(Homset):
     r"""
@@ -141,6 +142,18 @@ class FreeModuleHomset(Homset):
         sage: End(M) is Hom(M,M)
         True
 
+    The unit of the endomorphism ring is the identity map::
+    
+        sage: End(M).one()
+        Identity endomorphism of rank-3 free module M over the Integer Ring
+        
+    whose matrix in any basis is of course the identity matrix::
+    
+        sage: End(M).one().matrix(e)
+        [1 0 0]
+        [0 1 0]
+        [0 0 1]
+
     There is a canonical identification between endomorphisms of `M` and 
     tensors of type (1,1) on `M`. Accordingly, coercion maps have been 
     implemented between `\mathrm{End}(M)` and `T^{(1,1)}(M)` (the module of
@@ -227,7 +240,7 @@ class FreeModuleHomset(Homset):
     #### Methods required for any Parent 
 
     def _element_constructor_(self, matrix_rep, bases=None, name=None, 
-                              latex_name=None):
+                              latex_name=None, is_identity=False):
         r"""
         Construct an element of ``self``, i.e. a homomorphism M --> N, where
         M is the domain of ``self`` and N its codomain. 
@@ -245,7 +258,10 @@ class FreeModuleHomset(Homset):
         - ``name`` -- (string; default: None) name given to the homomorphism
         - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
           homomorphism; if None, ``name`` will be used. 
-         
+        - ``is_identity`` -- (boolean; default: False) determines whether the
+          constructed object is the identity endomorphism; if set to True, then
+          N must be M and the entry ``matrix_rep`` is not used. 
+
         EXAMPLES:
     
         Construction of a homomorphism between two free `\ZZ`-modules::
@@ -307,15 +323,16 @@ class FreeModuleHomset(Homset):
                 mat = [[ tcomp[[i,j]] for j in fmodule.irange()] \
                                                      for i in fmodule.irange()]
                 resu = self.element_class(self, mat, bases=(basis,basis), 
-                                          name=tensor._name, 
-                                          latex_name=tensor._latex_name)
+                         name=tensor._name, latex_name=tensor._latex_name,
+                         is_identity=isinstance(tensor, FreeModuleIdentityMap))
             else:
                 raise TypeError("Cannot coerce the " + str(tensor) +
                                 " to an element of " + str(self) + ".")
         else:
             # Standard construction:
             resu = self.element_class(self, matrix_rep, bases=bases, name=name, 
-                                      latex_name=latex_name)
+                                      latex_name=latex_name, 
+                                      is_identity=is_identity)
         return resu
         
     def _an_element_(self):
