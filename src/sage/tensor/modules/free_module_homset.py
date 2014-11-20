@@ -233,6 +233,36 @@ class FreeModuleHomset(Homset):
     def __call__(self, *args, **kwds):
         r"""
         To bypass Homset.__call__, enforcing Parent.__call__ instead.
+        
+        EXAMPLES::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 3, name='N')
+            sage: H = Hom(M,N)
+            sage: e = M.basis('e') ; f = N.basis('f')
+            sage: a = H.__call__(0) ; a
+            Generic morphism:
+              From: rank-2 free module M over the Integer Ring
+              To:   rank-3 free module N over the Integer Ring
+            sage: a.matrix(e,f)
+            [0 0]
+            [0 0]
+            [0 0]
+            sage: a == H.zero()
+            True
+            sage: a == H(0)
+            True
+            sage: a = H.__call__([[1,2],[3,4],[5,6]], bases=(e,f), name='a') ; a
+            Generic morphism:
+              From: rank-2 free module M over the Integer Ring
+              To:   rank-3 free module N over the Integer Ring
+            sage: a.matrix(e,f)
+            [1 2]
+            [3 4]
+            [5 6]
+            sage: a == H([[1,2],[3,4],[5,6]], bases=(e,f))
+            True
+
         """
         from sage.structure.parent import Parent
         return Parent.__call__(self, *args, **kwds)
@@ -341,6 +371,19 @@ class FreeModuleHomset(Homset):
         
         EXAMPLE::
         
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
+            sage: e = M.basis('e') ; f = N.basis('f')
+            sage: phi = Hom(M,N)._an_element_() ; phi
+            Generic morphism:
+              From: rank-3 free module M over the Integer Ring
+              To:   rank-2 free module N over the Integer Ring
+            sage: phi.matrix(e,f)
+            [1 1 1]
+            [1 1 1]
+            sage: phi == Hom(M,N).an_element()
+            True
+        
         """
         ring = self.base_ring()
         m = self.domain().rank()
@@ -351,6 +394,20 @@ class FreeModuleHomset(Homset):
     def _coerce_map_from_(self, other):
         r"""
         Determine whether coercion to self exists from other parent.
+        
+        EXAMPLES:
+        
+        Only the module of type-(1,1) tensors coerce to self, if the latter
+        is some endomorphism set::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: End(M)._coerce_map_from_(M.tensor_module(1,1))
+            True
+            sage: End(M).has_coerce_map_from(M.tensor_module(1,1))
+            True
+            sage: End(M)._coerce_map_from_(M.tensor_module(1,2))
+            False
+        
         """
         from tensor_free_module import TensorFreeModule
         if isinstance(other, TensorFreeModule):

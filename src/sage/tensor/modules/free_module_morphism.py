@@ -354,8 +354,14 @@ class FiniteRankFreeModuleMorphism(Morphism):
             True
             sage: phi == psi
             True
+            sage: phi.__eq__(phi)
+            True
+            sage: phi.__eq__(+phi)
+            True
             sage: psi = M.hom(N, [[1,1,0], [4,1,3]])
             sage: phi.__eq__(psi)
+            False
+            sage: phi.__eq__(-phi)
             False
 
         Comparison of homomorphisms defined on different bases::
@@ -447,6 +453,24 @@ class FiniteRankFreeModuleMorphism(Morphism):
         Old-style (Python 2) comparison operator.
         
         This is provisory, until migration to Python 3 is achieved.
+        
+        EXAMPLES::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
+            sage: e = M.basis('e') ; f = N.basis('f')
+            sage: phi = M.hom(N, [[-1,2,0], [5,1,2]], name='phi', latex_name=r'\phi')
+            sage: psi = M.hom(N, [[-1,2,0], [5,1,2]])
+            sage: phi.__cmp__(psi)
+            0
+            sage: phi.__cmp__(phi)
+            0
+            sage: phi.__cmp__(phi+phi)
+            -1
+            sage: phi.__cmp__(2*psi)
+            -1
+            sage: phi.__cmp__(-phi)
+            -1
         
         """
         if self.__eq__(other):
@@ -1205,7 +1229,28 @@ class FiniteRankFreeModuleMorphism(Morphism):
         
         - a pair of bases in which ``self`` and ``other`` have a known 
           matrix representation. 
-          
+        
+        EXAMPLES::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
+            sage: e = M.basis('e') ; f = N.basis('f')
+            sage: phi = M.hom(N, [[-1,2,0], [5,1,2]])
+            sage: psi = M.hom(N, [[1,1,0], [4,1,3]])
+            sage: phi._common_bases(psi) # matrices of phi and psi both defined on (e,f)
+            (basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring,
+             basis (f_0,f_1) on the rank-2 free module N over the Integer Ring)
+            sage: a = M.automorphism() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
+            sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
+            sage: psi = M.hom(N, [[1,1,0], [4,1,3]], bases=(ep,f))
+            sage: phi._common_bases(psi) # matrix of psi w.r.t. (e,f) computed
+            (basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring,
+             basis (f_0,f_1) on the rank-2 free module N over the Integer Ring)
+            sage: psi = M.hom(N, [[1,1,0], [4,1,3]], bases=(ep,f))
+            sage: psi._common_bases(phi) # matrix of phi w.r.t. (ep,f) computed
+            (basis (ep_0,ep_1,ep_2) on the rank-3 free module M over the Integer Ring,
+             basis (f_0,f_1) on the rank-2 free module N over the Integer Ring)
+        
         """
         resu = None
         for bases in self._matrices:

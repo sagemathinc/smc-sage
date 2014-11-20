@@ -379,6 +379,33 @@ class TensorFreeModule(FiniteRankFreeModule):
     def _coerce_map_from_(self, other):
         r"""
         Determine whether coercion to self exists from other parent.
+        
+        EXAMPLES:
+        
+        Sets of module endomorphisms coerces to type-(1,1) tensor modules::
+        
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: e = M.basis('e')
+            sage: M.tensor_module(1,1)._coerce_map_from_(End(M))
+            True
+            
+        but not to tensor modules of other types::
+        
+            sage: M.tensor_module(0,1)._coerce_map_from_(End(M))
+            False
+        
+        and not to type-(1,1) tensor modules defined on another free module::
+        
+            sage: N = FiniteRankFreeModule(ZZ, 3, name='N')
+            sage: f = N.basis('f')
+            sage: M.tensor_module(1,1)._coerce_map_from_(End(N))
+            False
+        
+        There is no coercion if the module morphisms are not endomorphisms::
+        
+            sage: M.tensor_module(1,1)._coerce_map_from_(Hom(M,N))
+            False
+
         """
         from free_module_homset import FreeModuleHomset
         if isinstance(other, FreeModuleHomset):
