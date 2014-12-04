@@ -388,6 +388,8 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         if not hasattr(self, '_zero_element'):
             self._zero_element = self._element_constructor_(name='zero',
                                                             latex_name='0')
+        # Identity endomorphism:
+        self._identity_morphism = None # not defined yet
 
 
     #### Methods required for any Parent
@@ -483,12 +485,12 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
             sage: H = M._Hom_(N) ; H
-            Set of Morphisms from rank-3 free module M over the Integer Ring 
-             to rank-2 free module N over the Integer Ring in Category of 
+            Set of Morphisms from Rank-3 free module M over the Integer Ring
+             to Rank-2 free module N over the Integer Ring in Category of
              modules over Integer Ring
             sage: H = Hom(M,N) ; H  # indirect doctest
-            Set of Morphisms from rank-3 free module M over the Integer Ring 
-             to rank-2 free module N over the Integer Ring in Category of 
+            Set of Morphisms from Rank-3 free module M over the Integer Ring 
+             to Rank-2 free module N over the Integer Ring in Category of 
              modules over Integer Ring
 
         """
@@ -1670,8 +1672,8 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: f = N.basis('f')
             sage: phi = M.hom(N, [[-1,2,0], [5,1,2]]) ; phi
             Generic morphism:
-              From: rank-3 free module M over the Integer Ring
-              To:   rank-2 free module N over the Integer Ring
+              From: Rank-3 free module M over the Integer Ring
+              To:   Rank-2 free module N over the Integer Ring
 
         Homomorphism defined by a matrix w.r.t. bases that are not the
         default ones::
@@ -1680,8 +1682,8 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: fp = N.basis('fp', latex_symbol=r"f'")
             sage: phi = M.hom(N, [[3,2,1], [1,2,3]], bases=(ep, fp)) ; phi
             Generic morphism:
-              From: rank-3 free module M over the Integer Ring
-              To:   rank-2 free module N over the Integer Ring
+              From: Rank-3 free module M over the Integer Ring
+              To:   Rank-2 free module N over the Integer Ring
 
         Call with all arguments specified::
 
@@ -1752,7 +1754,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
             sage: e = M.basis('e')
             sage: phi = M.endomorphism_map([[1,-2], [-3,4]]) ; phi
-            Generic endomorphism of rank-2 free module M over the Integer Ring
+            Generic endomorphism of Rank-2 free module M over the Integer Ring
             sage: phi.matrix()  # matrix w.r.t the default basis
             [ 1 -2]
             [-3  4]
@@ -1765,7 +1767,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: phi = M.endomorphism_map([[1,-2], [-3,4]], basis=ep, 
             ....:                          name='phi', latex_name=r'\phi')
             sage: phi
-            Generic endomorphism of rank-2 free module M over the Integer Ring
+            Generic endomorphism of Rank-2 free module M over the Integer Ring
             sage: phi.matrix(ep)  # the input matrix
             [ 1 -2]
             [-3  4]
@@ -1796,7 +1798,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
             sage: Id = M.identity_morphism() ; Id
-            Identity endomorphism of rank-3 free module M over the Integer Ring
+            Identity endomorphism of Rank-3 free module M over the Integer Ring
             sage: latex(Id)
             \mathrm{Id}
 

@@ -23,7 +23,7 @@ from sage.rings.integer import Integer
 from sage.categories.morphism import Morphism, IdentityMorphism
 #!# from sage.categories.morphism import Morphism
 from sage.categories.homset import Hom
-from finite_rank_free_module import FiniteRankFreeModule
+from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule
 
 class FiniteRankFreeModuleMorphism(Morphism):
     r"""
@@ -49,17 +49,16 @@ class FiniteRankFreeModuleMorphism(Morphism):
       be any material from which a matrix of size rank(N)*rank(M) of 
       elements of `R` can be constructed; the *columns* of the matrix give
       the images of the basis of `M` (see the convention in the example below)
-    - ``bases`` -- (default: None) pair (basis_M, basis_N) defining the 
+    - ``bases`` -- (default: ``None``) pair (basis_M, basis_N) defining the 
       matrix representation, basis_M being a basis of module `M` and
       basis_N a basis of module `N` ; if None the pair formed by the 
       default bases of each module is assumed. 
-    - ``name`` -- (string; default: None) name given to the homomorphism
-    - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the 
+    - ``name`` -- (default: ``None``) string; name given to the homomorphism
+    - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to denote the 
       homomorphism; if None, ``name`` will be used. 
-    - ``is_identity`` -- (boolean; default: False) determines whether the
-      constructed object is the identity endomorphism; if set to True, then
+    - ``is_identity`` -- (default: ``False``) determines whether the
+      constructed object is the identity endomorphism; if set to ``True``, then
       N must be M and the entry ``matrix_rep`` is not used. 
-
 
     EXAMPLES:
     
@@ -71,11 +70,13 @@ class FiniteRankFreeModuleMorphism(Morphism):
         sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
         sage: e = M.basis('e') ; f = N.basis('f')
         sage: H = Hom(M,N) ; H
-        Set of Morphisms from rank-3 free module M over the Integer Ring to rank-2 free module N over the Integer Ring in Category of modules over Integer Ring
+        Set of Morphisms from Rank-3 free module M over the Integer Ring to
+         Rank-2 free module N over the Integer Ring in Category of modules
+         over Integer Ring
         sage: phi = H([[2,-1,3], [1,0,-4]], name='phi', latex_name=r'\phi') ; phi
         Generic morphism:
-          From: rank-3 free module M over the Integer Ring
-          To:   rank-2 free module N over the Integer Ring
+          From: Rank-3 free module M over the Integer Ring
+          To:   Rank-2 free module N over the Integer Ring
 
     Since no bases have been specified in the argument list, the provided 
     matrix is relative to the default bases of modules M and N, so that
@@ -83,17 +84,18 @@ class FiniteRankFreeModuleMorphism(Morphism):
     
         sage: phi = H([[2,-1,3], [1,0,-4]], bases=(e,f), name='phi', latex_name=r'\phi') ; phi
         Generic morphism:
-          From: rank-3 free module M over the Integer Ring
-          To:   rank-2 free module N over the Integer Ring
+          From: Rank-3 free module M over the Integer Ring
+          To:   Rank-2 free module N over the Integer Ring
 
     An alternative way to construct a homomorphism is to call the method
     :meth:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule.hom`
     on the domain::
     
-        sage: phi = M.hom(N, [[2,-1,3], [1,0,-4]], bases=(e,f), name='phi', latex_name=r'\phi') ; phi
+        sage: phi = M.hom(N, [[2,-1,3], [1,0,-4]], bases=(e,f), name='phi',
+        ....:             latex_name=r'\phi') ; phi
         Generic morphism:
-          From: rank-3 free module M over the Integer Ring
-          To:   rank-2 free module N over the Integer Ring
+          From: Rank-3 free module M over the Integer Ring
+          To:   Rank-2 free module N over the Integer Ring
     
     The parent of a homomorphism is of course the corresponding hom-set::
 
@@ -115,9 +117,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
     Sage's constant functions::
     
         sage: phi.domain()
-        rank-3 free module M over the Integer Ring
+        Rank-3 free module M over the Integer Ring
         sage: phi.codomain()
-        rank-2 free module N over the Integer Ring
+        Rank-2 free module N over the Integer Ring
         sage: type(phi.domain)
         <type 'sage.misc.constant_function.ConstantFunction'>
     
@@ -158,9 +160,11 @@ class FiniteRankFreeModuleMorphism(Morphism):
     The identity endomorphism::
     
         sage: Id = M.identity_morphism() ; Id
-        Identity endomorphism of rank-3 free module M over the Integer Ring
+        Identity endomorphism of Rank-3 free module M over the Integer Ring
         sage: Id.parent()
-        Set of Morphisms from rank-3 free module M over the Integer Ring to rank-3 free module M over the Integer Ring in Category of modules over Integer Ring
+        Set of Morphisms from Rank-3 free module M over the Integer Ring to
+         Rank-3 free module M over the Integer Ring in Category of modules
+         over Integer Ring
         sage: Id.parent() is End(M)
         True
     
@@ -194,11 +198,12 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
             sage: e = M.basis('e') ; f = N.basis('f')
             sage: from sage.tensor.modules.free_module_morphism import FiniteRankFreeModuleMorphism
-            sage: phi = FiniteRankFreeModuleMorphism(Hom(M,N), [[1,0,-3], [2,1,4]], name='phi', latex_name=r'\phi')
+            sage: phi = FiniteRankFreeModuleMorphism(Hom(M,N), [[1,0,-3], [2,1,4]], name='phi',
+            ....:                                    latex_name=r'\phi')
             sage: phi
             Generic morphism:
-              From: rank-3 free module M over the Integer Ring
-              To:   rank-2 free module N over the Integer Ring
+              From: Rank-3 free module M over the Integer Ring
+              To:   Rank-2 free module N over the Integer Ring
             sage: phi.matrix(e,f)
             [ 1  0 -3]
             [ 2  1  4]
@@ -207,15 +212,16 @@ class FiniteRankFreeModuleMorphism(Morphism):
         
         Generic endomorphism::
         
-            sage: phi = FiniteRankFreeModuleMorphism(End(M), [[1,0,-3], [2,1,4], [7,8,9]], name='phi', latex_name=r'\phi')
+            sage: phi = FiniteRankFreeModuleMorphism(End(M), [[1,0,-3], [2,1,4], [7,8,9]],
+            ....:                                    name='phi', latex_name=r'\phi')
             sage: phi
-            Generic endomorphism of rank-3 free module M over the Integer Ring
+            Generic endomorphism of Rank-3 free module M over the Integer Ring
         
         Identity endomorphism::
         
             sage: phi = FiniteRankFreeModuleMorphism(End(M), 'whatever', is_identity=True)
             sage: phi
-            Identity endomorphism of rank-3 free module M over the Integer Ring
+            Identity endomorphism of Rank-3 free module M over the Integer Ring
             sage: phi.matrix(e)
             [1 0 0]
             [0 1 0]
@@ -323,7 +329,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
         
             sage: phi = M.hom(N, [[-1,2,0], [5,1,2]])
             sage: phi._latex_()
-            '\\mbox{Generic morphism:\n  From: rank-3 free module M over the Integer Ring\n  To:   rank-2 free module N over the Integer Ring}'
+            '\\mbox{Generic morphism:\n  From: Rank-3 free module M over the Integer Ring\n  To:   Rank-2 free module N over the Integer Ring}'
 
         """
         if self._latex_name is None:
@@ -532,8 +538,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: psi = M.hom(N, [[1,1,0], [4,1,3]])
             sage: s = phi._add_(psi) ; s
             Generic morphism:
-              From: rank-3 free module M over the Integer Ring
-              To:   rank-2 free module N over the Integer Ring
+              From: Rank-3 free module M over the Integer Ring
+              To:   Rank-2 free module N over the Integer Ring
             sage: s.matrix(e,f)
             [0 3 0]
             [9 2 5]
@@ -551,8 +557,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: psi = M.hom(N, [[-2,0,-1], [-1,-2, 5]], bases=(ep,fp))
             sage: s = phi._add_(psi) ; s
             Generic morphism:
-              From: rank-3 free module M over the Integer Ring
-              To:   rank-2 free module N over the Integer Ring
+              From: Rank-3 free module M over the Integer Ring
+              To:   Rank-2 free module N over the Integer Ring
             sage: s.matrix(e,f)
             [-6  1 -2]
             [ 4  3  2]
@@ -608,8 +614,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: psi = M.hom(N, [[1,1,0], [4,1,3]])
             sage: s = phi._sub_(psi) ; s
             Generic morphism:
-              From: rank-3 free module M over the Integer Ring
-              To:   rank-2 free module N over the Integer Ring
+              From: Rank-3 free module M over the Integer Ring
+              To:   Rank-2 free module N over the Integer Ring
             sage: s.matrix(e,f)
             [-2  1  0]
             [ 1  0 -1]
@@ -627,8 +633,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: psi = M.hom(N, [[-2,0,-1], [-1,-2, 5]], bases=(ep,fp))
             sage: s = phi._sub_(psi) ; s
             Generic morphism:
-              From: rank-3 free module M over the Integer Ring
-              To:   rank-2 free module N over the Integer Ring
+              From: Rank-3 free module M over the Integer Ring
+              To:   Rank-2 free module N over the Integer Ring
             sage: s.matrix(e,f)
             [ 4  3  2]
             [ 6 -1  2]
@@ -689,8 +695,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: phi = M.hom(N, [[-1,2,0], [5,1,2]], name='phi', latex_name=r'\phi')
             sage: s = phi._rmul_(7) ; s
             Generic morphism:
-              From: rank-3 free module M over the Integer Ring
-              To:   rank-2 free module N over the Integer Ring
+              From: Rank-3 free module M over the Integer Ring
+              To:   Rank-2 free module N over the Integer Ring
             sage: s.matrix(e,f)
             [-7 14  0]
             [35  7 14]
@@ -724,8 +730,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: phi = M.hom(N, [[-1,2,0], [5,1,2]], name='phi', latex_name=r'\phi')
             sage: s = phi.__pos__() ; s
             Generic morphism:
-              From: rank-3 free module M over the Integer Ring
-              To:   rank-2 free module N over the Integer Ring
+              From: Rank-3 free module M over the Integer Ring
+              To:   Rank-2 free module N over the Integer Ring
             sage: s == +phi
             True
             sage: s == phi
@@ -760,8 +766,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: phi = M.hom(N, [[-1,2,0], [5,1,2]], name='phi', latex_name=r'\phi')
             sage: s = phi.__neg__() ; s
             Generic morphism:
-              From: rank-3 free module M over the Integer Ring
-              To:   rank-2 free module N over the Integer Ring
+              From: Rank-3 free module M over the Integer Ring
+              To:   Rank-2 free module N over the Integer Ring
             sage: s == -phi
             True
             sage: s.matrix()
@@ -806,7 +812,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: phi = M.hom(N, [[-1,2,0], [5,1,2]], name='phi', latex_name=r'\phi')
             sage: v = M([1,2,3], basis=e, name='v')
             sage: w = phi(v) ; w
-            element phi(v) of the rank-2 free module N over the Integer Ring
+            Element phi(v) of the Rank-2 free module N over the Integer Ring
             sage: w.view()
             phi(v) = 3 f_0 + 13 f_1
             
@@ -833,7 +839,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
             sage: v = M([1,2,3], basis=ep, name='v')
             sage: w = phi(v) ; w
-            element phi(v) of the rank-2 free module N over the Integer Ring
+            Element phi(v) of the Rank-2 free module N over the Integer Ring
             sage: w.view()
             phi(v) = -5 f_0 + 10 f_1
             sage: for i in range(2):
@@ -1044,9 +1050,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
         
         INPUT:
         
-        - ``basis1`` -- (default: None) basis of the domain of ``self``; if 
+        - ``basis1`` -- (default: ``None``) basis of the domain of ``self``; if 
           None, the domain's default basis is assumed
-        - ``basis2`` -- (default: None) basis of the codomain of ``self``; if 
+        - ``basis2`` -- (default: ``None``) basis of the codomain of ``self``; if 
           None, ``basis2`` is set to ``basis1`` if ``self`` is an endomorphism,
           otherwise, ``basis2`` is set to the codomain's default basis.
         
@@ -1238,18 +1244,18 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: phi = M.hom(N, [[-1,2,0], [5,1,2]])
             sage: psi = M.hom(N, [[1,1,0], [4,1,3]])
             sage: phi._common_bases(psi) # matrices of phi and psi both defined on (e,f)
-            (basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring,
-             basis (f_0,f_1) on the rank-2 free module N over the Integer Ring)
+            (Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer Ring,
+             Basis (f_0,f_1) on the Rank-2 free module N over the Integer Ring)
             sage: a = M.automorphism() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
             sage: psi = M.hom(N, [[1,1,0], [4,1,3]], bases=(ep,f))
             sage: phi._common_bases(psi) # matrix of psi w.r.t. (e,f) computed
-            (basis (e_0,e_1,e_2) on the rank-3 free module M over the Integer Ring,
-             basis (f_0,f_1) on the rank-2 free module N over the Integer Ring)
+            (Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer Ring,
+             Basis (f_0,f_1) on the Rank-2 free module N over the Integer Ring)
             sage: psi = M.hom(N, [[1,1,0], [4,1,3]], bases=(ep,f))
             sage: psi._common_bases(phi) # matrix of phi w.r.t. (ep,f) computed
-            (basis (ep_0,ep_1,ep_2) on the rank-3 free module M over the Integer Ring,
-             basis (f_0,f_1) on the rank-2 free module N over the Integer Ring)
+            (Basis (ep_0,ep_1,ep_2) on the Rank-3 free module M over the Integer Ring,
+             Basis (f_0,f_1) on the Rank-2 free module N over the Integer Ring)
         
         """
         resu = None

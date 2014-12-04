@@ -451,10 +451,10 @@ class FreeModuleTensor(ModuleElement):
 
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: M.an_element().base_module()
-            rank-3 free module M over the Integer Ring
+            Rank-3 free module M over the Integer Ring
             sage: t = M.tensor((2,1))
             sage: t.base_module()
-            rank-3 free module M over the Integer Ring
+            Rank-3 free module M over the Integer Ring
             sage: t.base_module() is M
             True
 

@@ -194,11 +194,11 @@ class TensorFreeModule(FiniteRankFreeModule):
     :class:`~sage.tensor.modules.free_module_homset.FreeModuleHomset`)::
 
         sage: T11 = M.tensor_module(1,1) ; T11
-        free module of type-(1,1) tensors on the rank-3 free module M over the 
+        Free module of type-(1,1) tensors on the Rank-3 free module M over the 
          Integer Ring
         sage: End(M)
-        Set of Morphisms from rank-3 free module M over the Integer Ring to
-         rank-3 free module M over the Integer Ring in Category of modules
+        Set of Morphisms from Rank-3 free module M over the Integer Ring to
+         Rank-3 free module M over the Integer Ring in Category of modules
          over Integer Ring
         sage: T11.has_coerce_map_from(End(M))
         True
@@ -208,13 +208,13 @@ class TensorFreeModule(FiniteRankFreeModule):
     The coercion map `\mathrm{End}(M)\rightarrow T^{(1,1)}(M)` in action::
 
         sage: phi = End(M).an_element() ; phi
-        Generic endomorphism of rank-3 free module M over the Integer Ring
+        Generic endomorphism of Rank-3 free module M over the Integer Ring
         sage: phi.matrix(e)
         [1 1 1]
         [1 1 1]
         [1 1 1]
         sage: tphi = T11(phi) ; tphi # image of phi by the coercion map
-        type-(1,1) tensor on the rank-3 free module M over the Integer Ring
+        Type-(1,1) tensor on the Rank-3 free module M over the Integer Ring
         sage: tphi[:]
         [1 1 1]
         [1 1 1]
@@ -226,7 +226,7 @@ class TensorFreeModule(FiniteRankFreeModule):
         [ 0 -2  0]
         [ 0  0 -3]
         sage: s = t + phi ; s  # phi is coerced to a type-(1,1) tensor prior to the addition
-        endomorphism on the rank-3 free module M over the Integer Ring
+        Endomorphism on the Rank-3 free module M over the Integer Ring
         sage: s[:]
         [ 0  1  1]
         [ 1 -1  1]
@@ -235,11 +235,11 @@ class TensorFreeModule(FiniteRankFreeModule):
     The reverse coercion map in action::
 
         sage: phi1 = End(M)(tphi) ; phi1
-        Generic endomorphism of rank-3 free module M over the Integer Ring
+        Generic endomorphism of Rank-3 free module M over the Integer Ring
         sage: phi1 == phi
         True
         sage: s = phi + t ; s  # t is coerced to an endomorphism prior to the addition
-        Generic endomorphism of rank-3 free module M over the Integer Ring
+        Generic endomorphism of Rank-3 free module M over the Integer Ring
         sage: s.matrix(e)
         [ 0  1  1]
         [ 1 -1  1]
