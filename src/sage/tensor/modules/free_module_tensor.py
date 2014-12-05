@@ -182,7 +182,7 @@ class FreeModuleTensor(ModuleElement):
       instance of :class:`FiniteRankFreeModule`)
     - ``tensor_type`` -- pair ``(k, l)`` with ``k`` being the contravariant
       rank and ``l`` the covariant rank
-    - ``name`` -- (default: None) name given to the tensor
+    - ``name`` -- (default: ``None``) name given to the tensor
     - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the tensor;
       if none is provided, the LaTeX symbol is set to ``name``
     - ``sym`` -- (default: ``None``) a symmetry or a list of symmetries among

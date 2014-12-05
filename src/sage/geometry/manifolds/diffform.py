@@ -422,7 +422,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         sage: a[1,0]
         -2
         sage: a.comp()
-        fully antisymmetric 2-indices components w.r.t. coordinate frame (M, (d/dt,d/dx,d/dy,d/dz))
+        Fully antisymmetric 2-indices components w.r.t. coordinate frame (M, (d/dt,d/dx,d/dy,d/dz))
         sage: type(a.comp())
         <class 'sage.tensor.modules.comp.CompFullyAntiSym'>
 
@@ -432,7 +432,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         sage: a[1,1] = 3
         Traceback (most recent call last):
         ...
-        ValueError: By antisymmetry, the component cannot have a nonzero value for the indices (1, 1)
+        ValueError: by antisymmetry, the component cannot have a nonzero value for the indices (1, 1)
         sage: a[1,1] = 0  # OK, albeit useless
         sage: a[1,2] = 3  # OK
 
@@ -491,7 +491,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
           y == y
           z == z
         sage: eps.comp(c_spher.frame()) # computation of the components in the spherical frame
-        fully antisymmetric 3-indices components w.r.t. coordinate frame (R3, (d/dr,d/dth,d/dph))
+        Fully antisymmetric 3-indices components w.r.t. coordinate frame (R3, (d/dr,d/dth,d/dph))
         sage: eps.comp(c_spher.frame())[1,2,3, c_spher]
         r^2*sin(th)
         sage: eps.view(c_spher.frame())

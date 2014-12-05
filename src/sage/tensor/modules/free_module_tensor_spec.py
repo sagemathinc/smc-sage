@@ -401,7 +401,7 @@ class FreeModuleIdentityMap(FreeModuleAutomorphism):
     - ``fmodule`` -- free module `M` over a commutative ring `R`
       (must be an instance of :class:`FiniteRankFreeModule`)
     - ``name`` -- (default: 'Id') name given to the identity map.
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the identity
       map; if none is provided, the LaTeX symbol is set to ``name``
 
     EXAMPLES:

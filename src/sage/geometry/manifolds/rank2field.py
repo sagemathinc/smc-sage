@@ -743,7 +743,7 @@ class TangentIdentityFieldParal(FreeModuleIdentityMap, AutomorphismFieldParal):
         sage: a[1,1] = 2
         Traceback (most recent call last):
         ...
-        NotImplementedError: The components of the identity map cannot be changed.
+        TypeError: the components of the identity map cannot be changed
 
     The tangent-space identity map applied to a vector field::
     

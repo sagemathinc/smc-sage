@@ -102,7 +102,7 @@ class TangentSpace(FiniteRankFreeModule):
     vector frames around the point::
     
         sage: Tp.bases()
-        [basis (d/dx,d/dy) on the tangent space at point 'p' on 2-dimensional manifold 'M']
+        [Basis (d/dx,d/dy) on the tangent space at point 'p' on 2-dimensional manifold 'M']
         sage: M.frames()
         [coordinate frame (M, (d/dx,d/dy))]
 
@@ -113,10 +113,10 @@ class TangentSpace(FiniteRankFreeModule):
     
         sage: c_uv.<u,v> = M.chart()
         sage: c_uv.frame().at(p)
-        basis (d/du,d/dv) on the tangent space at point 'p' on 2-dimensional manifold 'M'
+        Basis (d/du,d/dv) on the tangent space at point 'p' on 2-dimensional manifold 'M'
         sage: Tp.bases()
-        [basis (d/dx,d/dy) on the tangent space at point 'p' on 2-dimensional manifold 'M',
-         basis (d/du,d/dv) on the tangent space at point 'p' on 2-dimensional manifold 'M']
+        [Basis (d/dx,d/dy) on the tangent space at point 'p' on 2-dimensional manifold 'M',
+         Basis (d/du,d/dv) on the tangent space at point 'p' on 2-dimensional manifold 'M']
 
     All the bases defined on Tp are on the same footing. Accordingly the 
     tangent space is not in the category of modules with a distinguished 

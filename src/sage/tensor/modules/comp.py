@@ -262,7 +262,7 @@ class Components(SageObject):
     - ``start_index`` -- (default: 0) first value of a single index;
       accordingly a component index i must obey
       ``start_index <= i <= start_index + dim - 1``, where ``dim = len(frame)``.
-    - ``output_formatter`` -- (default: None) function or unbound
+    - ``output_formatter`` -- (default: ``None``) function or unbound
       method called to format the output of the component access
       operator ``[...]`` (method __getitem__); ``output_formatter`` must take
       1 or 2 arguments: the 1st argument must be an element of ``ring`` and
@@ -2250,7 +2250,7 @@ class CompWithSym(Components):
     - ``start_index`` -- (default: 0) first value of a single index;
       accordingly a component index i must obey
       ``start_index <= i <= start_index + dim - 1``, where ``dim = len(frame)``.
-    - ``output_formatter`` -- (default: None) function or unbound
+    - ``output_formatter`` -- (default: ``None``) function or unbound
       method called to format the output of the component access
       operator ``[...]`` (method __getitem__); ``output_formatter`` must take
       1 or 2 arguments: the 1st argument must be an instance of ``ring`` and
@@ -3900,7 +3900,7 @@ class CompFullySym(CompWithSym):
     - ``start_index`` -- (default: 0) first value of a single index;
       accordingly a component index i must obey
       ``start_index <= i <= start_index + dim - 1``, where ``dim = len(frame)``.
-    - ``output_formatter`` -- (default: None) function or unbound
+    - ``output_formatter`` -- (default: ``None``) function or unbound
       method called to format the output of the component access
       operator ``[...]`` (method __getitem__); ``output_formatter`` must take
       1 or 2 arguments: the 1st argument must be an instance of ``ring`` and
@@ -4281,7 +4281,7 @@ class CompFullyAntiSym(CompWithSym):
     - ``start_index`` -- (default: 0) first value of a single index;
       accordingly a component index i must obey
       ``start_index <= i <= start_index + dim - 1``, where ``dim = len(frame)``.
-    - ``output_formatter`` -- (default: None) function or unbound
+    - ``output_formatter`` -- (default: ``None``) function or unbound
       method called to format the output of the component access
       operator ``[...]`` (method __getitem__); ``output_formatter`` must take
       1 or 2 arguments: the 1st argument must be an instance of ``ring`` and
@@ -4518,7 +4518,7 @@ class KroneckerDelta(CompFullySym):
     - ``start_index`` -- (default: 0) first value of a single index;
       accordingly a component index i must obey
       ``start_index <= i <= start_index + dim - 1``, where ``dim = len(frame)``.
-    - ``output_formatter`` -- (default: None) function or unbound
+    - ``output_formatter`` -- (default: ``None``) function or unbound
       method called to format the output of the component access
       operator ``[...]`` (method ``__getitem__``); ``output_formatter`` must
       take 1 or 2 arguments: the first argument must be an instance of

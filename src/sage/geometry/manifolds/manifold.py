@@ -242,11 +242,11 @@ EXAMPLES:
     The value of the 1-form at point p::
         
         sage: df.at(p)
-        linear form df on the tangent space at point 'p' on 2-dimensional manifold 'S^2'
+        Linear form df on the tangent space at point 'p' on 2-dimensional manifold 'S^2'
         sage: df.at(p).view()
         df = 1/13 dx + 2/13 dy
         sage: df.at(p).parent()
-        dual of the tangent space at point 'p' on 2-dimensional manifold 'S^2'
+        Dual of the tangent space at point 'p' on 2-dimensional manifold 'S^2'
         
 """
 

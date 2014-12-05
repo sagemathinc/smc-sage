@@ -321,7 +321,7 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
         sage: v[0]
         Traceback (most recent call last):
         ...
-        IndexError: Index out of range: 0 not in [1,3]
+        IndexError: index out of range: 0 not in [1, 3]
 
     A vector field acts on scalar fields (derivation along the vector field)::
     

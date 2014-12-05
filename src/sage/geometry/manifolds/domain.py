@@ -1045,7 +1045,7 @@ class Domain(UniqueRepresentation, Parent):
         
             sage: XM = M.vector_field_module() ; XM
             free module X(M) of vector fields on the 2-dimensional manifold 'M'
-            sage: XM.view_bases()
+            sage: XM.print_bases()
             Bases defined on the free module X(M) of vector fields on the 2-dimensional manifold 'M':
              - (M, (d/dx,d/dy)) (default basis)
              - (M, (d/du,d/dv))
@@ -1887,7 +1887,7 @@ class OpenDomain(Domain):
             
             sage: e = M.vector_frame('e') ; M.set_default_frame(e)
             sage: t.set_comp()
-            fully symmetric 2-indices components w.r.t. vector frame (M, (e_0,e_1,e_2))
+            Fully symmetric 2-indices components w.r.t. vector frame (M, (e_0,e_1,e_2))
             sage: type(t.comp())
             <class 'sage.tensor.modules.comp.CompFullySym'>
                

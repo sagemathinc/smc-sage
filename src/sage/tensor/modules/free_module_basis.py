@@ -114,6 +114,8 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
 
         """
         self._fmodule = fmodule
+        if latex_symbol is None:
+            latex_symbol = symbol
         self._name = "(" + \
           ",".join([symbol + "_" + str(i) for i in fmodule.irange()]) +")"
         self._latex_name = r"\left(" + ",".join([latex_symbol + "_" + str(i)
@@ -197,7 +199,7 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
 
         INPUT:
 
-        - ``symbol`` -- (string) a letter (of a few letters) to denote a
+        - ``symbol`` -- string; a letter (of a few letters) to denote a
           generic element of the basis
         - ``latex_symbol`` -- (default: ``None``) string; symbol to denote a
           generic element of the basis; if ``None``, the value of ``symbol``
