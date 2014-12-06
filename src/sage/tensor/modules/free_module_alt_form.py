@@ -265,7 +265,7 @@ class FreeModuleAltForm(FreeModuleTensor):
 
         Display in a basis which is not the default one::
 
-            sage: aut = M.automorphism()
+            sage: aut = M.automorphism_tensor()
             sage: aut[:] = [[0,1,0], [0,0,-1], [1,0,0]]
             sage: f = e.new_basis(aut, 'f')
             sage: a.view(f)

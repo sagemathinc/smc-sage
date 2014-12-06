@@ -30,14 +30,14 @@ tensors:
   * :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm` for
     type-(0, 1) tensors (linear forms)
 
-* :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphism`
-  for type-(1, 1) tensors (endomorphisms)
+* :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphismTensor`
+  for type-(1,1) tensors
 
-  * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphism`
-    for invertible endomorphisms
+  * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphismTensor`
+    for type-(1,1) tensors representing invertible endomorphisms
 
-    * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityMap`
-      for the identity map on a free module
+    * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityTensor`
+      for the type-(1,1) tensor representing the free module identity map
 
 :class:`FreeModuleTensor` is a Sage *element* class, the corresponding *parent*
 class being :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule`.
@@ -53,7 +53,7 @@ A tensor of type `(1, 1)` on a rank-3 free module over `\ZZ`::
 
     sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
     sage: t = M.tensor((1,1), name='t') ; t
-    Endomorphism t on the Rank-3 free module M over the Integer Ring
+    Endomorphism tensor t on the Rank-3 free module M over the Integer Ring
     sage: t.parent()
     Free module of type-(1,1) tensors on the Rank-3 free module M
      over the Integer Ring
@@ -203,7 +203,7 @@ class FreeModuleTensor(ModuleElement):
 
         sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
         sage: t = M.tensor((1,1), name='t') ; t
-        Endomorphism t on the Rank-3 free module M over the Integer Ring
+        Endomorphism tensor t on the Rank-3 free module M over the Integer Ring
 
     Tensors are *Element* objects whose parents are tensor free modules::
 
@@ -247,7 +247,7 @@ class FreeModuleTensor(ModuleElement):
                 if len(isym) > 1:
                     for i in isym:
                         if i<0 or i>self._tensor_rank-1:
-                            raise IndexError("Invalid position: " + str(i) +
+                            raise IndexError("invalid position: " + str(i) +
                                  " not in [0," + str(self._tensor_rank-1) + "]")
                     self._sym.append(tuple(isym))
         self._antisym = []
@@ -259,7 +259,7 @@ class FreeModuleTensor(ModuleElement):
                 if len(isym) > 1:
                     for i in isym:
                         if i<0 or i>self._tensor_rank-1:
-                            raise IndexError("Invalid position: " + str(i) +
+                            raise IndexError("invalid position: " + str(i) +
                                 " not in [0," + str(self._tensor_rank-1) + "]")
                     self._antisym.append(tuple(isym))
 
@@ -541,7 +541,7 @@ class FreeModuleTensor(ModuleElement):
         Display of a type-`(1,1)` tensor::
 
             sage: t = v*w ; t  # the type-(1,1) is formed as the tensor product of v by w
-            Endomorphism v*w on the Rank-2 free module M over the Rational Field
+            Endomorphism tensor v*w on the Rank-2 free module M over the Rational Field
             sage: t.view()
             v*w = -1/4 e_1*e^1 + 1/3 e_1*e^2 + 3/2 e_2*e^1 - 2 e_2*e^2
             sage: latex(t.view())  # display in the notebook
@@ -549,7 +549,7 @@ class FreeModuleTensor(ModuleElement):
 
         Display in a basis which is not the default one::
 
-            sage: a = M.automorphism()
+            sage: a = M.automorphism_tensor()
             sage: a[:] = [[1,2],[3,4]]
             sage: f = e.new_basis(a, 'f')
             sage: v.view(f) # the components w.r.t basis f are first computed via the change-of-basis formula defined by a
@@ -799,7 +799,7 @@ class FreeModuleTensor(ModuleElement):
 
         Components computed via a change-of-basis formula::
 
-            sage: a = M.automorphism()
+            sage: a = M.automorphism_tensor()
             sage: a[:] = [[0,0,1], [1,0,0], [0,-1,0]]
             sage: f = e.new_basis(a, 'f')
             sage: t.comp(f)
@@ -915,7 +915,7 @@ class FreeModuleTensor(ModuleElement):
         The components w.r.t. basis e can be deduced from those w.r.t. basis f,
         once a relation between the two bases has been set::
 
-            sage: a = M.automorphism()
+            sage: a = M.automorphism_tensor()
             sage: a[:] = [[0,0,1], [1,0,0], [0,-1,0]]
             sage: M.set_basis_change(e, f, a)
             sage: t.view(e)
@@ -998,7 +998,7 @@ class FreeModuleTensor(ModuleElement):
         if basis is None: basis = self._fmodule._def_basis
         if basis not in self._components:
             if basis not in self._fmodule._known_bases:
-                raise ValueError("The " + str(basis) + " has not been " +
+                raise ValueError("the " + str(basis) + " has not been " +
                                  "defined on the " + str(self._fmodule))
             self._components[basis] = self._new_comp(basis)
         self._del_derived() # deletes the derived quantities
@@ -1248,7 +1248,7 @@ class FreeModuleTensor(ModuleElement):
 
         Linking bases ``e`` and ``f`` changes the result::
 
-            sage: a = M.automorphism()
+            sage: a = M.automorphism_tensor()
             sage: a[:] = [[0,0,1], [1,0,0], [0,-1,0]]
             sage: M.set_basis_change(e, f, a)
             sage: u.common_basis(v)
@@ -1963,7 +1963,7 @@ class FreeModuleTensor(ModuleElement):
             sage: e = M.basis('e') ; e
             Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer Ring
             sage: a = M.tensor((1,1), name='a') ; a
-            Endomorphism a on the Rank-3 free module M over the Integer Ring
+            Endomorphism tensor a on the Rank-3 free module M over the Integer Ring
             sage: a[:] = [[1,2,3], [4,5,6], [7,8,9]]
             sage: a.trace()
             15
@@ -2156,7 +2156,7 @@ class FreeModuleTensor(ModuleElement):
 
         Contraction of a tensor of type `(1,1)` with a tensor of type `(1,0)`::
 
-            sage: a = M.endomorphism()  # tensor of type (1,1)
+            sage: a = M.endomorphism_tensor()  # tensor of type (1,1)
             sage: a[:] = [[-1,2,3],[4,-5,6],[7,8,9]]
             sage: s = a.contract(b) ; s
             Element of the Rank-3 free module M over the Integer Ring
@@ -2243,7 +2243,7 @@ class FreeModuleTensor(ModuleElement):
         contraction to take place, reflecting the fact that the contraction is
         basis-independent::
 
-            sage: A = M.automorphism()
+            sage: A = M.automorphism_tensor()
             sage: A[:] =  [[0,0,1], [1,0,0], [0,-1,0]]
             sage: h = e.new_basis(A, 'h')
             sage: b.comp(h)[:]  # forces the computation of b's components w.r.t. basis h
@@ -2269,7 +2269,7 @@ class FreeModuleTensor(ModuleElement):
             sage: b = M([1,-1,2])*b ; b # a tensor of type (1,2)
             Type-(1,2) tensor on the Rank-3 free module M over the Integer Ring
             sage: s = a.contract(1,2,b,1,0) ; s # the double contraction
-            Endomorphism on the Rank-3 free module M over the Integer Ring
+            Endomorphism tensor on the Rank-3 free module M over the Integer Ring
             sage: s[:]
             [ -36   30   15]
             [-252  210  105]

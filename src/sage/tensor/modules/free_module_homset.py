@@ -23,7 +23,7 @@ AUTHORS:
 from sage.categories.homset import Homset
 from sage.tensor.modules.free_module_morphism import FiniteRankFreeModuleMorphism
 from sage.tensor.modules.free_module_tensor import FreeModuleTensor
-from sage.tensor.modules.free_module_tensor_spec import FreeModuleIdentityMap
+from sage.tensor.modules.free_module_tensor_spec import FreeModuleIdentityTensor
 
 class FreeModuleHomset(Homset):
     r"""
@@ -141,7 +141,7 @@ class FreeModuleHomset(Homset):
     There is a canonical identification between endomorphisms of `M` and
     tensors of type (1,1) on `M`. Accordingly, coercion maps have been
     implemented between `\mathrm{End}(M)` and `T^{(1,1)}(M)` (the module of
-    all type-(1,1) tensor on `M`, see
+    all type-(1,1) tensors on `M`, see
     :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule`)::
 
         sage: T11 = M.tensor_module(1,1) ; T11
@@ -179,13 +179,13 @@ class FreeModuleHomset(Homset):
         from finite_rank_free_module import FiniteRankFreeModule
         if not isinstance(fmodule1, FiniteRankFreeModule):
             raise TypeError("fmodule1 = " + str(fmodule1) + " is not an " + 
-                            "instance of FiniteRankFreeModule.")
+                            "instance of FiniteRankFreeModule")
         if not isinstance(fmodule2, FiniteRankFreeModule):
             raise TypeError("fmodule1 = " + str(fmodule2) + " is not an " + 
-                            "instance of FiniteRankFreeModule.")
+                            "instance of FiniteRankFreeModule")
         if fmodule1.base_ring() != fmodule2.base_ring():
-            raise TypeError("The domain and codomain are not defined over " + 
-                            "the same ring.")
+            raise TypeError("the domain and codomain are not defined over " + 
+                            "the same ring")
         Homset.__init__(self, fmodule1, fmodule2)
         if name is None:
             self._name = "Hom(" + fmodule1._name + "," + fmodule2._name + ")"
@@ -345,11 +345,11 @@ class FreeModuleHomset(Homset):
                 mat = [[ tcomp[[i,j]] for j in fmodule.irange()] \
                                                      for i in fmodule.irange()]
                 resu = self.element_class(self, mat, bases=(basis,basis), 
-                         name=tensor._name, latex_name=tensor._latex_name,
-                         is_identity=isinstance(tensor, FreeModuleIdentityMap))
+                              name=tensor._name, latex_name=tensor._latex_name,
+                      is_identity=isinstance(tensor, FreeModuleIdentityTensor))
             else:
-                raise TypeError("Cannot coerce the " + str(tensor) +
-                                " to an element of " + str(self) + ".")
+                raise TypeError("cannot coerce the " + str(tensor) +
+                                " to an element of " + str(self))
         else:
             # Standard construction:
             resu = self.element_class(self, matrix_rep, bases=bases, name=name,

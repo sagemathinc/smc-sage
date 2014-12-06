@@ -226,7 +226,7 @@ class TensorFreeModule(FiniteRankFreeModule):
         [ 0 -2  0]
         [ 0  0 -3]
         sage: s = t + phi ; s  # phi is coerced to a type-(1,1) tensor prior to the addition
-        Endomorphism on the Rank-3 free module M over the Integer Ring
+        Endomorphism tensor on the Rank-3 free module M over the Integer Ring
         sage: s[:]
         [ 0  1  1]
         [ 1 -1  1]
@@ -325,8 +325,8 @@ class TensorFreeModule(FiniteRankFreeModule):
                 for basis, mat in endo._matrices.iteritems():
                     resu.add_comp(basis[0])[:] = mat
             else:
-                raise TypeError("Cannot coerce the " + str(endo) +
-                                " to an element of " + str(self) + ".")
+                raise TypeError("cannot coerce the " + str(endo) +
+                                " to an element of " + str(self))
         else:
             # Standard construction:
             resu = self.element_class(self._fmodule, self._tensor_type,

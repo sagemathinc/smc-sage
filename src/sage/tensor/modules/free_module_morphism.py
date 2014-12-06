@@ -113,7 +113,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
         True
 
     The domain and codomain of the homomorphism are returned respectively by
-    the methods ``domain()`` and ``codomain()``, which is are implemented as
+    the methods ``domain()`` and ``codomain()``, which are implemented as
     Sage's constant functions::
 
         sage: phi.domain()
@@ -159,7 +159,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
     The identity endomorphism::
 
-        sage: Id = M.identity_morphism() ; Id
+        sage: Id = M.identity_map() ; Id
         Identity endomorphism of Rank-3 free module M over the Integer Ring
         sage: Id.parent()
         Set of Morphisms from Rank-3 free module M over the Integer Ring to
@@ -238,33 +238,33 @@ class FiniteRankFreeModuleMorphism(Morphism):
         if bases is None:
             def_basis1 = fmodule1.default_basis()
             if def_basis1 is None:
-                raise ValueError("The " + str(fmodule1) + " has no default " + 
-                                 "basis.")
+                raise ValueError("the " + str(fmodule1) + " has no default " + 
+                                 "basis")
             def_basis2 = fmodule2.default_basis()
             if def_basis2 is None:
-                raise ValueError("The " + str(fmodule2) + " has no default " + 
-                                 "basis.")
+                raise ValueError("the " + str(fmodule2) + " has no default " + 
+                                 "basis")
             bases = (def_basis1, def_basis2)
         else:
             bases = tuple(bases)  # insures bases is a tuple
             if len(bases) != 2:
-                raise TypeError("The argument bases must contain 2 bases.")
+                raise TypeError("the argument bases must contain 2 bases")
             if bases[0] not in fmodule1.bases():
                 raise TypeError(str(bases[0]) + " is not a basis on the " + \
-                                str(fmodule1) + ".")
+                                str(fmodule1))
             if bases[1] not in fmodule2.bases():
                 raise TypeError(str(bases[1]) + " is not a basis on the " + \
-                                str(fmodule2) + ".")
+                                str(fmodule2))
         ring = parent.base_ring()
         n1 = fmodule1.rank()
         n2 = fmodule2.rank()
         if is_identity:
             # Construction of the identity endomorphism
             if fmodule1 != fmodule2:
-                raise TypeError("The domain and codomain must coincide " + \
+                raise TypeError("the domain and codomain must coincide " + \
                                 "for the identity endomorphism.")
             if bases[0] != bases[1]:
-                raise TypeError("The two bases must coincide for " + \
+                raise TypeError("the two bases must coincide for " + \
                                 "constructing the identity endomorphism.")
             self._is_identity = True
             zero = ring.zero()
@@ -372,7 +372,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         Comparison of homomorphisms defined on different bases::
 
-            sage: a = M.automorphism() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
+            sage: a = M.automorphism_tensor() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
             sage: psi = M.hom(N, [[-2,0,-1], [-1,-2, 5]], bases=(ep,f))
             sage: phi.__eq__(psi)
@@ -416,8 +416,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
         else:
             bases = self._common_bases(other)
             if bases is None:
-                raise ValueError("No common pair of bases has been found to " +
-                           "compare " + str(self) + " and " + str(other) + ".")
+                raise ValueError("no common pair of bases has been found to " +
+                                 "compare " + str(self) + " and " + str(other))
             return bool( self.matrix(*bases) == other.matrix(*bases) )
 
     def __ne__(self, other):
@@ -551,9 +551,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         Addition of homomorphisms defined on different bases::
 
-            sage: a = M.automorphism() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
+            sage: a = M.automorphism_tensor() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
-            sage: b = N.automorphism() ; b[0,1], b[1,0] = -1, 1
+            sage: b = N.automorphism_tensor() ; b[0,1], b[1,0] = -1, 1
             sage: fp = f.new_basis(b, 'fp', latex_symbol="f'")
             sage: psi = M.hom(N, [[-2,0,-1], [-1,-2, 5]], bases=(ep,fp))
             sage: s = phi._add_(psi) ; s
@@ -578,8 +578,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
         # to have the same parents
         bases = self._common_bases(other)
         if bases is None:
-            raise ValueError("No common pair of bases has been found to " +
-                             "add " + str(self) + " and " + str(other) + ".")
+            raise ValueError("no common pair of bases has been found to " +
+                             "add " + str(self) + " and " + str(other))
         # Addition at the matrix level:
         resu_mat = self._matrices[bases] + other._matrices[bases]
         if self._name is not None and other._name is not None:
@@ -627,9 +627,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         Addition of homomorphisms defined on different bases::
 
-            sage: a = M.automorphism() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
+            sage: a = M.automorphism_tensor() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
-            sage: b = N.automorphism() ; b[0,1], b[1,0] = -1, 1
+            sage: b = N.automorphism_tensor() ; b[0,1], b[1,0] = -1, 1
             sage: fp = f.new_basis(b, 'fp', latex_symbol="f'")
             sage: psi = M.hom(N, [[-2,0,-1], [-1,-2, 5]], bases=(ep,fp))
             sage: s = phi._sub_(psi) ; s
@@ -658,9 +658,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
         # to have the same parents
         bases = self._common_bases(other)
         if bases is None:
-            raise ValueError("No common pair of bases has been found to " +
+            raise ValueError("no common pair of bases has been found to " +
                              "substract " + str(other) + " from " + 
-                             str(self) + ".")
+                             str(self))
         # Subtraction at the matrix level:
         resu_mat = self._matrices[bases] - other._matrices[bases]
         if self._name is not None and other._name is not None:
@@ -835,7 +835,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         Image of an element that is not defined on the default basis::
 
-            sage: a = M.automorphism()
+            sage: a = M.automorphism_tensor()
             sage: a[0,2], a[1,0], a[2,1] = 1, -1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
             sage: v = M([1,2,3], basis=ep, name='v')
@@ -869,8 +869,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
             except ValueError:
                 continue
         else:
-            raise ValueError("No common basis found to evaluate the image " + 
-                             "of " + str(element) + " by " + str(self) + ".")
+            raise ValueError("no common basis found to evaluate the image " + 
+                             "of " + str(element) + " by " + str(self))
         # Components of the result obtained by matrix multiplication
         mat = self.matrix(basis_dom, basis_codom)
         vcomp = element._components[basis_dom]
@@ -934,9 +934,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         Of course, the identity endomorphism is injective::
 
-            sage: M.identity_morphism().is_injective()
+            sage: M.identity_map().is_injective()
             True
-            sage: N.identity_morphism().is_injective()
+            sage: N.identity_map().is_injective()
             True
 
         """
@@ -964,13 +964,13 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: phi.is_surjective()
             Traceback (most recent call last):
             ...
-            NotImplementedError: FiniteRankFreeModuleMorphism.is_surjective() has not been implemented yet.
+            NotImplementedError: FiniteRankFreeModuleMorphism.is_surjective() has not been implemented yet
 
         except for the identity map (!)::
 
-            sage: M.identity_morphism().is_surjective()
+            sage: M.identity_map().is_surjective()
             True
-            sage: N.identity_morphism().is_surjective()
+            sage: N.identity_map().is_surjective()
             True
 
         """
@@ -978,7 +978,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
             return True
         raise NotImplementedError(
                               "FiniteRankFreeModuleMorphism.is_surjective() " + 
-                              "has not been implemented yet.")
+                              "has not been implemented yet")
     #
     # Morphism methods
     #
@@ -991,16 +991,16 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
             sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
             sage: e = M.basis('e')
-            sage: phi = M.endomorphism_map([[1,0], [0,1]])
+            sage: phi = M.endomorphism([[1,0], [0,1]])
             sage: phi.is_identity()
             True
             sage: (phi+phi).is_identity()
             False
             sage: End(M).zero().is_identity()
             False
-            sage: a = M.automorphism() ; a[0,1], a[1,0] = 1, -1
+            sage: a = M.automorphism_tensor() ; a[0,1], a[1,0] = 1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
-            sage: phi = M.endomorphism_map([[1,0], [0,1]], basis=ep)
+            sage: phi = M.endomorphism([[1,0], [0,1]], basis=ep)
             sage: phi.is_identity()
             True
 
@@ -1025,18 +1025,17 @@ class FiniteRankFreeModuleMorphism(Morphism):
         """
         if self._is_identity:
             return True
-        else:
-            # The identity must be an endomorphism:
-            fmodule = self.domain()
-            if fmodule != self.codomain():
-                return False  
-            # Some basis in which ``self`` has a representation is picked at 
-            # random and the test is performed on the images of the basis 
-            # elements:
-            basis = self._matrices.keys()[0][0]
-            for i in fmodule.irange():
-                if self(basis[i]) != basis[i]:
-                    return False
+        # The identity must be an endomorphism:
+        fmodule = self.domain()
+        if fmodule != self.codomain():
+            return False  
+        # Some basis in which ``self`` has a representation is picked at 
+        # random and the test is performed on the images of the basis 
+        # elements:
+        basis = self._matrices.keys()[0][0]
+        for i in fmodule.irange():
+            if self(basis[i]) != basis[i]:
+                return False
         self._is_identity = True
         return True
 
@@ -1087,14 +1086,14 @@ class FiniteRankFreeModuleMorphism(Morphism):
         Matrix in bases different from those in which the homomorphism has
         been defined::
 
-            sage: a = M.automorphism()
+            sage: a = M.automorphism_tensor()
             sage: a[0,2], a[1,0], a[2,1] = 1, -1, -1
             sage: a[:]
             [ 0  0  1]
             [-1  0  0]
             [ 0 -1  0]
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
-            sage: b = N.automorphism()
+            sage: b = N.automorphism_tensor()
             sage: b[0,1], b[1,0] = -1, 1
             sage: b[:]
             [ 0 -1]
@@ -1124,7 +1123,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         Matrix of an endomorphism::
 
-            sage: phi = M.endomorphism_map([[1,2,3], [4,5,6], [7,8,9]], basis=ep)
+            sage: phi = M.endomorphism([[1,2,3], [4,5,6], [7,8,9]], basis=ep)
             sage: phi.matrix(ep)
             [1 2 3]
             [4 5 6]
@@ -1187,8 +1186,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
                             nb2 = b2
                             break
                     else:
-                        raise ValueError("No start basis could be found for " + 
-                                       "applying the change-of-bases formula.")
+                        raise ValueError("no start basis could be found for " + 
+                                        "applying the change-of-bases formula")
                     change2 = fmodule2._basis_changes[(basis2, nb2)]
                     mat2 = matrix( [[change2[[i,j]] for j in fmodule2.irange()] 
                                                   for i in fmodule2.irange()] )
@@ -1200,8 +1199,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
                             nb1 = b1
                             break
                     else:
-                        raise ValueError("No start basis could be found for " + 
-                                       "applying the change-of-bases formula.")
+                        raise ValueError("no start basis could be found for " + 
+                                        "applying the change-of-bases formula")
                     change1 = fmodule1._basis_changes[(nb1, basis1)]
                     mat1 = matrix( [[change1[[i,j]] for j in fmodule1.irange()]
                                                   for i in fmodule1.irange()] )
@@ -1214,8 +1213,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
                             nb1, nb2 = b1, b2
                             break
                     else:
-                        raise ValueError("No start basis could be found for " + 
-                                       "applying the change-of-bases formula.")
+                        raise ValueError("no start basis could be found for " + 
+                                        "applying the change-of-bases formula")
                     change1 = fmodule1._basis_changes[(nb1, basis1)]
                     change2 = fmodule2._basis_changes[(basis2, nb2)]
                     mat1 = matrix( [[change1[[i,j]] for j in fmodule1.irange()]
@@ -1250,7 +1249,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: phi._common_bases(psi) # matrices of phi and psi both defined on (e,f)
             (Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer Ring,
              Basis (f_0,f_1) on the Rank-2 free module N over the Integer Ring)
-            sage: a = M.automorphism() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
+            sage: a = M.automorphism_tensor() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
             sage: psi = M.hom(N, [[1,1,0], [4,1,3]], bases=(ep,f))
             sage: phi._common_bases(psi) # matrix of psi w.r.t. (e,f) computed
