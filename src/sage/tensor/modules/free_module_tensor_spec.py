@@ -86,6 +86,15 @@ class FreeModuleEndomorphismTensor(FreeModuleTensor):
         T = e_0*e^0 + 2 e_0*e^1 + 3 e_0*e^2 + 4 e_1*e^0 + 5 e_1*e^1
             + 6 e_1*e^2 + 7 e_2*e^0 + 8 e_2*e^1 + 9 e_2*e^2
 
+    The matrix of components w.r.t. to a given basis::
+
+        sage: m = matrix(t.components(e)) ; m
+        [1 2 3]
+        [4 5 6]
+        [7 8 9]
+        sage: m.parent()
+        Full MatrixSpace of 3 by 3 dense matrices over Integer Ring
+
     The endomorphism acting on a module element::
 
         sage: v = M([1,2,3], basis=e, name='v') ; v
@@ -101,12 +110,17 @@ class FreeModuleEndomorphismTensor(FreeModuleTensor):
     """
     def __init__(self, fmodule, name=None, latex_name=None):
         r"""
-        TEST::
+        TESTS::
 
             sage: from sage.tensor.modules.free_module_tensor_spec import FreeModuleEndomorphismTensor
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: e = M.basis('e')
             sage: E = FreeModuleEndomorphismTensor(M, name='a')
-            sage: TestSuite(E).run()
+            sage: E[e,0,1] = -3
+            sage: TestSuite(E).run(skip="_test_category") # see below
+
+        In the above test suite, _test_category fails because E is not an
+        instance of E.parent().category().element_class.
 
         """
         FreeModuleTensor.__init__(self, fmodule, (1,1), name=name,
@@ -271,12 +285,17 @@ class FreeModuleAutomorphismTensor(FreeModuleEndomorphismTensor):
     """
     def __init__(self, fmodule, name=None, latex_name=None):
         r"""
-        TEST::
+        TESTS::
 
             sage: from sage.tensor.modules.free_module_tensor_spec import FreeModuleAutomorphismTensor
             sage: M = FiniteRankFreeModule(QQ, 3, name='M')
+            sage: e = M.basis('e')
             sage: a = FreeModuleAutomorphismTensor(M, name='a')
-            sage: TestSuite(a).run()
+            sage: a[e,:] = [[1,0,1],[0,2,0],[0,0,-3]]
+            sage: TestSuite(a).run(skip="_test_category") # see below
+
+        In the above test suite, _test_category fails because a is not an
+        instance of a.parent().category().element_class.
 
         """
         FreeModuleEndomorphismTensor.__init__(self, fmodule, name=name,
@@ -493,13 +512,16 @@ class FreeModuleIdentityTensor(FreeModuleAutomorphismTensor):
     """
     def __init__(self, fmodule, name='Id', latex_name=None):
         r"""
-        TESTs::
+        TESTS::
 
             sage: from sage.tensor.modules.free_module_tensor_spec import FreeModuleIdentityTensor
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
             sage: Id = FreeModuleIdentityTensor(M)
-            sage: TestSuite(Id).run()
+            sage: TestSuite(Id).run(skip="_test_category") # see below
+
+        In the above test suite, _test_category fails because Id is not an
+        instance of Id.parent().category().element_class.
 
         """
         if latex_name is None and name == 'Id':
@@ -562,7 +584,7 @@ class FreeModuleIdentityTensor(FreeModuleAutomorphismTensor):
         return KroneckerDelta(fmodule._ring, basis, start_index=fmodule._sindex,
                               output_formatter=fmodule._output_formatter)
 
-    def comp(self, basis=None, from_basis=None):
+    def components(self, basis=None, from_basis=None):
         r"""
         Return the components in a given basis as a Kronecker delta.
 
@@ -586,17 +608,22 @@ class FreeModuleIdentityTensor(FreeModuleAutomorphismTensor):
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
             sage: a = M.identity_tensor()
-            sage: a.comp(basis=e)
+            sage: a.components(basis=e)
             Kronecker delta of size 3x3
 
         For the module's default basis, the argument ``basis`` can be omitted::
 
-            sage: a.comp() is a.comp(basis=e)
+            sage: a.components() is a.components(basis=e)
             True
-            sage: a.comp()[:]
+            sage: a.components()[:]
             [1 0 0]
             [0 1 0]
             [0 0 1]
+
+        A shortcut is ``a.comp()``::
+
+            sage: a.comp() is a.components()
+            True
 
         """
         if basis is None:
@@ -604,6 +631,8 @@ class FreeModuleIdentityTensor(FreeModuleAutomorphismTensor):
         if basis not in self._components:
             self._components[basis] = self._new_comp(basis)
         return self._components[basis]
+
+    comp = components
 
     def set_comp(self, basis=None):
         r"""

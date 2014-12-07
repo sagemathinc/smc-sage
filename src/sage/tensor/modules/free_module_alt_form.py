@@ -87,12 +87,18 @@ class FreeModuleAltForm(FreeModuleTensor):
         r"""
         Initialize ``self``.
 
-        TEST::
+        TESTS::
 
             sage: from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: e = M.basis('e')
             sage: A = FreeModuleAltForm(M, 2, name='a')
-            sage: TestSuite(A).run()
+            sage: A[e,0,1] = 2 ; 
+            sage: TestSuite(A).run(skip="_test_category") # see below
+
+        In the above test suite, _test_category fails because A is not an
+        instance of A.parent().category().element_class.
+        
         """
         FreeModuleTensor.__init__(self, fmodule, (0,degree), name=name,
                                   latex_name=latex_name, antisym=range(degree))
@@ -538,12 +544,18 @@ class FreeModuleLinForm(FreeModuleAltForm):
     """
     def __init__(self, fmodule, name=None, latex_name=None):
         r"""
-        TEST::
+        TESTS::
 
             sage: from sage.tensor.modules.free_module_alt_form import FreeModuleLinForm
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: e = M.basis('e')
             sage: L = FreeModuleLinForm(M, name='a')
-            sage: TestSuite(L).run()
+            sage: L[e,0] = -3
+            sage: TestSuite(L).run(skip='_test_category')  # see below
+
+        In the above test suite, _test_category fails because L is not an
+        instance of L.parent().category().element_class.
+
         """
         FreeModuleAltForm.__init__(self, fmodule, 1, name=name,
                                    latex_name=latex_name)

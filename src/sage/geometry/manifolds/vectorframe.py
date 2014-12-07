@@ -394,7 +394,7 @@ class VectorFrame(FreeModuleBasis):
             True
             sage: a is rot
             False
-            sage: a._components
+            sage: a._components # random (dictionary output)
             {vector frame (R^2, (e_0,e_1)): 2-indices components w.r.t. vector frame (R^2, (e_0,e_1)),
             vector frame (R^2, (n_0,n_1)): 2-indices components w.r.t. vector frame (R^2, (n_0,n_1))}
             sage: a.comp(n)[:]
@@ -631,13 +631,13 @@ class VectorFrame(FreeModuleBasis):
         from the known relation between the frames e and f (automorphism field
         aut defined above)::
     
-            sage: Tp.basis_change(ep, fp)
-            Automorphism on the tangent space at point 'p' on 2-dimensional manifold 'M'
-            sage: Tp.basis_change(ep, fp).view()
+            sage: Tp.change_of_basis(ep, fp)
+            Automorphism tensor on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: Tp.change_of_basis(ep, fp).view()
             5 d/dx*dx + 2 d/dy*dy
-            sage: Tp.basis_change(fp, ep)
-            Automorphism on the tangent space at point 'p' on 2-dimensional manifold 'M'
-            sage: Tp.basis_change(fp, ep).view()
+            sage: Tp.change_of_basis(fp, ep)
+            Automorphism tensor on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: Tp.change_of_basis(fp, ep).view()
             1/5 d/dx*dx + 1/2 d/dy*dy
 
         The dual bases::
@@ -705,7 +705,7 @@ class VectorFrame(FreeModuleBasis):
                 if fr2 is not None:
                     basis1 = basis
                     basis2 = point._frame_bases[fr2]
-                    auto = ts.automorphism()
+                    auto = ts.automorphism_tensor()
                     for frame, comp in automorph._components.iteritems():
                         bas = None
                         if frame is frame1:
@@ -725,7 +725,7 @@ class VectorFrame(FreeModuleBasis):
                 if fr1 is not None:
                     basis1 = point._frame_bases[fr1]
                     basis2 = basis
-                    auto = ts.automorphism()
+                    auto = ts.automorphism_tensor()
                     for frame, comp in automorph._components.iteritems():
                         bas = None
                         if frame is frame1:

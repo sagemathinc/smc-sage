@@ -1512,7 +1512,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         """
         return self._known_bases
 
-    def basis_change(self, basis1, basis2):
+    def change_of_basis(self, basis1, basis2):
         r"""
         Return a change of basis previously defined on the free module.
 
@@ -1543,12 +1543,12 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: a = M.automorphism_tensor()
             sage: a[:] = [[1, 2], [-1, 3]]
             sage: f = e.new_basis(a, 'f')
-            sage: M.basis_change(e,f)
+            sage: M.change_of_basis(e,f)
             Automorphism tensor on the Rank-2 free module M over the Rational Field
-            sage: M.basis_change(e,f)[:]
+            sage: M.change_of_basis(e,f)[:]
             [ 1  2]
             [-1  3]
-            sage: M.basis_change(f,e)[:]
+            sage: M.change_of_basis(f,e)[:]
             [ 3/5 -2/5]
             [ 1/5  1/5]
 
@@ -1563,7 +1563,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             return inv
         return self._basis_changes[(basis1, basis2)]
 
-    def set_basis_change(self, basis1, basis2, change_of_basis,
+    def set_change_of_basis(self, basis1, basis2, change_of_basis,
                          compute_inverse=True):
         r"""
         Relates two bases by an automorphism.
@@ -1592,14 +1592,14 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: f = M.basis('f')
             sage: a = M.automorphism_tensor()
             sage: a[:] = [[1, 2], [-1, 3]]
-            sage: M.set_basis_change(e, f, a)
+            sage: M.set_change_of_basis(e, f, a)
 
         The change of basis and its inverse have been recorded::
 
-            sage: M.basis_change(e,f)[:]
+            sage: M.change_of_basis(e,f)[:]
             [ 1  2]
             [-1  3]
-            sage: M.basis_change(f,e)[:]
+            sage: M.change_of_basis(f,e)[:]
             [ 3/5 -2/5]
             [ 1/5  1/5]
 

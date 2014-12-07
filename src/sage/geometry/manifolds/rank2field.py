@@ -32,14 +32,15 @@ AUTHORS:
 #******************************************************************************
 
 from sage.tensor.modules.free_module_tensor_spec import \
-    FreeModuleEndomorphism, FreeModuleAutomorphism, FreeModuleIdentityMap
+                  FreeModuleEndomorphismTensor, FreeModuleAutomorphismTensor, \
+                  FreeModuleIdentityTensor
 from tensorfield import TensorField, TensorFieldParal
 
 
 class EndomorphismField(TensorField):
     r"""
-    Field of tangent-space endomorphisms with values in an open
-    subset of a differentiable manifold. 
+    Field of tangent-space endomorphisms (as type-(1,1) tensors) with values
+    in an open subset of a differentiable manifold. 
     
     An instance of this class is a field of endomorphisms (i.e. linear 
     operators in each tangent space) along an open subset `U` of some immersed 
@@ -423,7 +424,7 @@ class TangentIdentityField(AutomorphismField):
 
 #******************************************************************************
 
-class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
+class EndomorphismFieldParal(FreeModuleEndomorphismTensor, TensorFieldParal):
     r"""
     Field of tangent-space endomorphisms with values in a parallelizable open 
     subset of a differentiable manifold. 
@@ -498,8 +499,8 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
 
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
-        FreeModuleEndomorphism.__init__(self, vector_field_module, name=name, 
-                                        latex_name=latex_name)
+        FreeModuleEndomorphismTensor.__init__(self, vector_field_module,
+                                              name=name, latex_name=latex_name)
         # TensorFieldParal attributes:
         self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
@@ -537,7 +538,7 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
     def __call__(self, *arg):
         r"""
         Redefinition of 
-        :meth:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphism.__call__` 
+        :meth:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphismTensor.__call__` 
         to allow for domain treatment
         """
         if len(arg) > 1:
@@ -547,12 +548,13 @@ class EndomorphismFieldParal(FreeModuleEndomorphism, TensorFieldParal):
         else:
             vector = arg[0]
             dom = self._domain.intersection(vector._domain)
-            return FreeModuleEndomorphism.__call__(self.restrict(dom), 
-                                                   vector.restrict(dom))
+            return FreeModuleEndomorphismTensor.__call__(self.restrict(dom), 
+                                                         vector.restrict(dom))
 
 #******************************************************************************
 
-class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
+class AutomorphismFieldParal(FreeModuleAutomorphismTensor,
+                             EndomorphismFieldParal):
     r"""
     Field of tangent-space automorphisms with values on a parallelizable open 
     subset of a differentiable manifold. 
@@ -605,8 +607,8 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
 
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
-        FreeModuleAutomorphism.__init__(self, vector_field_module, name=name, 
-                                        latex_name=latex_name)
+        FreeModuleAutomorphismTensor.__init__(self, vector_field_module,
+                                              name=name, latex_name=latex_name)
         # TensorFieldParal attributes:
         self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
@@ -683,7 +685,8 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, EndomorphismFieldParal):
 
 #******************************************************************************
 
-class TangentIdentityFieldParal(FreeModuleIdentityMap, AutomorphismFieldParal):
+class TangentIdentityFieldParal(FreeModuleIdentityTensor,
+                                AutomorphismFieldParal):
     r"""
     Field of tangent-space identity maps with values on a parallelizable open 
     subset of a differentiable manifold. 
@@ -776,8 +779,8 @@ class TangentIdentityFieldParal(FreeModuleIdentityMap, AutomorphismFieldParal):
     def __init__(self, vector_field_module, name='Id', latex_name=None):
         if latex_name is None and name == 'Id':
             latex_name = r'\mathrm{Id}'
-        FreeModuleIdentityMap.__init__(self, vector_field_module, name=name, 
-                                       latex_name=latex_name)
+        FreeModuleIdentityTensor.__init__(self, vector_field_module, name=name, 
+                                          latex_name=latex_name)
         # TensorFieldParal attributes:
         self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
@@ -811,7 +814,7 @@ class TangentIdentityFieldParal(FreeModuleIdentityMap, AutomorphismFieldParal):
     def __call__(self, *arg):
         r"""
         Redefinition of 
-        :meth:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityMap.__call__` 
+        :meth:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityTensor.__call__` 
         to allow for domain treatment
         """
         if len(arg) == 1:

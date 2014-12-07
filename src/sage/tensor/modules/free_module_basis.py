@@ -432,7 +432,7 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
 
 #******************************************************************************
 
-class FreeModuleCoBasis(SageObject):
+class FreeModuleCoBasis(UniqueRepresentation, SageObject):
     r"""
     Dual basis of a free module over a commutative ring.
 

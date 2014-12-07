@@ -2440,7 +2440,7 @@ class TensorField(ModuleElement):
             a = (u + 1/2) d/du*du + (-1/2*u - 1/2*v + 1/2) d/du*dv + 1/2 d/dv*du + (1/2*u - 1/2*v + 1/2) d/dv*dv
             sage: p = M.point((2,3), chart=c_xy, name='p')
             sage: ap = a.at(p) ; ap
-            Endomorphism a on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            Endomorphism tensor a on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: ap.parent()
             Free module of type-(1,1) tensors on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: ap.view()
@@ -3306,7 +3306,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: t.view()
             t = (x + 1) d/dx*dx + x*y d/dx*dy + (-y + 1) d/dy*dy
             sage: tp = t.at(p) ; tp
-            Endomorphism t on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            Endomorphism tensor t on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: tp.parent()
             Free module of type-(1,1) tensors on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: tp.view()

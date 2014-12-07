@@ -1171,7 +1171,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
                         mat.append(row)
                 else:
                     # the matrix is the change-of-basis matrix:
-                    change = fmodule1.basis_change(basis1, basis2)
+                    change = fmodule1.change_of_basis(basis1, basis2)
                     mat = [[change[[i,j]] for j in fmodule1.irange()] 
                                                     for i in fmodule1.irange()] 
                 self._matrices[(basis1, basis2)] = matrix(mat)

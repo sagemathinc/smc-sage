@@ -1049,9 +1049,9 @@ class Domain(UniqueRepresentation, Parent):
             Bases defined on the free module X(M) of vector fields on the 2-dimensional manifold 'M':
              - (M, (d/dx,d/dy)) (default basis)
              - (M, (d/du,d/dv))
-            sage: XM.basis_change(c_xy.frame(), c_uv.frame())
+            sage: XM.change_of_basis(c_xy.frame(), c_uv.frame())
             field of tangent-space automorphisms on the 2-dimensional manifold 'M'
-            sage: M.frame_change(c_xy.frame(), c_uv.frame()) is XM.basis_change(c_xy.frame(), c_uv.frame())
+            sage: M.frame_change(c_xy.frame(), c_uv.frame()) is XM.change_of_basis(c_xy.frame(), c_uv.frame())
             True
                     
         """
@@ -2563,8 +2563,8 @@ class OpenDomain(Domain):
         if not isinstance(change_of_frame, AutomorphismFieldParal):
             raise TypeError("The argument change_of_frame must be some " +
                             "instance of AutomorphismFieldParal.")
-        fmodule.set_basis_change(frame1, frame2, change_of_frame, 
-                                 compute_inverse=compute_inverse)
+        fmodule.set_change_of_basis(frame1, frame2, change_of_frame, 
+                                    compute_inverse=compute_inverse)
         for sdom in self._superdomains:
             sdom._frame_changes[(frame1, frame2)] = change_of_frame
         if compute_inverse:
