@@ -2734,6 +2734,85 @@ class MultiFunctionChart(SageObject):
         """
         return MultiFunctionChart(self._chart, *(self.expr()))
 
+    def __eq__(self, other):
+        r"""
+        Comparison (equality) operator.
+
+        INPUT:
+
+        - ``other`` -- another instance of :class:`MultiFunctionChart`
+
+        OUTPUT:
+
+        - ``True`` if ``self`` is equal to ``other``,  or ``False`` otherwise
+
+        EXAMPLES:
+
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart() 
+            sage: f = c_xy.multifunction(x-y, x*y, cos(x)*exp(y))
+            sage: f.__eq__(c_xy)  # other has a different type
+            False
+            sage: h = c_xy.multifunction(x-y, x*y)
+            sage: f.__eq__(h)  # other has a different length
+            False
+            sage: h = c_xy.multifunction(x-y, x*y, 3+x)  
+            sage: f.__eq__(h)  # one of the functions of other is different
+            False
+            sage: h = c_xy.multifunction(x-y, x*y, cos(x)*exp(y))
+            sage: f.__eq__(h)   
+            True
+            sage: h = c_xy.multifunction(-y+x, y*x, cos(x)/exp(-y)) 
+            sage: f.__eq__(h)  # equivalent expressions 
+            True
+
+        """
+        if not isinstance(other, MultiFunctionChart):
+            return False
+        if other._chart != self._chart:
+            return False
+        if other._nf != self._nf:
+            return False
+        for i in range(self._nf):
+            if other._functions[i] != self._functions[i]:
+                return False
+        return True
+
+    def __ne__(self, other):
+        r"""
+        Inequality operator. 
+
+        INPUT:
+        
+        - ``other`` -- another instance of :class:`FunctionChart` or a value
+
+        OUTPUT:
+        
+        - True if ``self`` is different from ``other``,  or False otherwise
+
+        EXAMPLES:
+
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart() 
+            sage: f = c_xy.multifunction(x-y, x*y, cos(x)*exp(y))
+            sage: f.__ne__(c_xy)  # other has a different type
+            True
+            sage: h = c_xy.multifunction(x-y, x*y)
+            sage: f.__ne__(h)  # other has a different length
+            True
+            sage: h = c_xy.multifunction(x-y, x*y, 3+x)  
+            sage: f.__ne__(h)  # one of the functions of other is different
+            True
+            sage: h = c_xy.multifunction(x-y, x*y, cos(x)*exp(y))
+            sage: f.__ne__(h)   
+            False
+            sage: h = c_xy.multifunction(-y+x, y*x, cos(x)/exp(-y)) 
+            sage: f.__ne__(h)  # equivalent expressions 
+            False
+
+        """
+        return not self.__eq__(other)
+
     def __getitem__(self, index):
         r""" 
         Return a specified function of the set represented by ``self``.
