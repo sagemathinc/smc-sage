@@ -1,17 +1,17 @@
 r"""
 Tensor fields of type (1,1)
 
-Three derived classes of 
-:class:`~sage.geometry.manifolds.tensorfield.TensorField` 
+Three derived classes of
+:class:`~sage.geometry.manifolds.tensorfield.TensorField`
 devoted to type-(1,1) tensor fields are implemented:
 
 
-* :class:`EndomorphismField` for fields of endomorphisms 
+* :class:`EndomorphismField` for fields of endomorphisms
   (type (1,1) tensor fields)
 
   * :class:`AutomorphismField` for fields of invertible endomorphisms
 
-    * :class:`TangentIdentityField` for fields of identity maps on tangent 
+    * :class:`TangentIdentityField` for fields of identity maps on tangent
       spaces
 
 
@@ -40,24 +40,24 @@ from tensorfield import TensorField, TensorFieldParal
 class EndomorphismField(TensorField):
     r"""
     Field of tangent-space endomorphisms (as type-(1,1) tensors) with values
-    in an open subset of a differentiable manifold. 
-    
-    An instance of this class is a field of endomorphisms (i.e. linear 
-    operators in each tangent space) along an open subset `U` of some immersed 
-    submanifold `S` of a manifold `M` with values in an open 
-    subset `V` of `M`. 
-    The standard case of a field of endomorphisms *on* a manifold corresponds 
+    in an open subset of a differentiable manifold.
+
+    An instance of this class is a field of endomorphisms (i.e. linear
+    operators in each tangent space) along an open subset `U` of some immersed
+    submanifold `S` of a manifold `M` with values in an open
+    subset `V` of `M`.
+    The standard case of a field of endomorphisms *on* a manifold corresponds
     to `U=V` (and hence `S=M`).
 
-    If `V` is parallelizable, the class :class:`EndomorphismFieldParal` must be 
+    If `V` is parallelizable, the class :class:`EndomorphismFieldParal` must be
     used instead.
-    
+
     INPUT:
-    
-    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector 
+
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector
       fields along `U` with values on `V`
     - ``name`` -- (default: None) name given to the field
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
       if none is provided, the LaTeX symbol is set to ``name``
 
     EXAMPLES:
@@ -65,7 +65,7 @@ class EndomorphismField(TensorField):
 
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
-        TensorField.__init__(self, vector_field_module, (1,1), name=name, 
+        TensorField.__init__(self, vector_field_module, (1,1), name=name,
                              latex_name=latex_name)
 
     def _repr_(self):
@@ -80,19 +80,19 @@ class EndomorphismField(TensorField):
     def _new_instance(self):
         r"""
         Create an instance of the same class as ``self`` on the same module.
-        
+
         """
         return self.__class__(self._vmodule)
 
     def __call__(self, *arg):
         r"""
-        Redefinition of :meth:`TensorField.__call__` to allow for a single 
-        argument (module element). 
+        Redefinition of :meth:`TensorField.__call__` to allow for a single
+        argument (module element).
         """
         if len(arg) > 1:
-            # the endomorphism acting as a type (1,1) tensor on a pair 
+            # the endomorphism acting as a type (1,1) tensor on a pair
             # (1-form, vector field), returning a scalar field:
-            return TensorField.__call__(self, *arg) 
+            return TensorField.__call__(self, *arg)
         # the endomorphism acting as such, on a vector field, returning a
         # vector field:
         vector = arg[0]
@@ -113,7 +113,7 @@ class EndomorphismField(TensorField):
             latex_name_resu = None
         dest_map = vector._vmodule._dest_map
         dest_map_resu = dest_map.restrict(dom_resu)
-        resu = dom_resu.vector_field(name=name_resu, 
+        resu = dom_resu.vector_field(name=name_resu,
                                      latex_name=latex_name_resu,
                                      dest_map=dest_map_resu)
         for dom in self._common_subdomains(vector):
@@ -126,30 +126,30 @@ class EndomorphismField(TensorField):
 
 class AutomorphismField(EndomorphismField):
     r"""
-    Field of tangent-space automorphisms with values on a open 
-    subset of a differentiable manifold. 
-    
-    An instance of this class is a field of linear automorphisms (i.e. 
-    invertible linear operators in each tangent space) along an open subset 
-    `U` of some immersed submanifold `S` of a manifold `M` with values in an 
-    open subset `V` of `M`. 
-    The standard case of a field of automorphisms *on* a manifold corresponds 
+    Field of tangent-space automorphisms with values on a open
+    subset of a differentiable manifold.
+
+    An instance of this class is a field of linear automorphisms (i.e.
+    invertible linear operators in each tangent space) along an open subset
+    `U` of some immersed submanifold `S` of a manifold `M` with values in an
+    open subset `V` of `M`.
+    The standard case of a field of automorphisms *on* a manifold corresponds
     to `U=V` (and hence `S=M`).
-    
-    If `V` is parallelizable, the class :class:`AutomorphismFieldParal` must be 
+
+    If `V` is parallelizable, the class :class:`AutomorphismFieldParal` must be
     used instead.
 
     INPUT:
-    
-    - ``vector_field_module`` -- module `\mathcal{X}(U,V)` of vector 
+
+    - ``vector_field_module`` -- module `\mathcal{X}(U,V)` of vector
       fields along `U` with values on `V`
     - ``name`` -- (default: None) name given to the field
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
       if none is provided, the LaTeX symbol is set to ``name``
 
-    EXAMPLE: 
-    
-    Field of tangent-space automorphisms on a non-parallelizable 2-dimensional 
+    EXAMPLE:
+
+    Field of tangent-space automorphisms on a non-parallelizable 2-dimensional
     manifold::
 
         sage: M = Manifold(2, 'M')
@@ -168,22 +168,22 @@ class AutomorphismField(EndomorphismField):
         sage: eU = c_xy.frame() ; eV = c_uv.frame()
         sage: a[eU,:] = [[1,x], [0,2]]
 
-    We then set the components w.r.t. the coordinate frame on `V` by extending 
-    the expressions of the components in the corresponding subframe on 
+    We then set the components w.r.t. the coordinate frame on `V` by extending
+    the expressions of the components in the corresponding subframe on
     `W = U\cap V`::
-    
+
         sage: W = U.intersection(V)
         sage: a.add_comp_by_continuation(eV, W, c_uv)
-        
+
     At this stage, the automorphims field `a` is fully defined::
-    
+
         sage: a.view(eU)
         a = d/dx*dx + x d/dx*dy + 2 d/dy*dy
         sage: a.view(eV)
         a = (1/4*u + 1/4*v + 3/2) d/du*du + (-1/4*u - 1/4*v - 1/2) d/du*dv + (1/4*u + 1/4*v - 1/2) d/dv*du + (-1/4*u - 1/4*v + 3/2) d/dv*dv
-    
+
     In particular, we may ask for its inverse on the whole manifold `M`::
-    
+
         sage: ia = a.inverse() ; ia
         field of tangent-space automorphisms 'a^(-1)' on the 2-dimensional manifold 'M'
         sage: ia.view(eU)
@@ -193,7 +193,7 @@ class AutomorphismField(EndomorphismField):
 
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
-        EndomorphismField.__init__(self, vector_field_module, name=name, 
+        EndomorphismField.__init__(self, vector_field_module, name=name,
                                         latex_name=latex_name)
         self._init_derived() # initialization of derived quantities
 
@@ -205,14 +205,14 @@ class AutomorphismField(EndomorphismField):
         if self._name is not None:
             description += "'%s' " % self._name
         return self._final_repr(description)
-        
+
     def _init_derived(self):
         r"""
         Initialize the derived quantities
         """
         TensorField._init_derived(self)
         self._inverse = None  # inverse not set yet
-        
+
     def _del_derived(self):
         r"""
         Delete the derived quantities.
@@ -221,18 +221,18 @@ class AutomorphismField(EndomorphismField):
         TensorField._del_derived(self)
         # then deletes the inverse automorphism:
         self._inverse = None
-        
+
     def inverse(self):
         r"""
         Return the inverse automorphism.
-        
-        EXAMPLE: 
-        
-        Inverse of a field of tangent-space automorphisms on a 
+
+        EXAMPLE:
+
+        Inverse of a field of tangent-space automorphisms on a
         non-parallelizable 2-dimensional manifold::
-    
+
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+            sage: U = M.open_domain('U') ; V = M.open_domain('V')
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
@@ -256,9 +256,9 @@ class AutomorphismField(EndomorphismField):
             [-1/8*u - 1/8*v + 3/4  1/8*u + 1/8*v + 1/4]
             [-1/8*u - 1/8*v + 1/4  1/8*u + 1/8*v + 3/4]
             )
-        
+
         Let us check that ia is indeed the inverse of a::
-        
+
             sage: s = a.contract(ia)
             sage: s[eU,:], s[eV,:]
             (
@@ -271,8 +271,8 @@ class AutomorphismField(EndomorphismField):
             [1 0]  [1 0]
             [0 1], [0 1]
             )
-            
-        """        
+
+        """
         if self._inverse is None:
             if self._name is None:
                 inv_name = None
@@ -282,7 +282,7 @@ class AutomorphismField(EndomorphismField):
                 inv_latex_name = None
             else:
                 inv_latex_name = self._latex_name + r'^{-1}'
-            self._inverse = AutomorphismField(self._vmodule, name=inv_name, 
+            self._inverse = AutomorphismField(self._vmodule, name=inv_name,
                                               latex_name=inv_latex_name)
             for dom, rst in self._restrictions.iteritems():
                 self._inverse._restrictions[dom] = rst.inverse()
@@ -293,35 +293,35 @@ class AutomorphismField(EndomorphismField):
 
 class TangentIdentityField(AutomorphismField):
     r"""
-    Field of tangent-space identity maps with values on an open subset of a 
-    differentiable manifold. 
-    
-    An instance of this class is a field of identity maps (i.e. identity 
-    operator in each tangent space) along an open subset `U` of some immersed 
-    submanifold `S` of a manifold `M` with values in an open 
-    subset `V` of `M`. 
-    The standard case of a field of identity maps *on* a manifold corresponds 
+    Field of tangent-space identity maps with values on an open subset of a
+    differentiable manifold.
+
+    An instance of this class is a field of identity maps (i.e. identity
+    operator in each tangent space) along an open subset `U` of some immersed
+    submanifold `S` of a manifold `M` with values in an open
+    subset `V` of `M`.
+    The standard case of a field of identity maps *on* a manifold corresponds
     to `U=V` (and hence `S=M`).
-    
+
     If `V` is parallelizable, the class :class:`TangentIdentityFieldParal` must
     be used instead.
 
     INPUT:
-    
-    - ``vector_field_module`` -- module `\mathcal{X}(U,V)` of vector 
+
+    - ``vector_field_module`` -- module `\mathcal{X}(U,V)` of vector
       fields along `U` with values on `V`
     - ``name`` -- (default: None) name given to the identity map; if none
-      is provided, the value 'Id' is set. 
+      is provided, the value 'Id' is set.
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity
       map; if none is provided, the LaTeX symbol is set to `\mathrm{Id}`
 
     EXAMPLES:
 
-    Field of tangent-space identity maps on a non-parallelizable 2-dimensional 
+    Field of tangent-space identity maps on a non-parallelizable 2-dimensional
     manifold::
-    
+
         sage: M = Manifold(2, 'M')
-        sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+        sage: U = M.open_domain('U') ; V = M.open_domain('V')
         sage: M.declare_union(U,V)   # M is the union of U and V
         sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
         sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
@@ -331,9 +331,9 @@ class TangentIdentityField(AutomorphismField):
         field of tangent-space identity maps 'Id' on the 2-dimensional manifold 'M'
         sage: a.parent()
         module T^(1,1)(M) of type-(1,1) tensors fields on the 2-dimensional manifold 'M'
-        
+
     The components in any frame on M are Kronecker deltas::
-    
+
         sage: eU = c_xy.frame() ; eV = c_uv.frame()
         sage: a[eU,:]
         [1 0]
@@ -347,14 +347,14 @@ class TangentIdentityField(AutomorphismField):
         sage: a[eV.restrict(W),:]
         [1 0]
         [0 1]
-    
+
     The identity is its own inverse::
-        
+
         sage: a.inverse() is a
         True
-    
+
     The identity map acting on a vector::
-    
+
         sage: v = M.vector_field('v')
         sage: v[eU,:] = [1-y, x*y]
         sage: v.add_comp_by_continuation(eV, W, c_uv)
@@ -362,35 +362,35 @@ class TangentIdentityField(AutomorphismField):
         vector field 'v' on the 2-dimensional manifold 'M'
         sage: a(v) is v
         True
-        
-    When the domains of the identity field and the vector fields are different, 
+
+    When the domains of the identity field and the vector fields are different,
     their intersection is used for the result::
-    
+
         sage: a(v.restrict(U))
         vector field 'v' on the open domain 'U' on the 2-dimensional manifold 'M'
         sage: a(v.restrict(U)) is v.restrict(U)
         True
-    
+
     ::
-    
+
         sage: a.restrict(U)(v)
         vector field 'v' on the open domain 'U' on the 2-dimensional manifold 'M'
         sage: a.restrict(U)(v) is v.restrict(U)
         True
-   
+
     """
     def __init__(self, vector_field_module, name='Id', latex_name=None):
         if latex_name is None and name == 'Id':
             latex_name = r'\mathrm{Id}'
-        AutomorphismField.__init__(self, vector_field_module, name=name, 
+        AutomorphismField.__init__(self, vector_field_module, name=name,
                                        latex_name=latex_name)
         for dom in self._domain._subdomains:
             if dom.is_manifestly_parallelizable():
                 fmodule = dom.vector_field_module()
-                self._restrictions[dom] = TangentIdentityFieldParal(fmodule, 
+                self._restrictions[dom] = TangentIdentityFieldParal(fmodule,
                                               name=name, latex_name=latex_name)
         self._inverse = self    # the identity is its own inverse
-        
+
     def _repr_(self):
         r"""
         String representation of the object.
@@ -412,7 +412,7 @@ class TangentIdentityField(AutomorphismField):
             dom = self._domain.intersection(vector._domain)
             return vector.restrict(dom)
         elif len(arg) == 2:
-            # self acting as a type-(1,1) tensor on a pair 
+            # self acting as a type-(1,1) tensor on a pair
             # (1-form, vector field), returning a scalar field:
             oneform = arg[0]
             vector = arg[1]
@@ -426,42 +426,42 @@ class TangentIdentityField(AutomorphismField):
 
 class EndomorphismFieldParal(FreeModuleEndomorphismTensor, TensorFieldParal):
     r"""
-    Field of tangent-space endomorphisms with values in a parallelizable open 
-    subset of a differentiable manifold. 
-    
-    An instance of this class is a field of endomorphisms (i.e. linear 
-    operators in each tangent space) along an open subset `U` of some immersed 
-    submanifold `S` of a manifold `M` with values in a parallelizable open 
-    subset `V` of `M`. 
-    The standard case of a field of endomorphisms *on* a manifold corresponds 
+    Field of tangent-space endomorphisms with values in a parallelizable open
+    subset of a differentiable manifold.
+
+    An instance of this class is a field of endomorphisms (i.e. linear
+    operators in each tangent space) along an open subset `U` of some immersed
+    submanifold `S` of a manifold `M` with values in a parallelizable open
+    subset `V` of `M`.
+    The standard case of a field of endomorphisms *on* a manifold corresponds
     to `U=V` (and hence `S=M`).
-    
+
     INPUT:
-    
-    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector 
+
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector
       fields along `U` with values on `V`
     - ``name`` -- (default: None) name given to the field
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
       if none is provided, the LaTeX symbol is set to ``name``
 
     EXAMPLES:
 
     A field of endomorphisms on a 3-dimensional manifold::
-    
+
         sage: M = Manifold(3, 'M', start_index=1)
         sage: c_xyz.<x,y,z> = M.chart()
         sage: t = M.endomorphism_field('T') ; t
         field of endomorphisms 'T' on the 3-dimensional manifold 'M'
-        
+
     A field of endomorphisms is a tensor field of rank 2 and of type (1,1)::
-    
+
         sage: t.parent()
         free module T^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
         sage: t._tensor_rank
         2
         sage: t._tensor_type
         (1, 1)
-    
+
     Components with respect to a given frame::
 
         sage: e = M.vector_frame('e') ; M.set_default_frame(e)
@@ -483,7 +483,7 @@ class EndomorphismFieldParal(FreeModuleEndomorphismTensor, TensorFieldParal):
         9/2
 
     An endomorphism maps a vector to a vector::
-    
+
         sage: v = M.vector_field('v')
         sage: v[:] = (1,2,3)
         sage: w = t(v) ; w
@@ -506,7 +506,7 @@ class EndomorphismFieldParal(FreeModuleEndomorphismTensor, TensorFieldParal):
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
         # Initialization of derived quantities:
-        TensorFieldParal._init_derived(self) 
+        TensorFieldParal._init_derived(self)
 
     def _repr_(self):
         r"""
@@ -516,7 +516,7 @@ class EndomorphismFieldParal(FreeModuleEndomorphismTensor, TensorFieldParal):
         if self._name is not None:
             description += "'%s' " % self._name
         return self._final_repr(description)
-        
+
     def _new_instance(self):
         r"""
         Create an instance if the same type as ``self`` on the same domain.
@@ -526,29 +526,29 @@ class EndomorphismFieldParal(FreeModuleEndomorphismTensor, TensorFieldParal):
     def _del_derived(self, del_restrictions=True):
         r"""
         Delete the derived quantities
-        
+
         INPUT:
-        
+
         - ``del_restrictions`` -- (default: True) determines whether the
-          restrictions of ``self`` to subdomains are deleted. 
-        
+          restrictions of ``self`` to subdomains are deleted.
+
         """
         TensorFieldParal._del_derived(self, del_restrictions=del_restrictions)
 
     def __call__(self, *arg):
         r"""
-        Redefinition of 
-        :meth:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphismTensor.__call__` 
+        Redefinition of
+        :meth:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphismTensor.__call__`
         to allow for domain treatment
         """
         if len(arg) > 1:
-            # the endomorphism acting as a type (1,1) tensor on a pair 
+            # the endomorphism acting as a type (1,1) tensor on a pair
             # (linear form, module element), returning a scalar:
             return TensorFieldParal.__call__(self, *arg)
         else:
             vector = arg[0]
             dom = self._domain.intersection(vector._domain)
-            return FreeModuleEndomorphismTensor.__call__(self.restrict(dom), 
+            return FreeModuleEndomorphismTensor.__call__(self.restrict(dom),
                                                          vector.restrict(dom))
 
 #******************************************************************************
@@ -556,41 +556,41 @@ class EndomorphismFieldParal(FreeModuleEndomorphismTensor, TensorFieldParal):
 class AutomorphismFieldParal(FreeModuleAutomorphismTensor,
                              EndomorphismFieldParal):
     r"""
-    Field of tangent-space automorphisms with values on a parallelizable open 
-    subset of a differentiable manifold. 
-    
-    An instance of this class is a field of linear automorphisms (i.e. 
-    invertible linear operators in each tangent space) along an open subset `U` 
-    of some immersed submanifold `S` of a manifold `M` with values in a 
-    parallelizable open subset `V` of `M`. 
-    The standard case of a field of automorphisms *on* a manifold corresponds 
+    Field of tangent-space automorphisms with values on a parallelizable open
+    subset of a differentiable manifold.
+
+    An instance of this class is a field of linear automorphisms (i.e.
+    invertible linear operators in each tangent space) along an open subset `U`
+    of some immersed submanifold `S` of a manifold `M` with values in a
+    parallelizable open subset `V` of `M`.
+    The standard case of a field of automorphisms *on* a manifold corresponds
     to `U=V` (and hence `S=M`).
-    
+
     INPUT:
-    
-    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector 
+
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector
       fields along `U` with values on `V`
     - ``name`` -- (default: None) name given to the field
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the field; 
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
       if none is provided, the LaTeX symbol is set to ``name``
 
     EXAMPLES:
 
     A pi/3-rotation in the Euclidean 2-plane::
-    
+
         sage: M = Manifold(2,'R^2')
         sage: c_xy.<x,y> = M.chart()
         sage: rot = M.automorphism_field('R') ; rot
         field of tangent-space automorphisms 'R' on the 2-dimensional manifold 'R^2'
         sage: rot[:] = [[sqrt(3)/2, -1/2], [1/2, sqrt(3)/2]]
-        
+
     An automorphism is a type-(1,1) tensor::
-    
+
         sage: rot.parent()
         free module T^(1,1)(R^2) of type-(1,1) tensors fields on the 2-dimensional manifold 'R^2'
-    
+
     The inverse automorphism is obtained via the method :meth:`inverse`::
-    
+
         sage: inv = rot.inverse() ; inv
         field of tangent-space automorphisms 'R^(-1)' on the 2-dimensional manifold 'R^2'
         sage: latex(inv)
@@ -614,7 +614,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphismTensor,
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
         # Initialization of derived quantities:
-        TensorFieldParal._init_derived(self) 
+        TensorFieldParal._init_derived(self)
 
     def _repr_(self):
         r"""
@@ -624,27 +624,27 @@ class AutomorphismFieldParal(FreeModuleAutomorphismTensor,
         if self._name is not None:
             description += "'%s' " % self._name
         return self._final_repr(description)
-        
+
     def _del_derived(self, del_restrictions=True):
         r"""
         Delete the derived quantities
-        
+
         INPUT:
-        
+
         - ``del_restrictions`` -- (default: True) determines whether the
-          restrictions of ``self`` to subdomains are deleted. 
-        
+          restrictions of ``self`` to subdomains are deleted.
+
         """
         # First delete the derived quantities pertaining to the mother class:
-        EndomorphismFieldParal._del_derived(self, 
+        EndomorphismFieldParal._del_derived(self,
                                             del_restrictions=del_restrictions)
         # then deletes the inverse automorphism:
         self._inverse = None
-        
+
     def inverse(self):
         r"""
         Return the inverse automorphism.
-        """        
+        """
         from sage.matrix.constructor import matrix
         from sage.tensor.modules.comp import Components
         from vectorframe import CoordFrame
@@ -660,7 +660,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphismTensor,
                 inv_latex_name = self._latex_name + r'^{-1}'
             fmodule = self._fmodule
             si = fmodule._sindex ; nsi = fmodule._rank + si
-            self._inverse = AutomorphismFieldParal(fmodule, name=inv_name, 
+            self._inverse = AutomorphismFieldParal(fmodule, name=inv_name,
                                                    latex_name=inv_latex_name)
             for frame in self._components:
                 if isinstance(frame, CoordFrame):
@@ -688,38 +688,38 @@ class AutomorphismFieldParal(FreeModuleAutomorphismTensor,
 class TangentIdentityFieldParal(FreeModuleIdentityTensor,
                                 AutomorphismFieldParal):
     r"""
-    Field of tangent-space identity maps with values on a parallelizable open 
-    subset of a differentiable manifold. 
-    
-    An instance of this class is a field of identity maps (i.e. identity 
-    operator in each tangent space) along an open subset `U` of some immersed 
-    submanifold `S` of a manifold `M` with values in a parallelizable open 
-    subset `V` of `M`. 
-    The standard case of a field of identity maps *on* a manifold corresponds 
+    Field of tangent-space identity maps with values on a parallelizable open
+    subset of a differentiable manifold.
+
+    An instance of this class is a field of identity maps (i.e. identity
+    operator in each tangent space) along an open subset `U` of some immersed
+    submanifold `S` of a manifold `M` with values in a parallelizable open
+    subset `V` of `M`.
+    The standard case of a field of identity maps *on* a manifold corresponds
     to `U=V` (and hence `S=M`).
-    
+
     INPUT:
-    
-    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector 
+
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector
       fields along `U` with values on `V`
     - ``name`` -- (default: None) name given to the identity map; if none
-      is provided, the value 'Id' is set. 
+      is provided, the value 'Id' is set.
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity
       map; if none is provided, the LaTeX symbol is set to `\mathrm{Id}`
 
     EXAMPLES:
 
     Field of tangent-space identity maps on a 3-dimensional manifold::
-    
+
         sage: M = Manifold(3, 'M', start_index=1)
         sage: c_xyz.<x,y,z> = M.chart()
         sage: a = M.tangent_identity_field(); a
         field of tangent-space identity maps 'Id' on the 3-dimensional manifold 'M'
         sage: latex(a)
         \mathrm{Id}
-        
+
     The tangent-space identity map is a type-(1,1) tensor::
-    
+
         sage: a.parent()
         free module T^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
         sage: a[:]
@@ -728,11 +728,11 @@ class TangentIdentityFieldParal(FreeModuleIdentityTensor,
         [0 0 1]
         sage: a.comp()
         Kronecker delta of size 3x3
-        
+
     The components are automatically defined in any frame::
-    
+
         sage: e = M.vector_frame('e')
-        sage: a.comp(e) 
+        sage: a.comp(e)
         Kronecker delta of size 3x3
         sage: a.comp(e)[:]
         [1 0 0]
@@ -740,7 +740,7 @@ class TangentIdentityFieldParal(FreeModuleIdentityTensor,
         [0 0 1]
 
     The components can be read, but cannot be set::
-    
+
         sage: a[1,1]
         1
         sage: a[1,1] = 2
@@ -749,7 +749,7 @@ class TangentIdentityFieldParal(FreeModuleIdentityTensor,
         TypeError: the components of the identity map cannot be changed
 
     The tangent-space identity map applied to a vector field::
-    
+
         sage: v = M.vector_field()
         sage: v[:] = (2*x, -3, y+z)
         sage: w = a(v) ; w
@@ -760,33 +760,33 @@ class TangentIdentityFieldParal(FreeModuleIdentityTensor,
         True
 
     The tangent-space identity map acting as a type (1,1) tensor on a pair (1-form, vector)::
-    
+
         sage: om = M.one_form()
         sage: om[:] = (0, x*y, 2)
         sage: s = a(om, v) ; s
         scalar field on the 3-dimensional manifold 'M'
         sage: s == om(v)
         True
-        
+
     The tangent-space identity map is its own inverse::
-    
+
         sage: a.inverse() == a
         True
         sage: a.inverse() is a
         True
-        
+
     """
     def __init__(self, vector_field_module, name='Id', latex_name=None):
         if latex_name is None and name == 'Id':
             latex_name = r'\mathrm{Id}'
-        FreeModuleIdentityTensor.__init__(self, vector_field_module, name=name, 
+        FreeModuleIdentityTensor.__init__(self, vector_field_module, name=name,
                                           latex_name=latex_name)
         # TensorFieldParal attributes:
         self._vmodule = vector_field_module
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
         # Initialization of derived quantities:
-        TensorFieldParal._init_derived(self) 
+        TensorFieldParal._init_derived(self)
 
     def _repr_(self):
         r"""
@@ -800,21 +800,21 @@ class TangentIdentityFieldParal(FreeModuleIdentityTensor,
     def _del_derived(self, del_restrictions=True):
         r"""
         Delete the derived quantities
-        
+
         INPUT:
-        
+
         - ``del_restrictions`` -- (default: True) determines whether the
-          restrictions of ``self`` to subdomains are deleted. 
-        
+          restrictions of ``self`` to subdomains are deleted.
+
         """
         # AutomorphismFieldParal._del_derived is bypassed:
-        EndomorphismFieldParal._del_derived(self, 
+        EndomorphismFieldParal._del_derived(self,
                                             del_restrictions=del_restrictions)
 
     def __call__(self, *arg):
         r"""
-        Redefinition of 
-        :meth:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityTensor.__call__` 
+        Redefinition of
+        :meth:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityTensor.__call__`
         to allow for domain treatment
         """
         if len(arg) == 1:
@@ -825,7 +825,7 @@ class TangentIdentityFieldParal(FreeModuleIdentityTensor,
             dom = self._domain.intersection(vector._domain)
             return vector.restrict(dom)
         elif len(arg) == 2:
-            # self acting as a type-(1,1) tensor on a pair 
+            # self acting as a type-(1,1) tensor on a pair
             # (1-form, vector field), returning a scalar field:
             oneform = arg[0]
             vector = arg[1]

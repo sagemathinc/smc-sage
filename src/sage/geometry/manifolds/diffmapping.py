@@ -11,7 +11,7 @@ manifold `N`:
 
 Subclasses of :class:`DiffMapping` are devoted to specific cases:
 
-* :class:`Diffeomorphism` for *diffeomorphisms*, i.e. of invertible mappings 
+* :class:`Diffeomorphism` for *diffeomorphisms*, i.e. of invertible mappings
   such that both `\Phi` and `\Phi^{-1}` are differentiable
 
   * :class:`IdentityMap` for the identity map of an open set.
@@ -38,7 +38,7 @@ from sage.categories.map import Map
 from domain import Domain
 from chart import Chart, FunctionChart, MultiFunctionChart, CoordChange
 from point import Point
-     
+
 class DiffMapping(Map):
     r"""
     Class for differentiable mappings between manifolds.
@@ -74,16 +74,16 @@ class DiffMapping(Map):
       a single coordinate expression is expected (not a list or tuple with a
       single element)
     - ``chart1`` -- (default: None; used only in case (ii) above) chart on
-      domain `U` defining the start coordinates involved in ``coord_functions`` 
+      domain `U` defining the start coordinates involved in ``coord_functions``
       for case (ii); if none is provided, the coordinates are assumed to
       refer to `U`'s default chart
-    - ``chart2`` -- (default: None; used only in case (ii) above) chart on the 
-      codomain defining the arrival coordinates involved in ``coord_functions`` 
+    - ``chart2`` -- (default: None; used only in case (ii) above) chart on the
+      codomain defining the arrival coordinates involved in ``coord_functions``
       for case (ii); if none is provided, the coordinates are assumed to
       refer to the codomain's default chart
     - ``name`` -- (default: None) name given to the differentiable mapping
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the
-      differentiable mapping; if none is provided, the LaTeX symbol is set to 
+      differentiable mapping; if none is provided, the LaTeX symbol is set to
       ``name``
 
     .. NOTE::
@@ -250,7 +250,7 @@ class DiffMapping(Map):
         description += " from " + str(self._domain) + " to " + \
                        str(self._codomain)
         return description
-        
+
     def _latex_(self):
         r"""
         LaTeX representation of the object.
@@ -261,16 +261,16 @@ class DiffMapping(Map):
            return self._latex_name
     def __eq__(self, other):
         r"""
-        Comparison (equality) operator. 
-        
+        Comparison (equality) operator.
+
         INPUT:
-        
+
         - ``other`` -- another instance of :class:`DiffMapping` to compare with
-        
+
         OUTPUT:
-        
+
         - True if ``self`` is equal to ``other``,  or False otherwise
-        
+
         """
         if not isinstance(other, DiffMapping):
             return False
@@ -280,19 +280,19 @@ class DiffMapping(Map):
             if coord_functions != other._coord_expression[charts]:
                 return False
         return True
-            
+
     def __ne__(self, other):
         r"""
-        Inequality operator. 
-        
+        Inequality operator.
+
         INPUT:
-        
+
         - ``other`` -- another instance of :class:`DiffMapping` to compare with
-        
+
         OUTPUT:
-        
+
         - True if ``self`` is different from ``other``,  or False otherwise
-        
+
         """
         return not self.__eq__(other)
 
@@ -317,24 +317,24 @@ class DiffMapping(Map):
         Compute the image of a point.
 
         INPUT:
-    
-        - ``p`` -- point on the mapping's domain (type: 
+
+        - ``p`` -- point on the mapping's domain (type:
           :class:`~sage.geometry.manifolds.point.Point`)
-        - ``chart1`` -- (default: None) chart in which the coordinates of p 
-          are to be considered; if none is provided, a chart in which both p's 
-          coordinates and the expression of ``self`` are known is searched, 
+        - ``chart1`` -- (default: None) chart in which the coordinates of p
+          are to be considered; if none is provided, a chart in which both p's
+          coordinates and the expression of ``self`` are known is searched,
           starting from the default chart of self._domain will be used
-        - ``chart2`` -- (default: None) chart in which the coordinates of the 
-          image of p will be computed; if none is provided, the default chart 
+        - ``chart2`` -- (default: None) chart in which the coordinates of the
+          image of p will be computed; if none is provided, the default chart
           of self._codomain is assumed.
-        
+
         OUTPUT:
 
-        - image of the point by the mapping (type: 
+        - image of the point by the mapping (type:
           :class:`~sage.geometry.manifolds.point.Point`)
 
         EXAMPLES:
-        
+
         Planar rotation acting on a point::
 
             sage: Manifold._clear_cache_() # for doctests only
@@ -347,10 +347,10 @@ class DiffMapping(Map):
             point 'R(p)' on 2-dimensional manifold 'R^2'
             sage: q.coord()
             (-sqrt(3) + 1/2, 1/2*sqrt(3) + 1)
-            
-        Image computed by means of coordinates different from the default 
+
+        Image computed by means of coordinates different from the default
         ones::
-        
+
             sage: # Spherical coord. on the plane:
             sage: c_spher.<r,ph> = M.chart(r'r:(0,+oo) ph:(0,2*pi):\phi')
             sage: ch = c_cart.coord_change(c_spher, sqrt(x*x+y*y), atan2(y,x))
@@ -362,15 +362,15 @@ class DiffMapping(Map):
             (sqrt(5), pi - arctan((sqrt(3) + 2)/(2*sqrt(3) - 1)))
             sage: q1 == q
             True
-    
+
         """
         from manifold import RealLine
-        if p not in self._domain._manifold: 
+        if p not in self._domain._manifold:
             raise ValueError("The point " + str(p) +
                   " does not belong to the " + str(self._domain._manifold))
-        if chart2 is None: 
+        if chart2 is None:
             chart2 = self._codomain._def_chart
-        if chart1 is None: 
+        if chart1 is None:
             def_chart1 = self._domain._def_chart
             if def_chart1 in p._coordinates and \
                         (def_chart1, chart2) in self._coord_expression:
@@ -385,9 +385,9 @@ class DiffMapping(Map):
                 "the action of " + str(self) + " on the " + str(p) + ".")
 
         coord_map = self._coord_expression[(chart1, chart2)]
-        y = coord_map(*(p._coordinates[chart1])) 
-        
-        if isinstance(self._codomain._manifold, RealLine):  
+        y = coord_map(*(p._coordinates[chart1]))
+
+        if isinstance(self._codomain._manifold, RealLine):
             # special case of a mapping to R
             return y[0]
         else:
@@ -400,8 +400,8 @@ class DiffMapping(Map):
             else:
                 res_latex_name = self._latex_name + r'\left(' + p._latex_name + \
                                  r'\right)'
-            
-            return Point(self._codomain._manifold, y, chart2, name=res_name, 
+
+            return Point(self._codomain._manifold, y, chart2, name=res_name,
                          latex_name=res_latex_name)  #!# check
 
     #
@@ -424,9 +424,9 @@ class DiffMapping(Map):
     #def domain(self):
         #r"""
         #Return the domain of definition of the mapping.
-        
+
         #EXAMPLE::
-        
+
             #sage: M = Manifold(2, 'M')
             #sage: U = M.open_domain('U')
             #sage: c_xy.<x,y> = U.chart()
@@ -435,16 +435,16 @@ class DiffMapping(Map):
             #sage: Phi = U.diff_mapping(N, [x+y, x*y, x-y])
             #sage: Phi.domain()
             #open domain 'U' on the 2-dimensional manifold 'M'
-       
+
         #"""
         #return self._domain
-        
+
     #def codomain(self):
         #r"""
         #Return the codomain of the mapping.
 
         #EXAMPLE::
-        
+
             #sage: M = Manifold(2, 'M')
             #sage: U = M.open_domain('U')
             #sage: c_xy.<x,y> = U.chart()
@@ -471,10 +471,10 @@ class DiffMapping(Map):
             if len(coords2) == 1:
                 coords2 = coords2[0]
             if chart1._domain == self._domain:
-                result.txt += "   " 
-                result.latex += " & " 
+                result.txt += "   "
+                result.latex += " & "
             else:
-                result.txt += "on " + chart1._domain._name + ": " 
+                result.txt += "on " + chart1._domain._name + ": "
                 result.latex += r"\mbox{on}\ " + latex(chart1._domain) + \
                                 r": & "
             result.txt += repr(coords1) + " |--> "
@@ -489,33 +489,33 @@ class DiffMapping(Map):
                                 latex(expression) + r"\\"
         except (TypeError, ValueError):
             pass
-        
+
     def view(self, chart1=None, chart2=None):
-        r""" 
+        r"""
         Display the expression of the differentiable mapping in one or more
-        pair of charts. 
-        
+        pair of charts.
+
         If the expression is not known already, it is computed from some
         expression in other charts by means of change-of-coordinate formulas.
-        
+
         INPUT:
-        
-        - ``chart1`` -- (default: None) chart on the mapping's domain; if None, 
-          the display is performed on all the charts on the start manifold 
-          in which the mapping is known or computable via some change of 
+
+        - ``chart1`` -- (default: None) chart on the mapping's domain; if None,
+          the display is performed on all the charts on the start manifold
+          in which the mapping is known or computable via some change of
           coordinates
-        - ``chart2`` -- (default: None) chart on the mapping's codomain; if 
+        - ``chart2`` -- (default: None) chart on the mapping's codomain; if
           None, the display is performed on all the charts on the codomain
-          in which the mapping is known or computable via some change of 
+          in which the mapping is known or computable via some change of
           coordinates
-          
+
         The output is either text-formatted (console mode) or LaTeX-formatted
-        (notebook mode). 
-        
+        (notebook mode).
+
         EXAMPLES:
-        
+
         Standard embedding of the sphere `S^2` in `\RR^3`::
-    
+
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2') # the 2-dimensional sphere S^2
             sage: U = M.open_domain('U') # complement of the North pole
@@ -537,30 +537,30 @@ class DiffMapping(Map):
             on V: (u, v) |--> (X, Y, Z) = (2*u/(u^2 + v^2 + 1), 2*v/(u^2 + v^2 + 1), -(u^2 + v^2 - 1)/(u^2 + v^2 + 1))
 
         The LaTeX output::
-        
+
             sage: latex(Phi.view(c_xy, c_cart))
             \begin{array}{llcl} \Phi:& S^2 & \longrightarrow & \RR^3 \\ \mbox{on}\ U : & \left(x, y\right) & \longmapsto & \left(X, Y, Z\right) = \left(\frac{2 \, x}{x^{2} + y^{2} + 1}, \frac{2 \, y}{x^{2} + y^{2} + 1}, \frac{x^{2} + y^{2} - 1}{x^{2} + y^{2} + 1}\right) \end{array}
-       
-        If the argument ``chart2`` is not specified, the display is performed 
+
+        If the argument ``chart2`` is not specified, the display is performed
         on all the charts on the arrival manifold in which the mapping is known
-        or computable via some change of coordinates (here only one chart: 
+        or computable via some change of coordinates (here only one chart:
         c_cart)::
-        
+
             sage: Phi.view(c_xy)
             Phi: S^2 --> R^3
             on U: (x, y) |--> (X, Y, Z) = (2*x/(x^2 + y^2 + 1), 2*y/(x^2 + y^2 + 1), (x^2 + y^2 - 1)/(x^2 + y^2 + 1))
 
-        Similarly, if the argument ``chart1`` is omitted, the display is 
-        performed on all the charts on the start manifold in which the 
+        Similarly, if the argument ``chart1`` is omitted, the display is
+        performed on all the charts on the start manifold in which the
         mapping is known or computable via some change of coordinates::
-        
+
             sage: Phi.view(chart2=c_cart)
             Phi: S^2 --> R^3
             on U: (x, y) |--> (X, Y, Z) = (2*x/(x^2 + y^2 + 1), 2*y/(x^2 + y^2 + 1), (x^2 + y^2 - 1)/(x^2 + y^2 + 1))
             on V: (u, v) |--> (X, Y, Z) = (2*u/(u^2 + v^2 + 1), 2*v/(u^2 + v^2 + 1), -(u^2 + v^2 - 1)/(u^2 + v^2 + 1))
 
-        If neither ``chart1`` nor ``chart2`` is specified, the display is 
-        performed on all the pair of charts in which the mapping is known or 
+        If neither ``chart1`` nor ``chart2`` is specified, the display is
+        performed on all the pair of charts in which the mapping is known or
         computable via some change of coordinates::
 
             sage: Phi.view()
@@ -570,7 +570,7 @@ class DiffMapping(Map):
 
         If a chart covers entirely the mapping's domain, the mention "on ..."
         is omitted::
-        
+
             sage: Phi.restrict(U).view()
             Phi: U --> R^3
                (x, y) |--> (X, Y, Z) = (2*x/(x^2 + y^2 + 1), 2*y/(x^2 + y^2 + 1), (x^2 + y^2 - 1)/(x^2 + y^2 + 1))
@@ -605,37 +605,37 @@ class DiffMapping(Map):
                 for ch2 in self._codomain._atlas:
                     self._display_expression(chart1, ch2, result)
             else:
-                self._display_expression(chart1, chart2, result)             
+                self._display_expression(chart1, chart2, result)
         result.txt = result.txt[:-1]
         result.latex = result.latex[:-2] + r"\end{array}"
         return result
 
     def multi_function_chart(self, chart1=None, chart2=None):
-        r""" 
+        r"""
         Return the functions of the coordinates representing the differentiable
         mapping in a given pair of charts.
-        
-        If these functions are not already known, they are computed from known 
-        ones by means of change-of-chart formulas. 
-        
+
+        If these functions are not already known, they are computed from known
+        ones by means of change-of-chart formulas.
+
         INPUT:
-        
-        - ``chart1`` -- (default: None) chart on the mapping's domain; if None, 
+
+        - ``chart1`` -- (default: None) chart on the mapping's domain; if None,
           the domain's default chart is assumed
-        - ``chart2`` -- (default: None) chart on the mapping's codomain; if 
+        - ``chart2`` -- (default: None) chart on the mapping's codomain; if
           None,  the codomain's default chart is assumed
 
         OUTPUT:
-        
-        - instance of class 
-          :class:`~sage.geometry.manifolds.chart.MultiFunctionChart` 
+
+        - instance of class
+          :class:`~sage.geometry.manifolds.chart.MultiFunctionChart`
           representing the differentiable mapping in the above two charts
 
         EXAMPLES:
 
-        Differential mapping from a 2-dimensional manifold to a 3-dimensional 
+        Differential mapping from a 2-dimensional manifold to a 3-dimensional
         one::
-        
+
             sage: M = Manifold(2, 'M')
             sage: N = Manifold(3, 'N')
             sage: c_uv.<u,v> = M.chart()
@@ -652,7 +652,7 @@ class DiffMapping(Map):
             <class 'sage.geometry.manifolds.chart.MultiFunctionChart'>
 
         Representation in other charts::
-        
+
             sage: c_UV.<U,V> = M.chart()  # new chart on M
             sage: ch_uv_UV = c_uv.coord_change(c_UV, u-v, u+v)
             sage: ch_uv_UV.inverse()(U,V)
@@ -693,7 +693,7 @@ class DiffMapping(Map):
                 for ochart2 in change_arrival:
                     if (ochart2, chart2) in dom2._coord_changes:
                         sel_chart2 = ochart2
-                        break 
+                        break
             if sel_chart2 is not None:
                 oexpr = self._coord_expression[(chart1, sel_chart2)]
                 chg2 = dom2._coord_changes[(sel_chart2, chart2)]
@@ -716,11 +716,11 @@ class DiffMapping(Map):
                 oexpr = self._coord_expression[(sel_chart1, chart2)]
                 chg1 = dom1._coord_changes[(chart1, sel_chart1)]
                 self._coord_expression[(chart1, chart2)] = \
-                    MultiFunctionChart(chart1, 
+                    MultiFunctionChart(chart1,
                                        *(oexpr( *(chg1._transf.expr()) )) )
                 return self._coord_expression[(chart1, chart2)]
-                    
-            # 3/ If this point is reached, it is necessary to perform some 
+
+            # 3/ If this point is reached, it is necessary to perform some
             # coordinate change both on the start domain and the arrival one
             # the default charts are privileged:
             if (def_chart1, def_chart2) in self._coord_expression \
@@ -740,44 +740,44 @@ class DiffMapping(Map):
                 chg1 = dom1._coord_changes[(chart1, sel_chart1)]
                 chg2 = dom2._coord_changes[(sel_chart2, chart2)]
                 self._coord_expression[(chart1, chart2)] = \
-                     MultiFunctionChart(chart1, 
+                     MultiFunctionChart(chart1,
                                 *(chg2( *(oexpr(*(chg1._transf.expr()))) )) )
                 return self._coord_expression[(chart1, chart2)]
-                
+
             # 4/ If this point is reached, the demanded value cannot be
-            # computed 
+            # computed
             raise ValueError("The expression of the mapping in the pair of " +
-                "charts (" + str(chart1) + ", " + str(chart2) + ") cannot " + 
+                "charts (" + str(chart1) + ", " + str(chart2) + ") cannot " +
                 "be computed by means of known changes of charts.")
-                
+
         return self._coord_expression[(chart1, chart2)]
-            
+
 
     def expr(self, chart1=None, chart2=None):
-        r""" 
+        r"""
         Return the expression of the differentiable mapping in terms of
         specified coordinates.
-        
-        If the expression is not already known, it is computed from some known 
-        expression by means of change-of-chart formulas. 
-        
+
+        If the expression is not already known, it is computed from some known
+        expression by means of change-of-chart formulas.
+
         INPUT:
-        
-        - ``chart1`` -- (default: None) chart on the mapping's domain; if None, 
+
+        - ``chart1`` -- (default: None) chart on the mapping's domain; if None,
           the domain's default chart is assumed
-        - ``chart2`` -- (default: None) chart on the mapping's codomain; if 
+        - ``chart2`` -- (default: None) chart on the mapping's codomain; if
           None, the codomain's default chart is assumed
 
         OUTPUT:
-        
-        - symbolic expression representing the differentiable mapping in the 
+
+        - symbolic expression representing the differentiable mapping in the
           above two charts
 
         EXAMPLES:
-        
-        Differential mapping from a 2-dimensional manifold to a 3-dimensional 
+
+        Differential mapping from a 2-dimensional manifold to a 3-dimensional
         one::
-                
+
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: N = Manifold(3, 'N')
@@ -795,7 +795,7 @@ class DiffMapping(Map):
             <type 'sage.symbolic.expression.Expression'>
 
         Expressions in other charts::
-        
+
             sage: c_UV.<U,V> = M.chart()  # new chart on M
             sage: ch_uv_UV = c_uv.coord_change(c_UV, u-v, u+v)
             sage: ch_uv_UV.inverse()(U,V)
@@ -814,7 +814,7 @@ class DiffMapping(Map):
              (-1/2*(U^3 - (U - 2)*V^2 + V^3 - (U^2 + 2*U + 6)*V - 6*U)/(U - V), 1/4*(U^3 - (U + 4)*V^2 + V^3 - (U^2 - 4*U + 4)*V - 4*U)/(U - V), 1/4*(U^3 - (U - 4)*V^2 + V^3 - (U^2 + 4*U + 8)*V - 8*U)/(U - V))
 
         A rotation in some Euclidean plane::
-        
+
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M') # the plane (minus a segment to have global regular spherical coordinates)
             sage: c_spher.<r,ph> = M.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # spherical coordinates on the plane
@@ -823,43 +823,43 @@ class DiffMapping(Map):
             (r, 1/3*pi + ph)
 
         Expression of the rotation in terms of Cartesian coordinates::
-        
+
             sage: c_cart.<x,y> = M.chart() # Declaration of Cartesian coordinates
             sage: ch_spher_cart = c_spher.coord_change(c_cart, r*cos(ph), r*sin(ph)) # relation to spherical coordinates
-            sage: ch_spher_cart.set_inverse(sqrt(x^2+y^2), atan2(y,x))              
+            sage: ch_spher_cart.set_inverse(sqrt(x^2+y^2), atan2(y,x))
             Check of the inverse coordinate transformation:
                r == r
                ph == arctan2(r*sin(ph), r*cos(ph))
                x == x
                y == y
-            sage: rot.expr(c_cart, c_cart)                            
+            sage: rot.expr(c_cart, c_cart)
             (-1/2*sqrt(3)*y + 1/2*x, 1/2*sqrt(3)*x + 1/2*y)
 
         """
         return self.multi_function_chart(chart1, chart2).expr()
-            
-    def set_expr(self, chart1, chart2, coord_functions): 
+
+    def set_expr(self, chart1, chart2, coord_functions):
         r"""
         Set a new coordinate representation of the mapping.
 
-        The expressions with respect to other charts are deleted, in order to 
+        The expressions with respect to other charts are deleted, in order to
         avoid any inconsistency. To keep them, use :meth:`add_expr` instead.
 
         INPUT:
-    
+
         - ``chart1`` -- chart for the coordinates on the mapping's domain
         - ``chart2`` -- chart for the coordinates on the mapping's codomain
-        - ``coord_functions`` -- the coordinate symbolic expression of the 
+        - ``coord_functions`` -- the coordinate symbolic expression of the
           mapping in the above charts: list (or tuple) of the coordinates of
           the image expressed in terms of the coordinates of the considered
-          point; if the dimension of the arrival manifold is 1, a single 
+          point; if the dimension of the arrival manifold is 1, a single
           expression is expected (not a list with a single element)
-        
+
         EXAMPLES:
 
-        Polar representation of a planar rotation initally defined in 
+        Polar representation of a planar rotation initally defined in
         Cartesian coordinates::
-            
+
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2', r'\RR^2')  # the Euclidean plane R^2
             sage: c_xy.<x,y> = M.chart() # Cartesian coordinate on R^2
@@ -878,10 +878,10 @@ class DiffMapping(Map):
             sage: rot.view(c_cart, c_cart)
             R: U --> U
                (x, y) |--> (-1/2*sqrt(3)*y + 1/2*x, 1/2*sqrt(3)*x + 1/2*y)
-            
-        Let us use the method :meth:`set_expr` to set the 
+
+        Let us use the method :meth:`set_expr` to set the
         spherical-coordinate expression by hand::
-        
+
             sage: rot.set_expr(c_spher, c_spher, (r, ph+pi/3))
             sage: rot.view(c_spher, c_spher)
             R: U --> U
@@ -893,7 +893,7 @@ class DiffMapping(Map):
             {(chart (U, (r, ph)),
               chart (U, (r, ph))): functions (r, 1/3*pi + ph) on the chart (U, (r, ph))}
 
-        It is recovered (thanks to the known change of coordinates) by a call 
+        It is recovered (thanks to the known change of coordinates) by a call
         to :meth:`view`::
 
             sage: rot.view(c_cart, c_cart)
@@ -904,7 +904,7 @@ class DiffMapping(Map):
               chart (U, (x, y))): functions (-1/2*sqrt(3)*y + 1/2*x, 1/2*sqrt(3)*x + 1/2*y) on the chart (U, (x, y)),
              (chart (U, (r, ph)),
               chart (U, (r, ph))): functions (r, 1/3*pi + ph) on the chart (U, (r, ph))}
-                
+
         """
         if chart1 not in self._domain._atlas:
             raise ValueError("The " + str(chart1) +
@@ -917,7 +917,7 @@ class DiffMapping(Map):
         n2 = self._codomain._manifold._dim
         if n2 > 1:
             if len(coord_functions) != n2:
-                raise ValueError(str(n2) + 
+                raise ValueError(str(n2) +
                                  " coordinate function must be provided.")
             self._coord_expression[(chart1, chart2)] = \
                                    MultiFunctionChart(chart1, *coord_functions)
@@ -925,34 +925,34 @@ class DiffMapping(Map):
             self._coord_expression[(chart1, chart2)] = \
                                    MultiFunctionChart(chart1, coord_functions)
 
-    def add_expr(self, chart1, chart2, coord_functions): 
+    def add_expr(self, chart1, chart2, coord_functions):
         r"""
         Set a new coordinate representation of the mapping.
 
         The previous expressions with respect to other charts are kept. To
-        clear them, use :meth:`set_expr` instead. 
+        clear them, use :meth:`set_expr` instead.
 
         INPUT:
-    
+
         - ``chart1`` -- chart for the coordinates on the mapping's domain
         - ``chart2`` -- chart for the coordinates on the mapping's codomain
-        - ``coord_functions`` -- the coordinate symbolic expression of the 
+        - ``coord_functions`` -- the coordinate symbolic expression of the
           mapping in the above charts: list (or tuple) of the coordinates of
           the image expressed in terms of the coordinates of the considered
-          point; if the dimension of the arrival manifold is 1, a single 
+          point; if the dimension of the arrival manifold is 1, a single
           expression is expected (not a list with a single element)
-          
+
         .. WARNING::
-        
-            If the mapping has already expressions in other charts, it 
+
+            If the mapping has already expressions in other charts, it
             is the user's responsability to make sure that the expression
-            to be added is consistent with them.         
-        
+            to be added is consistent with them.
+
         EXAMPLES:
-        
-        Polar representation of a planar rotation initally defined in 
+
+        Polar representation of a planar rotation initally defined in
         Cartesian coordinates::
-            
+
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2', r'\RR^2')  # the Euclidean plane R^2
             sage: c_xy.<x,y> = M.chart() # Cartesian coordinate on R^2
@@ -971,26 +971,26 @@ class DiffMapping(Map):
             sage: rot.view(c_cart, c_cart)
             R: U --> U
                (x, y) |--> (-1/2*sqrt(3)*y + 1/2*x, 1/2*sqrt(3)*x + 1/2*y)
-            
+
         If we make Sage calculate the expression in terms of spherical
         coordinates, via the method :meth:`view`, we notice some difficulties
         in arctan2 simplifications::
-        
+
             sage: rot.view(c_spher, c_spher)
             R: U --> U
                (r, ph) |--> (r, arctan2(1/2*(sqrt(3)*cos(ph) + sin(ph))*r, -1/2*(sqrt(3)*sin(ph) - cos(ph))*r))
-        
-        Therefore, we use the method :meth:`add_expr` to set the 
-        spherical-coordinate expression by hand::        
-        
+
+        Therefore, we use the method :meth:`add_expr` to set the
+        spherical-coordinate expression by hand::
+
             sage: rot.add_expr(c_spher, c_spher, (r, ph+pi/3))
             sage: rot.view(c_spher, c_spher)
             R: U --> U
                (r, ph) |--> (r, 1/3*pi + ph)
 
-        The call to :meth:`add_expr` has not deleted the expression in 
-        terms of Cartesian coordinates, as we can check by printing the 
-        dictionary :attr:`_coord_expression`, which stores the various internal 
+        The call to :meth:`add_expr` has not deleted the expression in
+        terms of Cartesian coordinates, as we can check by printing the
+        dictionary :attr:`_coord_expression`, which stores the various internal
         representations of the differentiable mapping::
 
             sage: rot._coord_expression # random (dictionary output)
@@ -999,7 +999,7 @@ class DiffMapping(Map):
              (chart (U, (r, ph)),
               chart (U, (r, ph))): functions (r, 1/3*pi + ph) on the chart (U, (r, ph))}
 
-        If, on the contrary, we use :meth:`set_expr`, the expression in 
+        If, on the contrary, we use :meth:`set_expr`, the expression in
         Cartesian coordinates is lost::
 
             sage: rot.set_expr(c_spher, c_spher, (r, ph+pi/3))
@@ -1007,7 +1007,7 @@ class DiffMapping(Map):
             {(chart (U, (r, ph)),
               chart (U, (r, ph))): functions (r, 1/3*pi + ph) on the chart (U, (r, ph))}
 
-        It is recovered (thanks to the known change of coordinates) by a call 
+        It is recovered (thanks to the known change of coordinates) by a call
         to :meth:`view`::
 
             sage: rot.view(c_cart, c_cart)
@@ -1019,9 +1019,9 @@ class DiffMapping(Map):
              (chart (U, (r, ph)),
               chart (U, (r, ph))): functions (r, 1/3*pi + ph) on the chart (U, (r, ph))}
 
-        The rotation can be applied to a point by means of either coordinate 
+        The rotation can be applied to a point by means of either coordinate
         system::
-            
+
             sage: p = M.point((1,2))  #  p defined by its Cartesian coord.
             sage: q = rot(p)  # q is computed by means of Cartesian coord.
             sage: p.coord(c_spher) # the spherical coord. of p are evaluated
@@ -1031,7 +1031,7 @@ class DiffMapping(Map):
             (sqrt(5), pi - arctan((sqrt(3) + 2)/(2*sqrt(3) - 1)))
             sage: q1 == q
             True
-                
+
         """
         if chart1 not in self._domain._atlas:
             raise ValueError("The " + str(chart1) +
@@ -1042,7 +1042,7 @@ class DiffMapping(Map):
         n2 = self._codomain._manifold._dim
         if n2 > 1:
             if len(coord_functions) != n2:
-                raise ValueError(str(n2) + 
+                raise ValueError(str(n2) +
                                  " coordinate function must be provided.")
             self._coord_expression[(chart1, chart2)] = \
                                    MultiFunctionChart(chart1, *coord_functions)
@@ -1052,31 +1052,31 @@ class DiffMapping(Map):
 
     def restrict(self, subdomain, subcodomain=None):
         r"""
-        Restriction of the differentiable mapping to some subdomain of its 
+        Restriction of the differentiable mapping to some subdomain of its
         domain of definition.
-        
+
         INPUT:
-        
+
         - ``subdomain`` -- the subdomain of ``self._domain`` (instance of
           :class:`~sage.geometry.manifolds.domain.OpenDomain`)
-        - ``subcodomain`` -- (default: None) subdomain of ``self._codomain``; 
-          if None, ``self._codomain`` is assumed. 
-        
+        - ``subcodomain`` -- (default: None) subdomain of ``self._codomain``;
+          if None, ``self._codomain`` is assumed.
+
         OUTPUT:
-        
-        - the restriction of ``self`` to ``dom``, as an instance of 
+
+        - the restriction of ``self`` to ``dom``, as an instance of
           class :class:`DiffMapping`
-          
+
         EXAMPLE:
-        
+
         Restriction to an annulus of a diffeomorphism between the open unit
         disk and `\RR^2`::
-        
+
             sage: M = Manifold(2, 'R^2')  # R^2
             sage: c_xy.<x,y> = M.chart()  # Cartesian coord. on R^2
             sage: D = M.open_domain('D', coord_def={c_xy: x^2+y^2<1}) # the open unit disk
             sage: Phi = D.diff_mapping(M, [x/sqrt(1-x^2-y^2), y/sqrt(1-x^2-y^2)], name='Phi', latex_name=r'\Phi')
-            sage: Phi.view() 
+            sage: Phi.view()
             Phi: D --> R^2
                (x, y) |--> (x, y) = (x/sqrt(-x^2 - y^2 + 1), y/sqrt(-x^2 - y^2 + 1))
             sage: c_xy_D = c_xy.restrict(D)
@@ -1090,7 +1090,7 @@ class DiffMapping(Map):
             sage: Phi.restrict(U).view()
             Phi: U --> R^2
                (x, y) |--> (x, y) = (x/sqrt(-x^2 - y^2 + 1), y/sqrt(-x^2 - y^2 + 1))
-          
+
         """
         if subdomain == self._domain:
             return self
@@ -1098,13 +1098,13 @@ class DiffMapping(Map):
             subcodomain = self._codomain
         if (subdomain, subcodomain) not in self._restrictions:
             if not subdomain.is_subdomain(self._domain):
-                raise ValueError("The specified domain is not a subdomain " + 
-                                 "of the domain of definition of the diff. " + 
+                raise ValueError("The specified domain is not a subdomain " +
+                                 "of the domain of definition of the diff. " +
                                  "mapping.")
-            if not subcodomain.is_subdomain(self._codomain): 
-                raise ValueError("The specified codomain is not a subdomain " + 
+            if not subcodomain.is_subdomain(self._codomain):
+                raise ValueError("The specified codomain is not a subdomain " +
                                  "of the codomain of the diff. mapping.")
-            resu = DiffMapping(subdomain, subcodomain, name=self._name, 
+            resu = DiffMapping(subdomain, subcodomain, name=self._name,
                                latex_name=self._latex_name)
             for charts in self._coord_expression:
                 for ch1 in charts[0]._subcharts:
@@ -1125,30 +1125,30 @@ class DiffMapping(Map):
             self._restrictions[(subdomain, subcodomain)] = resu
         return self._restrictions[(subdomain, subcodomain)]
 
-        
+
     def pullback(self, tensor):
-        r""" 
-        Pullback operator associated with the differentiable mapping. 
-        
+        r"""
+        Pullback operator associated with the differentiable mapping.
+
         INPUT:
-        
-        - ``tensor`` -- instance of class 
-          :class:`~sage.geometry.manifolds.tensorfield.TensorField` 
+
+        - ``tensor`` -- instance of class
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
           representing a fully covariant tensor field `T` on the mapping's
-          codomain, i.e. a tensor field of type (0,p), with p a positive or 
+          codomain, i.e. a tensor field of type (0,p), with p a positive or
           zero integer. The case p=0 corresponds to a scalar field.
-          
+
         OUTPUT:
-        
+
         - instance of class
-          :class:`~sage.geometry.manifolds.tensorfield.TensorField` 
-          representing a fully covariant tensor field on the mapping's domain 
-          that is the pullback of `T` given by ``self``. 
-          
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
+          representing a fully covariant tensor field on the mapping's domain
+          that is the pullback of `T` given by ``self``.
+
         EXAMPLES:
-        
+
         Pullback on `S^2` of a scalar field defined on `R^3`::
-        
+
             sage: M = Manifold(2, 'S^2', start_index=1)
             sage: U = M.open_domain('U') # the complement of a meridian (domain of spherical coordinates)
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coord. on U
@@ -1165,9 +1165,9 @@ class DiffMapping(Map):
             sage: pf.view()
             Phi_*(f): U --> R
                (th, ph) |--> cos(ph)*cos(th)*sin(ph)*sin(th)^2
-            
+
         Pullback on `S^2` of the standard Euclidean metric on `R^3`::
-                
+
             sage: g = N.sym_bilin_form_field('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, 1, 1
             sage: g.view()
@@ -1178,9 +1178,9 @@ class DiffMapping(Map):
             Phi_*(g) = dth*dth + sin(th)^2 dph*dph
 
         Pullback on `S^2` of a 3-form on `R^3`::
-                
+
             sage: a = N.diff_form(3, 'A')
-            sage: a[1,2,3] = f 
+            sage: a[1,2,3] = f
             sage: a.view()
             A = x*y*z dx/\dy/\dz
             sage: pa = Phi.pullback(a) ; pa
@@ -1199,13 +1199,13 @@ class DiffMapping(Map):
                             "arrival domain.")
         (ncon, ncov) = tensor._tensor_type
         if ncon != 0:
-            raise TypeError("The pullback cannot be taken on a tensor " + 
+            raise TypeError("The pullback cannot be taken on a tensor " +
                             "with some contravariant part.")
         resu_name = None ; resu_latex_name = None
         if self._name is not None and tensor._name is not None:
             resu_name = self._name + '_*(' + tensor._name + ')'
         if self._latex_name is not None and tensor._latex_name is not None:
-            resu_latex_name = self._latex_name + '_*' + tensor._latex_name                
+            resu_latex_name = self._latex_name + '_*' + tensor._latex_name
         if ncov == 0:
             # Case of a scalar field
             resu_fc = []
@@ -1215,19 +1215,19 @@ class DiffMapping(Map):
                         phi = self._coord_expression[(chart1, chart2)]
                         coord1 = chart1._xx
                         ff = tensor._express[chart2]
-                        resu_fc.append( FunctionChart(chart1, 
+                        resu_fc.append( FunctionChart(chart1,
                                                        ff(*(phi(*coord1)))) )
             dom_resu = resu_fc[0]._chart._domain
             for fc in resu_fc[1:]:
                 dom_resu = dom_resu.union(fc._chart._domain)
-            resu = dom_resu.scalar_field(name=resu_name, 
+            resu = dom_resu.scalar_field(name=resu_name,
                                          latex_name=resu_latex_name)
             for fc in resu_fc:
                 resu._express[fc._chart] = fc
         else:
             # Case of tensor field of rank >= 1
             if tensor._vmodule._dest_map is not tdom._identity_map:
-                raise TypeError("The pullback in defined only for tensors " + 
+                raise TypeError("The pullback in defined only for tensors " +
                                 "on " + str(dom2) + ".")
             resu_rst = []
             for chart_pair in self._coord_expression:
@@ -1240,8 +1240,8 @@ class DiffMapping(Map):
             dom_resu = resu_rst[0]._domain
             for rst in resu_rst[1:]:
                 dom_resu = dom_resu.union(rst._domain)
-            resu = dom_resu.tensor_field(0, ncov, name=resu_name, 
-                                         latex_name=resu_latex_name, 
+            resu = dom_resu.tensor_field(0, ncov, name=resu_name,
+                                         latex_name=resu_latex_name,
                                          sym=resu_rst[0]._sym,
                                          antisym=resu_rst[0]._antisym)
             for rst in resu_rst:
@@ -1250,12 +1250,12 @@ class DiffMapping(Map):
             if isinstance(resu, TensorFieldParal):
                 for rst in resu_rst:
                     for frame, comp in rst._components.iteritems():
-                        resu._components[frame] = comp                 
+                        resu._components[frame] = comp
         return resu
-    
+
     def _pullback_paral(self, tensor):
         r"""
-        Pullback on parallelizable domains. 
+        Pullback on parallelizable domains.
         """
         from vectorframe import CoordFrame
         from sage.tensor.modules.comp import Components, CompWithSym, \
@@ -1267,14 +1267,14 @@ class DiffMapping(Map):
         if self._name is not None and tensor._name is not None:
             resu_name = self._name + '_*(' + tensor._name + ')'
         if self._latex_name is not None and tensor._latex_name is not None:
-            resu_latex_name = self._latex_name + '_*' + tensor._latex_name                
+            resu_latex_name = self._latex_name + '_*' + tensor._latex_name
         fmodule1 = dom1.vector_field_module()
         ring1 = fmodule1._ring
         si1 = fmodule1._sindex
         of1 = fmodule1._output_formatter
         si2 = dom2._manifold._sindex
-        resu = fmodule1.tensor((0,ncov), name=resu_name, 
-                               latex_name=resu_latex_name, sym=tensor._sym, 
+        resu = fmodule1.tensor((0,ncov), name=resu_name,
+                               latex_name=resu_latex_name, sym=tensor._sym,
                                antisym=tensor._antisym)
         for frame2 in tensor._components:
             if isinstance(frame2, CoordFrame):
@@ -1285,30 +1285,30 @@ class DiffMapping(Map):
                         frame1 = chart1._frame
                         tcomp = tensor._components[frame2]
                         if isinstance(tcomp, CompFullySym):
-                            ptcomp = CompFullySym(ring1, frame1, ncov, 
-                                                  start_index=si1, 
+                            ptcomp = CompFullySym(ring1, frame1, ncov,
+                                                  start_index=si1,
                                                   output_formatter=of1)
                         elif isinstance(tcomp, CompFullyAntiSym):
                             ptcomp = CompFullyAntiSym(ring1, frame1, ncov,
-                                                      start_index=si1, 
+                                                      start_index=si1,
                                                       output_formatter=of1)
                         elif isinstance(tcomp, CompWithSym):
-                            ptcomp = CompWithSym(ring1, frame1, ncov, 
-                                                 start_index=si1, 
+                            ptcomp = CompWithSym(ring1, frame1, ncov,
+                                                 start_index=si1,
                                                  output_formatter=of1,
-                                                 sym=tcomp.sym, 
+                                                 sym=tcomp.sym,
                                                  antisym=tcomp.antisym)
                         else:
                             ptcomp = Components(ring1, frame1, ncov,
-                                                start_index=si1, 
+                                                start_index=si1,
                                                 output_formatter=of1)
                         phi = self._coord_expression[(chart1, chart2)]
                         jacob = phi.jacobian()
                         # X2 coordinates expressed in terms of X1 ones via the mapping:
-                        coord2_1 = phi(*(chart1._xx)) 
-                        for ind_new in ptcomp.non_redundant_index_generator(): 
-                            res = 0 
-                            for ind_old in dom2._manifold.index_generator(ncov): 
+                        coord2_1 = phi(*(chart1._xx))
+                        for ind_new in ptcomp.non_redundant_index_generator():
+                            res = 0
+                            for ind_old in dom2._manifold.index_generator(ncov):
                                 ff = tcomp[[ind_old]].function_chart(chart2)
                                 t = FunctionChart(chart1, ff(*coord2_1))
                                 for i in range(ncov):
@@ -1319,68 +1319,68 @@ class DiffMapping(Map):
             return resu
 
 
-        
+
 #*****************************************************************************
 
 class Diffeomorphism(DiffMapping):
     r"""
     Class for manifold diffeomorphisms.
 
-    A *diffeomorphism* is a differential mapping 
-    
+    A *diffeomorphism* is a differential mapping
+
     .. MATH::
-    
+
         \Phi: U\subset M \longrightarrow \Phi(U)\subset N
-        
-    where  `U` is a open subset of some differentiable manifold `M` 
-    and `N` is a differentiable manifold, such that `\Phi(U)` is 
+
+    where  `U` is a open subset of some differentiable manifold `M`
+    and `N` is a differentiable manifold, such that `\Phi(U)` is
     an open subset of `N`, `\Phi` is invertible on its image and
     both `\Phi` and `\Phi^{-1}` are differentiable.
 
     INPUT:
-    
-    - ``domain`` -- domain `U` of the diffeomorphism (open subset of the start 
+
+    - ``domain`` -- domain `U` of the diffeomorphism (open subset of the start
       manifold)
-    - ``codomain`` -- codomain of the diffeomorphism (the arrival manifold or 
+    - ``codomain`` -- codomain of the diffeomorphism (the arrival manifold or
       some subset of it)
-    - ``coord_functions`` -- (default: None) if not None, must be either 
-    
-      - (i) a dictionary of 
-        the coordinate expressions (as lists (or tuples) of the 
-        coordinates of the image expressed in terms of the coordinates of 
+    - ``coord_functions`` -- (default: None) if not None, must be either
+
+      - (i) a dictionary of
+        the coordinate expressions (as lists (or tuples) of the
+        coordinates of the image expressed in terms of the coordinates of
         the considered point) with the pairs of charts (chart1, chart2)
         as keys (chart1 being a chart on `U` and chart2 a chart on `N`)
       - (ii) a single coordinate expression in a given pair of charts, the
         latter being provided by the arguments ``chart1`` and ``chart2``
-        
-      In both cases, if the dimension of the manifolds is 1, 
-      a single coordinate expression is expected (not a list or tuple with a 
+
+      In both cases, if the dimension of the manifolds is 1,
+      a single coordinate expression is expected (not a list or tuple with a
       single element)
-    - ``chart1`` -- (default: None; used only in case (ii) above) chart on 
-      domain `U` defining the start coordinates involved in ``coord_functions`` 
-      for case (ii); if none is provided, the coordinates are assumed to 
+    - ``chart1`` -- (default: None; used only in case (ii) above) chart on
+      domain `U` defining the start coordinates involved in ``coord_functions``
+      for case (ii); if none is provided, the coordinates are assumed to
       refer to `U`'s default chart
-    - ``chart2`` -- (default: None; used only in case (ii) above) chart on the 
-      codomain defining the arrival coordinates involved in ``coord_functions`` 
-      for case (ii); if none is provided, the coordinates are assumed to 
+    - ``chart2`` -- (default: None; used only in case (ii) above) chart on the
+      codomain defining the arrival coordinates involved in ``coord_functions``
+      for case (ii); if none is provided, the coordinates are assumed to
       refer to the codomain's default chart
     - ``name`` -- (default: None) name given to the diffeomorphism
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the 
-      diffeomorphism; if none is provided, the LaTeX symbol is set to 
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+      diffeomorphism; if none is provided, the LaTeX symbol is set to
       ``name``
-    
+
     .. NOTE::
-    
+
         If the information passed by means of the argument ``coord_functions``
-        is not sufficient to fully specify the diffeomorphism (for 
-        instance case (ii) with ``chart1`` not covering the entire domain `U`), 
-        further coordinate expressions, in other charts, can be subsequently 
+        is not sufficient to fully specify the diffeomorphism (for
+        instance case (ii) with ``chart1`` not covering the entire domain `U`),
+        further coordinate expressions, in other charts, can be subsequently
         added by means of the method :meth:`add_expr`
-    
+
     EXAMPLE:
-    
+
     Diffeomorphism between the unit open disk and the Euclidean plane `\RR^2`::
-    
+
         sage: M = Manifold(2, 'R^2')  # R^2
         sage: c_xy.<x,y> = M.chart()  # Cartesian coord. on R^2
         sage: D = M.open_domain('D', coord_def={c_xy: x^2+y^2<1}) # the open unit disk
@@ -1390,9 +1390,9 @@ class Diffeomorphism(DiffMapping):
         sage: Phi.view()
         Phi: D --> R^2
            (x, y) |--> (x, y) = (x/sqrt(-x^2 - y^2 + 1), y/sqrt(-x^2 - y^2 + 1))
-           
+
     The image of a point::
-    
+
         sage: p = D.point((1/2,0))
         sage: q = Phi(p) ; q
         point on 2-dimensional manifold 'R^2'
@@ -1400,7 +1400,7 @@ class Diffeomorphism(DiffMapping):
         (1/3*sqrt(3), 0)
 
     The inverse diffeomorphism is computed by means of the method :meth:`inverse`::
-    
+
         sage: Phi.inverse()
         diffeomorphism 'Phi^(-1)' between the 2-dimensional manifold 'R^2' and the open domain 'D' on the 2-dimensional manifold 'R^2'
         sage: Phi.inverse().view()
@@ -1410,18 +1410,18 @@ class Diffeomorphism(DiffMapping):
         True
 
     """
-    def __init__(self, domain, codomain, coord_functions=None, 
-                 chart1=None, chart2=None, name=None, latex_name=None): 
-        DiffMapping.__init__(self, domain, codomain, 
-                             coord_functions=coord_functions, chart1=chart1, 
+    def __init__(self, domain, codomain, coord_functions=None,
+                 chart1=None, chart2=None, name=None, latex_name=None):
+        DiffMapping.__init__(self, domain, codomain,
+                             coord_functions=coord_functions, chart1=chart1,
                              chart2=chart2, name=name, latex_name=latex_name)
         if self._domain._manifold._dim != self._codomain._manifold._dim:
-            raise ValueError("The manifolds " + str(self._domain._manifold) + 
-                             " and " + str(self._codomain._manifold) + 
+            raise ValueError("The manifolds " + str(self._domain._manifold) +
+                             " and " + str(self._codomain._manifold) +
                              " do not have the same dimension.")
         # Initialization of derived quantities:
         Diffeomorphism._init_derived(self)
-    
+
     def _repr_(self):
         r"""
         Special Sage function for the string representation of the object.
@@ -1451,46 +1451,46 @@ class Diffeomorphism(DiffMapping):
         self._inverse = None
 
 
-    def inverse(self, chart1=None, chart2=None): 
+    def inverse(self, chart1=None, chart2=None):
         r"""
-        Return the inverse diffeomorphism. 
-        
+        Return the inverse diffeomorphism.
+
         INPUT:
-    
-        - ``chart1`` -- (default: None) chart in which the computation of the 
-          inverse is performed if necessary; if none is provided, the default 
+
+        - ``chart1`` -- (default: None) chart in which the computation of the
+          inverse is performed if necessary; if none is provided, the default
           chart of the start domain will be used
-        - ``chart2`` -- (default: None) chart in which the computation of the 
-          inverse is performed if necessary; if none is provided, the default 
+        - ``chart2`` -- (default: None) chart in which the computation of the
+          inverse is performed if necessary; if none is provided, the default
           chart of the arrival domain will be used
-        
+
         OUTPUT:
-        
+
         - the inverse diffeomorphism
-        
+
         EXAMPLES:
-        
+
         The inverse of a rotation in the Euclidean plane::
-        
+
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2', r'\RR^2')
             sage: c_cart.<x,y> = M.chart()
             sage: # A pi/3 rotation around the origin:
             sage: rot = M.diffeomorphism(M, ((x - sqrt(3)*y)/2, (sqrt(3)*x + y)/2), name='R')
-            sage: rot.inverse() 
+            sage: rot.inverse()
             diffeomorphism 'R^(-1)' on the 2-dimensional manifold 'R^2'
             sage: rot.inverse().view()
             R^(-1): R^2 --> R^2
                (x, y) |--> (1/2*sqrt(3)*y + 1/2*x, -1/2*sqrt(3)*x + 1/2*y)
 
-        Checking that applying successively the diffeomorphism and its 
+        Checking that applying successively the diffeomorphism and its
         inverse results in the identity::
-        
+
             sage: (a, b) = var('a b')
             sage: p = M.point((a,b)) # a generic point on M
             sage: q = rot(p)
             sage: p1 = rot.inverse()(q)
-            sage: p1 == p 
+            sage: p1 == p
             True
 
         """
@@ -1499,31 +1499,31 @@ class Diffeomorphism(DiffMapping):
         from utilities import simplify_chain
         if self._inverse is not None:
             return self._inverse
-            
+
         if chart1 is None: chart1 = self._domain._def_chart
         if chart2 is None: chart2 = self._codomain._def_chart
         coord_map = self._coord_expression[(chart1, chart2)]
         n1 = len(chart1._xx)
         n2 = len(chart2._xx)
-        
-        # New symbolic variables (different from chart2._xx to allow for a 
+
+        # New symbolic variables (different from chart2._xx to allow for a
         #  correct solution even when chart2 = chart1):
         x2 = [ SR.var('xxxx' + str(i)) for i in range(n2) ]
-        equations = [ x2[i] == coord_map._functions[i]._express 
+        equations = [ x2[i] == coord_map._functions[i]._express
                       for i in range(n2) ]
         solutions = solve(equations, chart1._xx, solution_dict=True)
-        if len(solutions) == 0: 
+        if len(solutions) == 0:
             raise ValueError("No solution found")
-        if len(solutions) > 1: 
+        if len(solutions) > 1:
             raise ValueError("Non-unique solution found")
-            
-        #!# This should be the Python 2.7 form: 
+
+        #!# This should be the Python 2.7 form:
         # substitutions = {x2[i]: chart2._xx[i] for i in range(n2)}
         #
         # Here we use a form compatible with Python 2.6:
         substitutions = dict([(x2[i], chart2._xx[i]) for i in range(n2)])
-       
-        inv_functions = [solutions[0][chart1._xx[i]].subs(substitutions) 
+
+        inv_functions = [solutions[0][chart1._xx[i]].subs(substitutions)
                            for i in range(n1)]
         for i in range(n1):
             x = inv_functions[i]
@@ -1535,37 +1535,37 @@ class Diffeomorphism(DiffMapping):
             name = None
         else:
             name = self._name + '^(-1)'
-        
+
         if self._latex_name is None:
             latex_name = None
         else:
             latex_name = self._latex_name + r'^{-1}'
-        self._inverse = Diffeomorphism(self._codomain, self._domain, 
+        self._inverse = Diffeomorphism(self._codomain, self._domain,
                                        inv_functions, chart2, chart1,
                                        name=name, latex_name=latex_name)
         return self._inverse
 
-        
+
 #******************************************************************************
 
 class IdentityMap(Diffeomorphism):
     r"""
-    Class for identity map on an open subset of some differentiable 
+    Class for identity map on an open subset of some differentiable
     manifold.
 
     INPUT:
-    
+
     - ``domain`` -- open subset of some differentiable manifold
     - ``name`` -- (default: None) name given to the identity map; if None,
       it is set to 'Id_U', where 'U' is the domain's name.
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity 
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the identity
       mapping; if None, it is set to `\mathrm{Id}_U`, where `U` is the symbol
-      denoting the domain. 
-      
+      denoting the domain.
+
     EXAMPLES:
-    
+
     Identity map on a open subset of a 2-dimensional manifold::
-    
+
         sage: M = Manifold(2, 'M')
         sage: U = M.open_domain('U')
         sage: c_xy.<x, y> = U.chart()
@@ -1575,7 +1575,7 @@ class IdentityMap(Diffeomorphism):
         \mathrm{Id}_{U}
 
     The identity map acting on a point::
-    
+
         sage: p = U.point((1,-2), name='p')
         sage: i(p)
         point 'p' on 2-dimensional manifold 'M'
@@ -1583,9 +1583,9 @@ class IdentityMap(Diffeomorphism):
         True
         sage: i(p) is p
         True
-    
+
     The coordinate expression of the identity map::
-    
+
         sage: i.view()
         Id_U: U --> U
            (x, y) |--> (x, y)
@@ -1596,14 +1596,14 @@ class IdentityMap(Diffeomorphism):
             name = 'Id_' + domain._name
         if latex_name is None:
             latex_name = r'\mathrm{Id}_{' + domain._latex_name + r'}'
-        Diffeomorphism.__init__(self, domain, domain, name=name, 
+        Diffeomorphism.__init__(self, domain, domain, name=name,
                                 latex_name=latex_name)
         for chart in domain._atlas:
             coord_functions = chart[:]
             self._coord_expression[(chart, chart)] = \
                                     MultiFunctionChart(chart, *coord_functions)
-        self._inverse = self 
-    
+        self._inverse = self
+
     def _repr_(self):
         r"""
         String representation of the object.
@@ -1621,47 +1621,47 @@ class IdentityMap(Diffeomorphism):
 
     def __eq__(self, other):
         r"""
-        Comparison (equality) operator. 
-        
+        Comparison (equality) operator.
+
         INPUT:
-        
+
         - ``other`` -- another instance of :class:`DiffMapping` to compare with
-        
+
         OUTPUT:
-        
+
         - True if ``self`` is equal to ``other``,  or False otherwise
-        
+
         """
         if not isinstance(other, IdentityMap):
-            return False  # for efficiency (the dictionaries _coord_expression 
+            return False  # for efficiency (the dictionaries _coord_expression
                           # are not compared)
         else:
             return self._domain is other._domain
-        
-    def set_expr(self, chart1, chart2, coord_functions): 
+
+    def set_expr(self, chart1, chart2, coord_functions):
         r"""
         Redefinition of :meth:`DiffMapping.set_expr`: should not be used
         """
         raise NotImplementedError("IdentityMap.set_expr must not be used.")
 
     def multi_function_chart(self, chart1=None, chart2=None):
-        r""" 
+        r"""
         Return the functions of the coordinates representing the differentiable
         mapping in a given pair of charts.
-        
+
         This is a redefinition of :meth:`DiffMapping.multi_function_chart`
-        
+
         INPUT:
-        
-        - ``chart1`` -- (default: None) chart on the mapping's domain; if None, 
+
+        - ``chart1`` -- (default: None) chart on the mapping's domain; if None,
           the domain's default chart is assumed
-        - ``chart2`` -- (default: None) chart on the mapping's codomain; if 
+        - ``chart2`` -- (default: None) chart on the mapping's codomain; if
           None,  the codomain's default chart is assumed
 
         OUTPUT:
-        
-        - instance of class 
-          :class:`~sage.geometry.manifolds.chart.MultiFunctionChart` 
+
+        - instance of class
+          :class:`~sage.geometry.manifolds.chart.MultiFunctionChart`
           representing the identity map in the above two charts
 
         """
@@ -1680,23 +1680,23 @@ class IdentityMap(Diffeomorphism):
         return self._coord_expression[(chart1, chart2)]
 
 
-    def inverse(self, chart1=None, chart2=None): 
+    def inverse(self, chart1=None, chart2=None):
         r"""
         Return the inverse diffeomorphism, i.e. itself !
 
         This is a redefinition of :meth:`Diffeomorphism.inverse`
-        
+
         INPUT:
-    
+
         - ``chart1`` -- (default: None) unused
         - ``chart2`` -- (default: None) unused
-        
+
         OUTPUT:
-        
+
         - the identity map
-        
+
         EXAMPLE::
-        
+
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart()
             sage: i = M.identity_map()
@@ -1707,7 +1707,7 @@ class IdentityMap(Diffeomorphism):
 
         """
         return self
-            
+
     def __call__(self, p, chart1=None, chart2=None):
         r"""
         Image of a point.
@@ -1715,44 +1715,44 @@ class IdentityMap(Diffeomorphism):
         This is a redefinition of :meth:`DiffMapping.__call__`
 
         INPUT:
-    
-        - ``p`` -- point on the mapping's domain (type: 
+
+        - ``p`` -- point on the mapping's domain (type:
           :class:`~sage.geometry.manifolds.point.Point`)
-        - ``chart1`` -- (default: None) unused 
+        - ``chart1`` -- (default: None) unused
         - ``chart2`` -- (default: None) unused
-        
+
         OUTPUT:
 
         - point ``p`` (since ``self`` is the identity map)
-        
+
         """
         # no test of p being a point in the domain (for efficiency)
         return p
 
     def restrict(self, subdomain, subcodomain=None):
         r"""
-        Restriction of the identity map to some subdomain of its 
+        Restriction of the identity map to some subdomain of its
         domain of definition.
-        
+
         INPUT:
-        
+
         - ``subdomain`` -- the subdomain of ``self._domain`` (instance of
           :class:`~sage.geometry.manifolds.domain.OpenDomain`)
         - ``subcodomain`` -- (default: None) unused here (just for
           compatibility with :meth:`DiffMapping.restrict`)
-        
+
         OUTPUT:
-        
-        - the restriction of ``self`` to ``dom``, as an instance of 
+
+        - the restriction of ``self`` to ``dom``, as an instance of
           class :class:`IdentityMap`
-          
+
         """
         if subdomain == self._domain:
             return self
         if (subdomain, subdomain) not in self._restrictions:
             if not subdomain.is_subdomain(self._domain):
-                raise ValueError("The specified domain is not a subdomain " + 
-                                 "of the domain of definition of the " + 
+                raise ValueError("The specified domain is not a subdomain " +
+                                 "of the domain of definition of the " +
                                  "identity map.")
             self._restrictions[(subdomain, subdomain)] = \
                                                    subdomain.identity_map()
@@ -1760,11 +1760,10 @@ class IdentityMap(Diffeomorphism):
 
 
     def pullback(self, tensor):
-        r""" 
+        r"""
         Pullback operator associated with the identity map.
-        
+
         This is a redefinition of :meth:`DiffMapping.pullback`
         """
         # no test for efficiency
         return tensor
-

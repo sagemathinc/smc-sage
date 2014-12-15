@@ -1,8 +1,8 @@
 r"""
-SageManifolds functions. 
+SageManifolds functions.
 
 This module defines functions that are not class methods, but rather shortcuts
-to them. 
+to them.
 
 
 AUTHORS:
@@ -22,17 +22,9 @@ def Lie(vector, tensor):
     Lie derivative of a tensor field with respect to a vector field
     """
     return tensor.lie_der(vector)
-    
+
 def ctr(tensor1, pos1, tensor2, pos2):
     r"""
     Contraction of two tensors
     """
     return tensor1.contract(pos1, tensor2, pos2)
-
-    
-
-    
-    
-    
-    
-

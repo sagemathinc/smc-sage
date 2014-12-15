@@ -1,15 +1,15 @@
 r"""
 Scalar field algebra
 
-The class :class:`ScalarFieldAlgebra` implements the commutative algebra 
-`C^\infty(U)` of differentiable scalar fields on some open subset `U` of a 
-differentiable manifold `M` over `\RR`. By *scalar field*, it is meant a 
-function `U\rightarrow \RR`. 
-`C^\infty(U)` is an algebra over `\RR`, whose ring product is the pointwise 
-multiplication of real-valued functions, which is clearly commutative. 
-In the present implementation, the field `\RR`, over which the 
+The class :class:`ScalarFieldAlgebra` implements the commutative algebra
+`C^\infty(U)` of differentiable scalar fields on some open subset `U` of a
+differentiable manifold `M` over `\RR`. By *scalar field*, it is meant a
+function `U\rightarrow \RR`.
+`C^\infty(U)` is an algebra over `\RR`, whose ring product is the pointwise
+multiplication of real-valued functions, which is clearly commutative.
+In the present implementation, the field `\RR`, over which the
 albegra `C^\infty(U)` is constructed, is represented by Sage's Symbolic Ring
-SR. 
+SR.
 
 AUTHORS:
 
@@ -37,27 +37,27 @@ from sage.geometry.manifolds.scalarfield import ScalarField, ZeroScalarField
 
 class ScalarFieldAlgebra(UniqueRepresentation, Parent):
     r"""
-    Commutative algebra `C^\infty(U)` of differentiable functions 
-    `U \rightarrow \RR`, where `U` is an open subset of some differentiable 
+    Commutative algebra `C^\infty(U)` of differentiable functions
+    `U \rightarrow \RR`, where `U` is an open subset of some differentiable
     manifold over `\RR`. `C^\infty(U)` is a commutative algebra over `\RR`,
-    the latter being represented by Sage's Symbolic Ring SR. 
-    
-    The class :class:`ScalarFieldAlgebra` inherits from 
+    the latter being represented by Sage's Symbolic Ring SR.
+
+    The class :class:`ScalarFieldAlgebra` inherits from
     :class:`~sage.structure.parent.Parent`, with the category set to
-    :class:`~sage.categories.commutative_algebras.CommutativeAlgebras`. 
-    The corresponding Element class is 
-    :class:`~sage.geometry.manifolds.scalarfield.ScalarField`. 
+    :class:`~sage.categories.commutative_algebras.CommutativeAlgebras`.
+    The corresponding Element class is
+    :class:`~sage.geometry.manifolds.scalarfield.ScalarField`.
 
     INPUT:
-    
-    - ``domain`` -- the manifold open subset `U` on which the scalar fields are 
-      defined (must be an instance of class 
+
+    - ``domain`` -- the manifold open subset `U` on which the scalar fields are
+      defined (must be an instance of class
       :class:`~sage.geometry.manifolds.domain.OpenDomain`)
-    
+
     EXAMPLES:
-    
+
     Algebras of scalar fields on the sphere `S^2` and on some subdomain of it::
-    
+
         sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
         sage: U = M.open_domain('U') # complement of the North pole
         sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
@@ -74,7 +74,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: CW = W.scalar_field_algebra() ; CW
         algebra of scalar fields on the open domain 'W' on the 2-dimensional manifold 'M'
 
-    `C^\infty(M)` and `C^\infty(W)` belong to the category of commutative 
+    `C^\infty(M)` and `C^\infty(W)` belong to the category of commutative
     algebras over `\RR` (represented here by Sage's Symbolic Ring)::
 
         sage: CM.category()
@@ -94,7 +94,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         M --> R
         on U: (x, y) |--> 2
         on V: (u, v) |--> 2
-        
+
     Those of `C^\infty(W)` are scalar fields on W::
 
         sage: CW.an_element()
@@ -105,7 +105,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         (u, v) |--> 2
 
     The zero element::
-    
+
         sage: CM.zero()
         zero scalar field on the 2-dimensional manifold 'M'
         sage: CM.zero().view()
@@ -114,7 +114,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         on V: (u, v) |--> 0
 
     ::
-    
+
         sage: CW.zero()
         zero scalar field on the open domain 'W' on the 2-dimensional manifold 'M'
         sage: CW.zero().view()
@@ -123,16 +123,16 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         (u, v) |--> 0
 
     The unit element::
-    
+
         sage: CM.one()
         scalar field on the 2-dimensional manifold 'M'
         sage: CM.one().view()
         M --> R
         on U: (x, y) |--> 1
         on V: (u, v) |--> 1
-        
+
     ::
-    
+
         sage: CW.one()
         scalar field on the open domain 'W' on the 2-dimensional manifold 'M'
         sage: CW.one().view()
@@ -140,10 +140,10 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         (x, y) |--> 1
         (u, v) |--> 1
 
-    A generic element can be constructed as for any parent in Sage, namely 
+    A generic element can be constructed as for any parent in Sage, namely
     by means of the __call__ operator on the parent (here with the dictionary
     of the coordinate expressions defining the scalar field)::
-    
+
         sage: f = CM({c_xy: atan(x^2+y^2), c_uv: pi/2 - atan(u^2+v^2)}) ; f
         scalar field on the 2-dimensional manifold 'M'
         sage: f.view()
@@ -152,24 +152,24 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         on V: (u, v) |--> 1/2*pi - arctan(u^2 + v^2)
         sage: f.parent()
         algebra of scalar fields on the 2-dimensional manifold 'M'
-    
+
     Specific elements can also be constructed in this way::
-    
+
         sage: CM(0) == CM.zero()
         True
         sage: CM(1) == CM.one()
         True
 
     Note that the zero scalar field is cached::
-    
+
         sage: CM(0) is CM.zero()
         True
 
     Elements can also be constructed by means of the method
-    :meth:`~sage.geometry.manifolds.domain.OpenDomain.scalar_field` acting on 
-    the domain (this allows one to set the name of the scalar field at the 
+    :meth:`~sage.geometry.manifolds.domain.OpenDomain.scalar_field` acting on
+    the domain (this allows one to set the name of the scalar field at the
     construction)::
-    
+
         sage: f1 = M.scalar_field({c_xy: atan(x^2+y^2), c_uv: pi/2 - atan(u^2+v^2)}, name='f')
         sage: f1.parent()
         algebra of scalar fields on the 2-dimensional manifold 'M'
@@ -178,20 +178,20 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: M.scalar_field(0) is CM.zero()
         True
 
-    The algebra `C^\infty(M)` coerces to `C^\infty(W)` since `W` is an open 
+    The algebra `C^\infty(M)` coerces to `C^\infty(W)` since `W` is an open
     subset of `M`::
 
         sage: CW.has_coerce_map_from(CM)
         True
 
     The reverse is of course false::
-    
+
         sage: CM.has_coerce_map_from(W)
         False
 
     The coercion map is nothing but the restriction to `W` of scalar fields
     on `M`::
-    
+
         sage: fW = CW(f) ; fW
         scalar field on the open domain 'W' on the 2-dimensional manifold 'M'
         sage: fW.view()
@@ -200,14 +200,14 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         (u, v) |--> 1/2*pi - arctan(u^2 + v^2)
 
     ::
-    
+
         sage: CW(CM.one()) == CW.one()
         True
-    
-    The coercion map allows for the addition of elements of `C^\infty(W)` 
-    with elements of `C^\infty(M)`, the result being an element of 
+
+    The coercion map allows for the addition of elements of `C^\infty(W)`
+    with elements of `C^\infty(M)`, the result being an element of
     `C^\infty(W)`::
-    
+
         sage: s = fW + f
         sage: s.parent()
         algebra of scalar fields on the open domain 'W' on the 2-dimensional manifold 'M'
@@ -218,16 +218,16 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
 
     Other coercions are those from the rational field, leading to constant
     scalar fields::
-    
+
         sage: h = CM(2/3) ; h
         scalar field on the 2-dimensional manifold 'M'
         sage: h.view()
         M --> R
         on U: (x, y) |--> 2/3
         on V: (u, v) |--> 2/3
-   
+
     and those from the Symbolic Ring, also leading to constant scalar fields::
-    
+
         sage: h = CM(pi*sqrt(2)) ; h
         scalar field on the 2-dimensional manifold 'M'
         sage: h.view()
@@ -236,7 +236,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         on V: (u, v) |--> sqrt(2)*pi
 
     TESTS OF THE ALGEBRA LAWS:
-    
+
     Ring laws::
 
         sage: s = f + h ; s
@@ -245,27 +245,27 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         M --> R
         on U: (x, y) |--> sqrt(2)*pi + arctan(x^2 + y^2)
         on V: (u, v) |--> 1/2*pi*(2*sqrt(2) + 1) - arctan(u^2 + v^2)
-    
+
     ::
-    
-        sage: s = f - h ; s 
+
+        sage: s = f - h ; s
         scalar field on the 2-dimensional manifold 'M'
         sage: s.view()
         M --> R
         on U: (x, y) |--> -sqrt(2)*pi + arctan(x^2 + y^2)
         on V: (u, v) |--> -1/2*pi*(2*sqrt(2) - 1) - arctan(u^2 + v^2)
-    
+
     ::
-    
+
         sage: s = f*h ; s
         scalar field on the 2-dimensional manifold 'M'
         sage: s.view()
         M --> R
         on U: (x, y) |--> sqrt(2)*pi*arctan(x^2 + y^2)
         on V: (u, v) |--> 1/2*sqrt(2)*(pi^2 - 2*pi*arctan(u^2 + v^2))
-    
+
     ::
-    
+
         sage: s = f/h ; s
         scalar field on the 2-dimensional manifold 'M'
         sage: s.view()
@@ -274,12 +274,12 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         on V: (u, v) |--> 1/4*sqrt(2)*(pi - 2*arctan(u^2 + v^2))/pi
 
     ::
-    
+
         sage: f*(h+f) == f*h + f*f
         True
 
     Ring laws with coercion::
-    
+
         sage: f - fW == CW.zero()
         True
         sage: f/fW == CW.one()
@@ -294,16 +294,16 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         True
 
     Multiplication by a real number::
-    
+
         sage: s = 2*f ; s
         scalar field on the 2-dimensional manifold 'M'
         sage: s.view()
         M --> R
         on U: (x, y) |--> 2*arctan(x^2 + y^2)
         on V: (u, v) |--> pi - 2*arctan(u^2 + v^2)
-    
+
     ::
-    
+
         sage: 0*f == CM.zero()
         True
         sage: 1*f == f
@@ -343,11 +343,11 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         running ._test_prod() . . . pass
         running ._test_some_elements() . . . pass
         running ._test_zero() . . . pass
-    
+
     It is passed also for `C^\infty(W)`::
-    
+
         sage: TestSuite(CW).run()
-     
+
     """
 
     Element = ScalarField
@@ -356,9 +356,9 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         Parent.__init__(self, base=SR, category=CommutativeAlgebras(SR))
         self._domain = domain
         self._populate_coercion_lists_()
-        
-    #### Methods required for any Parent 
-    def _element_constructor_(self, coord_expression=None, name=None, 
+
+    #### Methods required for any Parent
+    def _element_constructor_(self, coord_expression=None, name=None,
                               latex_name=None):
         r"""
         Construct a scalarfield
@@ -373,15 +373,15 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
                     for schart in self._domain._atlas:
                         if schart in chart._subcharts:
                             sexpress[schart] = funct.expr()
-                resu = self.element_class(self._domain, 
-                                          coord_expression=sexpress, name=name, 
+                resu = self.element_class(self._domain,
+                                          coord_expression=sexpress, name=name,
                                           latex_name=latex_name)
             else:
                 raise TypeError("Cannot coerce the " + str(coord_expression) +
                                 "to a scalar field on the " + str(self._domain))
         else:
-            resu = self.element_class(self._domain, 
-                                      coord_expression=coord_expression, 
+            resu = self.element_class(self._domain,
+                                      coord_expression=coord_expression,
                                       name=name, latex_name=latex_name)
         return resu
 
@@ -390,14 +390,14 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         Construct some (unamed) element of the module
         """
         return self.element_class(self._domain, coord_expression=2)
-            
-            
+
+
     def _coerce_map_from_(self, other):
         r"""
         Determine whether coercion to self exists from other parent
         """
         if other is SR:
-            return True  # coercion from the base ring (multiplication by the 
+            return True  # coercion from the base ring (multiplication by the
                          # algebra unit, i.e. self.one())
         elif other is ZZ:
            return True   # important to define self(1) (for self.one())
@@ -408,14 +408,14 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         else:
             return False
 
-    #### End of methods required for any Parent 
+    #### End of methods required for any Parent
 
     def _repr_(self):
         r"""
         String representation of the object.
         """
         return "algebra of scalar fields on the " + str(self._domain)
-        
+
     def _latex_(self):
         r"""
         LaTeX representation of the object.

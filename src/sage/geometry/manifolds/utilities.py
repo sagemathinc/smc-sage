@@ -1,5 +1,5 @@
 r"""
-SageManifolds utilities. 
+SageManifolds utilities.
 
 This module defines helper functions that are not class methods.
 
@@ -26,20 +26,20 @@ from sage.structure.sage_object import SageObject
 def is_atomic(expression):
     r"""
     Helper function to check whether some LaTeX expression is atomic.
-    
-    Adapted from function :meth:`DifferentialFormFormatter._is_atomic` written 
+
+    Adapted from function :meth:`DifferentialFormFormatter._is_atomic` written
     by Joris Vankerschaver (2010)
-    
+
     INPUT:
-    
+
     - ``expression`` -- string representing the expression (e.g. LaTeX string)
-    
+
     OUTPUT:
-    
+
     - True if additive operations are enclosed in parentheses, false otherwise.
 
     EXAMPLES::
-    
+
         sage: from sage.geometry.manifolds.utilities import is_atomic
         sage: is_atomic("2*x")
         True
@@ -75,22 +75,22 @@ def is_atomic(expression):
 
 def is_atomic_wedge_txt(expression):
     r"""
-    Helper function to check whether some text-formatted expression is atomic 
-    in terms of wedge products. 
-    
-    Adapted from function :meth:`DifferentialFormFormatter._is_atomic` written 
+    Helper function to check whether some text-formatted expression is atomic
+    in terms of wedge products.
+
+    Adapted from function :meth:`DifferentialFormFormatter._is_atomic` written
     by Joris Vankerschaver (2010)
-    
+
     INPUT:
-    
+
     - ``expression`` -- string representing the text-formatted expression
-    
+
     OUTPUT:
-    
+
     - True if wedge products are enclosed in parentheses, false otherwise.
 
     EXAMPLES::
-    
+
         sage: from sage.geometry.manifolds.utilities import is_atomic_wedge_txt
         sage: is_atomic_wedge_txt("a")
         True
@@ -120,24 +120,24 @@ def is_atomic_wedge_txt(expression):
 
 def is_atomic_wedge_latex(expression):
     r"""
-    Helper function to check whether LaTeX-formatted expression is atomic in 
+    Helper function to check whether LaTeX-formatted expression is atomic in
     terms of wedge products.
-    
-    Adapted from function :meth:`DifferentialFormFormatter._is_atomic` written 
+
+    Adapted from function :meth:`DifferentialFormFormatter._is_atomic` written
     by Joris Vankerschaver (2010)
-    
+
     INPUT:
-    
+
     - ``expression`` -- string representing the LaTeX expression
-    
+
     OUTPUT:
-    
+
     - True if wedge products are enclosed in parentheses, false otherwise.
 
     EXAMPLES::
-    
+
         sage: from sage.geometry.manifolds.utilities import is_atomic_wedge_latex
-        sage: is_atomic_wedge_latex(r"a")                    
+        sage: is_atomic_wedge_latex(r"a")
         True
         sage: is_atomic_wedge_latex(r"a\wedge b")
         False
@@ -147,9 +147,9 @@ def is_atomic_wedge_latex(expression):
         False
         sage: is_atomic_wedge_latex(r"((a\wedge b)\wedge c)")
         True
-        sage: is_atomic_wedge_latex(r"(a\wedge b\wedge c)")  
+        sage: is_atomic_wedge_latex(r"(a\wedge b\wedge c)")
         True
-        sage: is_atomic_wedge_latex(r"\omega\wedge\theta")      
+        sage: is_atomic_wedge_latex(r"\omega\wedge\theta")
         False
         sage: is_atomic_wedge_latex(r"(\omega\wedge\theta)")
         True
@@ -173,9 +173,9 @@ def is_atomic_wedge_latex(expression):
 
 def format_mul_txt(name1, operator, name2):
     r"""
-    Helper function for text-formatted names of results of multiplication or 
-    tensor product. 
-    
+    Helper function for text-formatted names of results of multiplication or
+    tensor product.
+
     """
     if name1 is None or name2 is None:
         return None
@@ -183,14 +183,14 @@ def format_mul_txt(name1, operator, name2):
         name1 = '(' + name1 + ')'
     if not is_atomic(name2) or not is_atomic_wedge_txt(name2):
         name2 = '(' + name2 + ')'
-    return name1 + operator + name2 
+    return name1 + operator + name2
 
 
 def format_mul_latex(name1, operator, name2):
     r"""
-    Helper function for LaTeX names of results of multiplication or tensor 
-    product. 
-    
+    Helper function for LaTeX names of results of multiplication or tensor
+    product.
+
     """
     if name1 is None or name2 is None:
         return None
@@ -198,13 +198,13 @@ def format_mul_latex(name1, operator, name2):
         name1 = r'\left(' + name1 + r'\right)'
     if not is_atomic(name2) or not is_atomic_wedge_latex(name2):
         name2 = r'\left(' + name2 + r'\right)'
-    return name1 + operator + name2 
+    return name1 + operator + name2
 
 
 def format_unop_txt(operator, name):
     r"""
     Helper function for text-formatted names of results of unary operator.
-    
+
     """
     if name is None:
         return None
@@ -217,7 +217,7 @@ def format_unop_txt(operator, name):
 def format_unop_latex(operator, name):
     r"""
     Helper function for LaTeX names of results of unary operator.
-    
+
     """
     if name is None:
         return None
@@ -227,20 +227,20 @@ def format_unop_latex(operator, name):
     return operator + name
 
 class FormattedExpansion(SageObject):
-    r""" 
+    r"""
     Helper class for displaying tensor expansions.
     """
     def  __init__(self, tensor):
         self.tensor = tensor
         self.txt = None
         self.latex = None
-    
+
     def _repr_(self):
         r"""
         Special Sage function for the string representation of the object.
         """
         return self.txt
-        
+
     def _latex_(self):
         r"""
         Special Sage function for the LaTeX representation of the object.
@@ -253,7 +253,7 @@ class FormattedExpansion(SageObject):
 def simple_determinant(aa):
     r"""
     Compute the determinant of a square matrix.
-    
+
     This function is a workaround to bypass a bug in Sage det method.
     """
     from sage.matrix.constructor import matrix
@@ -285,11 +285,11 @@ def simple_determinant(aa):
 def simplify_sqrt_real(expr):
     r"""
     Simplify sqrt in symbolic expressions in the real domain.
-    
+
     EXAMPLES:
-    
+
     Simplifications of basic expressions::
-    
+
         sage: from sage.geometry.manifolds.utilities import simplify_sqrt_real
         sage: assume(x<0)
         sage: simplify_sqrt_real( sqrt(x^2) )
@@ -298,11 +298,11 @@ def simplify_sqrt_real(expr):
         -x + 1
         sage: simplify_sqrt_real( sqrt(x^2) + sqrt(x^2-2*x+1) )
         -2*x + 1
-        
-    This improves over Sage's 
+
+    This improves over Sage's
     :meth:`~sage.symbolic.expression.Expression.simplify_radical` which yields
     incorrect results when x<0:
-    
+
         sage: sqrt(x^2).simplify_radical() # wrong output
         x
         sage: sqrt(x^2-2*x+1).simplify_radical() # wrong output
@@ -318,8 +318,8 @@ def simplify_sqrt_real(expr):
     if 'sqrt(' not in sexpr:  # no sqrt to simplify
         return expr
     if 'D[' in sexpr:
-        return expr    #!# the code below is not capable of simplifying 
-                       # expressions with symbolic derivatives denoted by Pynac 
+        return expr    #!# the code below is not capable of simplifying
+                       # expressions with symbolic derivatives denoted by Pynac
                        # symbols of the type D[0]
     pos_sqrts = []   # positions of the sqrt's in sexpr
     the_sqrts = []   # the sqrt sub-expressions in sexpr
@@ -331,7 +331,7 @@ def simplify_sqrt_real(expr):
             while parenth != 0:
                 if sexpr[scan] == '(': parenth += 1
                 if sexpr[scan] == ')': parenth -= 1
-                scan += 1 
+                scan += 1
             the_sqrts.append( sexpr[pos:scan] )
     # 2/ Simplifications of the sqrt's
     new_expr = ""    # will contain the result
@@ -340,7 +340,7 @@ def simplify_sqrt_real(expr):
         # radcan is called on each sqrt:
         x = SR(the_sqrts[i])
         simpl = SR(x._maxima_().radcan())
-        # the absolute value of radcan's output is taken, the call to simplify() 
+        # the absolute value of radcan's output is taken, the call to simplify()
         # taking into account possible assumptions regarding the sign of simpl:
         ssimpl = str(abs(simpl).simplify())
         # search for abs(1/sqrt(...)) term to simplify it into 1/sqrt(...):
@@ -371,7 +371,7 @@ def simplify_abs_trig(expr):
             while parenth != 0:
                 if sexpr[scan] == '(': parenth += 1
                 if sexpr[scan] == ')': parenth -= 1
-                scan += 1 
+                scan += 1
             pos_abs_end = scan
             # finding the end of sin argument:
             scan = pos+8 # start of sin
@@ -379,10 +379,10 @@ def simplify_abs_trig(expr):
             while parenth != 0:
                 if sexpr[scan] == '(': parenth += 1
                 if sexpr[scan] == ')': parenth -= 1
-                scan += 1 
+                scan += 1
             pos_sin_end = scan
             # if the abs contains only the sinus, the simplification can be tried:
-            if pos_sin_end == pos_abs_end-1: 
+            if pos_sin_end == pos_abs_end-1:
                 tp.append(pos)
                 val.append( sexpr[pos:pos_abs_end] )
     simp = []
@@ -399,17 +399,17 @@ def simplify_abs_trig(expr):
     nexpr = ""
     pos0 = 0
     for i, pos in enumerate(tp):
-        nexpr += sexpr[pos0:pos] + simp[i] 
+        nexpr += sexpr[pos0:pos] + simp[i]
         pos0 = pos + len(val[i])
     nexpr += sexpr[pos0:]
     return SR(nexpr)
-    
+
 
 
 def simplify_chain(expr):
     r"""
     Perform a chain of simplications to a symbolic expression.
-    
+
     """
     expr = expr.simplify_factorial()
     expr = expr.simplify_trig()
@@ -425,25 +425,25 @@ def simplify_chain(expr):
 def set_axes_labels(graph, xlabel, ylabel, zlabel, **kwds):
     r"""
     Set axes labels for a 3D graphics object.
-    
-    This is a workaround for the lack of axes labels in Sage 3D plots; it 
-    sets the labels as text3d objects at locations determined from the 
-    bounding box of the graphic object ``graph``. 
-    
+
+    This is a workaround for the lack of axes labels in Sage 3D plots; it
+    sets the labels as text3d objects at locations determined from the
+    bounding box of the graphic object ``graph``.
+
     INPUT:
-    
-    - ``graph`` -- a 3D graphic object, as an instance of 
-          :class:`~sage.plot.plot3d.base.Graphics3d` 
+
+    - ``graph`` -- a 3D graphic object, as an instance of
+          :class:`~sage.plot.plot3d.base.Graphics3d`
     - ``xlabel`` -- string for the x-axis label
     - ``ylabel`` -- string for the y-axis label
     - ``zlabel`` -- string for the z-axis label
     - ``**kwds`` -- options (e.g. color) for text3d
-    
+
     OUTPUT:
-    
+
     - the 3D graphic object with text3d labels added.
-    
-    """  
+
+    """
     from sage.plot.plot3d.shapes2 import text3d
     xmin, ymin, zmin = graph.bounding_box()[0]
     xmax, ymax, zmax = graph.bounding_box()[1]
@@ -461,5 +461,3 @@ def set_axes_labels(graph, xlabel, ylabel, zlabel, **kwds):
     graph += text3d('  ' + ylabel, (xmax1, y1, zmin1), **kwds)
     graph += text3d('  ' + zlabel, (xmin1, ymin1, z1), **kwds)
     return graph
-
-    
