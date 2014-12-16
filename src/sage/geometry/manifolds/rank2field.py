@@ -384,7 +384,7 @@ class TangentIdentityField(AutomorphismField):
             latex_name = r'\mathrm{Id}'
         AutomorphismField.__init__(self, vector_field_module, name=name,
                                        latex_name=latex_name)
-        for dom in self._domain._subdomains:
+        for dom in self._domain._subsets:
             if dom.is_manifestly_parallelizable():
                 fmodule = dom.vector_field_module()
                 self._restrictions[dom] = TangentIdentityFieldParal(fmodule,

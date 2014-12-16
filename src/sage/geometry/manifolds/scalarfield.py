@@ -33,7 +33,7 @@ AUTHORS:
 
 from sage.structure.element import CommutativeAlgebraElement
 from sage.rings.integer import Integer
-from domain import Domain
+from domain import ManifoldSubset
 from chart import FunctionChart, ZeroFunctionChart, MultiFunctionChart
 
 class ScalarField(CommutativeAlgebraElement):
@@ -44,7 +44,7 @@ class ScalarField(CommutativeAlgebraElement):
 
     - ``domain`` -- the manifold open subset `U` on which the scalar field is
       defined (must be an instance of class
-      :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+      :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
     - ``coord_expression`` -- (default: None) coordinate expression of the
       scalar field
     - ``name`` -- (default: None) name given to the scalar field
@@ -516,7 +516,7 @@ class ScalarField(CommutativeAlgebraElement):
 
         OUTPUT:
 
-        - instance of class :class:`~sage.geometry.manifolds.domain.OpenDomain`
+        - instance of class :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`
           representing the manifold's open subset on which ``self`` is defined.
 
         EXAMPLES::
@@ -990,7 +990,7 @@ class ScalarField(CommutativeAlgebraElement):
         INPUT:
 
         - ``subdomain`` -- the subdomain (instance of
-          :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+          :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
 
         OUTPUT:
 
@@ -1183,7 +1183,7 @@ class ScalarField(CommutativeAlgebraElement):
         INPUT:
 
         - ``p`` -- point in the scalar field's domain (type:
-          :class:`~sage.geometry.manifolds.point.Point`)
+          :class:`~sage.geometry.manifolds.point.ManifoldPoint`)
         - ``chart`` -- (default: None) chart in which the coordinates of p
           are to be considered; if none is provided, a chart in which both p's
           coordinates and the expression of ``self`` are known is searched,
@@ -1883,15 +1883,15 @@ class ZeroScalarField(ScalarField):
         INPUT:
 
         - ``p`` -- point on the manifold (type:
-          :class:`~sage.geometry.manifolds.point.Point`)
+          :class:`~sage.geometry.manifolds.point.ManifoldPoint`)
 
         OUTPUT:
 
         - the number zero.
 
         """
-        from point import Point
-        if not isinstance(p, Point):
+        from point import ManifoldPoint
+        if not isinstance(p, ManifoldPoint):
             return TypeError("The argument must be a point.")
         return 0
 

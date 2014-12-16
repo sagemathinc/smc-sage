@@ -66,7 +66,7 @@ class TangentSpace(FiniteRankFreeModule):
     INPUT:
 
     - ``point`` -- (instance of
-      :class:`~sage.geometry.manifolds.point.Point`) point `p` at which the
+      :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` at which the
       tangent space is defined.
 
     EXAMPLES:

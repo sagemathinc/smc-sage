@@ -35,9 +35,9 @@ AUTHORS:
 
 #from sage.structure.sage_object import SageObject
 from sage.categories.map import Map
-from domain import Domain
+from domain import ManifoldSubset
 from chart import Chart, FunctionChart, MultiFunctionChart, CoordChange
-from point import Point
+from point import ManifoldPoint
 
 class DiffMapping(Map):
     r"""
@@ -195,9 +195,9 @@ class DiffMapping(Map):
     """
     def __init__(self, domain, codomain, coord_functions=None, chart1=None,
                  chart2=None, name=None, latex_name=None):
-        if not isinstance(domain, Domain):
+        if not isinstance(domain, ManifoldSubset):
             raise TypeError("The argument domain must be a domain.")
-        if not isinstance(codomain, Domain):
+        if not isinstance(codomain, ManifoldSubset):
             raise TypeError("The argument codomain must be a domain.")
         Map.__init__(self, domain, codomain)
         self._domain = domain
@@ -319,7 +319,7 @@ class DiffMapping(Map):
         INPUT:
 
         - ``p`` -- point on the mapping's domain (type:
-          :class:`~sage.geometry.manifolds.point.Point`)
+          :class:`~sage.geometry.manifolds.point.ManifoldPoint`)
         - ``chart1`` -- (default: None) chart in which the coordinates of p
           are to be considered; if none is provided, a chart in which both p's
           coordinates and the expression of ``self`` are known is searched,
@@ -331,7 +331,7 @@ class DiffMapping(Map):
         OUTPUT:
 
         - image of the point by the mapping (type:
-          :class:`~sage.geometry.manifolds.point.Point`)
+          :class:`~sage.geometry.manifolds.point.ManifoldPoint`)
 
         EXAMPLES:
 
@@ -401,7 +401,7 @@ class DiffMapping(Map):
                 res_latex_name = self._latex_name + r'\left(' + p._latex_name + \
                                  r'\right)'
 
-            return Point(self._codomain._manifold, y, chart2, name=res_name,
+            return ManifoldPoint(self._codomain._manifold, y, chart2, name=res_name,
                          latex_name=res_latex_name)  #!# check
 
     #
@@ -1058,7 +1058,7 @@ class DiffMapping(Map):
         INPUT:
 
         - ``subdomain`` -- the subdomain of ``self._domain`` (instance of
-          :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+          :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
         - ``subcodomain`` -- (default: None) subdomain of ``self._codomain``;
           if None, ``self._codomain`` is assumed.
 
@@ -1717,7 +1717,7 @@ class IdentityMap(Diffeomorphism):
         INPUT:
 
         - ``p`` -- point on the mapping's domain (type:
-          :class:`~sage.geometry.manifolds.point.Point`)
+          :class:`~sage.geometry.manifolds.point.ManifoldPoint`)
         - ``chart1`` -- (default: None) unused
         - ``chart2`` -- (default: None) unused
 
@@ -1737,7 +1737,7 @@ class IdentityMap(Diffeomorphism):
         INPUT:
 
         - ``subdomain`` -- the subdomain of ``self._domain`` (instance of
-          :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+          :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
         - ``subcodomain`` -- (default: None) unused here (just for
           compatibility with :meth:`DiffMapping.restrict`)
 

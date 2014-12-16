@@ -40,7 +40,7 @@ EXAMPLES:
         coordinate frame (M, (d/dx,d/dy,d/dz))
 
     The default frame can be changed via the method
-    :meth:`~sage.geometry.manifolds.domain.Domain.set_default_frame`::
+    :meth:`~sage.geometry.manifolds.domain.ManifoldSubset.set_default_frame`::
 
         sage: M.set_default_frame(e)
         sage: M.default_frame()
@@ -210,7 +210,7 @@ class VectorFrame(FreeModuleBasis):
     """
     def __init__(self, vector_field_module, symbol, latex_symbol=None,
                  from_frame=None):
-        from sage.geometry.manifolds.domain import OpenDomain
+        from sage.geometry.manifolds.domain import ManifoldOpenSubset
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
         self._dest_map = vector_field_module._dest_map
@@ -248,7 +248,7 @@ class VectorFrame(FreeModuleBasis):
         # the superdomains' sets of frames; moreover the first defined frame
         # is considered as the default one
         dest_map_name = self._dest_map._name
-        for sd in self._domain._superdomains:
+        for sd in self._domain._supersets:
             for other in sd._frames:
                 if repr(self) == repr(other):
                     raise ValueError("The " + str(self) + " already exist on" +
@@ -257,7 +257,7 @@ class VectorFrame(FreeModuleBasis):
             sd._top_frames.append(self)
             if sd._def_frame is None:
                 sd._def_frame = self
-            if isinstance(sd, OpenDomain):
+            if isinstance(sd, ManifoldOpenSubset):
                 # Initialization of the zero elements of tensor field modules:
                 if dest_map_name in sd._vector_field_modules:
                     xsd = sd._vector_field_modules[dest_map_name] #!# to be improved
@@ -416,7 +416,7 @@ class VectorFrame(FreeModuleBasis):
         """
         the_new_frame = self.new_basis(change_of_frame, symbol,
                                        latex_symbol=latex_symbol)
-        for sdom in self._domain._superdomains:
+        for sdom in self._domain._supersets:
             sdom._frame_changes[(self, the_new_frame)] = \
                             self._fmodule._basis_changes[(self, the_new_frame)]
             sdom._frame_changes[(the_new_frame, self)] = \
@@ -479,7 +479,7 @@ class VectorFrame(FreeModuleBasis):
             res = VectorFrame(subdomain.vector_field_module(sdest_map,
                                                             force_free=True),
                               self._symbol, latex_symbol=self._latex_symbol)
-            for dom in subdomain._superdomains:
+            for dom in subdomain._supersets:
                 if dom is not subdomain:
                     dom._top_frames.remove(res)  # since it was added by
                                                  # VectorFrame constructor
@@ -576,7 +576,7 @@ class VectorFrame(FreeModuleBasis):
         INPUT:
 
         - ``point`` -- (instance of
-          :class:`~sage.geometry.manifolds.point.Point`) point `p` in the
+          :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in the
           domain of ``self`` (denoted `e` hereafter)
 
         OUTPUT:
@@ -940,7 +940,7 @@ class CoFrame(FreeModuleCoBasis):
                           self._latex_name + r"\right)"
         # The coframe is added to the domain's set of coframes, as well as to
         # all the superdomains' sets of coframes
-        for sd in self._domain._superdomains:
+        for sd in self._domain._supersets:
             for other in sd._coframes:
                 if repr(self) == repr(other):
                     raise ValueError("The " + str(self) + " already exist on" +
@@ -962,7 +962,7 @@ class CoFrame(FreeModuleCoBasis):
         INPUT:
 
         - ``point`` -- (instance of
-          :class:`~sage.geometry.manifolds.point.Point`) point `p` in the
+          :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in the
           domain of ``self`` (denoted `f` hereafter)
 
         OUTPUT:

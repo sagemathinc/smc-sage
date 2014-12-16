@@ -82,7 +82,7 @@ class Submanifold(Manifold):
     The constructed submanifolds are automatically added to the subdomains of
     the ambient manifold::
 
-        sage: M.domains()
+        sage: M.subsets()
         [3-dimensional manifold 'R^3', domain 'S^2' on the 3-dimensional manifold 'R^3', domain 'H' on the 3-dimensional manifold 'R^3']
 
     Pullback of 1-forms defined on `\RR^3` to `S^2`::
@@ -184,7 +184,7 @@ class Submanifold(Manifold):
             sage: M = Manifold(3, 'R^3', r'\RR^3')
             sage: c_cart.<x,y,z> = M.chart()  # Cartesian coordinates on R^3
             sage: T = M.submanifold(2, 'T')
-            sage: W = T.open_domain('W') # Domain of the torus covered by the cyclic coordinates (u,v)
+            sage: W = T.open_domain('W') # ManifoldSubset of the torus covered by the cyclic coordinates (u,v)
             sage: c_uv.<u,v> = W.chart(r'u:(0,2*pi) v:(0,2*pi)') # cyclic coordinates on T
             sage: T.def_embedding(T.diff_mapping(M, [(2+cos(u))*cos(v),(2+cos(u))*sin(v),sin(u)]))
             sage: T.plot([(0,2*pi), (0,2*pi)], aspect_ratio=1)

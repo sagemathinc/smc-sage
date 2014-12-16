@@ -1,8 +1,8 @@
 r"""
 Points on a manifold
 
-The class :class:`Point` implements the concept of point on a manifold, in a
-coordinate independent manner: a :class:`Point` object can have coordinates in
+The class :class:`ManifoldPoint` implements the concept of point on a manifold, in a
+coordinate independent manner: a :class:`ManifoldPoint` object can have coordinates in
 various charts defined on the manifold. Two points are declared equal if they
 have the same coordinates in the same chart.
 
@@ -59,7 +59,7 @@ Listing all the coordinates of a point in different charts::
 
 from sage.structure.element import Element
 
-class Point(Element):
+class ManifoldPoint(Element):
     r"""
     Class for points on a manifold.
 
@@ -432,7 +432,7 @@ class Point(Element):
         r"""
         Compares the current point with another one.
         """
-        if not isinstance(other, Point):
+        if not isinstance(other, ManifoldPoint):
             return False
         # Search for a common chart to compare the coordinates
         common_chart = None

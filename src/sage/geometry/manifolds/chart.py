@@ -33,7 +33,7 @@ from sage.structure.sage_object import SageObject
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.structure.element import RingElement
 from sage.rings.integer import Integer
-from domain import OpenDomain
+from domain import ManifoldOpenSubset
 from utilities import simplify_chain
 
 class Chart(UniqueRepresentation, SageObject):
@@ -52,7 +52,7 @@ class Chart(UniqueRepresentation, SageObject):
     INPUT:
 
     - ``domain`` -- open domain `U` on which the chart is defined (must be
-      an instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+      an instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
     - ``coordinates`` -- (default: '') single string defining the coordinate
       symbols and ranges: the coordinates are separated by ' ' (space) and
       each coordinate has at most three fields, separated by ':':
@@ -205,7 +205,7 @@ class Chart(UniqueRepresentation, SageObject):
         [chart (U, (r, th, ph))]
 
     Each domain has a default chart, which, unless changed via the method
-    :meth:`~sage.geometry.manifolds.domain.Domain.set_default_chart`, is the
+    :meth:`~sage.geometry.manifolds.domain.ManifoldSubset.set_default_chart`, is the
     first defined chart on that domain (or on a subdomain of it)::
 
         sage: M.default_chart()
@@ -274,7 +274,7 @@ class Chart(UniqueRepresentation, SageObject):
         from sage.symbolic.assumptions import assume
         from sage.rings.infinity import Infinity
         from vectorframe import CoordFrame
-        if not isinstance(domain, OpenDomain):
+        if not isinstance(domain, ManifoldOpenSubset):
             raise TypeError("The first argument must be an open domain.")
         if coordinates == '':
             for x in names:
@@ -344,7 +344,7 @@ class Chart(UniqueRepresentation, SageObject):
         # The chart is added to the domain's atlas, as well as to all the
         # superdomains' atlases; moreover the fist defined chart is considered
         # as the default chart
-        for sd in self._domain._superdomains:
+        for sd in self._domain._supersets:
             # the chart is added in the top charts only if its coordinates have
             # not been used:
             for chart in sd._atlas:
@@ -662,7 +662,7 @@ class Chart(UniqueRepresentation, SageObject):
 
         - ``subdomain`` -- open subdomain `V` of the chart domain `U` (must
           be an instance of
-          :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+          :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
         - ``restrictions`` -- (default: None) list of coordinate restrictions
           defining the subdomain `V`.
           A restriction can be any symbolic equality or
@@ -734,7 +734,7 @@ class Chart(UniqueRepresentation, SageObject):
                 sframe._restrictions[subdomain] = res._frame
             # The subchart frame is not a "top frame" in the superdomains
             # (including self._domain):
-            for dom in self._domain._superdomains:
+            for dom in self._domain._supersets:
                 dom._top_frames.remove(res._frame) # since it was added by the
                                                    # Chart constructor above
             # Update of domain restrictions:
@@ -875,12 +875,12 @@ class Chart(UniqueRepresentation, SageObject):
             sage: trans = cU.transition_map(cV, 1/x, 'W', x!=0, y!=0)
             sage: trans
             coordinate change from chart (W, (x,)) to chart (W, (y,))
-            sage: M.domains() # the domain W, intersection of U and V, has been created by transition_map()
+            sage: M.subsets() # the domain W, intersection of U and V, has been created by transition_map()
             [1-dimensional manifold 'S^1',
              open domain 'U' on the 1-dimensional manifold 'S^1',
              open domain 'V' on the 1-dimensional manifold 'S^1',
              open domain 'W' on the 1-dimensional manifold 'S^1']
-            sage: W = M.domains()[3]
+            sage: W = M.subsets()[3]
             sage: W is U.intersection(V)
             True
             sage: M.atlas()
@@ -897,7 +897,7 @@ class Chart(UniqueRepresentation, SageObject):
                                                  restrictions2=(y!=0, x<0))
             sage: trans
             coordinate change from chart (U, (r, phi)) to chart (U, (x, y))
-            sage: M.domains() # in this case, no new domain has been created since U inter M = U
+            sage: M.subsets() # in this case, no new domain has been created since U inter M = U
             [2-dimensional manifold 'R^2',
             open domain 'U' on the 2-dimensional manifold 'R^2']
             sage: M.atlas() # ...but a new chart has been created: (U, (x, y))
@@ -2967,18 +2967,18 @@ class CoordChange(SageObject):
         <class 'sage.geometry.manifolds.chart.CoordChange'>
 
     Each created coordinate change is automatically added to the manifold's
-    dictionary :attr:`~sage.geometry.manifolds.domain.Domain._coord_changes`;
+    dictionary :attr:`~sage.geometry.manifolds.domain.ManifoldSubset._coord_changes`;
     this dictionary is accessed via the method
-    :meth:`~sage.geometry.manifolds.domain.Domain.coord_change`::
+    :meth:`~sage.geometry.manifolds.domain.ManifoldSubset.coord_change`::
 
         sage: M.coord_change(c_spher, c_cart)
         coordinate change from chart (R3, (r, th, ph)) to chart (R3, (x, y, z))
 
     It also generates a new entry in the manifold's dictionary
-    :attr:`~sage.geometry.manifolds.domain.Domain._frame_changes`,
+    :attr:`~sage.geometry.manifolds.domain.ManifoldSubset._frame_changes`,
     containing the relevant change-of-basis matrix;
     this dictionary is accessed via the method
-    :meth:`~sage.geometry.manifolds.domain.Domain.frame_change`::
+    :meth:`~sage.geometry.manifolds.domain.ManifoldSubset.frame_change`::
 
         sage: M.frame_change(c_cart.frame(), c_spher.frame())
         field of tangent-space automorphisms on the 3-dimensional manifold 'R3'
@@ -3038,7 +3038,7 @@ class CoordChange(SageObject):
         # Jacobian matrix is added to the dictionary of changes of frame:
         if chart1._domain == chart2._domain:
             domain = chart1._domain
-            for sdom in domain._superdomains:
+            for sdom in domain._supersets:
                 sdom._coord_changes[(chart1, chart2)] = self
             frame1 = chart1._frame
             frame2 = chart2._frame
@@ -3048,10 +3048,10 @@ class CoordChange(SageObject):
             ch_basis.add_comp(frame2)[:, chart1] = self._jacobian
             vf_module._basis_changes[(frame2, frame1)] = ch_basis
             vf_module._basis_changes[(frame1, frame2)] = ch_basis.inverse()
-            for sdom in domain._superdomains:
+            for sdom in domain._supersets:
                 sdom._frame_changes[(frame2, frame1)] = ch_basis
             if (frame1, frame2) not in domain._frame_changes:
-                for sdom in domain._superdomains:
+                for sdom in domain._supersets:
                     sdom._frame_changes[(frame1, frame2)] = ch_basis.inverse()
 
     def _repr_(self):

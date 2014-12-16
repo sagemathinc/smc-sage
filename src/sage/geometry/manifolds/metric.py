@@ -418,7 +418,7 @@ class Metric(TensorField):
         INPUT:
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
-          instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+          instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
         - ``dest_map`` -- (default: None) destination map
           `\Phi:\ U \rightarrow V`, where `V` is a subdomain of
           ``self._codomain``
@@ -1452,7 +1452,7 @@ class MetricParal(Metric, TensorFieldParal):
         INPUT:
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
-          instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+          instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
         - ``dest_map`` -- (default: None) destination map
           `\Phi:\ U \rightarrow V`, where `V` is a subdomain of
           ``self._codomain``

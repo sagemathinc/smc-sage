@@ -668,7 +668,7 @@ class TensorField(ModuleElement):
 
         OUTPUT:
 
-        - instance of class :class:`~sage.geometry.manifolds.domain.OpenDomain`
+        - instance of class :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`
           representing the manifold's open subset on which ``self`` is defined.
 
         EXAMPLES::
@@ -805,7 +805,7 @@ class TensorField(ModuleElement):
         INPUT:
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
-          instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+          instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
         - ``dest_map`` -- (default: None) destination map
           `\Phi:\ U \rightarrow V`, where `V` is a subdomain of
           ``self._codomain``
@@ -2407,7 +2407,7 @@ class TensorField(ModuleElement):
         INPUT:
 
         - ``point`` -- (instance of
-          :class:`~sage.geometry.manifolds.point.Point`) point `p` in the
+          :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in the
           domain of ``self`` (denoted `t` hereafter)
 
         OUTPUT:
@@ -3094,7 +3094,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         INPUT:
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
-          instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+          instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
         - ``dest_map`` -- (default: None) destination map
           `\Phi:\ U \rightarrow V`, where `V` is a subdomain of
           ``self._codomain``
@@ -3257,7 +3257,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         INPUT:
 
         - ``point`` -- (instance of
-          :class:`~sage.geometry.manifolds.point.Point`) point `p` in the
+          :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in the
           domain of ``self`` (denoted `t` hereafter)
 
         OUTPUT:

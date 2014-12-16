@@ -23,7 +23,7 @@ AUTHORS:
 #******************************************************************************
 
 from sage.structure.sage_object import SageObject
-from domain import Domain
+from domain import ManifoldSubset
 
 class AffConnection(SageObject):
     r"""
@@ -91,7 +91,7 @@ class AffConnection(SageObject):
 
     - ``domain`` -- the manifold domain on which the connection is defined
       (must be an instance of class
-      :class:`~sage.geometry.manifolds.domain.Domain`)
+      :class:`~sage.geometry.manifolds.domain.ManifoldSubset`)
     - ``name`` -- name given to the affine connection
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the affine
       connection; if None, it is set to ``name``.
@@ -241,7 +241,7 @@ class AffConnection(SageObject):
 
     """
     def __init__(self, domain, name, latex_name=None):
-        if not isinstance(domain, Domain):
+        if not isinstance(domain, ManifoldSubset):
             raise TypeError("The first argument must be a domain.")
         self._manifold = domain._manifold
         self._domain = domain
@@ -305,7 +305,7 @@ class AffConnection(SageObject):
 
         OUTPUT:
 
-        - instance of class :class:`~sage.geometry.manifolds.domain.OpenDomain`
+        - instance of class :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`
           representing the manifold's open subset on which ``self`` is defined.
 
         EXAMPLES::
@@ -550,7 +550,7 @@ class AffConnection(SageObject):
         INPUT:
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
-          instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+          instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
 
         OUTPUT:
 
@@ -705,7 +705,7 @@ class AffConnection(SageObject):
             # the computation is performed only if dom is not a subdomain
             # of another restriction:
             for odom in tensor_r._restrictions:
-                if dom in odom._subdomains and dom is not odom:
+                if dom in odom._subsets and dom is not odom:
                     break
             else:
                 # dom is a not a subdomain and the computation is performed:
@@ -1554,7 +1554,7 @@ class LeviCivitaConnection(AffConnection):
         INPUT:
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
-          instance of :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+          instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
 
         OUTPUT:
 

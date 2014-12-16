@@ -6,13 +6,13 @@ The class :class:`Manifold` implements differentiable manifolds over `\RR`.
 Ideally this class should inherit from a class describing topological
 manifolds or at least topological spaces. Since such classes do not
 exist in Sage yet, the class :class:`Manifold` inherits from the
-class :class:`~sage.geometry.manifolds.domain.OpenDomain`.
+class :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`.
 Via the latter, the class :class:`Manifold` inherits
 from the generic Sage class :class:`~sage.structure.parent.Parent`
 and is declared to belong to the category of sets (Sage category
 :class:`~sage.categories.sets_cat.Sets`).
 The corresponding Sage :class:`~sage.structure.element.Element`'s are
-implemented via the class :class:`~sage.geometry.manifolds.point.Point`.
+implemented via the class :class:`~sage.geometry.manifolds.point.ManifoldPoint`.
 
 The derived class :class:`RealLine` implements the field of real numbers
 `\RR` as a manifold of dimension one.
@@ -104,7 +104,7 @@ EXAMPLES:
 
     At this stage, we have four open domains on `S^2`::
 
-        sage: M.domains()
+        sage: M.subsets()
         [2-dimensional manifold 'S^2',
          open domain 'U' on the 2-dimensional manifold 'S^2',
          open domain 'V' on the 2-dimensional manifold 'S^2',
@@ -131,7 +131,7 @@ EXAMPLES:
 
     The first defined chart is considered as the default chart on the
     manifold (unless it is changed by the method
-    :meth:`~sage.geometry.manifolds.domain.Domain.set_default_chart`)::
+    :meth:`~sage.geometry.manifolds.domain.ManifoldSubset.set_default_chart`)::
 
         sage: M.default_chart()
         chart (U, (x, y))
@@ -261,9 +261,9 @@ EXAMPLES:
 #*****************************************************************************
 
 from sage.structure.unique_representation import UniqueRepresentation
-from domain import OpenDomain
+from domain import ManifoldOpenSubset
 
-class Manifold(OpenDomain):
+class Manifold(ManifoldOpenSubset):
     r"""
     Base class for differentiable manifolds.
 
@@ -318,9 +318,9 @@ class Manifold(OpenDomain):
         True
 
     The manifold's points are instances of class
-    :class:`~sage.geometry.manifolds.point.Point`::
+    :class:`~sage.geometry.manifolds.point.ManifoldPoint`::
 
-        sage: isinstance(p, sage.geometry.manifolds.point.Point)
+        sage: isinstance(p, sage.geometry.manifolds.point.ManifoldPoint)
         True
 
     A manifold has a predefined zero scalar field, mapping all the points to 0;
@@ -362,9 +362,9 @@ class Manifold(OpenDomain):
             raise ValueError("The manifold dimension must be strictly " +
                              "positive.")
         self._dim = n
-        OpenDomain.__init__(self, self, name, latex_name)
+        ManifoldOpenSubset.__init__(self, self, name, latex_name)
         self._sindex = start_index
-        self._domains = [self]
+        #!# self._subsets = [self]
 
     def _repr_(self):
         r"""
@@ -390,28 +390,6 @@ class Manifold(OpenDomain):
 
         """
         return self._dim
-
-    def domains(self):
-        r"""
-        Return the list of subdomains that have been defined on the manifold.
-
-        EXAMPLE:
-
-        Domains on a 2-dimensional manifold::
-
-            sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U')
-            sage: V = M.domain('V')
-            sage: M.domains()
-            [2-dimensional manifold 'M',
-             open domain 'U' on the 2-dimensional manifold 'M',
-             domain 'V' on the 2-dimensional manifold 'M']
-            sage: U is M.domains()[1]
-            True
-
-        """
-        return self._domains
-
 
     def irange(self, start=None):
         r"""

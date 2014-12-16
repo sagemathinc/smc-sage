@@ -52,7 +52,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
 
     - ``domain`` -- the manifold open subset `U` on which the scalar fields are
       defined (must be an instance of class
-      :class:`~sage.geometry.manifolds.domain.OpenDomain`)
+      :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
 
     EXAMPLES:
 
@@ -166,7 +166,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         True
 
     Elements can also be constructed by means of the method
-    :meth:`~sage.geometry.manifolds.domain.OpenDomain.scalar_field` acting on
+    :meth:`~sage.geometry.manifolds.domain.ManifoldOpenSubset.scalar_field` acting on
     the domain (this allows one to set the name of the scalar field at the
     construction)::
 
