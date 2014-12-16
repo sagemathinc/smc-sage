@@ -59,9 +59,9 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
     Algebras of scalar fields on the sphere `S^2` and on some subdomain of it::
 
         sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
-        sage: U = M.open_domain('U') # complement of the North pole
+        sage: U = M.open_subset('U') # complement of the North pole
         sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
-        sage: V = M.open_domain('V') # complement of the South pole
+        sage: V = M.open_subset('V') # complement of the South pole
         sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
         sage: M.declare_union(U,V)   # S^2 is the union of U and V
         sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
@@ -366,7 +366,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         if coord_expression == 0:
             return self._domain._zero_scalar_field
         if isinstance(coord_expression, ScalarField):
-            if self._domain.is_subdomain(coord_expression._domain):
+            if self._domain.is_subset(coord_expression._domain):
                 # restriction of the scalar field to self._domain:
                 sexpress = {}
                 for chart, funct in coord_expression._express.iteritems():
@@ -404,7 +404,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         elif other is QQ:
             return True
         elif isinstance(other, ScalarFieldAlgebra):
-            return self._domain.is_subdomain(other._domain)
+            return self._domain.is_subset(other._domain)
         else:
             return False
 

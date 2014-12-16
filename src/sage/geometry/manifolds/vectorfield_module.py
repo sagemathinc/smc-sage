@@ -82,9 +82,9 @@ class VectorFieldModule(UniqueRepresentation, Parent):
     Module of vector fields on the 2-sphere::
 
         sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
-        sage: U = M.open_domain('U') # complement of the North pole
+        sage: U = M.open_subset('U') # complement of the North pole
         sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
-        sage: V = M.open_domain('V') # complement of the South pole
+        sage: V = M.open_subset('V') # complement of the South pole
         sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
         sage: M.declare_union(U,V)   # S^2 is the union of U and V
         sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
@@ -213,8 +213,8 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         if comp == 0:
             return self._zero_element
         if isinstance(comp, VectorField):
-            if self._domain.is_subdomain(comp._domain) and \
-                       self._ambient_domain.is_subdomain(comp._ambient_domain):
+            if self._domain.is_subset(comp._domain) and \
+                       self._ambient_domain.is_subset(comp._ambient_domain):
                 return comp.restrict(self._domain)
             else:
                 raise TypeError("Cannot coerce the " + str(comp) +
@@ -238,8 +238,8 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         Determine whether coercion to self exists from other parent
         """
         if isinstance(other, (VectorFieldModule, VectorFieldFreeModule)):
-            return self._domain.is_subdomain(other._domain) and \
-                   self._ambient_domain.is_subdomain(other._ambient_domain)
+            return self._domain.is_subset(other._domain) and \
+                   self._ambient_domain.is_subset(other._ambient_domain)
         else:
             return False
 
@@ -700,9 +700,9 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
     the `S^1` manifold::
 
         sage: M = Manifold(1, 'S^1')
-        sage: U = M.open_domain('U')  # the complement of one point
+        sage: U = M.open_subset('U')  # the complement of one point
         sage: c_t.<t> =  U.chart('t:(0,2*pi)') # the standard angle coordinate
-        sage: V = M.open_domain('V') # the complement of the point t=pi
+        sage: V = M.open_subset('V') # the complement of the point t=pi
         sage: M.declare_union(U,V)   # S^1 is the union of U and V
         sage: c_u.<u> = V.chart('u:(0,2*pi)') # the angle t-pi
         sage: t_to_u = c_t.transition_map(c_u, (t-pi,), intersection_name='W', restrictions1 = t!=pi, restrictions2 = u!=pi)
@@ -833,8 +833,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         if comp == 0:
             return self._zero_element
         if isinstance(comp, VectorField):
-            if self._domain.is_subdomain(comp._domain) and \
-                       self._ambient_domain.is_subdomain(comp._ambient_domain):
+            if self._domain.is_subset(comp._domain) and \
+                       self._ambient_domain.is_subset(comp._ambient_domain):
                 return comp.restrict(self._domain)
             else:
                 raise TypeError("Cannot coerce the " + str(comp) +
@@ -849,8 +849,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         Determine whether coercion to self exists from other parent
         """
         if isinstance(other, (VectorFieldModule, VectorFieldFreeModule)):
-            return self._domain.is_subdomain(other._domain) and \
-                   self._ambient_domain.is_subdomain(other._ambient_domain)
+            return self._domain.is_subset(other._domain) and \
+                   self._ambient_domain.is_subset(other._ambient_domain)
         else:
             return False
 

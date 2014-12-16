@@ -228,7 +228,7 @@ class VectorFrame(FreeModuleBasis):
             self._latex_name = r"\left(" + self._domain._latex_name + ", " + \
                           self._latex_name + r"\right)"
         else:
-            if not from_frame._domain.is_subdomain(self._dest_map._codomain):
+            if not from_frame._domain.is_subset(self._dest_map._codomain):
                 raise ValueError("The domain of the frame 'from_frame' is " +
                                  "not included in the codomain of the " +
                                  "destination map.")
@@ -449,7 +449,7 @@ class VectorFrame(FreeModuleBasis):
             sage: a[:] = [[1-y^2,0], [1+x^2, 2]]
             sage: e = c_cart.frame().new_frame(a, 'e') ; e
             vector frame (R^2, (e_0,e_1))
-            sage: U = M.open_domain('U', coord_def={c_cart: x^2+y^2<1})
+            sage: U = M.open_subset('U', coord_def={c_cart: x^2+y^2<1})
             sage: e_U = e.restrict(U) ; e_U
             vector frame (U, (e_0,e_1))
 
@@ -472,7 +472,7 @@ class VectorFrame(FreeModuleBasis):
         if subdomain == self._domain:
             return self
         if subdomain not in self._restrictions:
-            if not subdomain.is_subdomain(self._domain):
+            if not subdomain.is_subset(self._domain):
                 raise ValueError("The provided domain is not a subdomain of " +
                                  "the current frame's domain.")
             sdest_map = self._dest_map.restrict(subdomain)

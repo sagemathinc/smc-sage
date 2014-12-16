@@ -77,7 +77,7 @@ class DiffForm(TensorField):
     Differential form of degree 2 on a non-parallelizable 2-dimensional manifold::
     
         sage: M = Manifold(2, 'M')
-        sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+        sage: U = M.open_subset('U') ; V = M.open_subset('V') 
         sage: M.declare_union(U,V)   # M is the union of U and V
         sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
         sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
@@ -173,12 +173,12 @@ class DiffForm(TensorField):
         """
         from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
         from sage.tensor.modules.format_utilities import is_atomic
-        if self._domain.is_subdomain(other._domain):
-            if not self._ambient_domain.is_subdomain(other._ambient_domain):
+        if self._domain.is_subset(other._domain):
+            if not self._ambient_domain.is_subset(other._ambient_domain):
                 raise TypeError("Incompatible ambient domains for exterior " + 
                                 "product.")
-        elif other._domain.is_subdomain(self._domain):
-            if not other._ambient_domain.is_subdomain(self._ambient_domain):
+        elif other._domain.is_subset(self._domain):
+            if not other._ambient_domain.is_subset(self._ambient_domain):
                 raise TypeError("Incompatible ambient domains for exterior " + 
                                 "product.")
         dom_resu = self._domain.intersection(other._domain)
@@ -289,7 +289,7 @@ class OneForm(DiffForm):
     1-form on a non-parallelizable 2-dimensional manifold::
 
         sage: M = Manifold(2, 'M')
-        sage: U = M.open_domain('U') ; V = M.open_domain('V') 
+        sage: U = M.open_subset('U') ; V = M.open_subset('V') 
         sage: M.declare_union(U,V)   # M is the union of U and V
         sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
         sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
@@ -730,12 +730,12 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         
         """
         from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
-        if self._domain.is_subdomain(other._domain):
-            if not self._ambient_domain.is_subdomain(other._ambient_domain):
+        if self._domain.is_subset(other._domain):
+            if not self._ambient_domain.is_subset(other._ambient_domain):
                 raise TypeError("Incompatible ambient domains for exterior " + 
                                 "product.")
-        elif other._domain.is_subdomain(self._domain):
-            if not other._ambient_domain.is_subdomain(self._ambient_domain):
+        elif other._domain.is_subset(self._domain):
+            if not other._ambient_domain.is_subset(self._ambient_domain):
                 raise TypeError("Incompatible ambient domains for exterior " + 
                                 "product.")
         dom_resu = self._domain.intersection(other._domain)

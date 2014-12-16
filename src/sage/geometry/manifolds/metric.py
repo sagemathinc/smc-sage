@@ -86,7 +86,7 @@ class Metric(TensorField):
         sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(2, 'S^2', start_index=1)
         sage: # The two open domains covered by stereographic coordinates (North and South):
-        sage: U = M.open_domain('U') ; V = M.open_domain('V')
+        sage: U = M.open_subset('U') ; V = M.open_subset('V')
         sage: M.declare_union(U,V)   # S^2 is the union of U and V
         sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart() # stereographic coord
         sage: transf = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), intersection_name='W', restrictions1= x^2+y^2!=0, restrictions2= u^2+v^2!=0)
@@ -480,7 +480,7 @@ class Metric(TensorField):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U') ; V = M.open_domain('V')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V')
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
@@ -508,7 +508,7 @@ class Metric(TensorField):
             raise TypeError("The argument must be of tensor type (0,2).")
         if symbiform._sym != [(0,1)]:
             raise TypeError("The argument must be symmetric.")
-        if not symbiform._domain.is_subdomain(self._domain):
+        if not symbiform._domain.is_subset(self._domain):
             raise TypeError("The symmetric bilinear form is not defined " +
                             "on the metric domain.")
         self._del_derived()
@@ -571,7 +571,7 @@ class Metric(TensorField):
 
             sage: M = Manifold(3, 'R^3', start_index=1)
             sage: # Let us use spherical coordinates on R^3:
-            sage: U = M.open_domain('U') # the complement of the half-plane (y=0, x>=0)
+            sage: U = M.open_subset('U') # the complement of the half-plane (y=0, x>=0)
             sage: c_spher.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: g = U.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2 , (r*sin(th))^2  # the Euclidean metric
@@ -628,7 +628,7 @@ class Metric(TensorField):
         spherical coordinates::
 
             sage: M = Manifold(3, 'R3', r'\RR^3', start_index=1)
-            sage: U = M.open_domain('U') # the complement of the half-plane (y=0, x>=0)
+            sage: U = M.open_subset('U') # the complement of the half-plane (y=0, x>=0)
             sage: X.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: g = U.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, r^2*sin(th)^2
@@ -695,7 +695,7 @@ class Metric(TensorField):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: U = M.open_domain('U') # the complement of a meridian (domain of spherical coordinates)
+            sage: U = M.open_subset('U') # the complement of a meridian (domain of spherical coordinates)
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: a = var('a') # the sphere radius
             sage: g = U.metric('g')
@@ -762,7 +762,7 @@ class Metric(TensorField):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: U = M.open_domain('U') # the complement of a meridian (domain of spherical coordinates)
+            sage: U = M.open_subset('U') # the complement of a meridian (domain of spherical coordinates)
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: a = var('a') # the sphere radius
             sage: g = U.metric('g')
@@ -810,7 +810,7 @@ class Metric(TensorField):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: U = M.open_domain('U') # the complement of a meridian (domain of spherical coordinates)
+            sage: U = M.open_subset('U') # the complement of a meridian (domain of spherical coordinates)
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: a = var('a') # the sphere radius
             sage: g = U.metric('g')
@@ -862,7 +862,7 @@ class Metric(TensorField):
         manifold, for instance the hyperbolic space `H^3`::
 
             sage: M = Manifold(3, 'H^3', start_index=1)
-            sage: U = M.open_domain('U') # the complement of the half-plane (y=0, x>=0)
+            sage: U = M.open_subset('U') # the complement of the half-plane (y=0, x>=0)
             sage: X.<rh,th,ph> = U.chart(r'rh:(0,+oo):\rho th:(0,pi):\theta  ph:(0,2*pi):\phi')
             sage: g = U.metric('g')
             sage: b = var('b')
@@ -1001,7 +1001,7 @@ class Metric(TensorField):
         coordinates::
 
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: U = M.open_domain('U') # the complement of the half-plane (y=0, x>=0)
+            sage: U = M.open_subset('U') # the complement of the half-plane (y=0, x>=0)
             sage: c_spher.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: g = U.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
@@ -1109,7 +1109,7 @@ class Metric(TensorField):
         Volume form on `\RR^3` with spherical coordinates::
 
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: U = M.open_domain('U') # the complement of the half-plane (y=0, x>=0)
+            sage: U = M.open_subset('U') # the complement of the half-plane (y=0, x>=0)
             sage: c_spher.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: g = U.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
@@ -1617,7 +1617,7 @@ class MetricParal(Metric, TensorFieldParal):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: U = M.open_domain('U') # the complement of a meridian (domain of spherical coordinates)
+            sage: U = M.open_subset('U') # the complement of a meridian (domain of spherical coordinates)
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: a = var('a') # the sphere radius
             sage: g = U.metric('g')

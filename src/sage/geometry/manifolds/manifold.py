@@ -31,11 +31,11 @@ EXAMPLES:
         sage: M.dim()
         2
 
-    Let us consider the complement of the North pole; it is an open domain
+    Let us consider the complement of the North pole; it is an open subset
     of `S^2`, which we call U::
 
-        sage: U = M.open_domain('U') ; U
-        open domain 'U' on the 2-dimensional manifold 'S^2'
+        sage: U = M.open_subset('U') ; U
+        open subset 'U' on the 2-dimensional manifold 'S^2'
 
     A standard chart on U is provided by the stereographic projection from the
     North pole to the equatorial plane::
@@ -58,12 +58,12 @@ EXAMPLES:
         sage: S = U.point((0,0), name='S') ; S
         point 'S' on 2-dimensional manifold 'S^2'
 
-    Let us call V the domain that is the complement of the South pole and let
+    Let us call V the subset that is the complement of the South pole and let
     us introduce on it the chart induced by the stereographic projection from
     the South pole to the equatorial plane::
 
-        sage: V = M.open_domain('V') ; V
-        open domain 'V' on the 2-dimensional manifold 'S^2'
+        sage: V = M.open_subset('V') ; V
+        open subset 'V' on the 2-dimensional manifold 'S^2'
         sage: stereoS.<u,v> = V.chart() ; stereoS
         chart (V, (u, v))
 
@@ -83,8 +83,8 @@ EXAMPLES:
         [chart (U, (x, y)), chart (V, (u, v))]
 
     To finalize things, we must declare the transition map between these two
-    charts: calling W the intersection of U and V, (W is the subdomain of U
-    defined by `x^2+y^2\not=0`, as well as the subdomain of V defined by
+    charts: calling W the intersection of U and V, (W is the subset of U
+    defined by `x^2+y^2\not=0`, as well as the subset of V defined by
     `u^2+v^2\not=0`), we set::
 
         sage: transf = stereoN.transition_map(stereoS, (x/(x^2+y^2), y/(x^2+y^2)), \
@@ -102,15 +102,15 @@ EXAMPLES:
         sage: transf.inverse()(u,v)
         (u/(u^2 + v^2), v/(u^2 + v^2))
 
-    At this stage, we have four open domains on `S^2`::
+    At this stage, we have four open subsets on `S^2`::
 
-        sage: M.subsets()
+        sage: M.list_of_subsets()
         [2-dimensional manifold 'S^2',
-         open domain 'U' on the 2-dimensional manifold 'S^2',
-         open domain 'V' on the 2-dimensional manifold 'S^2',
-         open domain 'W' on the 2-dimensional manifold 'S^2']
+         open subset 'U' on the 2-dimensional manifold 'S^2',
+         open subset 'V' on the 2-dimensional manifold 'S^2',
+         open subset 'W' on the 2-dimensional manifold 'S^2']
 
-    W is the open domain that is the complement of the two poles::
+    W is the open subset that is the complement of the two poles::
 
         sage: N in W
         False

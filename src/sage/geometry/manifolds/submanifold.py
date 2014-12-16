@@ -57,7 +57,7 @@ class Submanifold(Manifold):
         sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
         sage: c_cart.<x,y,z> = M.chart()   # Cartesian coordinates on R^3
         sage: S = M.submanifold(2, 'S^2', start_index=1)
-        sage: U = S.open_domain('U') # U = S minus two poles
+        sage: U = S.open_subset('U') # U = S minus two poles
         sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coordinates on U
         sage: emb = U.diff_mapping(M, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='i', latex_name=r'\iota') # the inclusion as an embedding S --> M
         sage: S.def_embedding(emb)
@@ -82,8 +82,10 @@ class Submanifold(Manifold):
     The constructed submanifolds are automatically added to the subdomains of
     the ambient manifold::
 
-        sage: M.subsets()
-        [3-dimensional manifold 'R^3', domain 'S^2' on the 3-dimensional manifold 'R^3', domain 'H' on the 3-dimensional manifold 'R^3']
+        sage: M.list_of_subsets()
+        [domain 'H' on the 3-dimensional manifold 'R^3',
+         3-dimensional manifold 'R^3',
+         domain 'S^2' on the 3-dimensional manifold 'R^3']
 
     Pullback of 1-forms defined on `\RR^3` to `S^2`::
 
@@ -184,7 +186,7 @@ class Submanifold(Manifold):
             sage: M = Manifold(3, 'R^3', r'\RR^3')
             sage: c_cart.<x,y,z> = M.chart()  # Cartesian coordinates on R^3
             sage: T = M.submanifold(2, 'T')
-            sage: W = T.open_domain('W') # ManifoldSubset of the torus covered by the cyclic coordinates (u,v)
+            sage: W = T.open_subset('W') # ManifoldSubset of the torus covered by the cyclic coordinates (u,v)
             sage: c_uv.<u,v> = W.chart(r'u:(0,2*pi) v:(0,2*pi)') # cyclic coordinates on T
             sage: T.def_embedding(T.diff_mapping(M, [(2+cos(u))*cos(v),(2+cos(u))*sin(v),sin(u)]))
             sage: T.plot([(0,2*pi), (0,2*pi)], aspect_ratio=1)
@@ -254,7 +256,7 @@ class Submanifold(Manifold):
             sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
             sage: c_cart.<x,y,z> = M.chart() # Cartesian coordinates on R^3
             sage: S = M.submanifold(2, 'S^2', start_index=1)
-            sage: U = S.open_domain('U') # U = S minus two poles
+            sage: U = S.open_subset('U') # U = S minus two poles
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coordinates on U
             sage: S.def_embedding( S.diff_mapping(M, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='i', latex_name=r'\iota') )
             sage: v = U.vector_field(name='v')
@@ -288,7 +290,7 @@ class Submanifold(Manifold):
         from sage.tensor.modules.comp import Components, CompWithSym, \
                                                  CompFullySym, CompFullyAntiSym
         dom1 = tensor._domain
-        if not dom1.is_subdomain(self):
+        if not dom1.is_subset(self):
             raise TypeError("The tensor field is not defined on " + str(self))
         (ncon, ncov) = tensor._tensor_type
         if ncov != 0:

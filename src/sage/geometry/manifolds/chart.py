@@ -41,9 +41,9 @@ class Chart(UniqueRepresentation, SageObject):
     Class for charts on a manifold.
 
     Given a manifold `M` of dimension `n`, a *chart* is a pair `(U,\varphi)`,
-    where `U` is an open domain of `M` and
+    where `U` is an open subset of `M` and
     `\varphi: U \rightarrow V \subset \RR^n` is a homeomorphism from `U` to
-    an open domain `V` of `\RR^n`.
+    an open subset `V` of `\RR^n`.
 
     The components `(x^1,\ldots,x^n)` of `\varphi`, defined by
     `\varphi(p) = (x^1(p),\ldots,x^n(p))`, are called the *coordinates* of the
@@ -51,7 +51,7 @@ class Chart(UniqueRepresentation, SageObject):
 
     INPUT:
 
-    - ``domain`` -- open domain `U` on which the chart is defined (must be
+    - ``domain`` -- open subset `U` on which the chart is defined (must be
       an instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
     - ``coordinates`` -- (default: '') single string defining the coordinate
       symbols and ranges: the coordinates are separated by ' ' (space) and
@@ -140,10 +140,10 @@ class Chart(UniqueRepresentation, SageObject):
         sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
         sage: c_cart.<x,y,z> = M.chart()
 
-    Spherical coordinates on the subdomain `U` of `\RR^3` that is the
+    Spherical coordinates on the subset `U` of `\RR^3` that is the
     complement of the half-plane `\{y=0, x\geq 0\}`::
 
-        sage: U = M.open_domain('U')
+        sage: U = M.open_subset('U')
         sage: c_spher.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi') ; c_spher
         chart (U, (r, th, ph))
 
@@ -199,14 +199,15 @@ class Chart(UniqueRepresentation, SageObject):
         sage: M.atlas()
         [chart (R^3, (x, y, z)), chart (U, (r, th, ph))]
 
-    and to the atlas of the domain in which it has been defined::
+    and to the atlas of its domain::
 
         sage: U.atlas()
         [chart (U, (r, th, ph))]
 
-    Each domain has a default chart, which, unless changed via the method
-    :meth:`~sage.geometry.manifolds.domain.ManifoldSubset.set_default_chart`, is the
-    first defined chart on that domain (or on a subdomain of it)::
+    Manifold subsets may have a default chart, which, unless changed via the
+    method
+    :meth:`~sage.geometry.manifolds.domain.ManifoldSubset.set_default_chart`,
+    is the first defined chart on the subset (or on a open subset of it)::
 
         sage: M.default_chart()
         chart (R^3, (x, y, z))
@@ -275,7 +276,7 @@ class Chart(UniqueRepresentation, SageObject):
         from sage.rings.infinity import Infinity
         from vectorframe import CoordFrame
         if not isinstance(domain, ManifoldOpenSubset):
-            raise TypeError("The first argument must be an open domain.")
+            raise TypeError("The first argument must be an open subset.")
         if coordinates == '':
             for x in names:
                 coordinates += x + ' '
@@ -342,8 +343,8 @@ class Chart(UniqueRepresentation, SageObject):
         self._restrictions = []  # to be set with method add_restrictions()
 
         # The chart is added to the domain's atlas, as well as to all the
-        # superdomains' atlases; moreover the fist defined chart is considered
-        # as the default chart
+        # atlases of the domain's supersets; moreover the fist defined chart
+        # is considered as the default chart
         for sd in self._domain._supersets:
             # the chart is added in the top charts only if its coordinates have
             # not been used:
@@ -363,15 +364,15 @@ class Chart(UniqueRepresentation, SageObject):
         # The null function of the coordinates:
         self._zero_function = ZeroFunctionChart(self)
         # Initialization of the set of charts that are restrictions of the
-        # current chart to subdomains of the chart domain:
+        # current chart to subsets of the chart domain:
         self._subcharts = set([self])
         # Initialization of the set of charts which the current chart is a
         # restriction of:
         self._supercharts = set([self])
         #
         self._dom_restrict = {} # dict. of the restrictions of self to
-                                # subdomains of self._domain, with the
-                                # subdomains as keys
+                                # subsets of self._domain, with the
+                                # subsets as keys
 
     def _repr_(self):
         r"""
@@ -445,7 +446,7 @@ class Chart(UniqueRepresentation, SageObject):
 
     def domain(self):
         r"""
-        Return the domain on which ``self`` is defined.
+        Return the open subset on which ``self`` is defined.
         """
         return self._domain
 
@@ -630,7 +631,7 @@ class Chart(UniqueRepresentation, SageObject):
 
         The restrictions are transmitted to subcharts::
 
-            sage: A = M.open_domain('A') # annulus 1/2 < r < 1
+            sage: A = M.open_subset('A') # annulus 1/2 < r < 1
             sage: X_A = X.restrict(A, x^2+y^2 > 1/4)
             sage: X_A._restrictions
             [x^2 + y^2 < 1, x^2 + y^2 > (1/4)]
@@ -646,9 +647,9 @@ class Chart(UniqueRepresentation, SageObject):
         self._restrictions.extend(restrictions)
 
 
-    def restrict(self, subdomain, restrictions=None):
+    def restrict(self, subset, restrictions=None):
         r"""
-        Return the restriction of ``self`` to some subdomain.
+        Return the restriction of ``self`` to some subset.
 
         If ``self`` is the chart `(U,\varphi)`, a restriction (or subchart)
         is a chart `(V,\psi)` such that `V\subset U` and `\psi = \varphi |_V`.
@@ -660,11 +661,11 @@ class Chart(UniqueRepresentation, SageObject):
 
         INPUT:
 
-        - ``subdomain`` -- open subdomain `V` of the chart domain `U` (must
+        - ``subset`` -- open subset `V` of the chart domain `U` (must
           be an instance of
           :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
         - ``restrictions`` -- (default: None) list of coordinate restrictions
-          defining the subdomain `V`.
+          defining the subset `V`.
           A restriction can be any symbolic equality or
           inequality involving the coordinates, such as x>y or x^2+y^2 != 0.
           The items of the list ``restrictions`` are combined with the ``and``
@@ -689,7 +690,7 @@ class Chart(UniqueRepresentation, SageObject):
 
             sage: M = Manifold(2, 'R^2')
             sage: c_cart.<x,y> = M.chart() # Cartesian coordinates on R^2
-            sage: D = M.open_domain('D') # the unit open disc
+            sage: D = M.open_subset('D') # the unit open disc
             sage: c_cart_D = c_cart.restrict(D, x^2+y^2<1)
             sage: p = M.point((1/2, 0))
             sage: p in D
@@ -700,7 +701,7 @@ class Chart(UniqueRepresentation, SageObject):
 
         Cartesian coordinates on the annulus `1<\sqrt{x^2+y^2}<2`::
 
-            sage: A = M.open_domain('A')
+            sage: A = M.open_subset('A')
             sage: c_cart_A = c_cart.restrict(A, [x^2+y^2>1, x^2+y^2<4])
             sage: p in A, q in A
             (False, False)
@@ -709,16 +710,16 @@ class Chart(UniqueRepresentation, SageObject):
             True
 
         """
-        if subdomain == self._domain:
+        if subset == self._domain:
             return self
-        if subdomain not in self._dom_restrict:
-            if not subdomain.is_subdomain(self._domain):
-                raise ValueError("The specified domain is not a subdomain " +
+        if subset not in self._dom_restrict:
+            if not subset.is_subset(self._domain):
+                raise ValueError("The specified subset is not a subset " +
                                  "of the domain of definition of the chart.")
             coordinates = ""
             for coord in self._xx:
                 coordinates += repr(coord) + ' '
-            res = Chart(subdomain, coordinates)
+            res = Chart(subset, coordinates)
             res._bounds = self._bounds
             res._restrictions.extend(self._restrictions)
             res.add_restrictions(restrictions)
@@ -726,20 +727,20 @@ class Chart(UniqueRepresentation, SageObject):
             res._supercharts.update(self._supercharts)
             for schart in self._supercharts:
                 schart._subcharts.add(res)
-                schart._dom_restrict[subdomain] = res
+                schart._dom_restrict[subset] = res
             # Update of superframes and subframes:
             res._frame._superframes.update(self._frame._superframes)
             for sframe in self._frame._superframes:
                 sframe._subframes.add(res._frame)
-                sframe._restrictions[subdomain] = res._frame
-            # The subchart frame is not a "top frame" in the superdomains
+                sframe._restrictions[subset] = res._frame
+            # The subchart frame is not a "top frame" in the supersets
             # (including self._domain):
             for dom in self._domain._supersets:
                 dom._top_frames.remove(res._frame) # since it was added by the
                                                    # Chart constructor above
             # Update of domain restrictions:
-            self._dom_restrict[subdomain] = res
-        return self._dom_restrict[subdomain]
+            self._dom_restrict[subset] = res
+        return self._dom_restrict[subset]
 
     def valid_coordinates(self, *coordinates, **kwds):
         r"""
@@ -829,8 +830,8 @@ class Chart(UniqueRepresentation, SageObject):
         In other words, the
         transition map expresses the coordinates `(y^1,\ldots,y^n)` of
         `(V,\psi)` in terms of the coordinates `(x^1,\ldots,x^n)` of
-        `(U,\varphi)` on the domain where the two charts intersect, i.e. on
-        `U\cap V`.
+        `(U,\varphi)` on the open subset where the two charts intersect, i.e.
+        on `U\cap V`.
 
         INPUT:
 
@@ -839,7 +840,7 @@ class Chart(UniqueRepresentation, SageObject):
           expression expressing the coordinate `y^i` in terms of the
           coordinates `(x^1,\ldots,x^n)`
         - ``intersection_name`` -- (default: None) name to be given to the
-          domain `U\cap V` if the latter differs from `U` or `V`
+          subset `U\cap V` if the latter differs from `U` or `V`
         - ``restrictions1`` -- (default: None) list of conditions on the
           coordinates of the current chart that define `U\cap V` if the
           latter differs from `U`. ``restrictions1`` must be a list of
@@ -867,20 +868,20 @@ class Chart(UniqueRepresentation, SageObject):
         Transition map between two stereographic charts on the circle `S^1`::
 
             sage: M = Manifold(1, 'S^1')
-            sage: U = M.open_domain('U') # Complement of the North pole
+            sage: U = M.open_subset('U') # Complement of the North pole
             sage: cU.<x> = U.chart() # Stereographic chart from the North pole
-            sage: V = M.open_domain('V') # Complement of the South pole
+            sage: V = M.open_subset('V') # Complement of the South pole
             sage: cV.<y> = V.chart() # Stereographic chart from the South pole
             sage: M.declare_union(U,V)   # S^1 is the union of U and V
             sage: trans = cU.transition_map(cV, 1/x, 'W', x!=0, y!=0)
             sage: trans
             coordinate change from chart (W, (x,)) to chart (W, (y,))
-            sage: M.subsets() # the domain W, intersection of U and V, has been created by transition_map()
+            sage: M.list_of_subsets() # the subset W, intersection of U and V, has been created by transition_map()
             [1-dimensional manifold 'S^1',
-             open domain 'U' on the 1-dimensional manifold 'S^1',
-             open domain 'V' on the 1-dimensional manifold 'S^1',
-             open domain 'W' on the 1-dimensional manifold 'S^1']
-            sage: W = M.subsets()[3]
+             open subset 'U' on the 1-dimensional manifold 'S^1',
+             open subset 'V' on the 1-dimensional manifold 'S^1',
+             open subset 'W' on the 1-dimensional manifold 'S^1']
+            sage: W = M.list_of_subsets()[3]
             sage: W is U.intersection(V)
             True
             sage: M.atlas()
@@ -891,15 +892,15 @@ class Chart(UniqueRepresentation, SageObject):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2')
             sage: c_cart.<x,y> = M.chart()
-            sage: U = M.open_domain('U') # the complement of the half line {y=0, x >= 0}
+            sage: U = M.open_subset('U') # the complement of the half line {y=0, x >= 0}
             sage: c_spher.<r,phi> = U.chart(r'r:(0,+oo) phi:(0,2*pi):\phi')
             sage: trans = c_spher.transition_map(c_cart, (r*cos(phi), r*sin(phi)), \
                                                  restrictions2=(y!=0, x<0))
             sage: trans
             coordinate change from chart (U, (r, phi)) to chart (U, (x, y))
-            sage: M.subsets() # in this case, no new domain has been created since U inter M = U
+            sage: M.list_of_subsets() # in this case, no new subset has been created since U inter M = U
             [2-dimensional manifold 'R^2',
-            open domain 'U' on the 2-dimensional manifold 'R^2']
+            open subset 'U' on the 2-dimensional manifold 'R^2']
             sage: M.atlas() # ...but a new chart has been created: (U, (x, y))
             [chart (R^2, (x, y)), chart (U, (r, phi)), chart (U, (x, y))]
 
@@ -952,7 +953,7 @@ class Chart(UniqueRepresentation, SageObject):
 
             sage: M = Manifold(2, 'R^2')
             sage: c_cart.<x, y> = M.chart() # Cartesian coordinates on the plane
-            sage: U = M.open_domain('U') # the complement of the half line {y=0, x>= 0}
+            sage: U = M.open_subset('U') # the complement of the half line {y=0, x>= 0}
             sage: c_spher.<r, ph> = U.chart(r'r:(0,+oo) ph:(0,2*pi):\phi')
             sage: spher_to_cart = c_spher.coord_change(c_cart, r*cos(ph), r*sin(ph))
             sage: spher_to_cart
@@ -979,7 +980,7 @@ class Chart(UniqueRepresentation, SageObject):
               & (x^1,\ldots,x^n) & \longmapsto & f(x^1,\ldots,x^n)
             \end{array}
 
-        where `U` is the domain of `\RR^n` covered by the chart ``self``.
+        where `U` is the subset of `\RR^n` covered by the chart ``self``.
 
         See class :class:`FunctionChart` for a complete documentation.
 
@@ -1025,7 +1026,7 @@ class Chart(UniqueRepresentation, SageObject):
                 f_m(x^1,\ldots,x^n))
             \end{array}
 
-        where `U` is the domain of `\RR^n` covered by the chart ``self``.
+        where `U` is the subset of `\RR^n` covered by the chart ``self``.
 
         See class :class:`MultiFunctionChart` for a complete documentation.
 
@@ -1156,7 +1157,7 @@ class Chart(UniqueRepresentation, SageObject):
 
             sage: R2 = Manifold(2, 'R^2') # the Euclidean plane
             sage: c_cart.<x,y> = R2.chart() # Cartesian coordinates
-            sage: U = R2.open_domain('U', coord_def={c_cart: (y!=0, x<0)}) # the complement of the segment y=0 and x>0
+            sage: U = R2.open_subset('U', coord_def={c_cart: (y!=0, x<0)}) # the complement of the segment y=0 and x>0
             sage: c_pol.<r,ph> = U.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # polar coordinates on U
             sage: pol_to_cart = c_pol.transition_map(c_cart, [r*cos(ph), r*sin(ph)])
             sage: g = c_pol.plot(c_cart)
@@ -1184,7 +1185,7 @@ class Chart(UniqueRepresentation, SageObject):
         2-sphere::
 
             sage: S2 = Manifold(2, 'S^2') # the 2-sphere
-            sage: U = S2.open_domain('U') ; V = S2.open_domain('V') # complement of the North and South pole, respectively
+            sage: U = S2.open_subset('U') ; V = S2.open_subset('V') # complement of the North and South pole, respectively
             sage: S2.declare_union(U,V)
             sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
             sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
@@ -1216,7 +1217,7 @@ class Chart(UniqueRepresentation, SageObject):
         South stereographic chart drawned in terms of the North one (we split
         the plot in four parts to avoid the singularity at (u,v)=(0,0))::
 
-            sage: W = U.intersection(V) # the domain common to both charts
+            sage: W = U.intersection(V) # the subset common to both charts
             sage: c_uvW = c_uv.restrict(W) # chart (W,(u,v))
             sage: gSN1 = c_uvW.plot(c_xy, ranges={u:[-6.,-0.02], v:[-6.,-0.02]}, nb_values=20, plot_points=100)
             sage: gSN2 = c_uvW.plot(c_xy, ranges={u:[-6.,-0.02], v:[0.02,6.]}, nb_values=20, plot_points=100)
@@ -1282,7 +1283,7 @@ class Chart(UniqueRepresentation, SageObject):
             transf = None # to be the MultiFunctionChart relating self to
                           # ambient_chart
             if mapping is None:
-                if not self._domain.is_subdomain(ambient_chart._domain):
+                if not self._domain.is_subset(ambient_chart._domain):
                     raise TypeError("The domain of " + str(self) +
                                     " is not included in that of " +
                                     str(ambient_chart))
@@ -1301,11 +1302,11 @@ class Chart(UniqueRepresentation, SageObject):
                 if not isinstance(mapping, DiffMapping):
                     raise TypeError("The argument 'mapping' must be a " +
                                     "differentiable mapping.")
-                if not self._domain.is_subdomain(mapping._domain):
+                if not self._domain.is_subset(mapping._domain):
                     raise TypeError("The domain of " + str(self) +
                                     " is not included in that of " +
                                     str(mapping))
-                if not ambient_chart._domain.is_subdomain(mapping._codomain):
+                if not ambient_chart._domain.is_subset(mapping._codomain):
                     raise TypeError("The domain of " + str(ambient_chart) +
                                     " is not included in the codomain of " +
                                     str(mapping))
@@ -1526,7 +1527,7 @@ class FunctionChart(SageObject):
           & (x^1,\ldots,x^n) & \longmapsto & f(x^1,\ldots,x^n)
         \end{array}
 
-    where `U` is the domain of `\RR^n` covered by the chart `\varphi`.
+    where `U` is the subset of `\RR^n` covered by the chart `\varphi`.
 
     INPUT:
 
@@ -2195,8 +2196,8 @@ class FunctionChart(SageObject):
         r"""
         Construct the scalar field that has ``self`` as coordinate expression.
 
-        The domain of the scalar field is the domain covered by the chart on
-        which ``self`` is defined.
+        The domain of the scalar field is the open subset covered by the chart
+        on which ``self`` is defined.
 
         INPUT:
 
@@ -2536,7 +2537,7 @@ class ZeroFunctionChart(FunctionChart):
 
     def scalar_field(self, name=None, latex_name=None):
         r"""
-        Return the zero scalar field on the domain covered by the chart on
+        Return the zero scalar field on the open subset covered by the chart on
         which ``self`` is defined.
 
         INPUT:
@@ -2582,7 +2583,7 @@ class MultiFunctionChart(SageObject):
             f_m(x^1,\ldots,x^n))
         \end{array}
 
-    where `U` is the domain of `\RR^n` covered by the chart `\varphi`.
+    where `U` is the subset of `\RR^n` covered by the chart `\varphi`.
 
     Each function `f_i` is stored as an instance of :class:`FunctionChart`.
 
@@ -3033,8 +3034,8 @@ class CoordChange(SageObject):
         # Jacobian determinant:
         if n1 == n2:
             self._jacobian_det = self._transf.jacobian_det()
-        # If the two charts are on the same domain, the coordinate change is
-        # added to the domain (and superdomains) dictionary and the
+        # If the two charts are on the same open subset, the coordinate change
+        # is added to the subset (and supersets) dictionary and the
         # Jacobian matrix is added to the dictionary of changes of frame:
         if chart1._domain == chart2._domain:
             domain = chart1._domain
@@ -3210,7 +3211,7 @@ class CoordChange(SageObject):
         From Cartesian to spherical coordinates in the plane::
 
             sage: M = Manifold(2, 'R^2')
-            sage: U = M.open_domain('U') # the complement of the half line {y=0, x>= 0}
+            sage: U = M.open_subset('U') # the complement of the half line {y=0, x>= 0}
             sage: c_cart.<x,y> = U.chart()
             sage: c_spher.<r,ph> = U.chart(r'r:(0,+oo) ph:(0,2*pi):\phi')
             sage: spher_to_cart = c_spher.coord_change(c_cart, r*cos(ph), r*sin(ph))
@@ -3309,7 +3310,7 @@ class CoordChange(SageObject):
 
     def restrict(self, dom1, dom2=None):
         r"""
-        Restriction to subdomains.
+        Restriction to subsets.
         """
         if dom2 is None:
             dom2 = dom1

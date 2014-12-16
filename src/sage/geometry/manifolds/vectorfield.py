@@ -52,7 +52,7 @@ class VectorField(TensorField):
     A vector field on a non-parallelizable 2-dimensional manifold::
 
         sage: M = Manifold(2, 'M')
-        sage: U = M.open_domain('U') ; V = M.open_domain('V')
+        sage: U = M.open_subset('U') ; V = M.open_subset('V')
         sage: M.declare_union(U,V)   # M is the union of U and V
         sage: c_xy.<x,y> = U.chart() ; c_tu.<t,u> = V.chart()
         sage: transf = c_xy.transition_map(c_tu, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= t+u>0)

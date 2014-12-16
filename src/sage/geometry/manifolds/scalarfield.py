@@ -84,7 +84,7 @@ class ScalarField(CommutativeAlgebraElement):
     of spherical coordinates defined on the complement `U` of some origin
     half meridian::
 
-        sage: U = M.open_domain('U')
+        sage: U = M.open_subset('U')
         sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
         sage: f = M.scalar_field(sin(th)*cos(ph), chart=c_spher, name='f') ; f
         scalar field 'f' on the 2-dimensional manifold 'S^2'
@@ -291,9 +291,9 @@ class ScalarField(CommutativeAlgebraElement):
     Test of the arithmetics of scalar fields defined on multiple domains::
 
         sage: M = Manifold(2, 'M')
-        sage: U = M.open_domain('U')
+        sage: U = M.open_subset('U')
         sage: c_xy.<x,y> = U.chart()
-        sage: V = M.open_domain('V')
+        sage: V = M.open_subset('V')
         sage: c_uv.<u,v> = V.chart()
         sage: M.declare_union(U,V)   # M is the union of U and V
         sage: f = M.scalar_field(x^2)
@@ -526,7 +526,7 @@ class ScalarField(CommutativeAlgebraElement):
             sage: f = M.scalar_field(x+2*y)
             sage: f.domain()
             2-dimensional manifold 'M'
-            sage: U = M.open_domain('U', coord_def={c_xy: x<0})
+            sage: U = M.open_subset('U', coord_def={c_xy: x<0})
             sage: g = f.restrict(U)
             sage: g.domain()
             open domain 'U' on the 2-dimensional manifold 'M'
@@ -851,7 +851,7 @@ class ScalarField(CommutativeAlgebraElement):
         Scalar field on the sphere `S^2`::
 
             sage: M = Manifold(2, 'S^2')
-            sage: U = M.open_domain('U') ; V = M.open_domain('V') # the complement of resp. N pole and S pole
+            sage: U = M.open_subset('U') ; V = M.open_subset('V') # the complement of resp. N pole and S pole
             sage: M.declare_union(U,V)   # S^2 is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart() # stereographic coordinates
             sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
@@ -889,7 +889,7 @@ class ScalarField(CommutativeAlgebraElement):
             on V: (u, v) |--> arctan(1/(u^2 + v^2))
 
         """
-        if not chart._domain.is_subdomain(self._domain):
+        if not chart._domain.is_subset(self._domain):
             raise ValueError("The chart is not defined on a subdomain of " +
                              "the scalar field domain.")
         schart = chart.restrict(subdomain)
@@ -1004,7 +1004,7 @@ class ScalarField(CommutativeAlgebraElement):
 
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()  # Cartesian coordinates
-            sage: U = M.open_domain('U')
+            sage: U = M.open_subset('U')
             sage: X_U = X.restrict(U, x^2+y^2 < 1)  # U is the unit open disc
             sage: f = M.scalar_field(cos(x*y), name='f')
             sage: f_U = f.restrict(U) ; f_U
@@ -1028,13 +1028,13 @@ class ScalarField(CommutativeAlgebraElement):
         if subdomain == self._domain:
             return self
         if subdomain not in self._restrictions:
-            if not subdomain.is_subdomain(self._domain):
+            if not subdomain.is_subset(self._domain):
                 raise ValueError("The specified domain is not a subdomain " +
                                  "of the domain of definition of the scalar " +
                                  "field.")
             # First one tries to get the restriction from a tighter domain:
             for dom, rst in self._restrictions.iteritems():
-                if subdomain.is_subdomain(dom):
+                if subdomain.is_subset(dom):
                     self._restrictions[subdomain] = rst.restrict(subdomain)
                     break
             else:
@@ -1065,9 +1065,9 @@ class ScalarField(CommutativeAlgebraElement):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U')
+            sage: U = M.open_subset('U')
             sage: c_xy.<x,y> = U.chart()
-            sage: V = M.open_domain('V')
+            sage: V = M.open_subset('V')
             sage: c_uv.<u,v> = V.chart()
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: f = U.scalar_field(x^2)

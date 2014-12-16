@@ -176,7 +176,7 @@ class AffConnection(SageObject):
     Another example: connection on a non-parallelizable 2-dimensional manifold::
 
         sage: M = Manifold(2, 'M')
-        sage: U = M.open_domain('U') ; V = M.open_domain('V')
+        sage: U = M.open_subset('U') ; V = M.open_subset('V')
         sage: M.declare_union(U,V)   # M is the union of U and V
         sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
         sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
@@ -315,7 +315,7 @@ class AffConnection(SageObject):
             sage: nab = M.aff_connection('nabla', r'\nabla')
             sage: nab.domain()
             3-dimensional manifold 'M'
-            sage: U = M.open_domain('U', coord_def={c_xyz: x>0})
+            sage: U = M.open_subset('U', coord_def={c_xyz: x>0})
             sage: nabU = U.aff_connection('D')
             sage: nabU.domain()
             open domain 'U' on the 3-dimensional manifold 'M'
@@ -566,7 +566,7 @@ class AffConnection(SageObject):
             sage: nab[1,1,2], nab[2,1,1] = x^2, x+y
             sage: nab[:]
             [[[0, x^2], [0, 0]], [[x + y, 0], [0, 0]]]
-            sage: U = M.open_domain('U', coord_def={c_xy: x>0})
+            sage: U = M.open_subset('U', coord_def={c_xy: x>0})
             sage: nabU = nab.restrict(U) ; nabU
             affine connection 'nabla' on the open domain 'U' on the 2-dimensional manifold 'M'
             sage: nabU.domain()
@@ -591,7 +591,7 @@ class AffConnection(SageObject):
         if subdomain == self._domain:
             return self
         if subdomain not in self._restrictions:
-            if not subdomain.is_subdomain(self._domain):
+            if not subdomain.is_subset(self._domain):
                 raise ValueError("The provided domain is not a subdomain of " +
                                  "the current connection's domain.")
             resu = AffConnection(subdomain, name=self._name,
@@ -857,7 +857,7 @@ class AffConnection(SageObject):
         2-dimensional manifold::
 
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U') ; V = M.open_domain('V')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V')
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
@@ -960,7 +960,7 @@ class AffConnection(SageObject):
         non-parallelizable 2-dimensional manifold::
 
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U') ; V = M.open_domain('V')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V')
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
@@ -1566,7 +1566,7 @@ class LeviCivitaConnection(AffConnection):
         if subdomain == self._domain:
             return self
         if subdomain not in self._restrictions:
-            if not subdomain.is_subdomain(self._domain):
+            if not subdomain.is_subset(self._domain):
                 raise ValueError("The provided domain is not a subdomain of " +
                                  "the current connection's domain.")
             resu = LeviCivitaConnection(self._metric.restrict(subdomain),

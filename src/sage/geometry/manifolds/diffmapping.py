@@ -99,9 +99,9 @@ class DiffMapping(Map):
     The standard embedding of the sphere `S^2` into `\RR^3`::
 
         sage: M = Manifold(2, 'S^2') # the 2-dimensional sphere S^2
-        sage: U = M.open_domain('U') # complement of the North pole
+        sage: U = M.open_subset('U') # complement of the North pole
         sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
-        sage: V = M.open_domain('V') # complement of the South pole
+        sage: V = M.open_subset('V') # complement of the South pole
         sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
         sage: M.declare_union(U,V)   # S^2 is the union of U and V
         sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
@@ -428,7 +428,7 @@ class DiffMapping(Map):
         #EXAMPLE::
 
             #sage: M = Manifold(2, 'M')
-            #sage: U = M.open_domain('U')
+            #sage: U = M.open_subset('U')
             #sage: c_xy.<x,y> = U.chart()
             #sage: N = Manifold(3, 'N')
             #sage: c_uvw.<u,v,w> = N.chart()
@@ -446,7 +446,7 @@ class DiffMapping(Map):
         #EXAMPLE::
 
             #sage: M = Manifold(2, 'M')
-            #sage: U = M.open_domain('U')
+            #sage: U = M.open_subset('U')
             #sage: c_xy.<x,y> = U.chart()
             #sage: N = Manifold(3, 'N')
             #sage: c_uvw.<u,v,w> = N.chart()
@@ -518,9 +518,9 @@ class DiffMapping(Map):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2') # the 2-dimensional sphere S^2
-            sage: U = M.open_domain('U') # complement of the North pole
+            sage: U = M.open_subset('U') # complement of the North pole
             sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
-            sage: V = M.open_domain('V') # complement of the South pole
+            sage: V = M.open_subset('V') # complement of the South pole
             sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
             sage: M.declare_union(U,V)   # S^2 is the union of U and V
             sage: N = Manifold(3, 'R^3', r'\RR^3')  # R^3
@@ -863,7 +863,7 @@ class DiffMapping(Map):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2', r'\RR^2')  # the Euclidean plane R^2
             sage: c_xy.<x,y> = M.chart() # Cartesian coordinate on R^2
-            sage: U = M.open_domain('U', coord_def={c_xy: (y!=0, x<0)}) # the complement of the segment y=0 and x>0
+            sage: U = M.open_subset('U', coord_def={c_xy: (y!=0, x<0)}) # the complement of the segment y=0 and x>0
             sage: c_cart = c_xy.restrict(U) # Cartesian coordinates on U
             sage: c_spher.<r,ph> = U.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # spherical coordinates on U
             sage: # Links between spherical coordinates and Cartesian ones:
@@ -956,7 +956,7 @@ class DiffMapping(Map):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2', r'\RR^2')  # the Euclidean plane R^2
             sage: c_xy.<x,y> = M.chart() # Cartesian coordinate on R^2
-            sage: U = M.open_domain('U', coord_def={c_xy: (y!=0, x<0)}) # the complement of the segment y=0 and x>0
+            sage: U = M.open_subset('U', coord_def={c_xy: (y!=0, x<0)}) # the complement of the segment y=0 and x>0
             sage: c_cart = c_xy.restrict(U) # Cartesian coordinates on U
             sage: c_spher.<r,ph> = U.chart(r'r:(0,+oo) ph:(0,2*pi):\phi') # spherical coordinates on U
             sage: # Links between spherical coordinates and Cartesian ones:
@@ -1074,13 +1074,13 @@ class DiffMapping(Map):
 
             sage: M = Manifold(2, 'R^2')  # R^2
             sage: c_xy.<x,y> = M.chart()  # Cartesian coord. on R^2
-            sage: D = M.open_domain('D', coord_def={c_xy: x^2+y^2<1}) # the open unit disk
+            sage: D = M.open_subset('D', coord_def={c_xy: x^2+y^2<1}) # the open unit disk
             sage: Phi = D.diff_mapping(M, [x/sqrt(1-x^2-y^2), y/sqrt(1-x^2-y^2)], name='Phi', latex_name=r'\Phi')
             sage: Phi.view()
             Phi: D --> R^2
                (x, y) |--> (x, y) = (x/sqrt(-x^2 - y^2 + 1), y/sqrt(-x^2 - y^2 + 1))
             sage: c_xy_D = c_xy.restrict(D)
-            sage: U = D.open_domain('U', coord_def={c_xy_D: x^2+y^2>1/2}) # the annulus 1/2 < r < 1
+            sage: U = D.open_subset('U', coord_def={c_xy_D: x^2+y^2>1/2}) # the annulus 1/2 < r < 1
             sage: Phi.restrict(U)
             differentiable mapping 'Phi' from open domain 'U' on the 2-dimensional manifold 'R^2' to 2-dimensional manifold 'R^2'
             sage: Phi.domain()
@@ -1097,20 +1097,20 @@ class DiffMapping(Map):
         if subcodomain is None:
             subcodomain = self._codomain
         if (subdomain, subcodomain) not in self._restrictions:
-            if not subdomain.is_subdomain(self._domain):
+            if not subdomain.is_subset(self._domain):
                 raise ValueError("The specified domain is not a subdomain " +
                                  "of the domain of definition of the diff. " +
                                  "mapping.")
-            if not subcodomain.is_subdomain(self._codomain):
+            if not subcodomain.is_subset(self._codomain):
                 raise ValueError("The specified codomain is not a subdomain " +
                                  "of the codomain of the diff. mapping.")
             resu = DiffMapping(subdomain, subcodomain, name=self._name,
                                latex_name=self._latex_name)
             for charts in self._coord_expression:
                 for ch1 in charts[0]._subcharts:
-                    if ch1._domain.is_subdomain(subdomain):
+                    if ch1._domain.is_subset(subdomain):
                         for ch2 in charts[1]._subcharts:
-                            if ch2._domain.is_subdomain(subcodomain):
+                            if ch2._domain.is_subset(subcodomain):
                                 for sch2 in ch2._supercharts:
                                     if (ch1, sch2) in resu._coord_expression:
                                         break
@@ -1150,7 +1150,7 @@ class DiffMapping(Map):
         Pullback on `S^2` of a scalar field defined on `R^3`::
 
             sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: U = M.open_domain('U') # the complement of a meridian (domain of spherical coordinates)
+            sage: U = M.open_subset('U') # the complement of a meridian (domain of spherical coordinates)
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coord. on U
             sage: N = Manifold(3, 'R^3', r'\RR^3', start_index=1)
             sage: c_cart.<x,y,z> = N.chart() # Cartesian coord. on R^3
@@ -1194,7 +1194,7 @@ class DiffMapping(Map):
         dom1 = self._domain
         dom2 = self._codomain
         tdom = tensor._domain
-        if not tdom.is_subdomain(dom2):
+        if not tdom.is_subset(dom2):
             raise TypeError("The tensor field is not defined on the mapping " +
                             "arrival domain.")
         (ncon, ncov) = tensor._tensor_type
@@ -1233,7 +1233,7 @@ class DiffMapping(Map):
             for chart_pair in self._coord_expression:
                 chart1 = chart_pair[0] ; chart2 = chart_pair[1]
                 ch2dom = chart2._domain
-                if ch2dom.is_subdomain(tdom):
+                if ch2dom.is_subset(tdom):
                     self_r = self.restrict(chart1._domain, subcodomain=ch2dom)
                     tensor_r = tensor.restrict(ch2dom)
                     resu_rst.append( self_r._pullback_paral(tensor_r) )
@@ -1383,7 +1383,7 @@ class Diffeomorphism(DiffMapping):
 
         sage: M = Manifold(2, 'R^2')  # R^2
         sage: c_xy.<x,y> = M.chart()  # Cartesian coord. on R^2
-        sage: D = M.open_domain('D', coord_def={c_xy: x^2+y^2<1}) # the open unit disk
+        sage: D = M.open_subset('D', coord_def={c_xy: x^2+y^2<1}) # the open unit disk
         sage: Phi = D.diffeomorphism(M, [x/sqrt(1-x^2-y^2), y/sqrt(1-x^2-y^2)], name='Phi', latex_name=r'\Phi')
         sage: Phi
         diffeomorphism 'Phi' between the open domain 'D' on the 2-dimensional manifold 'R^2' and the 2-dimensional manifold 'R^2'
@@ -1567,7 +1567,7 @@ class IdentityMap(Diffeomorphism):
     Identity map on a open subset of a 2-dimensional manifold::
 
         sage: M = Manifold(2, 'M')
-        sage: U = M.open_domain('U')
+        sage: U = M.open_subset('U')
         sage: c_xy.<x, y> = U.chart()
         sage: i = U.identity_map() ; i
         identity map 'Id_U' on the open domain 'U' on the 2-dimensional manifold 'M'
@@ -1750,7 +1750,7 @@ class IdentityMap(Diffeomorphism):
         if subdomain == self._domain:
             return self
         if (subdomain, subdomain) not in self._restrictions:
-            if not subdomain.is_subdomain(self._domain):
+            if not subdomain.is_subset(self._domain):
                 raise ValueError("The specified domain is not a subdomain " +
                                  "of the domain of definition of the " +
                                  "identity map.")

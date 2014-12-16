@@ -60,9 +60,9 @@ class TensorFieldModule(UniqueRepresentation, Module):
     Module of type-(2,0) tensor fields on the 2-sphere::
 
         sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
-        sage: U = M.open_domain('U') # complement of the North pole
+        sage: U = M.open_subset('U') # complement of the North pole
         sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
-        sage: V = M.open_domain('V') # complement of the South pole
+        sage: V = M.open_subset('V') # complement of the South pole
         sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
         sage: M.declare_union(U,V)   # S^2 is the union of U and V
         sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
@@ -183,8 +183,8 @@ class TensorFieldModule(UniqueRepresentation, Module):
             return self._zero_element
         if isinstance(comp, TensorField):
             if self._tensor_type == comp._tensor_type and \
-               self._domain.is_subdomain(comp._domain) and \
-               self._ambient_domain.is_subdomain(comp._ambient_domain):
+               self._domain.is_subset(comp._domain) and \
+               self._ambient_domain.is_subset(comp._ambient_domain):
                 return comp.restrict(self._domain)
             else:
                 raise TypeError("Cannot coerce the " + str(comp) +
@@ -211,8 +211,8 @@ class TensorFieldModule(UniqueRepresentation, Module):
         """
         if isinstance(other, (TensorFieldModule, TensorFieldFreeModule)):
             return self._tensor_type == other._tensor_type and \
-                   self._domain.is_subdomain(other._domain) and \
-                   self._ambient_domain.is_subdomain(other._ambient_domain)
+                   self._domain.is_subset(other._domain) and \
+                   self._ambient_domain.is_subset(other._ambient_domain)
         else:
             return False
 
@@ -325,7 +325,7 @@ class TensorFieldFreeModule(TensorFreeModule):
     The module `T^{(2,0)}(\RR^3)` coerces to any module of type-(2,0) tensor fields
     defined on some subdomain of `\RR^3`::
 
-        sage: U = M.open_domain('U', coord_def={c_xyz: x>0})
+        sage: U = M.open_subset('U', coord_def={c_xyz: x>0})
         sage: T20U = U.tensor_field_module((2,0))
         sage: T20U.has_coerce_map_from(T20)
         True
@@ -372,8 +372,8 @@ class TensorFieldFreeModule(TensorFreeModule):
             return self._zero_element
         if isinstance(comp, TensorField):
             if self._tensor_type == comp._tensor_type and \
-               self._domain.is_subdomain(comp._domain) and \
-               self._ambient_domain.is_subdomain(comp._ambient_domain):
+               self._domain.is_subset(comp._domain) and \
+               self._ambient_domain.is_subset(comp._ambient_domain):
                 return comp.restrict(self._domain)
             else:
                 raise TypeError("Cannot coerce the " + str(comp) +
@@ -391,8 +391,8 @@ class TensorFieldFreeModule(TensorFreeModule):
         """
         if isinstance(other, (TensorFieldModule, TensorFieldFreeModule)):
             return self._tensor_type == other._tensor_type and \
-                   self._domain.is_subdomain(other._domain) and \
-                   self._ambient_domain.is_subdomain(other._ambient_domain)
+                   self._domain.is_subset(other._domain) and \
+                   self._ambient_domain.is_subset(other._ambient_domain)
         else:
             return False
 

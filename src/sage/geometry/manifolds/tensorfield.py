@@ -364,9 +364,9 @@ class TensorField(ModuleElement):
     Tensor field of type (0,2) on the sphere `S^2`::
 
         sage: M = Manifold(2, 'S^2') # the 2-dimensional sphere S^2
-        sage: U = M.open_domain('U') # complement of the North pole
+        sage: U = M.open_subset('U') # complement of the North pole
         sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
-        sage: V = M.open_domain('V') # complement of the South pole
+        sage: V = M.open_subset('V') # complement of the South pole
         sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
         sage: M.declare_union(U,V)   # S^2 is the union of U and V
         sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
@@ -550,9 +550,9 @@ class TensorField(ModuleElement):
         Tensor field defined by parts on a 2-dimensional manifold::
 
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U')
+            sage: U = M.open_subset('U')
             sage: c_xy.<x, y> = U.chart()
-            sage: V = M.open_domain('V')
+            sage: V = M.open_subset('V')
             sage: c_uv.<u, v> = V.chart()
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: t = M.tensor_field(1, 2, name='t')
@@ -679,7 +679,7 @@ class TensorField(ModuleElement):
             sage: t = M.tensor_field(1,2)
             sage: t.domain()
             2-dimensional manifold 'M'
-            sage: U = M.open_domain('U', coord_def={c_xy: x<0})
+            sage: U = M.open_subset('U', coord_def={c_xy: x<0})
             sage: h = t.restrict(U)
             sage: h.domain()
             open domain 'U' on the 2-dimensional manifold 'M'
@@ -773,10 +773,10 @@ class TensorField(ModuleElement):
         """
         if not isinstance(rst, TensorField):
             raise TypeError("The argument must be a tensor field.")
-        if not rst._domain.is_subdomain(self._domain):
+        if not rst._domain.is_subset(self._domain):
             raise ValueError("The domain of the declared restriction is not " +
                              "a subdomain of the current field's domain.")
-        if not rst._ambient_domain.is_subdomain(self._ambient_domain):
+        if not rst._ambient_domain.is_subset(self._ambient_domain):
             raise ValueError("The ambient domain of the declared " +
                              "restriction is not a subdomain of the current " +
                              "field's ambient domain.")
@@ -822,10 +822,10 @@ class TensorField(ModuleElement):
         Restrictions of a vector field on the 2-sphere::
 
             sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: U = M.open_domain('U') # the complement of the North pole
+            sage: U = M.open_subset('U') # the complement of the North pole
             sage: stereoN.<x,y> = U.chart()  # stereographic coordinates from the North pole
             sage: eN = stereoN.frame() # the associated vector frame
-            sage: V =  M.open_domain('V') # the complement of the South pole
+            sage: V =  M.open_subset('V') # the complement of the South pole
             sage: stereoS.<u,v> = V.chart()  # stereographic coordinates from the South pole
             sage: eS = stereoS.frame() # the associated vector frame
             sage: transf = stereoN.transition_map(stereoS, (x/(x^2+y^2), y/(x^2+y^2)), intersection_name='W', \
@@ -877,17 +877,17 @@ class TensorField(ModuleElement):
         if subdomain == self._domain:
             return self
         if subdomain not in self._restrictions:
-            if not subdomain.is_subdomain(self._domain):
+            if not subdomain.is_subset(self._domain):
                 raise ValueError("The provided domain is not a subdomain of " +
                                  "the current field's domain.")
             if dest_map is None:
                 dest_map = self._vmodule._dest_map.restrict(subdomain)
-            elif not dest_map._codomain.is_subdomain(self._ambient_domain):
+            elif not dest_map._codomain.is_subset(self._ambient_domain):
                 raise ValueError("Argument dest_map not compatible with " +
                                  "self._ambient_domain")
             # First one tries to get the restriction from a tighter domain:
             for dom, rst in self._restrictions.iteritems():
-                if subdomain.is_subdomain(dom):
+                if subdomain.is_subset(dom):
                     self._restrictions[subdomain] = rst.restrict(subdomain)
                     break
             # If this fails, the restriction is created from scratch:
@@ -982,7 +982,7 @@ class TensorField(ModuleElement):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
             sage: # The two open domains covered by stereographic coordinates (North and South):
-            sage: U = M.open_domain('U') ; V = M.open_domain('V')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V')
             sage: M.declare_union(U,V)   # S^2 is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart() # stereographic coordinates
             sage: transf = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), intersection_name='W', restrictions1= x^2+y^2!=0, restrictions2= u^2+v^2!=0)
@@ -1020,7 +1020,7 @@ class TensorField(ModuleElement):
 
         """
         dom = frame._domain
-        if not dom.is_subdomain(self._domain):
+        if not dom.is_subset(self._domain):
             raise ValueError("The vector frame is not defined on a subdomain" +
                              " of the tensor field domain.")
         if chart is None:
@@ -1059,11 +1059,11 @@ class TensorField(ModuleElement):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U')
+            sage: U = M.open_subset('U')
             sage: c_xy.<x, y> = U.chart()
             sage: e = U.default_frame() ; e
             coordinate frame (U, (d/dx,d/dy))
-            sage: V = M.open_domain('V')
+            sage: V = M.open_subset('V')
             sage: c_uv.<u, v> = V.chart()
             sage: f = V.default_frame() ; f
             coordinate frame (V, (d/du,d/dv))
@@ -1130,11 +1130,11 @@ class TensorField(ModuleElement):
         Display of a type-(1,1) tensor field defined on two open domains::
 
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U')
+            sage: U = M.open_subset('U')
             sage: c_xy.<x, y> = U.chart()
             sage: e = U.default_frame() ; e
             coordinate frame (U, (d/dx,d/dy))
-            sage: V = M.open_domain('V')
+            sage: V = M.open_subset('V')
             sage: c_uv.<u, v> = V.chart()
             sage: f = V.default_frame() ; f
             coordinate frame (V, (d/du,d/dv))
@@ -1881,7 +1881,7 @@ class TensorField(ModuleElement):
         non-parallelizable manifold::
 
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U') ; V = M.open_domain('V')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V')
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
@@ -2027,7 +2027,7 @@ class TensorField(ModuleElement):
         a 2-dimensional non-parallelizable manifold::
 
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U') ; V = M.open_domain('V')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V')
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
@@ -2181,11 +2181,11 @@ class TensorField(ModuleElement):
         ncontr = len(pos1) # number of contractions
         if len(pos2) != ncontr:
             raise TypeError("Different number of indices for the contraction.")
-        if self._domain.is_subdomain(other._domain):
-            if not self._ambient_domain.is_subdomain(other._ambient_domain):
+        if self._domain.is_subset(other._domain):
+            if not self._ambient_domain.is_subset(other._ambient_domain):
                 raise TypeError("Incompatible ambient domains for contraction.")
-        elif other._domain.is_subdomain(self._domain):
-            if not other._ambient_domain.is_subdomain(self._ambient_domain):
+        elif other._domain.is_subset(self._domain):
+            if not other._ambient_domain.is_subset(self._ambient_domain):
                 raise TypeError("Incompatible ambient domains for contraction.")
         dom_resu = self._domain.intersection(other._domain)
         ambient_dom_resu = self._ambient_domain.intersection(
@@ -2257,7 +2257,7 @@ class TensorField(ModuleElement):
         non-parallelizable manifold::
 
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U') ; V = M.open_domain('V')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V')
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
@@ -2317,7 +2317,7 @@ class TensorField(ModuleElement):
         non-parallelizable manifold::
 
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U') ; V = M.open_domain('V')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V')
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
@@ -2424,7 +2424,7 @@ class TensorField(ModuleElement):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U') ; V = M.open_domain('V')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V')
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
@@ -3114,7 +3114,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: c_cart.<x,y> = M.chart() # Cartesian coordinates on R^2
             sage: v = M.vector_field('v')
             sage: v[:] = [x+y, -1+x^2]
-            sage: D = M.open_domain('D') # the unit open disc
+            sage: D = M.open_subset('D') # the unit open disc
             sage: c_cart_D = c_cart.restrict(D, x^2+y^2<1)
             sage: v_D = v.restrict(D) ; v_D
             vector field 'v' on the open domain 'D' on the 2-dimensional manifold 'R^2'
@@ -3149,17 +3149,17 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         if subdomain == self._domain:
             return self
         if subdomain not in self._restrictions:
-            if not subdomain.is_subdomain(self._domain):
+            if not subdomain.is_subset(self._domain):
                 raise ValueError("The provided domain is not a subdomain of " +
                                  "the current field's domain.")
             if dest_map is None:
                 dest_map = self._fmodule._dest_map.restrict(subdomain)
-            elif not dest_map._codomain.is_subdomain(self._ambient_domain):
+            elif not dest_map._codomain.is_subset(self._ambient_domain):
                 raise ValueError("Argument dest_map not compatible with " +
                                  "self._ambient_domain")
             #!# First one tries to derive the restriction from a tighter domain:
             #for dom, rst in self._restrictions.iteritems():
-            #    if subdomain.is_subdomain(dom):
+            #    if subdomain.is_subset(dom):
             #        self._restrictions[subdomain] = rst.restrict(subdomain)
             #        break
             # If this fails, the restriction is created from scratch:

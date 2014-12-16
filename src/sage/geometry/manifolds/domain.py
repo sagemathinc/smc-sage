@@ -20,58 +20,57 @@ AUTHORS:
 
 EXAMPLES:
 
-Two domains on a manifold::
+Two subsets on a manifold::
 
     sage: M = Manifold(2, 'M')
-    sage: a = M.domain('A') ; a
-    domain 'A' on the 2-dimensional manifold 'M'
-    sage: b = M.domain('B') ; b
-    domain 'B' on the 2-dimensional manifold 'M'
-    sage: M.subsets()
-    [2-dimensional manifold 'M',
-     domain 'A' on the 2-dimensional manifold 'M',
-     domain 'B' on the 2-dimensional manifold 'M']
+    sage: a = M.subset('A') ; a
+    subset 'A' on the 2-dimensional manifold 'M'
+    sage: b = M.subset('B') ; b
+    subset 'B' on the 2-dimensional manifold 'M'
+    sage: M.subsets()  # random (set output)
+    {subset 'A' on the 2-dimensional manifold 'M',
+     subset 'B' on the 2-dimensional manifold 'M',
+     2-dimensional manifold 'M'}
 
-The intersection of the two domains::
+The intersection of the two subsets::
 
     sage: c = a.intersection(b) ; c
-    domain 'A_inter_B' on the 2-dimensional manifold 'M'
+    subset 'A_inter_B' on the 2-dimensional manifold 'M'
 
 Their union::
 
     sage: d = a.union(b) ; d
-    domain 'A_union_B' on the 2-dimensional manifold 'M'
+    subset 'A_union_B' on the 2-dimensional manifold 'M'
 
 State of various data members after the above operations::
 
-    sage: M.subsets()
-    [2-dimensional manifold 'M',
-     domain 'A' on the 2-dimensional manifold 'M',
-     domain 'B' on the 2-dimensional manifold 'M',
-     domain 'A_inter_B' on the 2-dimensional manifold 'M',
-     domain 'A_union_B' on the 2-dimensional manifold 'M']
+    sage: M.subsets()  # random (set output)
+    {subset 'A' on the 2-dimensional manifold 'M',
+     subset 'B' on the 2-dimensional manifold 'M',
+     subset 'A_inter_B' on the 2-dimensional manifold 'M',
+     2-dimensional manifold 'M'}
     sage: a._subsets  # random (set output)
-    set([domain 'A' on the 2-dimensional manifold 'M',
-         domain 'A_inter_B' on the 2-dimensional manifold 'M'])
+    set([subset 'A' on the 2-dimensional manifold 'M',
+         subset 'A_inter_B' on the 2-dimensional manifold 'M'])
     sage: a._supersets  # random (set output)
-    set([domain 'A_union_B' on the 2-dimensional manifold 'M',
+    set([subset 'A_union_B' on the 2-dimensional manifold 'M',
          2-dimensional manifold 'M',
-         domain 'A' on the 2-dimensional manifold 'M'])
+         subset 'A' on the 2-dimensional manifold 'M'])
     sage: c._supersets  # random (set output)
-    set([domain 'B' on the 2-dimensional manifold 'M',
-         domain 'A_union_B' on the 2-dimensional manifold 'M',
+    set([subset 'B' on the 2-dimensional manifold 'M',
+         subset 'A_union_B' on the 2-dimensional manifold 'M',
          2-dimensional manifold 'M',
-         domain 'A' on the 2-dimensional manifold 'M',
-         domain 'A_inter_B' on the 2-dimensional manifold 'M'])
+         subset 'A' on the 2-dimensional manifold 'M',
+         subset 'A_inter_B' on the 2-dimensional manifold 'M'])
     sage: c._subsets  # random (set output)
-    set([domain 'A_inter_B' on the 2-dimensional manifold 'M'])
+    set([subset 'A_inter_B' on the 2-dimensional manifold 'M'])
     sage: d._subsets  # random (set output)
-    set([domain 'B' on the 2-dimensional manifold 'M',
-         domain 'A_union_B' on the 2-dimensional manifold 'M',
-         domain 'A_inter_B' on the 2-dimensional manifold 'M',
-         domain 'A' on the 2-dimensional manifold 'M'])
+    set([subset 'B' on the 2-dimensional manifold 'M',
+         subset 'A_union_B' on the 2-dimensional manifold 'M',
+         subset 'A_inter_B' on the 2-dimensional manifold 'M',
+         subset 'A' on the 2-dimensional manifold 'M'])
     sage: d._supersets  # random (set output)
-    set([domain 'A_union_B' on the 2-dimensional manifold 'M',
+    set([subset 'A_union_B' on the 2-dimensional manifold 'M',
          2-dimensional manifold 'M'])
 
 """
@@ -99,36 +98,36 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     INPUT:
 
-    - ``manifold`` -- manifold on which the domain is defined
-    - ``name`` -- name given to the domain
-    - ``latex_name`` --  (default: None) LaTeX symbol to denote the domain; if
+    - ``manifold`` -- manifold on which the subset is defined
+    - ``name`` -- name given to the subset
+    - ``latex_name`` --  (default: None) LaTeX symbol to denote the subset; if
       none is provided, it is set to ``name``
 
     EXAMPLES:
 
-    A domain on a manifold::
+    A subset on a manifold::
 
         sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(2, 'M')
         sage: from sage.geometry.manifolds.domain import ManifoldSubset
         sage: A = ManifoldSubset(M, 'A', latex_name=r'\mathcal{A}') ; A
-        domain 'A' on the 2-dimensional manifold 'M'
+        subset 'A' on the 2-dimensional manifold 'M'
         sage: latex(A)
         \mathcal{A}
-        sage: A.is_subdomain(M)
+        sage: A.is_subset(M)
         True
 
-    Instead of importing ManifoldSubset in the global namespace, it is recommended to
-    use the method :meth:`domain` to create a new domain::
+    Instead of importing :class:`ManifoldSubset` in the global namespace,
+    it is recommended to use the method :meth:`subset` to create a new subset::
 
-        sage: B = M.domain('B', latex_name=r'\mathcal{B}') ; B
-        domain 'B' on the 2-dimensional manifold 'M'
-        sage: M.subsets()
-        [2-dimensional manifold 'M',
-         domain 'A' on the 2-dimensional manifold 'M',
-         domain 'B' on the 2-dimensional manifold 'M']
+        sage: B = M.subset('B', latex_name=r'\mathcal{B}') ; B
+        subset 'B' on the 2-dimensional manifold 'M'
+        sage: M.subsets()  # random (set output)
+        {subset 'A' on the 2-dimensional manifold 'M',
+         subset 'B' on the 2-dimensional manifold 'M',
+         2-dimensional manifold 'M'}
 
-    The manifold is itself a domain::
+    The manifold is itself a subset::
 
         sage: isinstance(M, ManifoldSubset)
         True
@@ -151,7 +150,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         sage: p = A.an_element() ; p
         point on 2-dimensional manifold 'M'
         sage: p.parent()
-        domain 'A' on the 2-dimensional manifold 'M'
+        subset 'A' on the 2-dimensional manifold 'M'
         sage: p in A
         True
         sage: p in M
@@ -169,50 +168,50 @@ class ManifoldSubset(UniqueRepresentation, Parent):
                 if name == dom._name:
                     raise ValueError("The name '" + name +
                                      "' is already used for " +
-                                     "another domain on the " + str(manifold))
+                                     "another subset on the " + str(manifold))
             self._name = name
 #!#            manifold._subsets.append(self)
-#!#            manifold._subsets.add(self)
-            # set of domains containing self:
+            manifold._subsets.add(self)
+            # set of subsets containing self:
             self._supersets = set([manifold, self])
-        else: # case where the domain is the full manifold
+        else: # case where the subset is the full manifold
             self._name = name
             self._supersets = set([self])
         if latex_name is None:
             self._latex_name = self._name
         else:
             self._latex_name = latex_name
-        self._subsets = set([self]) # domains contained in self
-        self._top_subsets = set([self]) # domains contained in self but not
-            # in another strict subdomain of self
-        self._intersections = {} # dict. of intersections with other domains
-                                 # (key: domain name)
-        self._unions = {} # dict. of unions with other domains (key: domain
+        self._subsets = set([self]) # subsets of self
+        self._top_subsets = set([self]) # subsets contained in self but not
+            # in another strict subset of self
+        self._intersections = {} # dict. of intersections with other subsets
+                                 # (key: subset name)
+        self._unions = {} # dict. of unions with other subsets (key: subset
                           # name)
-        self._atlas = []  # list of charts defined on subdomains of self
-        self._top_charts = []  # list of charts defined on subdomains of self
-                        # that are not subcharts of charts on larger subdomains
+        self._atlas = []  # list of charts defined on subsets of self
+        self._top_charts = []  # list of charts defined on subsets of self
+                        # that are not subcharts of charts on larger subsets
         self._def_chart = None  # default chart
         self._coord_changes = {} # dictionary of transition maps
-        self._frames = []  # list of vector frames defined on subdomains of self
-        self._top_frames = []  # list of vector frames defined on subdomains
-               # of self that are not subframes of frames on larger subdomains
+        self._frames = []  # list of vector frames defined on subsets of self
+        self._top_frames = []  # list of vector frames defined on subsets
+               # of self that are not subframes of frames on larger subsets
         self._def_frame = None  # default frame
         self._frame_changes = {} # dictionary of changes of frames
-        self._coframes = []  # list of coframes defined on subdomains of self
-        self._parallelizable_parts = set() # parallelizable domains contained in self
+        self._coframes = []  # list of coframes defined on subsets of self
+        self._parallelizable_parts = set() # parallelizable subsets contained in self
 
     #### Methods required for any Parent in the category of sets:
     def _element_constructor_(self, coords=None, chart=None, name=None,
                  latex_name=None):
         r"""
-        Construct a point on the domain from its coordinates in some chart.
+        Construct a point on ``self`` from its coordinates in some chart.
         """
         return self.element_class(self, coords, chart, name, latex_name)
 
     def _an_element_(self):
         r"""
-        Construct some (unamed) point on the domain
+        Construct some (unamed) point on ``self``.
         """
         from sage.rings.infinity import Infinity
         if self._def_chart is None:
@@ -241,7 +240,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         r"""
         String representation of the object.
         """
-        return "domain '" + self._name + "' on the " + str(self._manifold)
+        return "subset '" + self._name + "' on the " + str(self._manifold)
 
     def _latex_(self):
         r"""
@@ -251,42 +250,99 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def subsets(self):
         r"""
-        Return the set of subsets of ``self``. 
+        Return the set of subsets that have been defined on ``self``. 
+
+        OUTPUT:
+
+        - A Python set containing all the subsets that have been defined on
+          ``self``. 
+
+        .. NOTE::
+
+            To get the subsets as a list, used the method
+            :meth:`list_of_subsets` instead.
 
         EXAMPLE:
 
-        Subsets on a 2-dimensional manifold::
+        Subsets of a 2-dimensional manifold::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U')
-            sage: V = M.domain('V')
-            sage: M.subsets()
-            [2-dimensional manifold 'M',
-             open domain 'U' on the 2-dimensional manifold 'M',
-             domain 'V' on the 2-dimensional manifold 'M']
-            sage: U is M.subsets()[1]
+            sage: U = M.open_subset('U')
+            sage: V = M.subset('V')
+            sage: M.subsets()  # random (set output)
+             {open subset 'U' on the 2-dimensional manifold 'M',
+              subset 'V' on the 2-dimensional manifold 'M',
+              2-dimensional manifold 'M'}
+            sage: U in M.subsets()
             True
+
+        The method :meth:`list_of_subsets` returns a list instead of a set::
+
+            sage: M.list_of_subsets()
+            [2-dimensional manifold 'M',
+             open subset 'U' on the 2-dimensional manifold 'M',
+             subset 'V' on the 2-dimensional manifold 'M']
 
         """
         return self._subsets
 
+    def list_of_subsets(self):
+        r"""
+        Return the list of subsets that have been defined on ``self``. 
+
+        The list is sorted by the alphabetical names of the subsets.
+        
+        OUTPUT:
+
+        - A list containing all the subsets that have been defined on
+          ``self``. 
+
+        .. NOTE::
+
+            To get the subsets as a Python set, used the method
+            :meth:`subsets` instead.
+
+        EXAMPLE:
+
+        Subsets of a 2-dimensional manifold::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_subset('U')
+            sage: V = M.subset('V')
+            sage: M.list_of_subsets()
+            [2-dimensional manifold 'M',
+             open subset 'U' on the 2-dimensional manifold 'M',
+             subset 'V' on the 2-dimensional manifold 'M']
+
+        The method :meth:`subsets` returns a set instead of a list::
+
+            sage: M.subsets()  # random (set output)
+            {open subset 'U' on the 2-dimensional manifold 'M',
+             subset 'V' on the 2-dimensional manifold 'M',
+             2-dimensional manifold 'M'}
+                   
+        """
+        return sorted(self._subsets, key = lambda x: x._name)
+
     def atlas(self):
         r"""
-        Return the domain's atlas.
+        Return the atlas of ``self``.
 
         OUTPUT:
 
-        - list of charts defined on open subdomains of ``self``.
+        - list of charts defined on open subsets of ``self``.
 
         EXAMPLES:
 
-        Charts on domains of `\RR^2`::
+        Charts on subsets of `\RR^2`::
 
             sage: M = Manifold(2, 'R^2')
             sage: c_cart.<x,y> = M.chart() # Cartesian coordinates on R^2
             sage: M.atlas()
             [chart (R^2, (x, y))]
-            sage: U = M.open_domain('U', coord_def={c_cart: (y!=0,x<0)}) # U = R^2 \ half line {y=0,x>=0}
+            sage: U = M.open_subset('U', coord_def={c_cart: (y!=0,x<0)}) # U = R^2 \ half line {y=0,x>=0}
             sage: U.atlas()
             [chart (U, (x, y))]
             sage: M.atlas()
@@ -302,15 +358,15 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def frames(self):
         r"""
-        Return the list of vector frames defined on subdomains of ``self``.
+        Return the list of vector frames defined on subsets of ``self``.
 
         OUTPUT:
 
-        - list of vector frames defined on open subdomains of ``self``.
+        - list of vector frames defined on open subsets of ``self``.
 
         EXAMPLES:
 
-        Vector frames on domains of `\RR^2`::
+        Vector frames on subsets of `\RR^2`::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2')
@@ -320,7 +376,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             sage: e = M.vector_frame('e')
             sage: M.frames()
             [coordinate frame (R^2, (d/dx,d/dy)), vector frame (R^2, (e_0,e_1))]
-            sage: U = M.open_domain('U', coord_def={c_cart: x^2+y^2<1}) # Unit disk
+            sage: U = M.open_subset('U', coord_def={c_cart: x^2+y^2<1}) # Unit disk
             sage: U.frames()
             [coordinate frame (U, (d/dx,d/dy))]
             sage: M.frames()
@@ -333,15 +389,15 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def coframes(self):
         r"""
-        Return the list of coframes defined on subdomains of ``self``.
+        Return the list of coframes defined on subsets of ``self``.
 
         OUTPUT:
 
-        - list of coframes defined on open subdomains of ``self``.
+        - list of coframes defined on open subsets of ``self``.
 
         EXAMPLES:
 
-        Coframes on domains of `\RR^2`::
+        Coframes on subsets of `\RR^2`::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'R^2')
@@ -351,7 +407,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             sage: e = M.vector_frame('e')
             sage: M.coframes()
             [coordinate coframe (R^2, (dx,dy)), coframe (R^2, (e^0,e^1))]
-            sage: U = M.open_domain('U', coord_def={c_cart: x^2+y^2<1}) # Unit disk
+            sage: U = M.open_subset('U', coord_def={c_cart: x^2+y^2<1}) # Unit disk
             sage: U.coframes()
             [coordinate coframe (U, (dx,dy))]
             sage: e.restrict(U)
@@ -369,65 +425,63 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def coord_changes(self):
         r"""
-        Return the changes of coordinates defined on the domain.
+        Return the changes of coordinates defined on ``self``.
         """
         return self._coord_changes
 
     def frame_changes(self):
         r"""
-        Return the changes of vector frames defined on the domain.
+        Return the changes of vector frames defined on ``self``.
         """
         return self._frame_changes
 
-    def domain(self, name, latex_name=None, is_open=False):
+    def subset(self, name, latex_name=None, is_open=False):
         r"""
-        Create a subdomain of the current domain.
-
-        A *subdomain* is a domain that is included in ``self``.
+        Create a subset of ``self``.
 
         INPUT:
 
-        - ``name`` -- name given to the subdomain
+        - ``name`` -- name given to the subset
         - ``latex_name`` --  (default: None) LaTeX symbol to denote the
-          subdomain; if none is provided, it is set to ``name``
-        - ``is_open`` -- (default: False) if True, the created domain is
+          subset; if none is provided, it is set to ``name``
+        - ``is_open`` -- (default: False) if True, the created subset is
           assumed to be open with respect to the manifold's topology
 
         OUTPUT:
 
-        - the subdomain, as an instance of :class:`ManifoldSubset`, or of
+        - the subset, as an instance of :class:`ManifoldSubset`, or of
           :class:`ManifoldOpenSubset` if ``is_open`` is True.
 
         EXAMPLES:
 
-        Creating a domain on a manifold::
+        Creating a subset on a manifold::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: a = M.domain('A') ; a
-            domain 'A' on the 2-dimensional manifold 'M'
+            sage: a = M.subset('A') ; a
+            subset 'A' on the 2-dimensional manifold 'M'
 
-        Creating a subdomain of A::
+        Creating a subset of A::
 
-            sage: b = a.domain('B', latex_name=r'\mathcal{B}') ; b
-            domain 'B' on the 2-dimensional manifold 'M'
+            sage: b = a.subset('B', latex_name=r'\mathcal{B}') ; b
+            subset 'B' on the 2-dimensional manifold 'M'
             sage: latex(b)
             \mathcal{B}
 
-        B is then a subdomain of A and A is a superdomain of B::
+        B is then a subset of A and A is a superset of B::
 
             sage: a._subsets  # random (set output)
-            set([domain 'B' on the 2-dimensional manifold 'M',
-                 domain 'A' on the 2-dimensional manifold 'M'])
+            set([subset 'B' on the 2-dimensional manifold 'M',
+                 subset 'A' on the 2-dimensional manifold 'M'])
             sage: b._supersets  # random (set output)
-            set([domain 'B' on the 2-dimensional manifold 'M',
+            set([subset 'B' on the 2-dimensional manifold 'M',
                  2-dimensional manifold 'M',
-                 domain 'A' on the 2-dimensional manifold 'M'])
+                 subset 'A' on the 2-dimensional manifold 'M'])
 
-        Creating an open subdomain of A::
+        Creating an open subset of A::
 
-            sage: c = a.domain('C', is_open=True) ; c
-            open domain 'C' on the 2-dimensional manifold 'M'
+            sage: c = a.subset('C', is_open=True) ; c
+            open subset 'C' on the 2-dimensional manifold 'M'
 
         """
         if is_open:
@@ -440,50 +494,50 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         self._top_subsets.add(res)
         return res
 
-    def superdomain(self, name, latex_name=None, is_open=False):
+    def superset(self, name, latex_name=None, is_open=False):
         r"""
-        Create a superdomain of the current domain.
+        Create a superset of ``self``.
 
-        A *superdomain* is a domain in which ``self`` is included.
+        A *superset* is a manifold subset in which ``self`` is included.
 
         INPUT:
 
-        - ``name`` -- name given to the superdomain
+        - ``name`` -- name given to the superset
         - ``latex_name`` --  (default: None) LaTeX symbol to denote the
-          superdomain; if none is provided, it is set to ``name``
-        - ``is_open`` -- (default: False) if True, the created domain is
+          superset; if none is provided, it is set to ``name``
+        - ``is_open`` -- (default: False) if True, the created subset is
           assumed to be open with respect to the manifold's topology
 
         OUTPUT:
 
-        - the superdomain, as an instance of :class:`ManifoldSubset` or of
+        - the superset, as an instance of :class:`ManifoldSubset` or of
           :class:`ManifoldOpenSubset` if ``is_open==True``.
 
         EXAMPLES:
 
-        Creating some superdomain of a given domain::
+        Creating some superset of a given subset::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: a = M.domain('A')
-            sage: b = a.superdomain('B') ; b
-            domain 'B' on the 2-dimensional manifold 'M'
+            sage: a = M.subset('A')
+            sage: b = a.superset('B') ; b
+            subset 'B' on the 2-dimensional manifold 'M'
             sage: b._subsets # random (set output)
-            set([domain 'B' on the 2-dimensional manifold 'M',
-                 domain 'A' on the 2-dimensional manifold 'M'])
+            set([subset 'B' on the 2-dimensional manifold 'M',
+                 subset 'A' on the 2-dimensional manifold 'M'])
             sage: a._supersets # random (set output)
-            set([domain 'B' on the 2-dimensional manifold 'M',
+            set([subset 'B' on the 2-dimensional manifold 'M',
                  2-dimensional manifold 'M',
-                 domain 'A' on the 2-dimensional manifold 'M'])
+                 subset 'A' on the 2-dimensional manifold 'M'])
 
-        The superdomain of the manifold is itself::
+        The superset of the manifold is itself::
 
-            sage: M.superdomain('SM') is M
+            sage: M.superset('SM') is M
             True
 
-        Two superdomains of a given domain are a priori different::
+        Two supersets of a given subset are a priori different::
 
-            sage: c = a.superdomain('C')
+            sage: c = a.superset('C')
             sage: c == b
             False
 
@@ -511,11 +565,11 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def intersection(self, other, name=None, latex_name=None):
         r"""
-        Return the intersection of ``self`` with another domain.
+        Return the intersection of ``self`` with another subset.
 
         INPUT:
 
-        - ``other`` -- another domain on the same manifold
+        - ``other`` -- another subset on the same manifold
         - ``name`` -- (default: None) name given to the intersection in the
           case the latter has to be created; the default is
           ``self._name`` inter ``other._name``
@@ -525,37 +579,37 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
         OUTPUT:
 
-        - instance of :class:`ManifoldSubset` (or :class:`ManifoldOpenSubset` if both domains
-          are open) representing the domain that is the intersection of
-          ``self`` with ``other``
+        - instance of :class:`ManifoldSubset` (or :class:`ManifoldOpenSubset`
+          if both subsets are open) representing the subset that is the
+          intersection of ``self`` with ``other``
 
         EXAMPLES:
 
-        Intersection of two domains::
+        Intersection of two subsets::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: a = M.domain('A')
-            sage: b = M.domain('B')
+            sage: a = M.subset('A')
+            sage: b = M.subset('B')
             sage: c = a.intersection(b) ; c
-            domain 'A_inter_B' on the 2-dimensional manifold 'M'
+            subset 'A_inter_B' on the 2-dimensional manifold 'M'
             sage: a._subsets  # random (set output)
-            set([domain 'A_inter_B' on the 2-dimensional manifold 'M',
-                 domain 'A' on the 2-dimensional manifold 'M'])
+            set([subset 'A_inter_B' on the 2-dimensional manifold 'M',
+                 subset 'A' on the 2-dimensional manifold 'M'])
             sage: b._subsets  # random (set output)
-            set([domain 'B' on the 2-dimensional manifold 'M',
-                 domain 'A_inter_B' on the 2-dimensional manifold 'M'])
+            set([subset 'B' on the 2-dimensional manifold 'M',
+                 subset 'A_inter_B' on the 2-dimensional manifold 'M'])
             sage: c._supersets  # random (set output)
-            set([domain 'A' on the 2-dimensional manifold 'M',
+            set([subset 'A' on the 2-dimensional manifold 'M',
                  2-dimensional manifold 'M',
-                 domain 'A_inter_B' on the 2-dimensional manifold 'M',
-                 domain 'B' on the 2-dimensional manifold 'M'])
+                 subset 'A_inter_B' on the 2-dimensional manifold 'M',
+                 subset 'B' on the 2-dimensional manifold 'M'])
 
         Some checks::
 
-            sage: (a.intersection(b)).is_subdomain(a)
+            sage: (a.intersection(b)).is_subset(a)
             True
-            sage: (a.intersection(b)).is_subdomain(a)
+            sage: (a.intersection(b)).is_subset(a)
             True
             sage: a.intersection(b) is b.intersection(a)
             True
@@ -571,7 +625,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         """
         if other._manifold != self._manifold:
             raise TypeError(
-                "The two domains do not belong to the same manifold.")
+                "The two subsets do not belong to the same manifold.")
         # Particular cases:
         if self is self._manifold:
             return other
@@ -595,9 +649,9 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             if name is None:
                 name = self._name + "_inter_" + other._name
             if isinstance(self, ManifoldOpenSubset) and isinstance(other, ManifoldOpenSubset):
-                res = self.open_domain(name, latex_name)
+                res = self.open_subset(name, latex_name)
             else:
-                res = self.domain(name, latex_name)
+                res = self.subset(name, latex_name)
             res._supersets.update(other._supersets)
             for sd in other._supersets:
                 sd._subsets.add(res)
@@ -608,11 +662,11 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def union(self, other, name=None, latex_name=None):
         r"""
-        Return the union of ``self`` with another domain.
+        Return the union of ``self`` with another subset.
 
         INPUT:
 
-        - ``other`` -- another domain on the same manifold
+        - ``other`` -- another subset on the same manifold
         - ``name`` -- (default: None) name given to the union in the
           case the latter has to be created; the default is
           ``self._name`` union ``other._name``
@@ -622,37 +676,37 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
         OUTPUT:
 
-        - instance of :class:`ManifoldSubset` (or :class:`ManifoldOpenSubset` if both domains
-          are open) representing the domain that is the the union of ``self``
-          with ``other``
+        - instance of :class:`ManifoldSubset` (or :class:`ManifoldOpenSubset`
+          if both subsets are open) representing the subset that is the
+          union of ``self`` with ``other``
 
         EXAMPLES:
 
-        Union of two domains::
+        Union of two subsets::
 
             sage: M = Manifold(2, 'M')
-            sage: a = M.domain('A')
-            sage: b = M.domain('B')
+            sage: a = M.subset('A')
+            sage: b = M.subset('B')
             sage: c = a.union(b) ; c
-            domain 'A_union_B' on the 2-dimensional manifold 'M'
+            subset 'A_union_B' on the 2-dimensional manifold 'M'
             sage: a._supersets  # random (set output)
-            set([domain 'A_union_B' on the 2-dimensional manifold 'M',
+            set([subset 'A_union_B' on the 2-dimensional manifold 'M',
                  2-dimensional manifold 'M',
-                 domain 'A' on the 2-dimensional manifold 'M'])
+                 subset 'A' on the 2-dimensional manifold 'M'])
             sage: b._supersets  # random (set output)
-            set([domain 'B' on the 2-dimensional manifold 'M',
+            set([subset 'B' on the 2-dimensional manifold 'M',
                  2-dimensional manifold 'M',
-                 domain 'A_union_B' on the 2-dimensional manifold 'M'])
+                 subset 'A_union_B' on the 2-dimensional manifold 'M'])
             sage: c._subsets  # random (set output)
-            set([domain 'A_union_B' on the 2-dimensional manifold 'M',
-                domain 'A' on the 2-dimensional manifold 'M',
-                domain 'B' on the 2-dimensional manifold 'M'])
+            set([subset 'A_union_B' on the 2-dimensional manifold 'M',
+                subset 'A' on the 2-dimensional manifold 'M',
+                subset 'B' on the 2-dimensional manifold 'M'])
 
         Some checks::
 
-            sage: a.is_subdomain(a.union(b))
+            sage: a.is_subset(a.union(b))
             True
-            sage: b.is_subdomain(a.union(b))
+            sage: b.is_subset(a.union(b))
             True
             sage: a.union(b) is b.union(a)
             True
@@ -668,7 +722,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         """
         if other._manifold != self._manifold:
             raise TypeError(
-                "The two domains do not belong to the same manifold.")
+                "The two subsets do not belong to the same manifold.")
         # Particular cases:
         if (self is self._manifold) or (other is self._manifold):
             return self._manifold
@@ -691,7 +745,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
                 name = self._name + "_union_" + other._name
             res_open = isinstance(self, ManifoldOpenSubset) and \
                        isinstance(other, ManifoldOpenSubset)
-            res = self.superdomain(name, latex_name, is_open=res_open)
+            res = self.superset(name, latex_name, is_open=res_open)
             res._subsets.update(other._subsets)
             res._top_subsets.add(self)
             res._top_subsets.add(other)
@@ -720,7 +774,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def declare_union(self, dom1, dom2):
         r"""
-        Declare that the domain is the union of two subdomains, i.e.
+        Declare that ``self`` is the union of two subsets, i.e.
         that
 
         .. MATH::
@@ -731,49 +785,49 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
         INPUT:
 
-        - ``dom1`` -- subdomain `U_1`
-        - ``dom2`` -- subdomain `U_2`
+        - ``dom1`` -- subset `U_1`
+        - ``dom2`` -- subset `U_2`
 
         EXAMPLE::
 
             sage: M = Manifold(2, 'M')
-            sage: A = M.domain('A')
-            sage: B = M.domain('B')
+            sage: A = M.subset('A')
+            sage: B = M.subset('B')
             sage: M.declare_union(A, B)
             sage: A.union(B)
             2-dimensional manifold 'M'
 
         """
-        if not dom1.is_subdomain(self):
-            raise TypeError("The " + str(dom1) + " is not a subdomain of " +
+        if not dom1.is_subset(self):
+            raise TypeError("The " + str(dom1) + " is not a subset of " +
                             "the " + str(self) + ".")
-        if not dom2.is_subdomain(self):
-            raise TypeError("The " + str(dom2) + " is not a subdomain of " +
+        if not dom2.is_subset(self):
+            raise TypeError("The " + str(dom2) + " is not a subset of " +
                             "the " + str(self) + ".")
         dom1._unions[dom2._name] = self
         dom2._unions[dom1._name] = self
 
-    def is_subdomain(self, other):
+    def is_subset(self, other):
         r"""
         Return ``True`` iff ``self`` is included in ``other``.
 
         EXAMPLES:
 
-        Subdomains on a 2-dimensional manifold::
+        Subsubsets on a 2-dimensional manifold::
 
             sage: M = Manifold(2, 'M')
-            sage: a = M.domain('A')
-            sage: b = a.domain('B')
-            sage: c = M.domain('C')
-            sage: a.is_subdomain(M)
+            sage: a = M.subset('A')
+            sage: b = a.subset('B')
+            sage: c = M.subset('C')
+            sage: a.is_subset(M)
             True
-            sage: b.is_subdomain(a)
+            sage: b.is_subset(a)
             True
-            sage: b.is_subdomain(M)
+            sage: b.is_subset(M)
             True
-            sage: a.is_subdomain(b)
+            sage: a.is_subset(b)
             False
-            sage: c.is_subdomain(a)
+            sage: c.is_subset(a)
             False
 
         """
@@ -781,9 +835,9 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def __contains__(self, point):
         r"""
-        Check whether a point is contained in the domain.
+        Check whether a point is contained in ``self``.
         """
-        if point.parent().is_subdomain(self):
+        if point.parent().is_subset(self):
             return True
         for chart in self._atlas:
             if chart in point._coordinates:
@@ -798,7 +852,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def point(self, coords=None, chart=None, name=None, latex_name=None):
         r"""
-        Define a point in the domain.
+        Define a point in ``self``.
 
         See :class:`~sage.geometry.manifolds.point.ManifoldPoint` for a complete
         documentation.
@@ -809,7 +863,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
           chart specified by ``chart``
         - ``chart`` -- (default: None) chart in which the point coordinates are
           given; if none is provided, the coordinates are assumed to refer to
-          the domain's default chart
+          the default chart of ``self``
         - ``name`` -- (default: None) name given to the point
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the point;
           if none is provided, the LaTeX symbol is set to ``name``
@@ -830,7 +884,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             point 'p' on 2-dimensional manifold 'M'
             sage: p in M
             True
-            sage: a = M.open_domain('A')
+            sage: a = M.open_subset('A')
             sage: c_uv.<u,v> = a.chart()
             sage: q = a.point((-1,0), name='q') ; q
             point 'q' on 2-dimensional manifold 'M'
@@ -846,11 +900,10 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def default_chart(self):
         r"""
-        Return the default chart defined on the domain.
+        Return the default chart defined on ``self``.
 
         Unless changed via :meth:`set_default_chart`, the *default chart*
-        is the first one defined on a subdomain of the current domain
-        (possibly itself).
+        is the first one defined on a subset of ``self`` (possibly itself).
 
         OUTPUT:
 
@@ -859,7 +912,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
         EXAMPLES:
 
-        Default chart on a 2-dimensional manifold and on some subdomains::
+        Default chart on a 2-dimensional manifold and on some subsets::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
@@ -869,8 +922,8 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             chart (M, (u, v))
             sage: M.default_chart()
             chart (M, (x, y))
-            sage: a = M.domain('A')
-            sage: b = a.domain('B', is_open=True)
+            sage: a = M.subset('A')
+            sage: b = a.subset('B', is_open=True)
             sage: b.chart('t z')
             chart (B, (t, z))
             sage: a.default_chart()
@@ -883,12 +936,11 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def set_default_chart(self, chart):
         r"""
-        Changing the default chart on the current domain.
+        Changing the default chart on ``self``.
 
         INPUT:
 
-        - ``chart`` -- a chart (must be defined on some subdomain of the
-          current domain)
+        - ``chart`` -- a chart (must be defined on some subset ``self``)
 
         EXAMPLES:
 
@@ -920,7 +972,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
     def coord_change(self, chart1, chart2):
         r"""
         Return a change of coordinates (transition map) defined on some
-        subdomain of the current domain.
+        subset of ``self``.
 
         INPUT:
 
@@ -955,14 +1007,14 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def default_frame(self):
         r"""
-        Return the default vector frame defined on the domain.
+        Return the default vector frame defined on ``self``.
 
-        By 'vector frame' it is meant a field on the domain that provides,
+        By 'vector frame' it is meant a field on ``self`` that provides,
         at each point p, a vector basis of the tangent space at p.
 
         Unless changed via :meth:`set_default_frame`, the default frame is the
-        first one defined on the domain, usually implicitely as the coordinate
-        basis associated with the first chart defined on the domain.
+        first one defined on ``self``, usually implicitely as the coordinate
+        basis associated with the first chart defined on ``self``.
 
         OUTPUT:
 
@@ -972,7 +1024,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         EXAMPLES:
 
         The default vector frame is often the coordinate frame associated
-        with the first chart defined on the domain::
+        with the first chart defined on ``self``::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
@@ -985,13 +1037,13 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def set_default_frame(self, frame):
         r"""
-        Changing the default vector frame on the domain.
+        Changing the default vector frame on ``self``.
 
         INPUT:
 
         - ``frame`` -- a vector frame (instance of
           :class:`~sage.geometry.manifolds.vectorframe.VectorFrame`) defined
-          on the current domain
+          on ``self``
 
         EXAMPLE:
 
@@ -1013,16 +1065,16 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             raise TypeError(str(frame) + " is not a vector frame.")
         if frame._domain is not self:
             if self.is_manifestly_parallelizable():
-                raise TypeError("The frame domain must coincide with the " +
-                                str(self) + ".")
-            if not frame._domain.is_subdomain(self):
-                raise TypeError("The frame must be defined on the domain.")
+                raise TypeError("the frame domain must coincide with the " +
+                                str(self))
+            if not frame._domain.is_subset(self):
+                raise TypeError("the frame must be defined on " + str(self))
         self._def_frame = frame
         frame._fmodule.set_default_basis(frame)
 
     def frame_change(self, frame1, frame2):
         r"""
-        Return a change of vector frames defined on the domain.
+        Return a change of vector frames defined on ``self``.
 
         INPUT:
 
@@ -1084,10 +1136,10 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def is_manifestly_coordinate_domain(self):
         r"""
-        Returns True if self is known to be the domain of some coordinate
+        Returns True if ``self`` is known to be the domain of some coordinate
         chart and False otherwise.
 
-        If False is returned, either self cannot be the domain of some
+        If False is returned, either ``self`` cannot be the domain of some
         coordinate chart or no such chart has been declared yet.
         """
         if not isinstance(self, ManifoldOpenSubset):
@@ -1096,7 +1148,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def is_manifestly_parallelizable(self):
         r"""
-        Returns True if self is known to be a parallelizable domain and False
+        Returns True if self is known to be a parallelizable subset and False
         otherwise.
 
         If False is returned, either self is not parallelizable or no vector
@@ -1122,51 +1174,52 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     INPUT:
 
-    - ``manifold`` -- manifold on which the open domain is defined
-    - ``name`` -- name given to the open domain
+    - ``manifold`` -- manifold on which the open subset is defined
+    - ``name`` -- name given to the open subset
     - ``latex_name`` --  (default: None) LaTeX symbol to denote the open
-      domain; if none is provided, it is set to ``name``
+      subset; if none is provided, it is set to ``name``
 
     EXAMPLES:
 
-    A open domain on a manifold::
+    A open subset on a manifold::
 
         sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(2, 'M')
         sage: from sage.geometry.manifolds.domain import ManifoldOpenSubset
         sage: A = ManifoldOpenSubset(M, 'A', latex_name=r'\mathcal{A}') ; A
-        open domain 'A' on the 2-dimensional manifold 'M'
+        open subset 'A' on the 2-dimensional manifold 'M'
         sage: latex(A)
         \mathcal{A}
 
-    Instead of importing ManifoldOpenSubset in the global namespace, it is recommended
-    to use the method :meth:`open_domain` to create a new open domain::
+    Instead of importing :class:`ManifoldOpenSubset` in the global namespace,
+    it is recommended to use the method :meth:`open_subset` to create a new
+    open subset::
 
-        sage: B = M.open_domain('B', latex_name=r'\mathcal{B}') ; B
-        open domain 'B' on the 2-dimensional manifold 'M'
-        sage: M.subsets()
-        [2-dimensional manifold 'M',
-         open domain 'A' on the 2-dimensional manifold 'M',
-         open domain 'B' on the 2-dimensional manifold 'M']
+        sage: B = M.open_subset('B', latex_name=r'\mathcal{B}') ; B
+        open subset 'B' on the 2-dimensional manifold 'M'
+        sage: M.subsets()  # random (set output)
+        {open subset 'A' on the 2-dimensional manifold 'M',
+         open subset 'B' on the 2-dimensional manifold 'M',
+         2-dimensional manifold 'M'}
 
-    The manifold is itself an open domain (by definition!)::
+    The manifold is itself an open subset (by definition!)::
 
         sage: isinstance(M, ManifoldOpenSubset)
         True
 
-    Open domains are Sage :class:`~sage.structure.parent.Parent`, the
+    Open subsets are Sage :class:`~sage.structure.parent.Parent`, the
     :class:`~sage.structure.element.Element` of which are the manifold points
     (class :class:`~sage.geometry.manifolds.point.ManifoldPoint`)::
 
         sage: p = A.an_element() ; p
         point on 2-dimensional manifold 'M'
         sage: p.parent()
-        open domain 'A' on the 2-dimensional manifold 'M'
+        open subset 'A' on the 2-dimensional manifold 'M'
         sage: A.category()
         Category of sets
 
     Consequently, points can be created by providing their coordinates in some
-    chart via the operator () applied to the domain::
+    chart via the operator () applied to the subset::
 
         sage: chart1.<x,y> = A.chart()
         sage: p = A((-2,3)) ; p
@@ -1189,10 +1242,10 @@ class ManifoldOpenSubset(ManifoldSubset):
         from scalarfield import ZeroScalarField
         from diffmapping import IdentityMap
         ManifoldSubset.__init__(self, manifold, name, latex_name)
-        # list of charts that individually cover the domain, i.e. whose
-        # domains are self (if non-empty, self is coordinate domain):
+        # list of charts that individually cover self, i.e. whose
+        # domains are self (if non-empty, self is a coordinate domain):
         self._covering_charts = []
-        # list of vector frames that individually cover the domain, i.e. whose
+        # list of vector frames that individually cover self, i.e. whose
         # domains are self (if non-empty, self is parallelizable):
         self._covering_frames = []
         # algebra of scalar fields defined on self (not contructed yet)
@@ -1212,60 +1265,60 @@ class ManifoldOpenSubset(ManifoldSubset):
         r"""
         Special Sage function for the string representation of the object.
         """
-        return "open domain '" + self._name + "' on the " + str(self._manifold)
+        return "open subset '" + self._name + "' on the " + str(self._manifold)
 
-    def open_domain(self, name, latex_name=None, coord_def={}):
+    def open_subset(self, name, latex_name=None, coord_def={}):
         r"""
-        Create an open subdomain of the current domain.
+        Create an open subset of ``self``.
 
-        An open subdomain is a set that is (i) included in ``self`` and (ii)
+        An open subset is a set that is (i) included in ``self`` and (ii)
         open with respect to the manifold's topology.
 
         INPUT:
 
-        - ``name`` -- name given to the open subdomain
+        - ``name`` -- name given to the open subset
         - ``latex_name`` --  (default: None) LaTeX symbol to denote the
-          subdomain; if none is provided, it is set to ``name``
-        - ``coord_def`` -- (default: {}) definition of the subdomain in
+          subset; if none is provided, it is set to ``name``
+        - ``coord_def`` -- (default: {}) definition of the subset in
           terms of coordinates; ``coord_def`` must a be dictionary with keys
           charts on ``self`` and values the symbolic expressions formed by the
-          coordinates to define the subdomain.
+          coordinates to define the subset.
 
         OUTPUT:
 
-        - the open subdomain, as an instance of :class:`ManifoldOpenSubset`.
+        - the open subset, as an instance of :class:`ManifoldOpenSubset`.
 
         EXAMPLES:
 
-        Creating an open domain on a manifold::
+        Creating an open subset on a manifold::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: a = M.open_domain('A') ; a
-            open domain 'A' on the 2-dimensional manifold 'M'
+            sage: a = M.open_subset('A') ; a
+            open subset 'A' on the 2-dimensional manifold 'M'
 
-        Creating an open subdomain of A::
+        Creating an open subset of A::
 
-            sage: b = a.open_domain('B') ; b
-            open domain 'B' on the 2-dimensional manifold 'M'
+            sage: b = a.open_subset('B') ; b
+            open subset 'B' on the 2-dimensional manifold 'M'
 
-        B is then a subdomain of A and A is a superdomain of B::
+        B is then a subset of A and A is a superset of B::
 
             sage: a._subsets # random (set output)
-            set([open domain 'A' on the 2-dimensional manifold 'M',
-                 open domain 'B' on the 2-dimensional manifold 'M'])
+            set([open subset 'A' on the 2-dimensional manifold 'M',
+                 open subset 'B' on the 2-dimensional manifold 'M'])
             sage: b._supersets # random (set output)
-            set([open domain 'A' on the 2-dimensional manifold 'M',
+            set([open subset 'A' on the 2-dimensional manifold 'M',
                  2-dimensional manifold 'M',
-                 open domain 'B' on the 2-dimensional manifold 'M'])
+                 open subset 'B' on the 2-dimensional manifold 'M'])
 
-        Defining an open subdomain by some coordinate restrictions: the open
+        Defining an open subset by some coordinate restrictions: the open
         unit disk in `\RR^2`::
 
             sage: M = Manifold(2, 'R^2')
             sage: c_cart.<x,y> = M.chart() # Cartesian coordinates on R^2
-            sage: U = M.open_domain('U', coord_def={c_cart: x^2+y^2<1}) ; U
-            open domain 'U' on the 2-dimensional manifold 'R^2'
+            sage: U = M.open_subset('U', coord_def={c_cart: x^2+y^2<1}) ; U
+            open subset 'U' on the 2-dimensional manifold 'R^2'
 
         Since the argument ``coord_def`` has been set, U is automatically
         provided with a chart, which is the restriction of the Cartesian one
@@ -1284,7 +1337,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             False
 
         """
-        resu = self.domain(name, latex_name=latex_name, is_open=True)
+        resu = self.subset(name, latex_name=latex_name, is_open=True)
         for chart, restrictions in coord_def.iteritems():
             if chart not in self._atlas:
                 raise ValueError("The " + str(chart) + "does not belong to " +
@@ -1294,11 +1347,11 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     def chart(self, coordinates='', names=None):
         r"""
-        Define a chart on the open domain.
+        Define a chart on ``self``.
 
-        A *chart* is a pair `(U,\varphi)`, where `U` is the open domain
+        A *chart* is a pair `(U,\varphi)`, where `U` is the open subset
         represented by ``self`` and `\varphi: U \rightarrow V \subset \RR^n`
-        is a homeomorphism from `U` to an open domain `V` of `\RR^n`.
+        is a homeomorphism from `U` to an open subset `V` of `\RR^n`.
 
         The components `(x^1,\ldots,x^n)` of `\varphi`, defined by
         `\varphi(p) = (x^1(p),\ldots,x^n(p))`, are called the *coordinates*
@@ -1349,7 +1402,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U')
+            sage: U = M.open_subset('U')
             sage: X = U.chart('x y') ; X
             chart (U, (x, y))
             sage: X[0]
@@ -1380,7 +1433,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_domain('U')
+            sage: U = M.open_subset('U')
             sage: X.<x,y> = U.chart() ; X
             chart (U, (x, y))
 
@@ -1406,10 +1459,10 @@ class ManifoldOpenSubset(ManifoldSubset):
     def vector_frame(self, symbol=None, latex_symbol=None, dest_map=None,
                      from_frame=None):
         r"""
-        Define a vector frame on the domain.
+        Define a vector frame on ``self``.
 
-        A *vector frame* is a field on the domain that provides, at each point
-        p of the domain, a vector basis of the tangent space at p.
+        A *vector frame* is a field on ``self`` that provides, at each point
+        p of ``self``, a vector basis of the tangent space at p.
 
         See :class:`~sage.geometry.manifolds.vectorframe.VectorFrame` for a
         complete documentation.
@@ -1437,17 +1490,17 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         EXAMPLES:
 
-        Setting a vector frame on a 3-dimensional open domain::
+        Setting a vector frame on a 3-dimensional open subset::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
-            sage: A = M.open_domain('A', latex_name=r'\mathcal{A}'); A
-            open domain 'A' on the 3-dimensional manifold 'M'
+            sage: A = M.open_subset('A', latex_name=r'\mathcal{A}'); A
+            open subset 'A' on the 3-dimensional manifold 'M'
             sage: c_xyz.<x,y,z> = A.chart()
             sage: e = A.vector_frame('e'); e
             vector frame (A, (e_0,e_1,e_2))
             sage: e[0]
-            vector field 'e_0' on the open domain 'A' on the 3-dimensional manifold 'M'
+            vector field 'e_0' on the open subset 'A' on the 3-dimensional manifold 'M'
 
         See the documentation of class
         :class:`~sage.geometry.manifolds.vectorframe.VectorFrame` for more
@@ -1487,17 +1540,17 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         EXAMPLE:
 
-        Scalar algebra of a 3-dimensional open domain::
+        Scalar algebra of a 3-dimensional open subset::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
-            sage: U = M.open_domain('U')
+            sage: U = M.open_subset('U')
             sage: CU = U.scalar_field_algebra() ; CU
-            algebra of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            algebra of scalar fields on the open subset 'U' on the 3-dimensional manifold 'M'
             sage: CU.category()
             Category of commutative algebras over Symbolic Ring
             sage: CU.zero()
-            zero scalar field on the open domain 'U' on the 3-dimensional manifold 'M'
+            zero scalar field on the open subset 'U' on the 3-dimensional manifold 'M'
 
         """
         from scalarfield_algebra import ScalarFieldAlgebra
@@ -1533,7 +1586,7 @@ class ManifoldOpenSubset(ManifoldSubset):
           :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldFreeModule`
           if `V` is parallelizable)
           representing the module `\mathcal{X}(U,\Phi)` of vector fields on the
-          open domain `U`=``self`` taking values on
+          open subset `U`=``self`` taking values on
           `\Phi(U)\subset V\subset M`.
 
         EXAMPLES:
@@ -1542,14 +1595,14 @@ class ManifoldOpenSubset(ManifoldSubset):
         poles on the sphere `\mathbb{S}^2`::
 
             sage: S2 = Manifold(2, 'S^2')
-            sage: U = S2.open_domain('U')  # the complement of the two poles
+            sage: U = S2.open_subset('U')  # the complement of the two poles
             sage: spher_coord.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coordinates
             sage: XU = U.vector_field_module() ; XU
-            free module X(U) of vector fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            free module X(U) of vector fields on the open subset 'U' on the 2-dimensional manifold 'S^2'
             sage: XU.category()
-            Category of modules over algebra of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            Category of modules over algebra of scalar fields on the open subset 'U' on the 2-dimensional manifold 'S^2'
             sage: XU.base_ring()
-            algebra of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            algebra of scalar fields on the open subset 'U' on the 2-dimensional manifold 'S^2'
             sage: XU.base_ring() is U.scalar_field_algebra()
             True
 
@@ -1567,7 +1620,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         The elements of `\mathcal{X}(U)` are vector fields on `U`::
 
             sage: XU.an_element()
-            vector field on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            vector field on the open subset 'U' on the 2-dimensional manifold 'S^2'
             sage: XU.an_element().view()
             2 d/dth + 2 d/dph
 
@@ -1579,9 +1632,9 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: cart_coord.<x, y, z> = R3.chart()
             sage: Phi = U.diff_mapping(R3, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='Phi')
             sage: XU_R3 = U.vector_field_module(dest_map=Phi) ; XU_R3
-            free module X(U,Phi) of vector fields along the open domain 'U' on the 2-dimensional manifold 'S^2' mapped into the 3-dimensional manifold 'R^3'
+            free module X(U,Phi) of vector fields along the open subset 'U' on the 2-dimensional manifold 'S^2' mapped into the 3-dimensional manifold 'R^3'
             sage: XU_R3.base_ring()
-            algebra of scalar fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            algebra of scalar fields on the open subset 'U' on the 2-dimensional manifold 'S^2'
 
         `\mathcal{X}(U,\mathbb{R}^3)` is a free module because `\mathbb{R}^3`
         is parallelizable and its rank is 3::
@@ -1628,27 +1681,27 @@ class ManifoldOpenSubset(ManifoldSubset):
         - instance of
           :class:`~sage.geometry.manifolds.tensorfield_module.TensorFieldModule`
           representing the module `\mathcal{T}^{(k,l)}(U,\Phi)` of type-`(k,l)`
-          tensor fields on the open domain `U` = ``self`` taking values on
+          tensor fields on the open subset `U` = ``self`` taking values on
           `\Phi(U)\subset V\subset M`.
 
         EXAMPLE:
 
-        Module of type-(2,1) tensor fields on a 3-dimensional open domain::
+        Module of type-(2,1) tensor fields on a 3-dimensional open subset::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
-            sage: U = M.open_domain('U')
+            sage: U = M.open_subset('U')
             sage: c_xyz.<x,y,z> = U.chart()
             sage: TU = U.tensor_field_module((2,1)) ; TU
-            free module T^(2,1)(U) of type-(2,1) tensors fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            free module T^(2,1)(U) of type-(2,1) tensors fields on the open subset 'U' on the 3-dimensional manifold 'M'
             sage: TU.category()
-            Category of modules over algebra of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            Category of modules over algebra of scalar fields on the open subset 'U' on the 3-dimensional manifold 'M'
             sage: TU.base_ring()
-            algebra of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            algebra of scalar fields on the open subset 'U' on the 3-dimensional manifold 'M'
             sage: TU.base_ring() is U.scalar_field_algebra()
             True
             sage: TU.an_element()
-            tensor field of type (2,1) on the open domain 'U' on the 3-dimensional manifold 'M'
+            tensor field of type (2,1) on the open subset 'U' on the 3-dimensional manifold 'M'
             sage: TU.an_element().view()
             2 d/dx*d/dx*dx
 
@@ -1676,7 +1729,7 @@ class ManifoldOpenSubset(ManifoldSubset):
     def scalar_field(self, coord_expression=None, chart=None, name=None,
                      latex_name=None):
         r"""
-        Define a scalar field on the domain.
+        Define a scalar field on ``self``.
 
         See :class:`~sage.geometry.manifolds.scalarfield.ScalarField` for a
         complete documentation.
@@ -1687,7 +1740,7 @@ class ManifoldOpenSubset(ManifoldSubset):
           scalar field
         - ``chart`` -- (default:None) chart defining the coordinates used in
           ``coord_expression``; if none is provided and a coordinate expression
-          is given, the domain default chart is assumed.
+          is given, the default chart of ``self`` is assumed.
         - ``name`` -- (default: None) name given to the scalar field
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the scalar
           field; if none is provided, the LaTeX symbol is set to ``name``
@@ -1703,15 +1756,15 @@ class ManifoldOpenSubset(ManifoldSubset):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
-            sage: U = M.open_domain('U')
+            sage: U = M.open_subset('U')
             sage: c_xyz.<x,y,z> = U.chart()
             sage: f = U.scalar_field(sin(x)*cos(y) + z, name='F'); f
-            scalar field 'F' on the open domain 'U' on the 3-dimensional manifold 'M'
+            scalar field 'F' on the open subset 'U' on the 3-dimensional manifold 'M'
             sage: f.view()
             F: U --> R
                (x, y, z) |--> cos(y)*sin(x) + z
             sage: f.parent()
-            algebra of scalar fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            algebra of scalar fields on the open subset 'U' on the 3-dimensional manifold 'M'
             sage: f in U.scalar_field_algebra()
             True
 
@@ -1724,9 +1777,9 @@ class ManifoldOpenSubset(ManifoldSubset):
         if isinstance(coord_expression, dict):
             # check validity of entry
             for chart in coord_expression:
-                if not chart._domain.is_subdomain(self):
+                if not chart._domain.is_subset(self):
                     raise ValueError("The " + str(chart) + " is not defined " +
-                                     "on some subdomain of the " + str(self))
+                                     "on some subset of the " + str(self))
         elif isinstance(coord_expression, Expression):
             if coord_expression.variables() != ():
                 # the expression is not a constant
@@ -1740,7 +1793,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     def vector_field(self, name=None, latex_name=None, dest_map=None):
         r"""
-        Define a vector field on the domain.
+        Define a vector field on ``self``.
 
         See :class:`~sage.geometry.manifolds.vectorfield.VectorField` for a
         complete documentation.
@@ -1763,20 +1816,20 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         EXAMPLES:
 
-        A vector field on a 3-dimensional open domain::
+        A vector field on a 3-dimensional open subset::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
-            sage: U = M.open_domain('U')
+            sage: U = M.open_subset('U')
             sage: c_xyz.<x,y,z> = U.chart()
             sage: v = U.vector_field('v'); v
-            vector field 'v' on the open domain 'U' on the 3-dimensional manifold 'M'
+            vector field 'v' on the open subset 'U' on the 3-dimensional manifold 'M'
 
         Vector fields on `U` form the set `\mathcal{X}(U)`, which is a module
         over the algebra `C^\infty(U)` of smooth scalar fields on `U`::
 
             sage: v.parent()
-            free module X(U) of vector fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            free module X(U) of vector fields on the open subset 'U' on the 3-dimensional manifold 'M'
             sage: v in U.vector_field_module()
             True
 
@@ -1791,7 +1844,7 @@ class ManifoldOpenSubset(ManifoldSubset):
     def tensor_field(self, k, l, name=None, latex_name=None, sym=None,
         antisym=None, dest_map=None):
         r"""
-        Define a tensor field on the domain.
+        Define a tensor field on ``self``.
 
         See :class:`~sage.geometry.manifolds.tensorfield.TensorField` for a
         complete documentation.
@@ -1827,21 +1880,21 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         EXAMPLES:
 
-        A tensor field of type (2,0) on a 3-dimensional open domain::
+        A tensor field of type (2,0) on a 3-dimensional open subset::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
-            sage: U = M.open_domain('U')
+            sage: U = M.open_subset('U')
             sage: c_xyz.<x,y,z> = U.chart()
             sage: t = U.tensor_field(2, 0, 'T'); t
-            tensor field 'T' of type (2,0) on the open domain 'U' on the 3-dimensional manifold 'M'
+            tensor field 'T' of type (2,0) on the open subset 'U' on the 3-dimensional manifold 'M'
 
         Type-(2,0) tensor fields on `U` form the set `\mathcal{T}^{(2,0)}(U)`,
         which is a module over the algebra `C^\infty(U)` of smooth scalar
         fields on `U`::
 
             sage: t.parent()
-            free module T^(2,0)(U) of type-(2,0) tensors fields on the open domain 'U' on the 3-dimensional manifold 'M'
+            free module T^(2,0)(U) of type-(2,0) tensors fields on the open subset 'U' on the 3-dimensional manifold 'M'
             sage: t in U.tensor_field_module((2,0))
             True
 
@@ -1856,7 +1909,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     def sym_bilin_form_field(self, name=None, latex_name=None, dest_map=None):
         r"""
-        Define a field of symmetric bilinear forms on the domain.
+        Define a field of symmetric bilinear forms on ``self``.
 
         INPUT:
 
@@ -1912,7 +1965,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: type(t.comp())
             <class 'sage.tensor.modules.comp.CompFullySym'>
 
-        For the domain's default frame, the components are accessed with the
+        For the default frame, the components are accessed with the
         square brackets::
 
             sage: t[0,0], t[0,1], t[0,2] = (1, 2, 3)
@@ -1985,7 +2038,7 @@ class ManifoldOpenSubset(ManifoldSubset):
                            dest_map=None):
         r"""
         Define a field of endomorphisms (i.e. linear operators in the tangent
-        spaces = tensors of type (1,1)) on the domain.
+        spaces = tensors of type (1,1)) on ``self``.
 
         See :class:`~sage.geometry.manifolds.rank2field.EndomorphismField` for
         a complete documentation.
@@ -2007,7 +2060,7 @@ class ManifoldOpenSubset(ManifoldSubset):
           :class:`~sage.geometry.manifolds.rank2field.EndomorphismField`
           (or of
           :class:`~sage.geometry.manifolds.rank2field.EndomorphismFieldParal`
-          if the domain is parallelizable) representing the defined field of
+          if the codomain is parallelizable) representing the defined field of
           endomorphisms.
 
         EXAMPLE:
@@ -2034,7 +2087,7 @@ class ManifoldOpenSubset(ManifoldSubset):
                            dest_map=None):
         r"""
         Define a field of automorphisms (invertible endomorphisms in each
-        tangent space) on the domain.
+        tangent space) on ``self``.
 
         See :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` for
         a complete documentation.
@@ -2056,7 +2109,7 @@ class ManifoldOpenSubset(ManifoldSubset):
           :class:`~sage.geometry.manifolds.rank2field.AutomorphismField`
           (or of
           :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal`
-          if the domain is parallelizable) representing the defined field of
+          if the codomain is parallelizable) representing the defined field of
           automorphisms.
 
         EXAMPLE:
@@ -2082,7 +2135,7 @@ class ManifoldOpenSubset(ManifoldSubset):
     def tangent_identity_field(self, name='Id', latex_name=None,
                                dest_map=None):
         r"""
-        Return the field of identity maps in the tangent spaces on the domain.
+        Return the field of identity maps in the tangent spaces on ``self``.
 
         See :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField`
         for a complete documentation.
@@ -2106,7 +2159,7 @@ class ManifoldOpenSubset(ManifoldSubset):
           :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField`
           (or of
           :class:`~sage.geometry.manifolds.rank2field.TangentIdentityFieldParal`
-          if the domain is parallelizable) representing the field of identity
+          if the codomain is parallelizable) representing the field of identity
           maps.
 
         EXAMPLE:
@@ -2132,7 +2185,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     def metric(self, name, signature=None, latex_name=None, dest_map=None):
         r"""
-        Define a pseudo-Riemannian metric on the domain.
+        Define a pseudo-Riemannian metric on ``self``.
 
         See :class:`~sage.geometry.manifolds.metric.Metric` for a complete
         documentation.
@@ -2177,10 +2230,10 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     def riemann_metric(self, name, latex_name=None, dest_map=None):
         r"""
-        Define a Riemannian metric on the domain.
+        Define a Riemannian metric on ``self``.
 
         A Riemannian metric is a field of positive-definite symmetric bilinear
-        forms on the domain.
+        forms on ``self``.
 
         See :class:`~sage.geometry.manifolds.metric.RiemannMetric` for a
         complete documentation.
@@ -2226,7 +2279,7 @@ class ManifoldOpenSubset(ManifoldSubset):
     def lorentz_metric(self, name, signature='positive', latex_name=None,
                        dest_map=None):
         r"""
-        Define a Lorentzian metric on the domain.
+        Define a Lorentzian metric on ``self``.
 
         A Lorentzian metric is a field of nondegenerate symmetric bilinear
         forms with signature `(-,+,\cdots,+)` or `(+,-,\cdots,-)`.
@@ -2284,7 +2337,7 @@ class ManifoldOpenSubset(ManifoldSubset):
     def diff_form(self, degree, name=None, latex_name=None,
                   dest_map=None):
         r"""
-        Define a differential form on the domain.
+        Define a differential form on ``self``.
 
         See :class:`~sage.geometry.manifolds.diffform.DiffForm` for a complete
         documentation.
@@ -2309,15 +2362,15 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         EXAMPLE:
 
-        A 2-form on a 4-dimensional open domain::
+        A 2-form on a 4-dimensional open subset::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(4, 'M')
-            sage: A = M.open_domain('A', latex_name=r'\mathcal{A}'); A
-            open domain 'A' on the 4-dimensional manifold 'M'
+            sage: A = M.open_subset('A', latex_name=r'\mathcal{A}'); A
+            open subset 'A' on the 4-dimensional manifold 'M'
             sage: c_xyzt.<x,y,z,t> = A.chart()
             sage: f = A.diff_form(2, 'F'); f
-            2-form 'F' on the open domain 'A' on the 4-dimensional manifold 'M'
+            2-form 'F' on the open subset 'A' on the 4-dimensional manifold 'M'
 
         See the documentation of class
         :class:`~sage.geometry.manifolds.diffform.DiffForm` for more examples.
@@ -2329,7 +2382,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     def one_form(self, name=None, latex_name=None, dest_map=None):
         r"""
-        Define a 1-form on the domain.
+        Define a 1-form on ``self``.
 
         See :class:`~sage.geometry.manifolds.diffform.OneForm` for a complete
         documentation.
@@ -2352,16 +2405,16 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         EXAMPLE:
 
-        A 1-form on a 3-dimensional open domain::
+        A 1-form on a 3-dimensional open subset::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
-            sage: A = M.open_domain('A', latex_name=r'\mathcal{A}')
+            sage: A = M.open_subset('A', latex_name=r'\mathcal{A}')
             sage: X.<x,y,z> = A.chart()
             sage: om = A.one_form('omega', r'\omega') ; om
-            1-form 'omega' on the open domain 'A' on the 3-dimensional manifold 'M'
+            1-form 'omega' on the open subset 'A' on the 3-dimensional manifold 'M'
             sage: om.parent()
-            free module T^(0,1)(A) of type-(0,1) tensors fields on the open domain 'A' on the 3-dimensional manifold 'M'
+            free module T^(0,1)(A) of type-(0,1) tensors fields on the open subset 'A' on the 3-dimensional manifold 'M'
 
         See the documentation of class
         :class:`~sage.geometry.manifolds.diffform.OneForm` for more examples.
@@ -2373,8 +2426,8 @@ class ManifoldOpenSubset(ManifoldSubset):
     def diff_mapping(self, codomain, coord_functions=None, chart1=None,
                      chart2=None, name=None, latex_name=None):
         r"""
-        Define a differentiable mapping between the current domain and another
-        domain (possibly on another manifold).
+        Define a differentiable mapping between ``self`` and another
+        subset (possibly on another manifold).
 
         See :class:`~sage.geometry.manifolds.diffmapping.DiffMapping` for a
         complete documentation.
@@ -2389,8 +2442,8 @@ class ManifoldOpenSubset(ManifoldSubset):
           the arrival manifold is 1, a single expression is expected
           (not a list with a single element)
         - ``chart1`` -- (default: None) chart in which the
-          coordinates are given on the domain being mapped; if none is provided,
-          the coordinates are assumed to refer to domain's default chart
+          coordinates are given on ``self``; if none is provided,
+          the coordinates are assumed to refer to the default chart of ``self``
         - ``chart2`` -- (default: None) chart in which the
           coordinates are given on the codomain; if none is provided, the coordinates
           are assumed to refer to the codomain's default chart
@@ -2410,7 +2463,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2')
-            sage: U = M.open_domain('U') # the subdomain of S^2 covered by regular spherical coordinates
+            sage: U = M.open_subset('U') # the subset of S^2 covered by regular spherical coordinates
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: N = Manifold(3, 'R^3', r'\RR^3')
             sage: c_cart.<x,y,z> = N.chart()  # Cartesian coord. on R^3
@@ -2430,8 +2483,8 @@ class ManifoldOpenSubset(ManifoldSubset):
     def diffeomorphism(self, codomain, coord_functions=None, chart1=None,
                        chart2=None, name=None, latex_name=None):
         r"""
-        Define a diffeomorphism between the current domain and another
-        domain (possibly on another manifold).
+        Define a diffeomorphism between ``self`` and another open subset
+        (possibly on another manifold).
 
         See :class:`~sage.geometry.manifolds.diffmapping.Diffeomorphism` for a
         complete documentation.
@@ -2444,8 +2497,8 @@ class ManifoldOpenSubset(ManifoldSubset):
           list (or tuple) of the coordinates of the image expressed in terms of the
           coordinates of the considered point
         - ``chart1`` -- (default: None) chart in which the
-          coordinates are given on the domain being mapped; if none is provided,
-          the coordinates are assumed to refer to domain's default chart
+          coordinates are given on ``self``; if none is provided,
+          the coordinates are assumed to refer to default chart of ``self``
         - ``chart2`` -- (default: None) chart in which the
           coordinates are given on the codomain; if none is provided, the coordinates
           are assumed to refer to the codomain's default chart
@@ -2461,14 +2514,14 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         EXAMPLE:
 
-        A diffeomorphism between two 2-dimensional domains::
+        A diffeomorphism between two 2-dimensional subsets::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M', r'{\cal M}')
-            sage: U = M.open_domain('U')
+            sage: U = M.open_subset('U')
             sage: c_xv.<x,y> = U.chart(r'x:(-pi/2,+oo) y:(-pi/2,+oo)')
             sage: N = Manifold(2, 'N', r'{\cal N}')
-            sage: V = N.open_domain('V')
+            sage: V = N.open_subset('V')
             sage: c_zt.<z,t> = V.chart(r'z t')
             sage: Phi = U.diffeomorphism(V, (arctan(x), arctan(y)), name='Phi', latex_name=r'\Phi')
 
@@ -2484,7 +2537,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     def identity_map(self):
         r"""
-        Identity map on the current domain
+        Identity map on ``self``.
 
         See :class:`~sage.geometry.manifolds.diffmapping.IdentityMap` for a
         complete documentation.
@@ -2499,7 +2552,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     def aff_connection(self, name, latex_name=None):
         r"""
-        Define an affine connection on the domain.
+        Define an affine connection on ``self``.
 
         See :class:`~sage.geometry.manifolds.connection.AffConnection` for a
         complete documentation.
@@ -2517,13 +2570,13 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         EXAMPLE:
 
-        Affine connection on a 3-dimensional domain::
+        Affine connection on a 3-dimensional subset::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M', start_index=1)
-            sage: A = M.open_domain('A', latex_name=r'\mathcal{A}')
+            sage: A = M.open_subset('A', latex_name=r'\mathcal{A}')
             sage: #!# nab = A.aff_connection('nabla', r'\nabla') ; nab
-            affine connection 'nabla' on the domain 'A' on the 3-dimensional manifold 'M'
+            affine connection 'nabla' on the subset 'A' on the 3-dimensional manifold 'M'
 
         See the documentation of class
         :class:`~sage.geometry.manifolds.connection.AffConnection` for more
