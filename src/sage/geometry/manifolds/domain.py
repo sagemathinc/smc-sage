@@ -24,53 +24,53 @@ Two subsets on a manifold::
 
     sage: M = Manifold(2, 'M')
     sage: a = M.subset('A') ; a
-    subset 'A' on the 2-dimensional manifold 'M'
+    subset 'A' of the 2-dimensional manifold 'M'
     sage: b = M.subset('B') ; b
-    subset 'B' on the 2-dimensional manifold 'M'
+    subset 'B' of the 2-dimensional manifold 'M'
     sage: M.subsets()  # random (set output)
-    {subset 'A' on the 2-dimensional manifold 'M',
-     subset 'B' on the 2-dimensional manifold 'M',
+    {subset 'A' of the 2-dimensional manifold 'M',
+     subset 'B' of the 2-dimensional manifold 'M',
      2-dimensional manifold 'M'}
 
 The intersection of the two subsets::
 
     sage: c = a.intersection(b) ; c
-    subset 'A_inter_B' on the 2-dimensional manifold 'M'
+    subset 'A_inter_B' of the 2-dimensional manifold 'M'
 
 Their union::
 
     sage: d = a.union(b) ; d
-    subset 'A_union_B' on the 2-dimensional manifold 'M'
+    subset 'A_union_B' of the 2-dimensional manifold 'M'
 
 State of various data members after the above operations::
 
     sage: M.subsets()  # random (set output)
-    {subset 'A' on the 2-dimensional manifold 'M',
-     subset 'B' on the 2-dimensional manifold 'M',
-     subset 'A_inter_B' on the 2-dimensional manifold 'M',
+    {subset 'A' of the 2-dimensional manifold 'M',
+     subset 'B' of the 2-dimensional manifold 'M',
+     subset 'A_inter_B' of the 2-dimensional manifold 'M',
      2-dimensional manifold 'M'}
     sage: a._subsets  # random (set output)
-    set([subset 'A' on the 2-dimensional manifold 'M',
-         subset 'A_inter_B' on the 2-dimensional manifold 'M'])
+    set([subset 'A' of the 2-dimensional manifold 'M',
+         subset 'A_inter_B' of the 2-dimensional manifold 'M'])
     sage: a._supersets  # random (set output)
-    set([subset 'A_union_B' on the 2-dimensional manifold 'M',
+    set([subset 'A_union_B' of the 2-dimensional manifold 'M',
          2-dimensional manifold 'M',
-         subset 'A' on the 2-dimensional manifold 'M'])
+         subset 'A' of the 2-dimensional manifold 'M'])
     sage: c._supersets  # random (set output)
-    set([subset 'B' on the 2-dimensional manifold 'M',
-         subset 'A_union_B' on the 2-dimensional manifold 'M',
+    set([subset 'B' of the 2-dimensional manifold 'M',
+         subset 'A_union_B' of the 2-dimensional manifold 'M',
          2-dimensional manifold 'M',
-         subset 'A' on the 2-dimensional manifold 'M',
-         subset 'A_inter_B' on the 2-dimensional manifold 'M'])
+         subset 'A' of the 2-dimensional manifold 'M',
+         subset 'A_inter_B' of the 2-dimensional manifold 'M'])
     sage: c._subsets  # random (set output)
-    set([subset 'A_inter_B' on the 2-dimensional manifold 'M'])
+    set([subset 'A_inter_B' of the 2-dimensional manifold 'M'])
     sage: d._subsets  # random (set output)
-    set([subset 'B' on the 2-dimensional manifold 'M',
-         subset 'A_union_B' on the 2-dimensional manifold 'M',
-         subset 'A_inter_B' on the 2-dimensional manifold 'M',
-         subset 'A' on the 2-dimensional manifold 'M'])
+    set([subset 'B' of the 2-dimensional manifold 'M',
+         subset 'A_union_B' of the 2-dimensional manifold 'M',
+         subset 'A_inter_B' of the 2-dimensional manifold 'M',
+         subset 'A' of the 2-dimensional manifold 'M'])
     sage: d._supersets  # random (set output)
-    set([subset 'A_union_B' on the 2-dimensional manifold 'M',
+    set([subset 'A_union_B' of the 2-dimensional manifold 'M',
          2-dimensional manifold 'M'])
 
 """
@@ -111,7 +111,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         sage: M = Manifold(2, 'M')
         sage: from sage.geometry.manifolds.domain import ManifoldSubset
         sage: A = ManifoldSubset(M, 'A', latex_name=r'\mathcal{A}') ; A
-        subset 'A' on the 2-dimensional manifold 'M'
+        subset 'A' of the 2-dimensional manifold 'M'
         sage: latex(A)
         \mathcal{A}
         sage: A.is_subset(M)
@@ -121,10 +121,10 @@ class ManifoldSubset(UniqueRepresentation, Parent):
     it is recommended to use the method :meth:`subset` to create a new subset::
 
         sage: B = M.subset('B', latex_name=r'\mathcal{B}') ; B
-        subset 'B' on the 2-dimensional manifold 'M'
+        subset 'B' of the 2-dimensional manifold 'M'
         sage: M.subsets()  # random (set output)
-        {subset 'A' on the 2-dimensional manifold 'M',
-         subset 'B' on the 2-dimensional manifold 'M',
+        {subset 'A' of the 2-dimensional manifold 'M',
+         subset 'B' of the 2-dimensional manifold 'M',
          2-dimensional manifold 'M'}
 
     The manifold is itself a subset::
@@ -150,7 +150,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         sage: p = A.an_element() ; p
         point on 2-dimensional manifold 'M'
         sage: p.parent()
-        subset 'A' on the 2-dimensional manifold 'M'
+        subset 'A' of the 2-dimensional manifold 'M'
         sage: p in A
         True
         sage: p in M
@@ -168,9 +168,8 @@ class ManifoldSubset(UniqueRepresentation, Parent):
                 if name == dom._name:
                     raise ValueError("The name '" + name +
                                      "' is already used for " +
-                                     "another subset on the " + str(manifold))
+                                     "another subset of the " + str(manifold))
             self._name = name
-#!#            manifold._subsets.append(self)
             manifold._subsets.add(self)
             # set of subsets containing self:
             self._supersets = set([manifold, self])
@@ -238,13 +237,13 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def _repr_(self):
         r"""
-        String representation of the object.
+        String representation of ``self``.
         """
-        return "subset '" + self._name + "' on the " + str(self._manifold)
+        return "subset '" + self._name + "' of the " + str(self._manifold)
 
     def _latex_(self):
         r"""
-        LaTeX representation of the object.
+        LaTeX representation of ``self``.
         """
         return self._latex_name
 
@@ -271,8 +270,8 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             sage: U = M.open_subset('U')
             sage: V = M.subset('V')
             sage: M.subsets()  # random (set output)
-             {open subset 'U' on the 2-dimensional manifold 'M',
-              subset 'V' on the 2-dimensional manifold 'M',
+             {open subset 'U' of the 2-dimensional manifold 'M',
+              subset 'V' of the 2-dimensional manifold 'M',
               2-dimensional manifold 'M'}
             sage: U in M.subsets()
             True
@@ -281,8 +280,8 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
             sage: M.list_of_subsets()
             [2-dimensional manifold 'M',
-             open subset 'U' on the 2-dimensional manifold 'M',
-             subset 'V' on the 2-dimensional manifold 'M']
+             open subset 'U' of the 2-dimensional manifold 'M',
+             subset 'V' of the 2-dimensional manifold 'M']
 
         """
         return self._subsets
@@ -313,14 +312,14 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             sage: V = M.subset('V')
             sage: M.list_of_subsets()
             [2-dimensional manifold 'M',
-             open subset 'U' on the 2-dimensional manifold 'M',
-             subset 'V' on the 2-dimensional manifold 'M']
+             open subset 'U' of the 2-dimensional manifold 'M',
+             subset 'V' of the 2-dimensional manifold 'M']
 
         The method :meth:`subsets` returns a set instead of a list::
 
             sage: M.subsets()  # random (set output)
-            {open subset 'U' on the 2-dimensional manifold 'M',
-             subset 'V' on the 2-dimensional manifold 'M',
+            {open subset 'U' of the 2-dimensional manifold 'M',
+             subset 'V' of the 2-dimensional manifold 'M',
              2-dimensional manifold 'M'}
                    
         """
@@ -459,29 +458,29 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: a = M.subset('A') ; a
-            subset 'A' on the 2-dimensional manifold 'M'
+            subset 'A' of the 2-dimensional manifold 'M'
 
         Creating a subset of A::
 
             sage: b = a.subset('B', latex_name=r'\mathcal{B}') ; b
-            subset 'B' on the 2-dimensional manifold 'M'
+            subset 'B' of the 2-dimensional manifold 'M'
             sage: latex(b)
             \mathcal{B}
 
         B is then a subset of A and A is a superset of B::
 
             sage: a._subsets  # random (set output)
-            set([subset 'B' on the 2-dimensional manifold 'M',
-                 subset 'A' on the 2-dimensional manifold 'M'])
+            set([subset 'B' of the 2-dimensional manifold 'M',
+                 subset 'A' of the 2-dimensional manifold 'M'])
             sage: b._supersets  # random (set output)
-            set([subset 'B' on the 2-dimensional manifold 'M',
+            set([subset 'B' of the 2-dimensional manifold 'M',
                  2-dimensional manifold 'M',
-                 subset 'A' on the 2-dimensional manifold 'M'])
+                 subset 'A' of the 2-dimensional manifold 'M'])
 
         Creating an open subset of A::
 
             sage: c = a.subset('C', is_open=True) ; c
-            open subset 'C' on the 2-dimensional manifold 'M'
+            open subset 'C' of the 2-dimensional manifold 'M'
 
         """
         if is_open:
@@ -521,14 +520,14 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             sage: M = Manifold(2, 'M')
             sage: a = M.subset('A')
             sage: b = a.superset('B') ; b
-            subset 'B' on the 2-dimensional manifold 'M'
+            subset 'B' of the 2-dimensional manifold 'M'
             sage: b._subsets # random (set output)
-            set([subset 'B' on the 2-dimensional manifold 'M',
-                 subset 'A' on the 2-dimensional manifold 'M'])
+            set([subset 'B' of the 2-dimensional manifold 'M',
+                 subset 'A' of the 2-dimensional manifold 'M'])
             sage: a._supersets # random (set output)
-            set([subset 'B' on the 2-dimensional manifold 'M',
+            set([subset 'B' of the 2-dimensional manifold 'M',
                  2-dimensional manifold 'M',
-                 subset 'A' on the 2-dimensional manifold 'M'])
+                 subset 'A' of the 2-dimensional manifold 'M'])
 
         The superset of the manifold is itself::
 
@@ -569,7 +568,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
         INPUT:
 
-        - ``other`` -- another subset on the same manifold
+        - ``other`` -- another subset of the same manifold
         - ``name`` -- (default: None) name given to the intersection in the
           case the latter has to be created; the default is
           ``self._name`` inter ``other._name``
@@ -592,18 +591,18 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             sage: a = M.subset('A')
             sage: b = M.subset('B')
             sage: c = a.intersection(b) ; c
-            subset 'A_inter_B' on the 2-dimensional manifold 'M'
+            subset 'A_inter_B' of the 2-dimensional manifold 'M'
             sage: a._subsets  # random (set output)
-            set([subset 'A_inter_B' on the 2-dimensional manifold 'M',
-                 subset 'A' on the 2-dimensional manifold 'M'])
+            set([subset 'A_inter_B' of the 2-dimensional manifold 'M',
+                 subset 'A' of the 2-dimensional manifold 'M'])
             sage: b._subsets  # random (set output)
-            set([subset 'B' on the 2-dimensional manifold 'M',
-                 subset 'A_inter_B' on the 2-dimensional manifold 'M'])
+            set([subset 'B' of the 2-dimensional manifold 'M',
+                 subset 'A_inter_B' of the 2-dimensional manifold 'M'])
             sage: c._supersets  # random (set output)
-            set([subset 'A' on the 2-dimensional manifold 'M',
+            set([subset 'A' of the 2-dimensional manifold 'M',
                  2-dimensional manifold 'M',
-                 subset 'A_inter_B' on the 2-dimensional manifold 'M',
-                 subset 'B' on the 2-dimensional manifold 'M'])
+                 subset 'A_inter_B' of the 2-dimensional manifold 'M',
+                 subset 'B' of the 2-dimensional manifold 'M'])
 
         Some checks::
 
@@ -666,7 +665,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
         INPUT:
 
-        - ``other`` -- another subset on the same manifold
+        - ``other`` -- another subset of the same manifold
         - ``name`` -- (default: None) name given to the union in the
           case the latter has to be created; the default is
           ``self._name`` union ``other._name``
@@ -688,19 +687,19 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             sage: a = M.subset('A')
             sage: b = M.subset('B')
             sage: c = a.union(b) ; c
-            subset 'A_union_B' on the 2-dimensional manifold 'M'
+            subset 'A_union_B' of the 2-dimensional manifold 'M'
             sage: a._supersets  # random (set output)
-            set([subset 'A_union_B' on the 2-dimensional manifold 'M',
+            set([subset 'A_union_B' of the 2-dimensional manifold 'M',
                  2-dimensional manifold 'M',
-                 subset 'A' on the 2-dimensional manifold 'M'])
+                 subset 'A' of the 2-dimensional manifold 'M'])
             sage: b._supersets  # random (set output)
-            set([subset 'B' on the 2-dimensional manifold 'M',
+            set([subset 'B' of the 2-dimensional manifold 'M',
                  2-dimensional manifold 'M',
-                 subset 'A_union_B' on the 2-dimensional manifold 'M'])
+                 subset 'A_union_B' of the 2-dimensional manifold 'M'])
             sage: c._subsets  # random (set output)
-            set([subset 'A_union_B' on the 2-dimensional manifold 'M',
-                subset 'A' on the 2-dimensional manifold 'M',
-                subset 'B' on the 2-dimensional manifold 'M'])
+            set([subset 'A_union_B' of the 2-dimensional manifold 'M',
+                subset 'A' of the 2-dimensional manifold 'M',
+                subset 'B' of the 2-dimensional manifold 'M'])
 
         Some checks::
 
@@ -1165,12 +1164,13 @@ class ManifoldOpenSubset(ManifoldSubset):
     This class is devoted to open subsets of a differentiable manifold
     over `\RR`.
 
-    The class :class:`ManifoldOpenSubset` inherits from the class :class:`ManifoldSubset`.
-    Via the latter, it inherits also from the generic Sage class
-    :class:`~sage.structure.parent.Parent`  and is declared to belong to the
-    category of sets (Sage category :class:`~sage.categories.sets_cat.Sets`).
+    The class :class:`ManifoldOpenSubset` inherits from the class
+    :class:`ManifoldSubset`. Via the latter, it inherits also from the generic
+    Sage class :class:`~sage.structure.parent.Parent` and is declared to belong
+    to the category of sets (category :class:`~sage.categories.sets_cat.Sets`).
     The corresponding Sage :class:`~sage.structure.element.Element`'s are
-    implemented via the class :class:`~sage.geometry.manifolds.point.ManifoldPoint`.
+    implemented via the class
+    :class:`~sage.geometry.manifolds.point.ManifoldPoint`.
 
     INPUT:
 
@@ -1181,13 +1181,13 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     EXAMPLES:
 
-    A open subset on a manifold::
+    A open subset of a 2-dimensional manifold::
 
         sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(2, 'M')
         sage: from sage.geometry.manifolds.domain import ManifoldOpenSubset
         sage: A = ManifoldOpenSubset(M, 'A', latex_name=r'\mathcal{A}') ; A
-        open subset 'A' on the 2-dimensional manifold 'M'
+        open subset 'A' of the 2-dimensional manifold 'M'
         sage: latex(A)
         \mathcal{A}
 
@@ -1196,10 +1196,10 @@ class ManifoldOpenSubset(ManifoldSubset):
     open subset::
 
         sage: B = M.open_subset('B', latex_name=r'\mathcal{B}') ; B
-        open subset 'B' on the 2-dimensional manifold 'M'
+        open subset 'B' of the 2-dimensional manifold 'M'
         sage: M.subsets()  # random (set output)
-        {open subset 'A' on the 2-dimensional manifold 'M',
-         open subset 'B' on the 2-dimensional manifold 'M',
+        {open subset 'A' of the 2-dimensional manifold 'M',
+         open subset 'B' of the 2-dimensional manifold 'M',
          2-dimensional manifold 'M'}
 
     The manifold is itself an open subset (by definition!)::
@@ -1214,7 +1214,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         sage: p = A.an_element() ; p
         point on 2-dimensional manifold 'M'
         sage: p.parent()
-        open subset 'A' on the 2-dimensional manifold 'M'
+        open subset 'A' of the 2-dimensional manifold 'M'
         sage: A.category()
         Category of sets
 
@@ -1263,9 +1263,9 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of ``self``.
         """
-        return "open subset '" + self._name + "' on the " + str(self._manifold)
+        return "open subset '" + self._name + "' of the " + str(self._manifold)
 
     def open_subset(self, name, latex_name=None, coord_def={}):
         r"""
@@ -1295,22 +1295,22 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: a = M.open_subset('A') ; a
-            open subset 'A' on the 2-dimensional manifold 'M'
+            open subset 'A' of the 2-dimensional manifold 'M'
 
         Creating an open subset of A::
 
             sage: b = a.open_subset('B') ; b
-            open subset 'B' on the 2-dimensional manifold 'M'
+            open subset 'B' of the 2-dimensional manifold 'M'
 
         B is then a subset of A and A is a superset of B::
 
             sage: a._subsets # random (set output)
-            set([open subset 'A' on the 2-dimensional manifold 'M',
-                 open subset 'B' on the 2-dimensional manifold 'M'])
+            set([open subset 'A' of the 2-dimensional manifold 'M',
+                 open subset 'B' of the 2-dimensional manifold 'M'])
             sage: b._supersets # random (set output)
-            set([open subset 'A' on the 2-dimensional manifold 'M',
+            set([open subset 'A' of the 2-dimensional manifold 'M',
                  2-dimensional manifold 'M',
-                 open subset 'B' on the 2-dimensional manifold 'M'])
+                 open subset 'B' of the 2-dimensional manifold 'M'])
 
         Defining an open subset by some coordinate restrictions: the open
         unit disk in `\RR^2`::
@@ -1318,7 +1318,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: M = Manifold(2, 'R^2')
             sage: c_cart.<x,y> = M.chart() # Cartesian coordinates on R^2
             sage: U = M.open_subset('U', coord_def={c_cart: x^2+y^2<1}) ; U
-            open subset 'U' on the 2-dimensional manifold 'R^2'
+            open subset 'U' of the 2-dimensional manifold 'R^2'
 
         Since the argument ``coord_def`` has been set, U is automatically
         provided with a chart, which is the restriction of the Cartesian one
@@ -1495,12 +1495,12 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: A = M.open_subset('A', latex_name=r'\mathcal{A}'); A
-            open subset 'A' on the 3-dimensional manifold 'M'
+            open subset 'A' of the 3-dimensional manifold 'M'
             sage: c_xyz.<x,y,z> = A.chart()
             sage: e = A.vector_frame('e'); e
             vector frame (A, (e_0,e_1,e_2))
             sage: e[0]
-            vector field 'e_0' on the open subset 'A' on the 3-dimensional manifold 'M'
+            vector field 'e_0' on the open subset 'A' of the 3-dimensional manifold 'M'
 
         See the documentation of class
         :class:`~sage.geometry.manifolds.vectorframe.VectorFrame` for more
@@ -1546,11 +1546,11 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: M = Manifold(3, 'M')
             sage: U = M.open_subset('U')
             sage: CU = U.scalar_field_algebra() ; CU
-            algebra of scalar fields on the open subset 'U' on the 3-dimensional manifold 'M'
+            algebra of scalar fields on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: CU.category()
             Category of commutative algebras over Symbolic Ring
             sage: CU.zero()
-            zero scalar field on the open subset 'U' on the 3-dimensional manifold 'M'
+            zero scalar field on the open subset 'U' of the 3-dimensional manifold 'M'
 
         """
         from scalarfield_algebra import ScalarFieldAlgebra
@@ -1598,11 +1598,11 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: U = S2.open_subset('U')  # the complement of the two poles
             sage: spher_coord.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coordinates
             sage: XU = U.vector_field_module() ; XU
-            free module X(U) of vector fields on the open subset 'U' on the 2-dimensional manifold 'S^2'
+            free module X(U) of vector fields on the open subset 'U' of the 2-dimensional manifold 'S^2'
             sage: XU.category()
-            Category of modules over algebra of scalar fields on the open subset 'U' on the 2-dimensional manifold 'S^2'
+            Category of modules over algebra of scalar fields on the open subset 'U' of the 2-dimensional manifold 'S^2'
             sage: XU.base_ring()
-            algebra of scalar fields on the open subset 'U' on the 2-dimensional manifold 'S^2'
+            algebra of scalar fields on the open subset 'U' of the 2-dimensional manifold 'S^2'
             sage: XU.base_ring() is U.scalar_field_algebra()
             True
 
@@ -1620,7 +1620,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         The elements of `\mathcal{X}(U)` are vector fields on `U`::
 
             sage: XU.an_element()
-            vector field on the open subset 'U' on the 2-dimensional manifold 'S^2'
+            vector field on the open subset 'U' of the 2-dimensional manifold 'S^2'
             sage: XU.an_element().view()
             2 d/dth + 2 d/dph
 
@@ -1632,9 +1632,9 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: cart_coord.<x, y, z> = R3.chart()
             sage: Phi = U.diff_mapping(R3, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='Phi')
             sage: XU_R3 = U.vector_field_module(dest_map=Phi) ; XU_R3
-            free module X(U,Phi) of vector fields along the open subset 'U' on the 2-dimensional manifold 'S^2' mapped into the 3-dimensional manifold 'R^3'
+            free module X(U,Phi) of vector fields along the open subset 'U' of the 2-dimensional manifold 'S^2' mapped into the 3-dimensional manifold 'R^3'
             sage: XU_R3.base_ring()
-            algebra of scalar fields on the open subset 'U' on the 2-dimensional manifold 'S^2'
+            algebra of scalar fields on the open subset 'U' of the 2-dimensional manifold 'S^2'
 
         `\mathcal{X}(U,\mathbb{R}^3)` is a free module because `\mathbb{R}^3`
         is parallelizable and its rank is 3::
@@ -1693,15 +1693,15 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: U = M.open_subset('U')
             sage: c_xyz.<x,y,z> = U.chart()
             sage: TU = U.tensor_field_module((2,1)) ; TU
-            free module T^(2,1)(U) of type-(2,1) tensors fields on the open subset 'U' on the 3-dimensional manifold 'M'
+            free module T^(2,1)(U) of type-(2,1) tensors fields on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: TU.category()
-            Category of modules over algebra of scalar fields on the open subset 'U' on the 3-dimensional manifold 'M'
+            Category of modules over algebra of scalar fields on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: TU.base_ring()
-            algebra of scalar fields on the open subset 'U' on the 3-dimensional manifold 'M'
+            algebra of scalar fields on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: TU.base_ring() is U.scalar_field_algebra()
             True
             sage: TU.an_element()
-            tensor field of type (2,1) on the open subset 'U' on the 3-dimensional manifold 'M'
+            tensor field of type (2,1) on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: TU.an_element().view()
             2 d/dx*d/dx*dx
 
@@ -1759,12 +1759,12 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: U = M.open_subset('U')
             sage: c_xyz.<x,y,z> = U.chart()
             sage: f = U.scalar_field(sin(x)*cos(y) + z, name='F'); f
-            scalar field 'F' on the open subset 'U' on the 3-dimensional manifold 'M'
+            scalar field 'F' on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: f.view()
             F: U --> R
                (x, y, z) |--> cos(y)*sin(x) + z
             sage: f.parent()
-            algebra of scalar fields on the open subset 'U' on the 3-dimensional manifold 'M'
+            algebra of scalar fields on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: f in U.scalar_field_algebra()
             True
 
@@ -1823,13 +1823,13 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: U = M.open_subset('U')
             sage: c_xyz.<x,y,z> = U.chart()
             sage: v = U.vector_field('v'); v
-            vector field 'v' on the open subset 'U' on the 3-dimensional manifold 'M'
+            vector field 'v' on the open subset 'U' of the 3-dimensional manifold 'M'
 
         Vector fields on `U` form the set `\mathcal{X}(U)`, which is a module
         over the algebra `C^\infty(U)` of smooth scalar fields on `U`::
 
             sage: v.parent()
-            free module X(U) of vector fields on the open subset 'U' on the 3-dimensional manifold 'M'
+            free module X(U) of vector fields on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: v in U.vector_field_module()
             True
 
@@ -1887,14 +1887,14 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: U = M.open_subset('U')
             sage: c_xyz.<x,y,z> = U.chart()
             sage: t = U.tensor_field(2, 0, 'T'); t
-            tensor field 'T' of type (2,0) on the open subset 'U' on the 3-dimensional manifold 'M'
+            tensor field 'T' of type (2,0) on the open subset 'U' of the 3-dimensional manifold 'M'
 
         Type-(2,0) tensor fields on `U` form the set `\mathcal{T}^{(2,0)}(U)`,
         which is a module over the algebra `C^\infty(U)` of smooth scalar
         fields on `U`::
 
             sage: t.parent()
-            free module T^(2,0)(U) of type-(2,0) tensors fields on the open subset 'U' on the 3-dimensional manifold 'M'
+            free module T^(2,0)(U) of type-(2,0) tensors fields on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: t in U.tensor_field_module((2,0))
             True
 
@@ -2367,10 +2367,10 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(4, 'M')
             sage: A = M.open_subset('A', latex_name=r'\mathcal{A}'); A
-            open subset 'A' on the 4-dimensional manifold 'M'
+            open subset 'A' of the 4-dimensional manifold 'M'
             sage: c_xyzt.<x,y,z,t> = A.chart()
             sage: f = A.diff_form(2, 'F'); f
-            2-form 'F' on the open subset 'A' on the 4-dimensional manifold 'M'
+            2-form 'F' on the open subset 'A' of the 4-dimensional manifold 'M'
 
         See the documentation of class
         :class:`~sage.geometry.manifolds.diffform.DiffForm` for more examples.
@@ -2412,9 +2412,9 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: A = M.open_subset('A', latex_name=r'\mathcal{A}')
             sage: X.<x,y,z> = A.chart()
             sage: om = A.one_form('omega', r'\omega') ; om
-            1-form 'omega' on the open subset 'A' on the 3-dimensional manifold 'M'
+            1-form 'omega' on the open subset 'A' of the 3-dimensional manifold 'M'
             sage: om.parent()
-            free module T^(0,1)(A) of type-(0,1) tensors fields on the open subset 'A' on the 3-dimensional manifold 'M'
+            free module T^(0,1)(A) of type-(0,1) tensors fields on the open subset 'A' of the 3-dimensional manifold 'M'
 
         See the documentation of class
         :class:`~sage.geometry.manifolds.diffform.OneForm` for more examples.
@@ -2576,7 +2576,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: M = Manifold(3, 'M', start_index=1)
             sage: A = M.open_subset('A', latex_name=r'\mathcal{A}')
             sage: #!# nab = A.aff_connection('nabla', r'\nabla') ; nab
-            affine connection 'nabla' on the subset 'A' on the 3-dimensional manifold 'M'
+            affine connection 'nabla' on the subset 'A' of the 3-dimensional manifold 'M'
 
         See the documentation of class
         :class:`~sage.geometry.manifolds.connection.AffConnection` for more

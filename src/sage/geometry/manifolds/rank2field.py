@@ -367,14 +367,14 @@ class TangentIdentityField(AutomorphismField):
     their intersection is used for the result::
 
         sage: a(v.restrict(U))
-        vector field 'v' on the open domain 'U' on the 2-dimensional manifold 'M'
+        vector field 'v' on the open subset 'U' of the 2-dimensional manifold 'M'
         sage: a(v.restrict(U)) is v.restrict(U)
         True
 
     ::
 
         sage: a.restrict(U)(v)
-        vector field 'v' on the open domain 'U' on the 2-dimensional manifold 'M'
+        vector field 'v' on the open subset 'U' of the 2-dimensional manifold 'M'
         sage: a.restrict(U)(v) is v.restrict(U)
         True
 

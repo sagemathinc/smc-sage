@@ -2,7 +2,7 @@ r"""
 Differentiable mappings between manifolds
 
 The class :class:`DiffMapping` implements differentiable mappings from an open
-domain `U` of a differentiable manifold `M` to some differentiable
+subset `U` of a differentiable manifold `M` to some differentiable
 manifold `N`:
 
 .. MATH::
@@ -196,9 +196,9 @@ class DiffMapping(Map):
     def __init__(self, domain, codomain, coord_functions=None, chart1=None,
                  chart2=None, name=None, latex_name=None):
         if not isinstance(domain, ManifoldSubset):
-            raise TypeError("The argument domain must be a domain.")
+            raise TypeError("The argument domain must be a manifold subset.")
         if not isinstance(codomain, ManifoldSubset):
-            raise TypeError("The argument codomain must be a domain.")
+            raise TypeError("The argument codomain must be a manifold subset.")
         Map.__init__(self, domain, codomain)
         self._domain = domain
         self._codomain = codomain
@@ -1082,11 +1082,11 @@ class DiffMapping(Map):
             sage: c_xy_D = c_xy.restrict(D)
             sage: U = D.open_subset('U', coord_def={c_xy_D: x^2+y^2>1/2}) # the annulus 1/2 < r < 1
             sage: Phi.restrict(U)
-            differentiable mapping 'Phi' from open domain 'U' on the 2-dimensional manifold 'R^2' to 2-dimensional manifold 'R^2'
+            differentiable mapping 'Phi' from open subset 'U' of the 2-dimensional manifold 'R^2' to 2-dimensional manifold 'R^2'
             sage: Phi.domain()
-            open domain 'D' on the 2-dimensional manifold 'R^2'
+            open subset 'D' of the 2-dimensional manifold 'R^2'
             sage: Phi.restrict(U).domain()
-            open domain 'U' on the 2-dimensional manifold 'R^2'
+            open subset 'U' of the 2-dimensional manifold 'R^2'
             sage: Phi.restrict(U).view()
             Phi: U --> R^2
                (x, y) |--> (x, y) = (x/sqrt(-x^2 - y^2 + 1), y/sqrt(-x^2 - y^2 + 1))
@@ -1098,11 +1098,11 @@ class DiffMapping(Map):
             subcodomain = self._codomain
         if (subdomain, subcodomain) not in self._restrictions:
             if not subdomain.is_subset(self._domain):
-                raise ValueError("The specified domain is not a subdomain " +
+                raise ValueError("The specified domain is not a subset " +
                                  "of the domain of definition of the diff. " +
                                  "mapping.")
             if not subcodomain.is_subset(self._codomain):
-                raise ValueError("The specified codomain is not a subdomain " +
+                raise ValueError("The specified codomain is not a subset " +
                                  "of the codomain of the diff. mapping.")
             resu = DiffMapping(subdomain, subcodomain, name=self._name,
                                latex_name=self._latex_name)
@@ -1161,7 +1161,7 @@ class DiffMapping(Map):
             f: R^3 --> R
                (x, y, z) |--> x*y*z
             sage: pf = Phi.pullback(f) ; pf
-            scalar field 'Phi_*(f)' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            scalar field 'Phi_*(f)' on the open subset 'U' of the 2-dimensional manifold 'S^2'
             sage: pf.view()
             Phi_*(f): U --> R
                (th, ph) |--> cos(ph)*cos(th)*sin(ph)*sin(th)^2
@@ -1173,7 +1173,7 @@ class DiffMapping(Map):
             sage: g.view()
             g = dx*dx + dy*dy + dz*dz
             sage: pg = Phi.pullback(g) ; pg
-            field of symmetric bilinear forms 'Phi_*(g)' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            field of symmetric bilinear forms 'Phi_*(g)' on the open subset 'U' of the 2-dimensional manifold 'S^2'
             sage: pg.view()
             Phi_*(g) = dth*dth + sin(th)^2 dph*dph
 
@@ -1184,7 +1184,7 @@ class DiffMapping(Map):
             sage: a.view()
             A = x*y*z dx/\dy/\dz
             sage: pa = Phi.pullback(a) ; pa
-            3-form 'Phi_*(A)' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            3-form 'Phi_*(A)' on the open subset 'U' of the 2-dimensional manifold 'S^2'
             sage: pa.view() # should be zero (as any 3-form on a 2-dimensional manifold)
             Phi_*(A) = 0
 
@@ -1196,7 +1196,7 @@ class DiffMapping(Map):
         tdom = tensor._domain
         if not tdom.is_subset(dom2):
             raise TypeError("The tensor field is not defined on the mapping " +
-                            "arrival domain.")
+                            "codomain.")
         (ncon, ncov) = tensor._tensor_type
         if ncon != 0:
             raise TypeError("The pullback cannot be taken on a tensor " +
@@ -1386,7 +1386,7 @@ class Diffeomorphism(DiffMapping):
         sage: D = M.open_subset('D', coord_def={c_xy: x^2+y^2<1}) # the open unit disk
         sage: Phi = D.diffeomorphism(M, [x/sqrt(1-x^2-y^2), y/sqrt(1-x^2-y^2)], name='Phi', latex_name=r'\Phi')
         sage: Phi
-        diffeomorphism 'Phi' between the open domain 'D' on the 2-dimensional manifold 'R^2' and the 2-dimensional manifold 'R^2'
+        diffeomorphism 'Phi' between the open subset 'D' of the 2-dimensional manifold 'R^2' and the 2-dimensional manifold 'R^2'
         sage: Phi.view()
         Phi: D --> R^2
            (x, y) |--> (x, y) = (x/sqrt(-x^2 - y^2 + 1), y/sqrt(-x^2 - y^2 + 1))
@@ -1402,7 +1402,7 @@ class Diffeomorphism(DiffMapping):
     The inverse diffeomorphism is computed by means of the method :meth:`inverse`::
 
         sage: Phi.inverse()
-        diffeomorphism 'Phi^(-1)' between the 2-dimensional manifold 'R^2' and the open domain 'D' on the 2-dimensional manifold 'R^2'
+        diffeomorphism 'Phi^(-1)' between the 2-dimensional manifold 'R^2' and the open subset 'D' of the 2-dimensional manifold 'R^2'
         sage: Phi.inverse().view()
         Phi^(-1): R^2 --> D
            (x, y) |--> (x, y) = (x/sqrt(x^2 + y^2 + 1), y/sqrt(x^2 + y^2 + 1))
@@ -1459,10 +1459,10 @@ class Diffeomorphism(DiffMapping):
 
         - ``chart1`` -- (default: None) chart in which the computation of the
           inverse is performed if necessary; if none is provided, the default
-          chart of the start domain will be used
+          chart of the domain of ``self`` will be used
         - ``chart2`` -- (default: None) chart in which the computation of the
           inverse is performed if necessary; if none is provided, the default
-          chart of the arrival domain will be used
+          chart of the codomain of ``self`` will be used
 
         OUTPUT:
 
@@ -1570,7 +1570,7 @@ class IdentityMap(Diffeomorphism):
         sage: U = M.open_subset('U')
         sage: c_xy.<x, y> = U.chart()
         sage: i = U.identity_map() ; i
-        identity map 'Id_U' on the open domain 'U' on the 2-dimensional manifold 'M'
+        identity map 'Id_U' on the open subset 'U' of the 2-dimensional manifold 'M'
         sage: latex(i)
         \mathrm{Id}_{U}
 
@@ -1731,12 +1731,12 @@ class IdentityMap(Diffeomorphism):
 
     def restrict(self, subdomain, subcodomain=None):
         r"""
-        Restriction of the identity map to some subdomain of its
+        Restriction of the identity map to some subset of its
         domain of definition.
 
         INPUT:
 
-        - ``subdomain`` -- the subdomain of ``self._domain`` (instance of
+        - ``subdomain`` -- the subset of ``self._domain`` (instance of
           :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
         - ``subcodomain`` -- (default: None) unused here (just for
           compatibility with :meth:`DiffMapping.restrict`)
@@ -1751,7 +1751,7 @@ class IdentityMap(Diffeomorphism):
             return self
         if (subdomain, subdomain) not in self._restrictions:
             if not subdomain.is_subset(self._domain):
-                raise ValueError("The specified domain is not a subdomain " +
+                raise ValueError("The specified domain is not a subset " +
                                  "of the domain of definition of the " +
                                  "identity map.")
             self._restrictions[(subdomain, subdomain)] = \

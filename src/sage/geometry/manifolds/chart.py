@@ -878,9 +878,9 @@ class Chart(UniqueRepresentation, SageObject):
             coordinate change from chart (W, (x,)) to chart (W, (y,))
             sage: M.list_of_subsets() # the subset W, intersection of U and V, has been created by transition_map()
             [1-dimensional manifold 'S^1',
-             open subset 'U' on the 1-dimensional manifold 'S^1',
-             open subset 'V' on the 1-dimensional manifold 'S^1',
-             open subset 'W' on the 1-dimensional manifold 'S^1']
+             open subset 'U' of the 1-dimensional manifold 'S^1',
+             open subset 'V' of the 1-dimensional manifold 'S^1',
+             open subset 'W' of the 1-dimensional manifold 'S^1']
             sage: W = M.list_of_subsets()[3]
             sage: W is U.intersection(V)
             True
@@ -900,7 +900,7 @@ class Chart(UniqueRepresentation, SageObject):
             coordinate change from chart (U, (r, phi)) to chart (U, (x, y))
             sage: M.list_of_subsets() # in this case, no new subset has been created since U inter M = U
             [2-dimensional manifold 'R^2',
-            open subset 'U' on the 2-dimensional manifold 'R^2']
+            open subset 'U' of the 2-dimensional manifold 'R^2']
             sage: M.atlas() # ...but a new chart has been created: (U, (x, y))
             [chart (R^2, (x, y)), chart (U, (r, phi)), chart (U, (x, y))]
 

@@ -387,7 +387,7 @@ class TensorField(ModuleElement):
         False
 
     To fully define `t`, we have to specify its components in some vector frames
-    defined on subdomains of `S^2`; let us start by the domain `U`::
+    defined on subsets of `S^2`; let us start by the open subset `U`::
 
         sage: eU = c_xy.frame()
         sage: t = M.tensor_field(0,2, name='t')
@@ -396,7 +396,7 @@ class TensorField(ModuleElement):
         t = dx*dx - 2 dy*dx + 3 dy*dy
 
     To set the components of `t` on `V` consistently, we copy the expressions
-    of the components in the common subdomain `W`::
+    of the components in the common subset `W`::
 
         sage: eV = c_uv.frame()
         sage: eVW = eV.restrict(W)
@@ -411,8 +411,8 @@ class TensorField(ModuleElement):
 
         sage: t.add_comp_by_continuation(eV, W, chart=c_uv)
 
-    At this stage, `t` is fully defined, having components in frames eU and eV,
-    whose domain union is the whole manifold::
+    At this stage, `t` is fully defined, having components in frames eU and eV
+    and the union of the domains of eU and eV being whole manifold::
 
         sage: t.view(eV)
         t = (u^4 - 4*u^3*v + 10*u^2*v^2 + 4*u*v^3 + v^4)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) du*du - 4*(u^3*v + 2*u^2*v^2 - u*v^3)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) du*dv + 2*(u^4 - 2*u^3*v - 2*u^2*v^2 + 2*u*v^3 + v^4)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) dv*du + (3*u^4 + 4*u^3*v - 2*u^2*v^2 - 4*u*v^3 + 3*v^4)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) dv*dv
@@ -440,27 +440,27 @@ class TensorField(ModuleElement):
         on U: (x, y) |--> -(2*x - 1)*y - 3*x
         on V: (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
 
-    The vectors can be defined only on subdomains of `S^2`, the domain of the
-    result is then the common subdomain::
+    The vectors can be defined only on subsets of `S^2`, the domain of the
+    result is then the common subset::
 
         sage: s = t(a.restrict(U), b) ; s
-        scalar field 't(a,b)' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+        scalar field 't(a,b)' on the open subset 'U' of the 2-dimensional manifold 'S^2'
         sage: s.view()
         t(a,b): U --> R
            (x, y) |--> -(2*x - 1)*y - 3*x
         on W: (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
         sage: s = t(a.restrict(U), b.restrict(W)) ; s
-        scalar field 't(a,b)' on the open domain 'W' on the 2-dimensional manifold 'S^2'
+        scalar field 't(a,b)' on the open subset 'W' of the 2-dimensional manifold 'S^2'
         sage: s.view()
         t(a,b): W --> R
            (x, y) |--> -(2*x - 1)*y - 3*x
            (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
 
-    The tensor itself can be defined only on some subdomain of `S^2`, yielding
-    a result whose domain is this subdomain::
+    The tensor itself can be defined only on some open subset of `S^2`, yielding
+    a result whose domain is this subset::
 
         sage: s = t.restrict(V)(a,b) ; s
-        scalar field 't(a,b)' on the open domain 'V' on the 2-dimensional manifold 'S^2'
+        scalar field 't(a,b)' on the open subset 'V' of the 2-dimensional manifold 'S^2'
         sage: s.view()
         t(a,b): V --> R
            (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
@@ -477,7 +477,7 @@ class TensorField(ModuleElement):
         sage: s.restrict(U) == f.restrict(U)*t.restrict(U)
         True
         sage: s = f*t.restrict(U) ; s
-        tensor field of type (0,2) on the open domain 'U' on the 2-dimensional manifold 'S^2'
+        tensor field of type (0,2) on the open subset 'U' of the 2-dimensional manifold 'S^2'
         sage: s.restrict(U) == f.restrict(U)*t.restrict(U)
         True
 
@@ -497,8 +497,8 @@ class TensorField(ModuleElement):
             self._latex_name = latex_name
         self._domain = vector_field_module._domain
         self._ambient_domain = vector_field_module._ambient_domain
-        self._restrictions = {} # dict. of restrictions of self on subdomains of
-                               # self._domain, with the subdomains as keys
+        self._restrictions = {} # dict. of restrictions of self on subdomains
+                                # of self._domain, with the subdomains as keys
         # Treatment of symmetry declarations:
         self._sym = []
         if sym is not None and sym != []:
@@ -664,11 +664,12 @@ class TensorField(ModuleElement):
 
     def domain(self):
         r"""
-        Return the domain on which the tensor field is defined.
+        Return the open subset on which the tensor field is defined.
 
         OUTPUT:
 
-        - instance of class :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`
+        - instance of class
+          :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`
           representing the manifold's open subset on which ``self`` is defined.
 
         EXAMPLES::
@@ -682,7 +683,7 @@ class TensorField(ModuleElement):
             sage: U = M.open_subset('U', coord_def={c_xy: x<0})
             sage: h = t.restrict(U)
             sage: h.domain()
-            open domain 'U' on the 2-dimensional manifold 'M'
+            open subset 'U' of the 2-dimensional manifold 'M'
 
         """
         return self._domain
@@ -775,10 +776,10 @@ class TensorField(ModuleElement):
             raise TypeError("The argument must be a tensor field.")
         if not rst._domain.is_subset(self._domain):
             raise ValueError("The domain of the declared restriction is not " +
-                             "a subdomain of the current field's domain.")
+                             "a subset of the field's domain.")
         if not rst._ambient_domain.is_subset(self._ambient_domain):
             raise ValueError("The ambient domain of the declared " +
-                             "restriction is not a subdomain of the current " +
+                             "restriction is not a subset of the " +
                              "field's ambient domain.")
         if rst._tensor_type != self._tensor_type:
             raise ValueError("The declared restriction has not the same " +
@@ -840,13 +841,13 @@ class TensorField(ModuleElement):
             sage: v.view()
             v = d/dx
             sage: vU = v.restrict(U) ; vU
-            vector field 'v' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            vector field 'v' on the open subset 'U' of the 2-dimensional manifold 'S^2'
             sage: vU.view()
             v = d/dx
             sage: vU == eN[1]
             True
             sage: vW = v.restrict(W) ; vW
-            vector field 'v' on the open domain 'W' on the 2-dimensional manifold 'S^2'
+            vector field 'v' on the open subset 'W' of the 2-dimensional manifold 'S^2'
             sage: vW.view()
             v = d/dx
             sage: vW.view(eS_W, stereoS_W)
@@ -854,7 +855,8 @@ class TensorField(ModuleElement):
             sage: vW == eN_W[1]
             True
 
-        At this stage, defining the restriction of v to domain V fully specifies v::
+        At this stage, defining the restriction of v to the open subset V fully
+        specifies v::
 
             sage: v.restrict(V)[1] = vW[eS_W, 1, stereoS_W].expr()  # note that eS is the default frame on V
             sage: v.restrict(V)[2] = vW[eS_W, 2, stereoS_W].expr()
@@ -878,8 +880,8 @@ class TensorField(ModuleElement):
             return self
         if subdomain not in self._restrictions:
             if not subdomain.is_subset(self._domain):
-                raise ValueError("The provided domain is not a subdomain of " +
-                                 "the current field's domain.")
+                raise ValueError("The provided domain is not a subset of " +
+                                 "the field's domain.")
             if dest_map is None:
                 dest_map = self._vmodule._dest_map.restrict(subdomain)
             elif not dest_map._codomain.is_subset(self._ambient_domain):
@@ -969,7 +971,7 @@ class TensorField(ModuleElement):
         INPUT:
 
         - ``frame`` -- vector frame `e` in which the components are to be set
-        - ``subdomain`` -- subdomain of `e`'s domain in which the
+        - ``subdomain`` -- open subset of `e`'s domain in which the
           components are known or can be evaluated from other components
         - ``chart`` -- (default: None) coordinate chart on `e`'s domain in
           which the extension of the expression of the components is to be
@@ -981,7 +983,7 @@ class TensorField(ModuleElement):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: # The two open domains covered by stereographic coordinates (North and South):
+            sage: # The two open subsets covered by stereographic coordinates (North and South):
             sage: U = M.open_subset('U') ; V = M.open_subset('V')
             sage: M.declare_union(U,V)   # S^2 is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart() # stereographic coordinates
@@ -992,8 +994,8 @@ class TensorField(ModuleElement):
             sage: a = M.vector_field('a')
             sage: a[eU,:] = [x, 2+y]
 
-        At this stage, the vector field has been defined only on the domain U
-        (through its components in the frame eU)::
+        At this stage, the vector field has been defined only on the open
+        subset U (through its components in the frame eU)::
 
             sage: a.view(eU)
             a = x d/dx + (y + 2) d/dy
@@ -1006,8 +1008,8 @@ class TensorField(ModuleElement):
             a = (-4*u*v - u) d/du + (2*u^2 - 2*v^2 - v) d/dv
 
         The continuation consists in extending the definition of the vector
-        field to the whole domain V by demanding that the components in the
-        frame eV have the same coordinate expression as the above one::
+        field to the whole open subset V by demanding that the components in
+        the frame eV have the same coordinate expression as the above one::
 
             sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
 
@@ -1021,7 +1023,7 @@ class TensorField(ModuleElement):
         """
         dom = frame._domain
         if not dom.is_subset(self._domain):
-            raise ValueError("The vector frame is not defined on a subdomain" +
+            raise ValueError("The vector frame is not defined on a subset" +
                              " of the tensor field domain.")
         if chart is None:
             chart = dom._def_chart
@@ -1055,7 +1057,7 @@ class TensorField(ModuleElement):
 
         EXAMPLES:
 
-        Components of a type-(1,1) tensor field defined on two open domains::
+        Components of a type-(1,1) tensor field defined on two open subsets::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
@@ -1127,7 +1129,7 @@ class TensorField(ModuleElement):
 
         EXAMPLES:
 
-        Display of a type-(1,1) tensor field defined on two open domains::
+        Display of a type-(1,1) tensor field defined on two open subsets::
 
             sage: M = Manifold(2, 'M')
             sage: U = M.open_subset('U')
@@ -2091,16 +2093,16 @@ class TensorField(ModuleElement):
             sage: b['^ki']*a['^j_k'] == s
             True
 
-        The domain of the result is the intersection of the two tensor fields
-        domain::
+        The domain of the result is the intersection of the domains of the two
+        tensor fields::
 
             sage: aU = a.restrict(U) ; bV = b.restrict(V)
             sage: s = aU.contract(b) ; s
-            tensor field of type (2,0) on the open domain 'U' on the 2-dimensional manifold 'M'
+            tensor field of type (2,0) on the open subset 'U' of the 2-dimensional manifold 'M'
             sage: s = a.contract(bV) ; s
-            tensor field of type (2,0) on the open domain 'V' on the 2-dimensional manifold 'M'
+            tensor field of type (2,0) on the open subset 'V' of the 2-dimensional manifold 'M'
             sage: s = aU.contract(bV) ; s
-            tensor field of type (2,0) on the open domain 'W' on the 2-dimensional manifold 'M'
+            tensor field of type (2,0) on the open subset 'W' of the 2-dimensional manifold 'M'
             sage: s0 = a.contract(b)
             sage: s == s0.restrict(W)
             True
@@ -2407,8 +2409,8 @@ class TensorField(ModuleElement):
         INPUT:
 
         - ``point`` -- (instance of
-          :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in the
-          domain of ``self`` (denoted `t` hereafter)
+          :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in
+          the domain of ``self`` (denoted `t` hereafter)
 
         OUTPUT:
 
@@ -3087,7 +3089,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
     def restrict(self, subdomain, dest_map=None):
         r"""
-        Return the restriction of ``self`` to some subdomain.
+        Return the restriction of ``self`` to some subset of its domain.
 
         If such restriction has not been defined yet, it is constructed here.
 
@@ -3096,7 +3098,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
           instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
         - ``dest_map`` -- (default: None) destination map
-          `\Phi:\ U \rightarrow V`, where `V` is a subdomain of
+          `\Phi:\ U \rightarrow V`, where `V` is a subset of
           ``self._codomain``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
           If None, the restriction of ``self._vmodule._dest_map`` to `U` is
@@ -3117,7 +3119,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: D = M.open_subset('D') # the unit open disc
             sage: c_cart_D = c_cart.restrict(D, x^2+y^2<1)
             sage: v_D = v.restrict(D) ; v_D
-            vector field 'v' on the open domain 'D' on the 2-dimensional manifold 'R^2'
+            vector field 'v' on the open subset 'D' of the 2-dimensional manifold 'R^2'
             sage: v_D.view()
             v = (x + y) d/dx + (x^2 - 1) d/dy
 
@@ -3127,14 +3129,14 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: bool( v_D[1].expr() == v[1].expr() )
             True
 
-        but not the chart functions representing the components (they are
+        but neither the chart functions representing the components (they are
         defined on different charts)::
 
             sage: v_D[1] == v[1]
             False
 
         nor the scalar fields representing the components (they are
-        defined on different open domains)::
+        defined on different open subsets)::
 
             sage: v_D[[1]] == v[[1]]
             False
@@ -3150,8 +3152,8 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             return self
         if subdomain not in self._restrictions:
             if not subdomain.is_subset(self._domain):
-                raise ValueError("The provided domain is not a subdomain of " +
-                                 "the current field's domain.")
+                raise ValueError("The provided domain is not a subset of " +
+                                 "the field's domain.")
             if dest_map is None:
                 dest_map = self._fmodule._dest_map.restrict(subdomain)
             elif not dest_map._codomain.is_subset(self._ambient_domain):
@@ -3257,8 +3259,8 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         INPUT:
 
         - ``point`` -- (instance of
-          :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in the
-          domain of ``self`` (denoted `t` hereafter)
+          :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in
+          the domain of ``self`` (denoted `t` hereafter)
 
         OUTPUT:
 

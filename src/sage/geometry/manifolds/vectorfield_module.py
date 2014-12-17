@@ -137,7 +137,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         sage: XU.coerce_map_from(XM)
         Conversion map:
           From: module X(M) of vector fields on the 2-dimensional manifold 'M'
-          To:   free module X(U) of vector fields on the open domain 'U' on the 2-dimensional manifold 'M'
+          To:   free module X(U) of vector fields on the open subset 'U' of the 2-dimensional manifold 'M'
 
     The conversion map is actually the restriction of vector fields defined
     on `M` to `U`.
@@ -760,13 +760,13 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
     defined on a subdomain of `S^1`, for instance `\mathcal{X}(U)`::
 
         sage: XU = U.vector_field_module() ; XU
-        free module X(U) of vector fields on the open domain 'U' on the 1-dimensional manifold 'S^1'
+        free module X(U) of vector fields on the open subset 'U' of the 1-dimensional manifold 'S^1'
         sage: XU.has_coerce_map_from(XM)
         True
         sage: XU.coerce_map_from(XM)
         Conversion map:
           From: free module X(S^1) of vector fields on the 1-dimensional manifold 'S^1'
-          To:   free module X(U) of vector fields on the open domain 'U' on the 1-dimensional manifold 'S^1'
+          To:   free module X(U) of vector fields on the open subset 'U' of the 1-dimensional manifold 'S^1'
 
     The conversion map is actually the restriction of vector fields defined
     on `S^1` to `U`.

@@ -35,7 +35,7 @@ EXAMPLES:
     of `S^2`, which we call U::
 
         sage: U = M.open_subset('U') ; U
-        open subset 'U' on the 2-dimensional manifold 'S^2'
+        open subset 'U' of the 2-dimensional manifold 'S^2'
 
     A standard chart on U is provided by the stereographic projection from the
     North pole to the equatorial plane::
@@ -63,7 +63,7 @@ EXAMPLES:
     the South pole to the equatorial plane::
 
         sage: V = M.open_subset('V') ; V
-        open subset 'V' on the 2-dimensional manifold 'S^2'
+        open subset 'V' of the 2-dimensional manifold 'S^2'
         sage: stereoS.<u,v> = V.chart() ; stereoS
         chart (V, (u, v))
 
@@ -106,9 +106,9 @@ EXAMPLES:
 
         sage: M.list_of_subsets()
         [2-dimensional manifold 'S^2',
-         open subset 'U' on the 2-dimensional manifold 'S^2',
-         open subset 'V' on the 2-dimensional manifold 'S^2',
-         open subset 'W' on the 2-dimensional manifold 'S^2']
+         open subset 'U' of the 2-dimensional manifold 'S^2',
+         open subset 'V' of the 2-dimensional manifold 'S^2',
+         open subset 'W' of the 2-dimensional manifold 'S^2']
 
     W is the open subset that is the complement of the two poles::
 

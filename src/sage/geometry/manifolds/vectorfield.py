@@ -105,23 +105,23 @@ class VectorField(TensorField):
     the scalar field's one::
 
         sage: s = v(f.restrict(U)) ; s
-        scalar field 'v(f)' on the open domain 'U' on the 2-dimensional manifold 'M'
+        scalar field 'v(f)' on the open subset 'U' of the 2-dimensional manifold 'M'
         sage: s == v(f).restrict(U)
         True
         sage: s = v(f.restrict(W)) ; s
-        scalar field 'v(f)' on the open domain 'W' on the 2-dimensional manifold 'M'
+        scalar field 'v(f)' on the open subset 'W' of the 2-dimensional manifold 'M'
         sage: s.view()
         v(f): W --> R
            (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
            (t, u) |--> 2*t*u + 2*t
         sage: s = v.restrict(U)(f) ; s
-        scalar field 'v(f)' on the open domain 'U' on the 2-dimensional manifold 'M'
+        scalar field 'v(f)' on the open subset 'U' of the 2-dimensional manifold 'M'
         sage: s.view()
         v(f): U --> R
            (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
         on W: (t, u) |--> 2*t*u + 2*t
         sage: s = v.restrict(U)(f.restrict(V)) ; s
-        scalar field 'v(f)' on the open domain 'W' on the 2-dimensional manifold 'M'
+        scalar field 'v(f)' on the open subset 'W' of the 2-dimensional manifold 'M'
         sage: s.view()
         v(f): W --> R
            (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y

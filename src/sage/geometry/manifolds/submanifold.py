@@ -79,13 +79,13 @@ class Submanifold(Manifold):
          i: H --> R^3
             t |--> (x, y, z) = (cos(t), sin(t), t)
 
-    The constructed submanifolds are automatically added to the subdomains of
+    The constructed submanifolds are automatically added to the subsets of
     the ambient manifold::
 
         sage: M.list_of_subsets()
-        [domain 'H' on the 3-dimensional manifold 'R^3',
+        [subset 'H' of the 3-dimensional manifold 'R^3',
          3-dimensional manifold 'R^3',
-         domain 'S^2' on the 3-dimensional manifold 'R^3']
+         subset 'S^2' of the 3-dimensional manifold 'R^3']
 
     Pullback of 1-forms defined on `\RR^3` to `S^2`::
 
@@ -94,7 +94,7 @@ class Submanifold(Manifold):
         sage: dX[1]
         1-form 'dx' on the 3-dimensional manifold 'R^3'
         sage: S._embedding.pullback(dX[1])
-        1-form 'i_*(dx)' on the open domain 'U' on the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
+        1-form 'i_*(dx)' on the open subset 'U' of the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
         sage: S._embedding.pullback(dX[1]).view()
         i_*(dx) = cos(ph)*cos(th) dth - sin(ph)*sin(th) dph
         sage: S._embedding.pullback(dX[2]).view()
@@ -107,9 +107,9 @@ class Submanifold(Manifold):
         sage: e = S.default_frame() ; e
         coordinate frame (U, (d/dth,d/dph))
         sage: e[1]
-        vector field 'd/dth' on the open domain 'U' on the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
+        vector field 'd/dth' on the open subset 'U' of the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
         sage: S.pushforward(e[1])
-        vector field 'i_*(d/dth)' along the open domain 'U' on the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3' with values on the 3-dimensional manifold 'R^3'
+        vector field 'i_*(d/dth)' along the open subset 'U' of the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3' with values on the 3-dimensional manifold 'R^3'
         sage: S.pushforward(e[1]).view()
         i_*(d/dth) = cos(ph)*cos(th) d/dx + cos(th)*sin(ph) d/dy - sin(th) d/dz
         sage: S.pushforward(e[2]).view()
@@ -124,8 +124,8 @@ class Submanifold(Manifold):
         Manifold.__init__(self, n, name, latex_name, start_index)
         # The embedding map:
         self._embedding = None  # not defined yet
-        # The submanifold as a subdomain of the ambient manifold:
-        self._domain_amb = self._ambient_manifold.domain(name, latex_name)
+        # The submanifold as a subset of the ambient manifold:
+        self._subset_amb = self._ambient_manifold.subset(name, latex_name)
 
     def _repr_(self):
         r"""
@@ -247,7 +247,7 @@ class Submanifold(Manifold):
 
         - instance of :class:`TensorField` representing a field of fully
           contravariant tensors of the ambient manifold, field defined on
-          the domain occupied by the submanifold.
+          the subset occupied by the submanifold.
 
         EXAMPLES:
 
@@ -263,14 +263,14 @@ class Submanifold(Manifold):
             sage: v[2] = 1 ; v.view()  # azimuthal vector field on S^2
             v = d/dph
             sage: iv = S.pushforward(v) ; iv
-            vector field 'i_*(v)' along the open domain 'U' on the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3' with values on the 3-dimensional manifold 'R^3'
+            vector field 'i_*(v)' along the open subset 'U' of the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3' with values on the 3-dimensional manifold 'R^3'
             sage: iv.view()
             i_*(v) = -sin(ph)*sin(th) d/dx + cos(ph)*sin(th) d/dy
 
         The components of the pushforward vector are scalar fields on the submanifold::
 
             sage: iv.comp()[[1]]
-            scalar field on the open domain 'U' on the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
+            scalar field on the open subset 'U' of the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
 
         Pushforward of a tangent vector to a helix, submanifold of `\RR^3`::
 

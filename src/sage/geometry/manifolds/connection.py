@@ -89,7 +89,7 @@ class AffConnection(SageObject):
 
     INPUT:
 
-    - ``domain`` -- the manifold domain on which the connection is defined
+    - ``domain`` -- the manifold subset on which the connection is defined
       (must be an instance of class
       :class:`~sage.geometry.manifolds.domain.ManifoldSubset`)
     - ``name`` -- name given to the affine connection
@@ -187,13 +187,13 @@ class AffConnection(SageObject):
         sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
         sage: nab = M.aff_connection('nabla', r'\nabla')
 
-    The connection is first defined on the domain U by means of its
+    The connection is first defined on the open subset U by means of its
     coefficients w.r.t. the frame eU (the manifold's default frame)::
 
         sage: nab[0,0,0], nab[1,0,1] = x, x*y
 
     The coefficients w.r.t the frame eV are deduced by continuation of the
-    coefficients w.r.t. the frame eVW on the domain `W=U\cap V`::
+    coefficients w.r.t. the frame eVW on the open subset `W=U\cap V`::
 
         sage: for i in M.irange():
         ....:     for j in M.irange():
@@ -242,7 +242,7 @@ class AffConnection(SageObject):
     """
     def __init__(self, domain, name, latex_name=None):
         if not isinstance(domain, ManifoldSubset):
-            raise TypeError("The first argument must be a domain.")
+            raise TypeError("The first argument must be a manifold subset.")
         self._manifold = domain._manifold
         self._domain = domain
         self._name = name
@@ -278,7 +278,7 @@ class AffConnection(SageObject):
         r"""
         Initialize the derived quantities
         """
-        self._restrictions = {} # dict. of restrictions of ``self`` some
+        self._restrictions = {} # dict. of restrictions of ``self`` on some
                                 # subdomains, with the subdomains as keys
         self._torsion = None
         self._riemann = None
@@ -301,7 +301,7 @@ class AffConnection(SageObject):
 
     def domain(self):
         r"""
-        Return the domain on which the affine connection is defined.
+        Return the manifold subset on which the affine connection is defined.
 
         OUTPUT:
 
@@ -318,7 +318,7 @@ class AffConnection(SageObject):
             sage: U = M.open_subset('U', coord_def={c_xyz: x>0})
             sage: nabU = U.aff_connection('D')
             sage: nabU.domain()
-            open domain 'U' on the 3-dimensional manifold 'M'
+            open subset 'U' of the 3-dimensional manifold 'M'
 
         """
         return self._domain
@@ -519,8 +519,8 @@ class AffConnection(SageObject):
 
     def __getitem__(self, indices):
         r"""
-        Return the connection coefficient w.r.t. the domain default frame
-        corresponding to the given indices.
+        Return the connection coefficient w.r.t. the default frame of the
+        connection's domain corresponding to the given indices.
 
         INPUT:
 
@@ -531,8 +531,8 @@ class AffConnection(SageObject):
 
     def __setitem__(self, indices, value):
         r"""
-        Set the connection coefficient w.r.t. the domain default frame
-        corresponding to the given indices.
+        Set the connection coefficient w.r.t. the default frame of the
+        connection's domain corresponding to the given indices.
 
         INPUT:
 
@@ -568,9 +568,9 @@ class AffConnection(SageObject):
             [[[0, x^2], [0, 0]], [[x + y, 0], [0, 0]]]
             sage: U = M.open_subset('U', coord_def={c_xy: x>0})
             sage: nabU = nab.restrict(U) ; nabU
-            affine connection 'nabla' on the open domain 'U' on the 2-dimensional manifold 'M'
+            affine connection 'nabla' on the open subset 'U' of the 2-dimensional manifold 'M'
             sage: nabU.domain()
-            open domain 'U' on the 2-dimensional manifold 'M'
+            open subset 'U' of the 2-dimensional manifold 'M'
             sage: nabU[:]
             [[[0, x^2], [0, 0]], [[x + y, 0], [0, 0]]]
 
@@ -592,8 +592,8 @@ class AffConnection(SageObject):
             return self
         if subdomain not in self._restrictions:
             if not subdomain.is_subset(self._domain):
-                raise ValueError("The provided domain is not a subdomain of " +
-                                 "the current connection's domain.")
+                raise ValueError("The provided domains is not a subset of " +
+                                 "the connection's domain.")
             resu = AffConnection(subdomain, name=self._name,
                                  latex_name=self._latex_name)
             for frame in self._coefficients:
@@ -621,8 +621,8 @@ class AffConnection(SageObject):
         Find a common vector frame for the coefficients of ``self`` and
         the components of  ``other``.
 
-        In case of multiple common frames, the domain's default frame is
-        privileged.
+        In case of multiple common frames, the default frame of ``self``'s
+        domain is privileged.
 
         INPUT:
 

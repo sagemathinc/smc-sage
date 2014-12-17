@@ -127,7 +127,7 @@ class TensorFieldModule(UniqueRepresentation, Module):
         sage: T20U.coerce_map_from(T20)
         Conversion map:
           From: module T^(2,0)(M) of type-(2,0) tensors fields on the 2-dimensional manifold 'M'
-          To:   free module T^(2,0)(U) of type-(2,0) tensors fields on the open domain 'U' on the 2-dimensional manifold 'M'
+          To:   free module T^(2,0)(U) of type-(2,0) tensors fields on the open subset 'U' of the 2-dimensional manifold 'M'
 
     The conversion map is actually the *restriction* of tensor fields defined
     on `M` to `U`.
@@ -334,7 +334,7 @@ class TensorFieldFreeModule(TensorFreeModule):
         sage: T20U.coerce_map_from(T20)
         Conversion map:
           From: free module T^(2,0)(R^3) of type-(2,0) tensors fields on the 3-dimensional manifold 'R^3'
-          To:   free module T^(2,0)(U) of type-(2,0) tensors fields on the open domain 'U' on the 3-dimensional manifold 'R^3'
+          To:   free module T^(2,0)(U) of type-(2,0) tensors fields on the open subset 'U' of the 3-dimensional manifold 'R^3'
 
     The conversion map is actually the *restriction* of tensor fields defined
     on `\RR^3` to `U`.

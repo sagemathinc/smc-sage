@@ -143,9 +143,9 @@ class Metric(TensorField):
     same symbol)::
 
         sage: g.restrict(U)
-        pseudo-Riemannian metric 'g' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+        pseudo-Riemannian metric 'g' on the open subset 'U' of the 2-dimensional manifold 'S^2'
         sage: g.restrict(U).parent()
-        free module T^(0,2)(U) of type-(0,2) tensors fields on the open domain 'U' on the 2-dimensional manifold 'S^2'
+        free module T^(0,2)(U) of type-(0,2) tensors fields on the open subset 'U' of the 2-dimensional manifold 'S^2'
 
     The parent of `g|_U` is a free module because is `U` is a parallelizable
     domain, contrary to `S^2`. Actually, `g` and `g|_U` have different Python
@@ -576,7 +576,7 @@ class Metric(TensorField):
             sage: g = U.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2 , (r*sin(th))^2  # the Euclidean metric
             sage: g.connection()
-            Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the open domain 'U' on the 3-dimensional manifold 'R^3'
+            Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the open subset 'U' of the 3-dimensional manifold 'R^3'
             sage: g.connection()[:]  # Christoffel symbols w.r.t. spherical coordinates
             [[[0, 0, 0], [0, -r, 0], [0, 0, -r*sin(th)^2]],
             [[0, 1/r, 0], [1/r, 0, 0], [0, 0, -cos(th)*sin(th)]],
@@ -585,11 +585,11 @@ class Metric(TensorField):
         Test of compatibility with the metric::
 
             sage: Dg = g.connection()(g) ; Dg
-            tensor field 'nabla_g g' of type (0,3) on the open domain 'U' on the 3-dimensional manifold 'R^3'
+            tensor field 'nabla_g g' of type (0,3) on the open subset 'U' of the 3-dimensional manifold 'R^3'
             sage: Dg == 0
             True
             sage: Dig = g.connection()(g.inverse()) ; Dig
-            tensor field 'nabla_g inv_g' of type (2,1) on the open domain 'U' on the 3-dimensional manifold 'R^3'
+            tensor field 'nabla_g inv_g' of type (2,1) on the open subset 'U' of the 3-dimensional manifold 'R^3'
             sage: Dig == 0
             True
 
@@ -703,7 +703,7 @@ class Metric(TensorField):
             sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
             sage: g.riemann()
-            tensor field 'Riem(g)' of type (1,3) on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            tensor field 'Riem(g)' of type (1,3) on the open subset 'U' of the 2-dimensional manifold 'S^2'
             sage: g.riemann()[:]
             [[[[0, 0], [0, 0]], [[0, sin(th)^2], [-sin(th)^2, 0]]],
              [[[0, (cos(th)^2 - 1)/sin(th)^2], [1, 0]], [[0, 0], [0, 0]]]]
@@ -770,7 +770,7 @@ class Metric(TensorField):
             sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
             sage: g.ricci()
-            field of symmetric bilinear forms 'Ric(g)' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            field of symmetric bilinear forms 'Ric(g)' on the open subset 'U' of the 2-dimensional manifold 'S^2'
             sage: g.ricci()[:]
             [        1         0]
             [        0 sin(th)^2]
@@ -818,7 +818,7 @@ class Metric(TensorField):
             sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
             sage: g.ricci_scalar()
-            scalar field 'r(g)' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            scalar field 'r(g)' on the open subset 'U' of the 2-dimensional manifold 'S^2'
             sage: g.ricci_scalar().view() # The Ricci scalar is constant:
             r(g): U --> R
                (th, ph) |--> 2/a^2
@@ -870,7 +870,7 @@ class Metric(TensorField):
             sage: g.view()  # standard metric on H^3:
             g = b^2 drh*drh + b^2*sinh(rh)^2 dth*dth + b^2*sin(th)^2*sinh(rh)^2 dph*dph
             sage: C = g.weyl() ; C
-            tensor field 'C(g)' of type (1,3) on the open domain 'U' on the 3-dimensional manifold 'H^3'
+            tensor field 'C(g)' of type (1,3) on the open subset 'U' of the 3-dimensional manifold 'H^3'
             sage: C == 0
             True
 
@@ -1116,7 +1116,7 @@ class Metric(TensorField):
             sage: g.view()
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
             sage: eps = g.volume_form() ; eps
-            3-form 'eps_g' on the open domain 'U' on the 3-dimensional manifold 'M'
+            3-form 'eps_g' on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: eps.view()
             eps_g = r^2*sin(th) dr/\dth/\dph
             sage: eps[[1,2,3]] == g.sqrt_abs_det()
@@ -1128,7 +1128,7 @@ class Metric(TensorField):
         The tensor field of components `\epsilon^i_{\ \, jk}` (``contra=1``)::
 
             sage: eps1 = g.volume_form(1) ; eps1
-            tensor field of type (1,2) on the open domain 'U' on the 3-dimensional manifold 'M'
+            tensor field of type (1,2) on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: eps1.symmetries()
             no symmetry;  antisymmetry: (1, 2)
             sage: eps1[:]
@@ -1139,7 +1139,7 @@ class Metric(TensorField):
         The tensor field of components `\epsilon^{ij}_{\ \ k}` (``contra=2``)::
 
             sage: eps2 = g.volume_form(2) ; eps2
-            tensor field of type (2,1) on the open domain 'U' on the 3-dimensional manifold 'M'
+            tensor field of type (2,1) on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: eps2.symmetries()
             no symmetry;  antisymmetry: (0, 1)
             sage: eps2[:]
@@ -1150,7 +1150,7 @@ class Metric(TensorField):
         The tensor field of components `\epsilon^{ijk}` (``contra=3``)::
 
             sage: eps3 = g.volume_form(3) ; eps3
-            tensor field of type (3,0) on the open domain 'U' on the 3-dimensional manifold 'M'
+            tensor field of type (3,0) on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: eps3.symmetries()
             no symmetry;  antisymmetry: (0, 1, 2)
             sage: eps3[:]
@@ -1625,7 +1625,7 @@ class MetricParal(Metric, TensorFieldParal):
             sage: g.view() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
             sage: g.ricci_scalar()
-            scalar field 'r(g)' on the open domain 'U' on the 2-dimensional manifold 'S^2'
+            scalar field 'r(g)' on the open subset 'U' of the 2-dimensional manifold 'S^2'
             sage: g.ricci_scalar().view() # The Ricci scalar is constant:
             r(g): U --> R
                (th, ph) |--> 2/a^2

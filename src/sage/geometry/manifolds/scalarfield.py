@@ -288,7 +288,7 @@ class ScalarField(CommutativeAlgebraElement):
         sage: f.expr()
         cos(ph)*sin(th)
 
-    Test of the arithmetics of scalar fields defined on multiple domains::
+    Test of the arithmetics of scalar fields defined on multiple open subsets::
 
         sage: M = Manifold(2, 'M')
         sage: U = M.open_subset('U')
@@ -319,7 +319,7 @@ class ScalarField(CommutativeAlgebraElement):
         sage: g._express
         {chart (U, (x, y)): 3*x}
         sage: s = f + g ; s
-        scalar field on the open domain 'U' on the 2-dimensional manifold 'M'
+        scalar field on the open subset 'U' of the 2-dimensional manifold 'M'
         sage: s._express
         {chart (U, (x, y)): x^2 + 3*x}
 
@@ -449,8 +449,8 @@ class ScalarField(CommutativeAlgebraElement):
         r"""
         Initialize the derived quantities
         """
-        self._restrictions = {} # dict. of restrictions of self on subdomains
-                                # of self._domain, with the subdomains as keys
+        self._restrictions = {} # dict. of restrictions of self on subsets
+                                # of self._domain, with the subsets as keys
         self._differential = None # differential
         self._lie_derivatives = {} # collection of Lie derivatives of self
 
@@ -467,7 +467,7 @@ class ScalarField(CommutativeAlgebraElement):
 
     def _repr_(self):
         r"""
-        String representation of the object.
+        String representation of ``self``.
         """
         description = "scalar field"
         if self._name is not None:
@@ -477,7 +477,7 @@ class ScalarField(CommutativeAlgebraElement):
 
     def _latex_(self):
         r"""
-        LaTeX representation of the object.
+        LaTeX representation of ``self``.
         """
         if self._latex_name is None:
             return r'\mbox{' + str(self) + r'}'
@@ -512,7 +512,7 @@ class ScalarField(CommutativeAlgebraElement):
 
     def domain(self):
         r"""
-        Return the domain on which the scalar field is defined.
+        Return the open subset on which the scalar field is defined.
 
         OUTPUT:
 
@@ -529,7 +529,7 @@ class ScalarField(CommutativeAlgebraElement):
             sage: U = M.open_subset('U', coord_def={c_xy: x<0})
             sage: g = f.restrict(U)
             sage: g.domain()
-            open domain 'U' on the 2-dimensional manifold 'M'
+            open subset 'U' of the 2-dimensional manifold 'M'
 
         """
         return self._domain
@@ -587,7 +587,7 @@ class ScalarField(CommutativeAlgebraElement):
 
         - ``chart`` -- (default: None) chart with respect to which the
           coordinate expression is to be returned; if None, the
-          domain's default chart will be used
+          default chart of the domain of ``self`` will be used
         - ``from_chart`` -- (default: None) chart from which the
           required expression is computed if it is not known already in the
           chart ``chart``; if None, a chart is picked in ``self._express``
@@ -702,8 +702,8 @@ class ScalarField(CommutativeAlgebraElement):
         INPUT:
 
         - ``chart`` -- (default: None) chart with respect to which the
-          coordinate expression is required; if None, the domain's default
-          chart will be used
+          coordinate expression is required; if None, the default
+          chart of the domain of ``self`` will be used
         - ``from_chart`` -- (default: None) chart from which the
           required expression is computed if it is not known already in the
           chart ``chart``; if None, a chart is picked in ``self._express``
@@ -756,7 +756,8 @@ class ScalarField(CommutativeAlgebraElement):
 
         - ``coord_expression`` -- coordinate expression of the scalar field
         - ``chart`` -- (default: None) chart in which ``coord_expression`` is
-          defined; if None, the domain's default chart is assumed
+          defined; if None, the default chart of the domain of ``self`` is
+          assumed
 
         EXAMPLES:
 
@@ -797,7 +798,8 @@ class ScalarField(CommutativeAlgebraElement):
 
         - ``coord_expression`` -- coordinate expression of the scalar field
         - ``chart`` -- (default: None) chart in which ``coord_expression``
-          is defined; if None, the domain's default chart is assumed
+          is defined; if None, the default chart of the domain of ``self`` is
+          assumed
 
         .. WARNING::
 
@@ -842,7 +844,7 @@ class ScalarField(CommutativeAlgebraElement):
 
         - ``chart`` -- coordinate chart `(U,(x^i))` in which the expression of
           the scalar field is to set
-        - ``subdomain`` -- open domain `V\subset U` in which the expression
+        - ``subdomain`` -- open subset `V\subset U` in which the expression
           in terms of the restriction of the coordinate chart `(U,(x^i))` to
           `V` is already known or can be evaluated by a change of coordinates.
 
@@ -876,7 +878,7 @@ class ScalarField(CommutativeAlgebraElement):
             f: S^2 --> R
             on W: (u, v) |--> arctan(1/(u^2 + v^2))
 
-        We use this fact to extend the definition of `f` to domain `V`,
+        We use this fact to extend the definition of `f` to the open subset `V`,
         covered by the chart c_uv::
 
             sage: f.add_expr_by_continuation(c_uv, W)
@@ -890,7 +892,7 @@ class ScalarField(CommutativeAlgebraElement):
 
         """
         if not chart._domain.is_subset(self._domain):
-            raise ValueError("The chart is not defined on a subdomain of " +
+            raise ValueError("The chart is not defined on a subset of " +
                              "the scalar field domain.")
         schart = chart.restrict(subdomain)
         self._express[chart] = FunctionChart(chart, self.expr(schart))
@@ -1008,14 +1010,14 @@ class ScalarField(CommutativeAlgebraElement):
             sage: X_U = X.restrict(U, x^2+y^2 < 1)  # U is the unit open disc
             sage: f = M.scalar_field(cos(x*y), name='f')
             sage: f_U = f.restrict(U) ; f_U
-            scalar field 'f' on the open domain 'U' on the 2-dimensional manifold 'M'
+            scalar field 'f' on the open subset 'U' of the 2-dimensional manifold 'M'
             sage: f_U.view()
             f: U --> R
                (x, y) |--> cos(x*y)
             sage: f.parent()
             algebra of scalar fields on the 2-dimensional manifold 'M'
             sage: f_U.parent()
-            algebra of scalar fields on the open domain 'U' on the 2-dimensional manifold 'M'
+            algebra of scalar fields on the open subset 'U' of the 2-dimensional manifold 'M'
 
         The restriction to the whole domain is the identity::
 
@@ -1029,7 +1031,7 @@ class ScalarField(CommutativeAlgebraElement):
             return self
         if subdomain not in self._restrictions:
             if not subdomain.is_subset(self._domain):
-                raise ValueError("The specified domain is not a subdomain " +
+                raise ValueError("The specified domain is not a subset " +
                                  "of the domain of definition of the scalar " +
                                  "field.")
             # First one tries to get the restriction from a tighter domain:
@@ -1083,8 +1085,8 @@ class ScalarField(CommutativeAlgebraElement):
             [chart (U, (x, y))]
 
         Common charts found as subcharts: the subcharts are introduced via
-        a transition map between charts c_xy and c_uv on the intersecting domain
-        `W = U\cap V`::
+        a transition map between charts c_xy and c_uv on the intersecting
+        subdomain `W = U\cap V`::
 
             sage: trans = c_xy.transition_map(c_uv, (x+y, x-y), 'W', x<0, u+v<0)
             sage: M.atlas()
@@ -1676,7 +1678,8 @@ class ZeroScalarField(ScalarField):
 
     INPUT:
 
-    - ``domain`` -- the manifold domain on which the scalar field is defined
+    - ``domain`` -- the manifold open subset on which the scalar field is
+      defined
     - ``name`` -- (default: None) name given to the field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
       if none is provided, the LaTeX symbol is set to ``name``
@@ -1811,7 +1814,7 @@ class ZeroScalarField(ScalarField):
 
     def _new_instance(self):
         r"""
-        Create a :class:`ZeroScalarField` instance on the same domain.
+        Create a :class:`ZeroScalarField` instance with the same domain.
 
         """
         return ZeroScalarField(self._domain)
@@ -1829,8 +1832,8 @@ class ZeroScalarField(ScalarField):
 
         INPUT:
 
-        - ``chart`` -- (default: None) chart; if None, the domain's default
-          chart will be used
+        - ``chart`` -- (default: None) chart; if None, the default
+          chart of the domain of ``self`` will be used
 
         OUTPUT:
 

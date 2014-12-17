@@ -72,7 +72,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         algebra of scalar fields on the 2-dimensional manifold 'M'
         sage: W = U.intersection(V)  # S^2 minus the two poles
         sage: CW = W.scalar_field_algebra() ; CW
-        algebra of scalar fields on the open domain 'W' on the 2-dimensional manifold 'M'
+        algebra of scalar fields on the open subset 'W' of the 2-dimensional manifold 'M'
 
     `C^\infty(M)` and `C^\infty(W)` belong to the category of commutative
     algebras over `\RR` (represented here by Sage's Symbolic Ring)::
@@ -98,7 +98,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
     Those of `C^\infty(W)` are scalar fields on W::
 
         sage: CW.an_element()
-        scalar field on the open domain 'W' on the 2-dimensional manifold 'M'
+        scalar field on the open subset 'W' of the 2-dimensional manifold 'M'
         sage: CW.an_element().view()  # this sample element is a constant field
         W --> R
         (x, y) |--> 2
@@ -116,7 +116,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
     ::
 
         sage: CW.zero()
-        zero scalar field on the open domain 'W' on the 2-dimensional manifold 'M'
+        zero scalar field on the open subset 'W' of the 2-dimensional manifold 'M'
         sage: CW.zero().view()
         W --> R
         (x, y) |--> 0
@@ -134,7 +134,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
     ::
 
         sage: CW.one()
-        scalar field on the open domain 'W' on the 2-dimensional manifold 'M'
+        scalar field on the open subset 'W' of the 2-dimensional manifold 'M'
         sage: CW.one().view()
         W --> R
         (x, y) |--> 1
@@ -193,7 +193,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
     on `M`::
 
         sage: fW = CW(f) ; fW
-        scalar field on the open domain 'W' on the 2-dimensional manifold 'M'
+        scalar field on the open subset 'W' of the 2-dimensional manifold 'M'
         sage: fW.view()
         W --> R
         (x, y) |--> arctan(x^2 + y^2)
@@ -210,7 +210,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
 
         sage: s = fW + f
         sage: s.parent()
-        algebra of scalar fields on the open domain 'W' on the 2-dimensional manifold 'M'
+        algebra of scalar fields on the open subset 'W' of the 2-dimensional manifold 'M'
         sage: s.view()
         W --> R
         (x, y) |--> 2*arctan(x^2 + y^2)
@@ -285,7 +285,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         sage: f/fW == CW.one()
         True
         sage: s = f*fW ; s
-        scalar field on the open domain 'W' on the 2-dimensional manifold 'M'
+        scalar field on the open subset 'W' of the 2-dimensional manifold 'M'
         sage: s.view()
         W --> R
         (x, y) |--> arctan(x^2 + y^2)^2
