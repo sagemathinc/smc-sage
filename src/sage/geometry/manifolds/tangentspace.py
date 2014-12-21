@@ -1,5 +1,5 @@
 r"""
-Tangent spaces.
+Tangent spaces
 
 AUTHORS:
 

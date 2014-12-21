@@ -1,8 +1,8 @@
 r"""
 Manifold subsets
 
-The class :class:`ManifoldSubset` implements subsets on a differentiable manifold
-over `\RR`.
+The classes :class:`ManifoldSubset` and :class:`ManifoldOpenSubset` implement
+subsets on a differentiable manifold over `\RR`.
 
 The class :class:`ManifoldSubset` inherits from the generic Sage class
 :class:`~sage.structure.parent.Parent`
@@ -11,8 +11,8 @@ and is declared to belong to the category of sets (Sage category
 The corresponding Sage :class:`~sage.structure.element.Element`'s are
 implemented via the class :class:`~sage.geometry.manifolds.point.ManifoldPoint`.
 
-The subclass :class:`ManifoldOpenSubset` is devoted to open subsets, with respect to
-the manifold topology.
+The subclass :class:`ManifoldOpenSubset` is devoted to open subsets, with
+respect to the manifold topology.
 
 AUTHORS:
 
@@ -49,7 +49,7 @@ State of various data members after the above operations::
      subset 'B' of the 2-dimensional manifold 'M',
      subset 'A_inter_B' of the 2-dimensional manifold 'M',
      2-dimensional manifold 'M'}
-    sage: a._subsets  # random (set output)
+    sage: a.subsets()  # random (set output)
     set([subset 'A' of the 2-dimensional manifold 'M',
          subset 'A_inter_B' of the 2-dimensional manifold 'M'])
     sage: a._supersets  # random (set output)
@@ -62,9 +62,9 @@ State of various data members after the above operations::
          2-dimensional manifold 'M',
          subset 'A' of the 2-dimensional manifold 'M',
          subset 'A_inter_B' of the 2-dimensional manifold 'M'])
-    sage: c._subsets  # random (set output)
+    sage: c.subsets()  # random (set output)
     set([subset 'A_inter_B' of the 2-dimensional manifold 'M'])
-    sage: d._subsets  # random (set output)
+    sage: d.subsets()  # random (set output)
     set([subset 'B' of the 2-dimensional manifold 'M',
          subset 'A_union_B' of the 2-dimensional manifold 'M',
          subset 'A_inter_B' of the 2-dimensional manifold 'M',
@@ -1181,7 +1181,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     EXAMPLES:
 
-    A open subset of a 2-dimensional manifold::
+    An open subset of a 2-dimensional manifold::
 
         sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(2, 'M')

@@ -69,7 +69,7 @@ Geometry and Topology
 * :doc:`Combinatorial Geometry <geometry/index>`
 * :doc:`Cell Complexes and their Homology <homology/index>`
 * :doc:`Differential Forms <tensor/index>`
-* :doc:`Differential Geometry <manifolds/index>`
+* :doc:`Differentiable Manifolds <manifolds/index>`
 * :doc:`Parametrized Surfaces <riemannian_geometry/index>`
 
 Number Theory, Algebraic Geometry

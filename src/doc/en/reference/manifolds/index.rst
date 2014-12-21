@@ -1,8 +1,10 @@
 Differentiable manifolds and tensor fields 
 ==========================================
 
-More documentation (in particular example worksheets) can be found on the 
-`SageManifolds <http://sagemanifolds.obspm.fr/>`_ home page.
+This is the Sage implementation of differentiable manifolds and tensor fields
+resulting from the `SageManifolds project <http://sagemanifolds.obspm.fr/>`_.
+More documentation (in particular example worksheets) can be found 
+`here <http://sagemanifolds.obspm.fr/documentation.html>`_.
 
 .. toctree::
    :maxdepth: 2
