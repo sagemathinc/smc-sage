@@ -124,9 +124,9 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         sage: z = XM.zero() ; z
         vector field 'zero' on the 2-dimensional manifold 'M'
-        sage: z.view(c_xy.frame())
+        sage: z.display(c_xy.frame())
         zero = 0
-        sage: z.view(c_uv.frame())
+        sage: z.display(c_uv.frame())
         zero = 0
 
     The module `\mathcal{X}(M)` coerces to any module of vector fields defined
@@ -687,13 +687,13 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
     Some elements::
 
-        sage: XM.an_element().view()
+        sage: XM.an_element().display()
         2 d/dx + 2 d/dy
-        sage: XM.zero().view()
+        sage: XM.zero().display()
         zero = 0
         sage: v = XM([-y,x]) ; v
         vector field on the 2-dimensional manifold 'R^2'
-        sage: v.view()
+        sage: v.display()
         -y d/dx + x d/dy
 
     Module of vector fields on the circle `S^1`: we start by constructing
@@ -715,7 +715,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
     the coordinate vectors `\partial/\partial t` and `\partial/\partial u`
     coincide, as we can check explicitely::
 
-        sage: c_t.frame()[0].view(c_u.frame().restrict(W))
+        sage: c_t.frame()[0].display(c_u.frame().restrict(W))
         d/dt = d/du
 
     Therefore, we can extend `\partial/\partial t` to all `V` and hence to all
@@ -725,9 +725,9 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         sage: e = M.vector_frame('e')
         sage: U.set_frame_change(e.restrict(U), c_t.frame(), U.tangent_identity_field())
         sage: V.set_frame_change(e.restrict(V), c_u.frame(), V.tangent_identity_field())
-        sage: e[0].view(c_t.frame())
+        sage: e[0].display(c_t.frame())
         e_0 = d/dt
-        sage: e[0].view(c_u.frame())
+        sage: e[0].display(c_u.frame())
         e_0 = d/du
 
     Equipped with the frame `e`, the manifold `S^1` is manifestly
@@ -751,9 +751,9 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
         sage: z = XM.zero() ; z
         vector field 'zero' on the 1-dimensional manifold 'S^1'
-        sage: z.view()
+        sage: z.display()
         zero = 0
-        sage: z.view(c_t.frame())
+        sage: z.display(c_t.frame())
         zero = 0
 
     The module `\mathcal{X}(S^1)` coerces to any module of vector fields

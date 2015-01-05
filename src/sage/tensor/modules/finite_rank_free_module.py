@@ -71,14 +71,14 @@ The elements of the basis are of course module elements::
 We define a module element by its components w.r.t. basis ``e``::
 
     sage: u = M([2,-3], basis=e, name='u')
-    sage: u.view(basis=e)
+    sage: u.display(basis=e)
     u = 2 e_0 - 3 e_1
 
 Since the first defined basis is considered as the default one on the module,
 the above can be abridged to::
 
     sage: u = M([2,-3], name='u')
-    sage: u.view()
+    sage: u.display()
     u = 2 e_0 - 3 e_1
 
 Module elements can be compared::
@@ -96,9 +96,9 @@ automorphism::
     [ 1  0]
     sage: f = e.new_basis(a, 'f') ; f
     Basis (f_0,f_1) on the Rank-2 free module M over the Integer Ring
-    sage: f[0].view()
+    sage: f[0].display()
     f_0 = e_1
-    sage: f[1].view()
+    sage: f[1].display()
     f_1 = -e_0
 
 We may check that the basis ``f`` is the image of ``e`` by the
@@ -112,7 +112,7 @@ automorphism ``a``::
 We introduce a new module element via its components w.r.t. basis ``f``::
 
     sage: v = M([2,4], basis=f, name='v')
-    sage: v.view(basis=f)
+    sage: v.display(basis=f)
     v = 2 f_0 + 4 f_1
 
 The sum of the two module elements ``u`` and ``v`` can be performed even if
@@ -122,18 +122,18 @@ between the two bases::
     sage: s = u + v ; s
     Element u+v of the Rank-2 free module M over the Integer Ring
 
-We can view the result in either basis::
+We can display the result in either basis::
 
-    sage: s.view(basis=e)    # a shortcut is s.view(), e being the default basis
+    sage: s.display(basis=e)    # a shortcut is s.display(), e being the default basis
     u+v = -2 e_0 - e_1
-    sage: s.view(basis=f)
+    sage: s.display(basis=f)
     u+v = -f_0 + 2 f_1
 
-Of course, we can view each of the individual element in either basis::
+Of course, we can display each of the individual element in either basis::
 
-    sage: u.view(basis=f)    # recall: u was introduced via basis e
+    sage: u.display(basis=f)    # recall: u was introduced via basis e
     u = -3 f_0 - 2 f_1
-    sage: v.view(basis=e)    # recall: v was introduced via basis f
+    sage: v.display(basis=e)    # recall: v was introduced via basis f
     v = -4 e_0 + 2 e_1
 
 Tensor products are implemented::
@@ -143,7 +143,7 @@ Tensor products are implemented::
     sage: t.parent()
     Free module of type-(2,0) tensors on the
      Rank-2 free module M over the Integer Ring
-    sage: t.view()
+    sage: t.display()
     u*v = -8 e_0*e_0 + 4 e_0*e_1 + 12 e_1*e_0 - 6 e_1*e_1
 
 The automorphism ``a`` is considered as a tensor of type `(1,1)` on ``M``::
@@ -151,7 +151,7 @@ The automorphism ``a`` is considered as a tensor of type `(1,1)` on ``M``::
     sage: a.parent()
     Free module of type-(1,1) tensors on the
      Rank-2 free module M over the Integer Ring
-    sage: a.view()
+    sage: a.display()
     -e_0*e^1 + e_1*e^0
 
 As such, we can form its tensor product with ``t``, yielding a tensor of
@@ -160,7 +160,7 @@ type `(3,1)`::
     sage: (t*a).parent()
     Free module of type-(3,1) tensors on the
      Rank-2 free module M over the Integer Ring
-    sage: (t*a).view()
+    sage: (t*a).display()
     8 e_0*e_0*e_0*e^1 - 8 e_0*e_0*e_1*e^0 - 4 e_0*e_1*e_0*e^1
      + 4 e_0*e_1*e_1*e^0 - 12 e_1*e_0*e_0*e^1 + 12 e_1*e_0*e_1*e^0
      + 6 e_1*e_1*e_0*e^1 - 6 e_1*e_1*e_1*e^0
@@ -298,16 +298,16 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         sage: v = M([-1,0,3]) ; v  # components in the default basis (e)
         Element of the Rank-3 free module M over the Integer Ring
-        sage: v.view()
+        sage: v.display()
         -e_0 + 3 e_2
         sage: f = M.basis('f')
         sage: v = M([-1,0,3], basis=f) ; v  # components in a specific basis
         Element of the Rank-3 free module M over the Integer Ring
-        sage: v.view(f)
+        sage: v.display(f)
         -f_0 + 3 f_2
         sage: v = M([-1,0,3], basis=f, name='v') ; v
         Element v of the Rank-3 free module M over the Integer Ring
-        sage: v.view(f)
+        sage: v.display(f)
         v = -f_0 + 3 f_2
 
     An alternative is to construct the element from an empty list of
@@ -316,7 +316,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         sage: v = M([], name='v')
         sage: v.set_comp(e)[0] = -1
         sage: v.set_comp(e)[2] = 3
-        sage: v.view(e)
+        sage: v.display(e)
         v = -e_0 + 3 e_2
 
     Indices on the free module, such as indices labelling the element of a
@@ -341,9 +341,9 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         sage: v = M([1/3, 0, -2], basis=e)
         sage: v.comp(e)[:]
         [0.333333333333333, 0.000000000000000, -2.00000000000000]
-        sage: v.view(e)  # default format (53 bits of precision)
+        sage: v.display(e)  # default format (53 bits of precision)
         0.333333333333333 e_0 - 2.00000000000000 e_2
-        sage: v.view(e, format_spec=10)  # 10 bits of precision
+        sage: v.display(e, format_spec=10)  # 10 bits of precision
         0.33 e_0 - 2.0 e_2
 
     """
@@ -405,7 +405,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: e = M.basis('e')
             sage: v = M._element_constructor_(comp=[1,0,-2], basis=e, name='v') ; v
             Element v of the Rank-3 free module M over the Integer Ring
-            sage: v.view()
+            sage: v.display()
             v = e_0 - 2 e_2
             sage: v == M([1,0,-2])
             True
@@ -431,7 +431,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: v = M._an_element_(); v
             Element of the Rank-3 free module M over the Integer Ring
-            sage: v.view()
+            sage: v.display()
             e_0 + e_1 + e_2
             sage: v == M.an_element()
             True
@@ -751,11 +751,11 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: t = M.tensor_from_comp((1,0), c)
             sage: t
             Element of the Rank-3 free module M over the Integer Ring
-            sage: t.view(e)
+            sage: t.display(e)
             -e_0 + 4 e_1 + 2 e_2
             sage: t = M.tensor_from_comp((0,1), c) ; t
             Linear form on the Rank-3 free module M over the Integer Ring
-            sage: t.view(e)
+            sage: t.display(e)
             -e^0 + 4 e^1 + 2 e^2
 
         Construction of a tensor of rank 2::
@@ -767,14 +767,14 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
              Rank-3 free module M over the Integer Ring
             sage: t.symmetries()
             symmetry: (0, 1);  no antisymmetry
-            sage: t.view(e)
+            sage: t.display(e)
             4 e^0*e^0 + 5 e^1*e^2 + 5 e^2*e^1
             sage: c = CompFullyAntiSym(ZZ, e, 2)
             sage: c[0,1], c[1,2] = 4, 5
             sage: t = M.tensor_from_comp((0,2), c) ; t
             Alternating form of degree 2 on the
              Rank-3 free module M over the Integer Ring
-            sage: t.view(e)
+            sage: t.display(e)
             4 e^0/\e^1 + 5 e^1/\e^2
 
         """
@@ -860,7 +860,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer Ring
             sage: a.set_comp(e)[0,1] = 2
             sage: a.set_comp(e)[1,2] = -3
-            sage: a.view(e)
+            sage: a.display(e)
             a = 2 e^0/\e^1 - 3 e^1/\e^2
 
         An alternating form of degree 1 is a linear form::
@@ -916,7 +916,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: a = M.linear_form('A') ; a
             Linear form A on the Rank-3 free module M over the Integer Ring
             sage: a[:] = [2,-1,3]  # components w.r.t. the module's default basis (e)
-            sage: a.view()
+            sage: a.display()
             A = 2 e^0 - e^1 + 3 e^2
 
         A linear form maps module elements to ring elements::
@@ -1605,9 +1605,9 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         and are effective::
 
-            sage: f[0].view(e)
+            sage: f[0].display(e)
             f_0 = e_0 - e_1
-            sage: e[0].view(f)
+            sage: e[0].display(f)
             e_0 = 3/5 f_0 + 1/5 f_1
 
         """

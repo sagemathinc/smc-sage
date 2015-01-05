@@ -80,12 +80,12 @@ fields on the manifold, and therefore instances of the class
 
     sage: t[[1,1]]
     scalar field on the 2-dimensional manifold 'M'
-    sage: t[[1,1]].view()
+    sage: t[[1,1]].display()
     M --> R
     (x, y) |--> x^2
     sage: t[[1,2]]
     zero scalar field on the 2-dimensional manifold 'M'
-    sage: t[[1,2]].view()
+    sage: t[[1,2]].display()
     M --> R
     (x, y) |--> 0
 
@@ -191,12 +191,12 @@ To keep the other components, one must use the method :meth:`add_comp`::
     sage: # We now set the components in the frame e with add_comp:
     sage: t.add_comp(e)[:] = [[x+y, 0], [y, -3*x]]
 
-The expansion of the tensor field in a given frame is displayed via the
-method :meth:`view` (the symbol * stands for tensor product)::
+The expansion of the tensor field in a given frame is obtained via the
+method :meth:`display` (the symbol * stands for tensor product)::
 
-    sage: t.view()  # expansion in the manifold's default frame
+    sage: t.display()  # expansion in the manifold's default frame
     T = d/dx*dx - x d/dx*dy + x*y d/dy*dx + 2 d/dy*dy
-    sage: t.view(e)
+    sage: t.display(e)
     T = (x + y) e_1*e^1 + y e_2*e^1 - 3*x e_2*e^2
 
 By definition, a tensor field acts as a multilinear map on 1-forms and vector
@@ -209,7 +209,7 @@ fields; in the present case, T being of type (1,1), it acts on pairs
     sage: v[:] = (y, 2)
     sage: t(a,v)
     scalar field 'T(a,V)' on the 2-dimensional manifold 'M'
-    sage: t(a,v).view()
+    sage: t(a,v).display()
     T(a,V): M --> R
        (x, y) |--> x^2*y^2 + 2*x + y
        (u, v) |--> 1/16*u^4 - 1/8*u^2*v^2 + 1/16*v^4 + 3/2*u + 1/2*v
@@ -244,7 +244,7 @@ A vector field (rank-1 contravariant tensor field)::
     sage: v.tensor_type()
     (1, 0)
     sage: v[1], v[2] = -x, y
-    sage: v.view()
+    sage: v.display()
     v = -x d/dx + y d/dy
 
 A field of symmetric bilinear forms::
@@ -265,7 +265,7 @@ account the symmetry between the two indices::
     sage: q[:] # note that the component (2,1) is equal to the component (1,2)
     [ 0 -x]
     [-x  y]
-    sage: q.view()
+    sage: q.display()
     Q = -x dx*dy - x dy*dx + y dy*dy
 
 Internally (dictionary :attr:`_comp` of the class
@@ -392,7 +392,7 @@ class TensorField(ModuleElement):
         sage: eU = c_xy.frame()
         sage: t = M.tensor_field(0,2, name='t')
         sage: t[eU,:] = [[1,0], [-2,3]]
-        sage: t.view(eU)
+        sage: t.display(eU)
         t = dx*dx - 2 dy*dx + 3 dy*dy
 
     To set the components of `t` on `V` consistently, we copy the expressions
@@ -414,7 +414,7 @@ class TensorField(ModuleElement):
     At this stage, `t` is fully defined, having components in frames eU and eV
     and the union of the domains of eU and eV being whole manifold::
 
-        sage: t.view(eV)
+        sage: t.display(eV)
         t = (u^4 - 4*u^3*v + 10*u^2*v^2 + 4*u*v^3 + v^4)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) du*du - 4*(u^3*v + 2*u^2*v^2 - u*v^3)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) du*dv + 2*(u^4 - 2*u^3*v - 2*u^2*v^2 + 2*u*v^3 + v^4)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) dv*du + (3*u^4 + 4*u^3*v - 2*u^2*v^2 - 4*u*v^3 + 3*v^4)/(u^8 + 4*u^6*v^2 + 6*u^4*v^4 + 4*u^2*v^6 + v^8) dv*dv
 
     Let us consider two vector fields, `a` and `b`, on `S^2`::
@@ -422,12 +422,12 @@ class TensorField(ModuleElement):
         sage: a = M.vector_field(name='a')
         sage: a[eU,:] = [1,x]
         sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
-        sage: a.view(eV)
+        sage: a.display(eV)
         a = -(u^4 - v^4 + 2*u^2*v)/(u^2 + v^2) d/du - (2*u^3*v + 2*u*v^3 - u^3 + u*v^2)/(u^2 + v^2) d/dv
         sage: b = M.vector_field(name='b')
         sage: b[eU,:] = [y,-1]
         sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
-        sage: b.view(eV)
+        sage: b.display(eV)
         b = ((2*u + 1)*v^3 + (2*u^3 - u^2)*v)/(u^2 + v^2) d/du - (u^4 - v^4 + 2*u*v^2)/(u^2 + v^2) d/dv
 
     As a tensor field of type (0,2), `t` acts on the pair `(a,b)`, resulting in a scalar
@@ -435,7 +435,7 @@ class TensorField(ModuleElement):
 
         sage: f = t(a,b) ; f
         scalar field 't(a,b)' on the 2-dimensional manifold 'S^2'
-        sage: f.view()
+        sage: f.display()
         t(a,b): S^2 --> R
         on U: (x, y) |--> -(2*x - 1)*y - 3*x
         on V: (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
@@ -445,13 +445,13 @@ class TensorField(ModuleElement):
 
         sage: s = t(a.restrict(U), b) ; s
         scalar field 't(a,b)' on the open subset 'U' of the 2-dimensional manifold 'S^2'
-        sage: s.view()
+        sage: s.display()
         t(a,b): U --> R
            (x, y) |--> -(2*x - 1)*y - 3*x
         on W: (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
         sage: s = t(a.restrict(U), b.restrict(W)) ; s
         scalar field 't(a,b)' on the open subset 'W' of the 2-dimensional manifold 'S^2'
-        sage: s.view()
+        sage: s.display()
         t(a,b): W --> R
            (x, y) |--> -(2*x - 1)*y - 3*x
            (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
@@ -461,7 +461,7 @@ class TensorField(ModuleElement):
 
         sage: s = t.restrict(V)(a,b) ; s
         scalar field 't(a,b)' on the open subset 'V' of the 2-dimensional manifold 'S^2'
-        sage: s.view()
+        sage: s.display()
         t(a,b): V --> R
            (u, v) |--> -(3*u^3 + 3*u*v^2 - v^3 - (u^2 - 2*u)*v)/(u^4 + 2*u^2*v^2 + v^4)
         on W: (x, y) |--> -(2*x - 1)*y - 3*x
@@ -838,19 +838,19 @@ class TensorField(ModuleElement):
             sage: eN_W = stereoN_W.frame() ; eS_W = stereoS_W.frame()
             sage: v = M.vector_field('v')
             sage: v.set_comp(eN)[1] = 1  # given the default settings, this can be abriged to v[1] = 1
-            sage: v.view()
+            sage: v.display()
             v = d/dx
             sage: vU = v.restrict(U) ; vU
             vector field 'v' on the open subset 'U' of the 2-dimensional manifold 'S^2'
-            sage: vU.view()
+            sage: vU.display()
             v = d/dx
             sage: vU == eN[1]
             True
             sage: vW = v.restrict(W) ; vW
             vector field 'v' on the open subset 'W' of the 2-dimensional manifold 'S^2'
-            sage: vW.view()
+            sage: vW.display()
             v = d/dx
-            sage: vW.view(eS_W, stereoS_W)
+            sage: vW.display(eS_W, stereoS_W)
             v = (-u^2 + v^2) d/du - 2*u*v d/dv
             sage: vW == eN_W[1]
             True
@@ -860,11 +860,11 @@ class TensorField(ModuleElement):
 
             sage: v.restrict(V)[1] = vW[eS_W, 1, stereoS_W].expr()  # note that eS is the default frame on V
             sage: v.restrict(V)[2] = vW[eS_W, 2, stereoS_W].expr()
-            sage: v.view(eS, stereoS)
+            sage: v.display(eS, stereoS)
             v = (-u^2 + v^2) d/du - 2*u*v d/dv
-            sage: v.restrict(U).view()
+            sage: v.restrict(U).display()
             v = d/dx
-            sage: v.restrict(V).view()
+            sage: v.restrict(V).display()
             v = (-u^2 + v^2) d/du - 2*u*v d/dv
 
         The restriction of the vector field to its own domain is of course
@@ -997,14 +997,14 @@ class TensorField(ModuleElement):
         At this stage, the vector field has been defined only on the open
         subset U (through its components in the frame eU)::
 
-            sage: a.view(eU)
+            sage: a.display(eU)
             a = x d/dx + (y + 2) d/dy
 
         The components with respect to the restriction of eV to the common
         subdomain W, in terms of the (u,v) coordinates, are obtained by a
         change-of-frame formula on W::
 
-            sage: a.view(eV.restrict(W), c_uv.restrict(W))
+            sage: a.display(eV.restrict(W), c_uv.restrict(W))
             a = (-4*u*v - u) d/du + (2*u^2 - 2*v^2 - v) d/dv
 
         The continuation consists in extending the definition of the vector
@@ -1015,7 +1015,7 @@ class TensorField(ModuleElement):
 
         We have then::
 
-            sage: a.view(eV)
+            sage: a.display(eV)
             a = (-4*u*v - u) d/du + (2*u^2 - 2*v^2 - v) d/dv
 
         and `a` is defined on the entire manifold `S^2`.
@@ -1109,9 +1109,9 @@ class TensorField(ModuleElement):
         rst = self.restrict(basis._domain, dest_map=basis._dest_map)
         return rst.comp(basis=basis, from_basis=from_basis)
 
-    def view(self, basis=None, chart=None):
+    def display(self, basis=None, chart=None):
         r"""
-        Displays the tensor field in terms of its expansion w.r.t to a given
+        Display the tensor field in terms of its expansion w.r.t to a given
         vector frame.
 
         The output is either text-formatted (console mode) or LaTeX-formatted
@@ -1145,22 +1145,22 @@ class TensorField(ModuleElement):
             sage: t[e,0,0] = - x + y^3
             sage: t[e,0,1] = 2+x
             sage: t[f,1,1] = - u*v
-            sage: t.view(e)
+            sage: t.display(e)
             t = (y^3 - x) d/dx*dx + (x + 2) d/dx*dy
-            sage: t.view(f)
+            sage: t.display(f)
             t = -u*v d/dv*dv
 
         Since e is M's default frame, the argument e can be omitted::
 
             sage: e is M.default_frame()
             True
-            sage: t.view()
+            sage: t.display()
             t = (y^3 - x) d/dx*dx + (x + 2) d/dx*dy
 
         Similarly, since f is V's default frame, the argument f can be omitted
         when considering the restriction of t to V::
 
-            sage: t.restrict(V).view()
+            sage: t.restrict(V).display()
             t = -u*v d/dv*dv
 
         Display w.r.t a frame in which t has not been initialized (automatic
@@ -1169,15 +1169,43 @@ class TensorField(ModuleElement):
             sage: a = V.automorphism_field()
             sage: a[:] = [[1+v, -u^2], [0, 1-u]]
             sage: h = f.new_frame(a, 'h')
-            sage: t.view(h)
+            sage: t.display(h)
             t = -u^3*v/(v + 1) h_0*h^1 - u*v h_1*h^1
 
         """
         if basis is None:
             basis = self._domain._def_frame
         rst = self.restrict(basis._domain, dest_map=basis._dest_map)
-        return rst.view(basis, chart)
+        return rst.display(basis, chart)
 
+    def view(self, basis=None, chart=None):
+        r"""
+        Deprecated method.
+
+        Use method :meth:`display` instead.
+
+        EXAMPLE::
+
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V')
+            sage: c_xy.<x, y> = U.chart() ; c_uv.<u, v> = V.chart()
+            sage: e = U.default_frame() ; f = V.default_frame()
+            sage: M.declare_union(U,V)
+            sage: t = M.tensor_field(1,1, name='t')
+            sage: t[e,0,0] = - x + y^3
+            sage: t[e,0,1] = 2+x
+            sage: t[f,1,1] = - u*v
+            sage: t.view(e)
+            doctest:...: DeprecationWarning: Use function display() instead.
+            See http://trac.sagemath.org/15916 for details.
+            t = (y^3 - x) d/dx*dx + (x + 2) d/dx*dy
+            sage: t.display(e)
+            t = (y^3 - x) d/dx*dx + (x + 2) d/dx*dy
+
+        """
+        from sage.misc.superseded import deprecation
+        deprecation(15916, 'Use function display() instead.')
+        return self.display(basis=basis, chart=chart)
 
     def __getitem__(self, args):
         r"""
@@ -1552,7 +1580,7 @@ class TensorField(ModuleElement):
             sage: w[:] = [-1, 2]
             sage: v = w.up(g) ; v
             vector field on the 2-dimensional manifold 'M'
-            sage: v.view()
+            sage: v.display()
             ((2*x - 1)*y + 1)/(x^2*y^2 + (x + 1)*y - x - 1) d/dx - (x*y + 2*x + 2)/(x^2*y^2 + (x + 1)*y - x - 1) d/dy
             sage: ig = g.inverse(); ig[:]
             [ (y - 1)/(x^2*y^2 + (x + 1)*y - x - 1)      x*y/(x^2*y^2 + (x + 1)*y - x - 1)]
@@ -1567,7 +1595,7 @@ class TensorField(ModuleElement):
 
             sage: w1 = v.down(g) ; w1
             1-form on the 2-dimensional manifold 'M'
-            sage: w1.view()
+            sage: w1.display()
             -dx + 2 dy
             sage: w1 == w
             True
@@ -1688,7 +1716,7 @@ class TensorField(ModuleElement):
             sage: v[:] = [-1,2]
             sage: w = v.down(g) ; w
             1-form on the 2-dimensional manifold 'M'
-            sage: w.view()
+            sage: w.display()
             (2*x*y - x - 1) dx + (-(x + 2)*y + 2) dy
 
         Using the index notation instead of :meth:`down`::
@@ -1895,7 +1923,7 @@ class TensorField(ModuleElement):
             sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
             sage: s = a.trace() ; s
             scalar field on the 2-dimensional manifold 'M'
-            sage: s.view()
+            sage: s.display()
             M --> R
             on U: (x, y) |--> y + 1
             on V: (u, v) |--> 1/2*u - 1/2*v + 1
@@ -1925,9 +1953,9 @@ class TensorField(ModuleElement):
             sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
             sage: s = b.trace(0,1) ; s # contraction on first and second slots
             1-form on the 2-dimensional manifold 'M'
-            sage: s.view(eU)
+            sage: s.display(eU)
             (x*y + 1) dx + (y^2 + x) dy
-            sage: s.view(eV)
+            sage: s.display(eV)
             (1/4*u^2 - 1/4*(u - 1)*v + 1/4*u + 1/2) du + (1/4*(u - 1)*v - 1/4*v^2 - 1/4*u + 1/2) dv
 
         Use of the index notation::
@@ -1956,9 +1984,9 @@ class TensorField(ModuleElement):
 
             sage: s = b.trace(0,2) ; s
             1-form on the 2-dimensional manifold 'M'
-            sage: s.view(eU)
+            sage: s.display(eU)
             (y - 2) dx + (y^2 + 2) dy
-            sage: s.view(eV)
+            sage: s.display(eV)
             (1/8*u^2 - 1/4*(u + 1)*v + 1/8*v^2 + 1/4*u) du + (-1/8*u^2 + 1/4*(u - 1)*v - 1/8*v^2 + 1/4*u - 2) dv
 
         Use of index notation::
@@ -2135,13 +2163,13 @@ class TensorField(ModuleElement):
             sage: b = M.vector_field('b')
             sage: b[eU,:] = [x, y^2]
             sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
-            sage: a.view(eU)
+            sage: a.display(eU)
             a = y dx + (x + 1) dy
-            sage: b.view(eU)
+            sage: b.display(eU)
             b = x d/dx + y^2 d/dy
             sage: s = a.contract(b) ; s
             scalar field on the 2-dimensional manifold 'M'
-            sage: s.view()
+            sage: s.display()
             M --> R
             on U: (x, y) |--> (x + 1)*y^2 + x*y
             on V: (u, v) |--> 1/8*u^3 - 1/8*u*v^2 + 1/8*v^3 + 1/2*u^2 - 1/8*(u^2 + 4*u)*v
@@ -2157,7 +2185,7 @@ class TensorField(ModuleElement):
             sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
             sage: s = a.contract(b) ; s
             zero scalar field on the 2-dimensional manifold 'M'
-            sage: s.view()
+            sage: s.display()
             M --> R
             on U: (x, y) |--> 0
             on V: (u, v) |--> 0
@@ -2436,18 +2464,18 @@ class TensorField(ModuleElement):
             sage: a = M.tensor_field(1,1, name='a')
             sage: a[eU,:] = [[1+y,x], [0,x+y]]
             sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
-            sage: a.view(eU)
+            sage: a.display(eU)
             a = (y + 1) d/dx*dx + x d/dx*dy + (x + y) d/dy*dy
-            sage: a.view(eV)
+            sage: a.display(eV)
             a = (u + 1/2) d/du*du + (-1/2*u - 1/2*v + 1/2) d/du*dv + 1/2 d/dv*du + (1/2*u - 1/2*v + 1/2) d/dv*dv
             sage: p = M.point((2,3), chart=c_xy, name='p')
             sage: ap = a.at(p) ; ap
             Endomorphism tensor a on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: ap.parent()
             Free module of type-(1,1) tensors on the tangent space at point 'p' on 2-dimensional manifold 'M'
-            sage: ap.view()
+            sage: ap.display()
             a = 4 d/dx*dx + 2 d/dx*dy + 5 d/dy*dy
-            sage: ap.view(eV.at(p))
+            sage: ap.display(eV.at(p))
             a = 11/2 d/du*du - 3/2 d/du*dv + 1/2 d/dv*du + 7/2 d/dv*dv
             sage: p.coord(c_uv) # to check the above expression
             (5, -1)
@@ -3010,7 +3038,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: w[:] = (2*x+y, x*y)
             sage: w.lie_der(v)
             vector field on the 2-dimensional manifold 'M'
-            sage: w.lie_der(v).view()
+            sage: w.lie_der(v).display()
             ((x - 2)*y + x) d/dx + (x^2 - y^2 - 2*x - y) d/dy
 
         The Lie derivative is antisymmetric::
@@ -3021,7 +3049,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         For vectors, it coincides with the commutator::
 
             sage: f = M.scalar_field(x^3 + x*y^2)
-            sage: w.lie_der(v)(f).view()
+            sage: w.lie_der(v)(f).display()
             M --> R
             (x, y) |--> -(x + 2)*y^3 + 3*x^3 - x*y^2 + 5*(x^3 - 2*x^2)*y
             sage: w.lie_der(v)(f) == v(w(f)) - w(v(f))  # rhs = commutator [v,w] acting on f
@@ -3033,7 +3061,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: om[:] = (y^2*sin(x), x^3*cos(y))
             sage: om.lie_der(v)
             1-form on the 2-dimensional manifold 'M'
-            sage: om.lie_der(v).view()
+            sage: om.lie_der(v).display()
             (-y^3*cos(x) + x^3*cos(y) + 2*x*y*sin(x)) dx + (-x^4*sin(y) - 3*x^2*y*cos(y) - y^2*sin(x)) dy
 
         Check of Cartan identity::
@@ -3120,7 +3148,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: c_cart_D = c_cart.restrict(D, x^2+y^2<1)
             sage: v_D = v.restrict(D) ; v_D
             vector field 'v' on the open subset 'D' of the 2-dimensional manifold 'R^2'
-            sage: v_D.view()
+            sage: v_D.display()
             v = (x + y) d/dx + (x^2 - 1) d/dy
 
         The symbolic expressions of the components w.r.t. Cartesian coordinates
@@ -3280,51 +3308,51 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: c_xy.<x,y> = M.chart()
             sage: p = M.point((-2,3), name='p')
             sage: v = M.vector_field('v')
-            sage: v[:] = [y, x^2] ; v.view()
+            sage: v[:] = [y, x^2] ; v.display()
             v = y d/dx + x^2 d/dy
             sage: vp = v.at(p) ; vp
             tangent vector v at point 'p' on 2-dimensional manifold 'M'
             sage: vp.parent()
             tangent space at point 'p' on 2-dimensional manifold 'M'
-            sage: vp.view()
+            sage: vp.display()
             v = 3 d/dx + 4 d/dy
 
         A 1-form gives birth to a linear form in the tangent space::
 
             sage: w = M.one_form('w')
-            sage: w[:] = [-x, 1+y] ; w.view()
+            sage: w[:] = [-x, 1+y] ; w.display()
             w = -x dx + (y + 1) dy
             sage: wp = w.at(p) ; wp
             Linear form w on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: wp.parent()
             Dual of the tangent space at point 'p' on 2-dimensional manifold 'M'
-            sage: wp.view()
+            sage: wp.display()
             w = 2 dx + 4 dy
 
         A field of endomorphisms yields an endomorphism in the tangent space::
 
             sage: t = M.endomorphism_field('t')
             sage: t[0,0], t[0,1], t[1,1] = 1+x, x*y, 1-y
-            sage: t.view()
+            sage: t.display()
             t = (x + 1) d/dx*dx + x*y d/dx*dy + (-y + 1) d/dy*dy
             sage: tp = t.at(p) ; tp
             Endomorphism tensor t on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: tp.parent()
             Free module of type-(1,1) tensors on the tangent space at point 'p' on 2-dimensional manifold 'M'
-            sage: tp.view()
+            sage: tp.display()
             t = -d/dx*dx - 6 d/dx*dy - 2 d/dy*dy
 
         A 2-form yields an alternating form of degree 2 in the tangent space::
 
             sage: a = M.diff_form(2, name='a')
             sage: a[0,1] = x*y
-            sage: a.view()
+            sage: a.display()
             a = x*y dx/\dy
             sage: ap = a.at(p) ; ap
             Alternating form a of degree 2 on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: ap.parent()
             Free module of type-(0,2) tensors on the tangent space at point 'p' on 2-dimensional manifold 'M'
-            sage: ap.view()
+            sage: ap.display()
             a = -6 dx/\dy
 
         """

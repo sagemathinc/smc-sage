@@ -456,9 +456,9 @@ class VectorFrame(FreeModuleBasis):
         The vectors of the restriction have the same symbols as those of the
         original frame::
 
-            sage: e_U[0].view()
+            sage: e_U[0].display()
             e_0 = (-y^2 + 1) d/dx + (x^2 + 1) d/dy
-            sage: e_U[1].view()
+            sage: e_U[1].display()
             e_1 = 2 d/dy
 
         They are actually the restrictions of the original frame vectors::
@@ -633,11 +633,11 @@ class VectorFrame(FreeModuleBasis):
 
             sage: Tp.change_of_basis(ep, fp)
             Automorphism tensor on the tangent space at point 'p' on 2-dimensional manifold 'M'
-            sage: Tp.change_of_basis(ep, fp).view()
+            sage: Tp.change_of_basis(ep, fp).display()
             5 d/dx*dx + 2 d/dy*dy
             sage: Tp.change_of_basis(fp, ep)
             Automorphism tensor on the tangent space at point 'p' on 2-dimensional manifold 'M'
-            sage: Tp.change_of_basis(fp, ep).view()
+            sage: Tp.change_of_basis(fp, ep).display()
             1/5 d/dx*dx + 1/2 d/dy*dy
 
         The dual bases::
@@ -909,7 +909,7 @@ class CoFrame(FreeModuleCoBasis):
         True
         sage: a[1] is e[1]
         False
-        sage: e[1].view(v)
+        sage: e[1].display(v)
         e^1 = v^1
 
     The 1-forms composing the coframe are obtained via the () operator::

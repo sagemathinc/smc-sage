@@ -63,7 +63,7 @@ class Submanifold(Manifold):
         sage: S.def_embedding(emb)
         sage: S
         2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
-        sage: S._embedding.view()
+        sage: S._embedding.display()
         i: U --> R^3
            (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
 
@@ -75,7 +75,7 @@ class Submanifold(Manifold):
         sage: H.def_embedding(emb)
         sage: H
         1-dimensional submanifold 'H' of the 3-dimensional manifold 'R^3'
-        sage: H._embedding.view()
+        sage: H._embedding.display()
          i: H --> R^3
             t |--> (x, y, z) = (cos(t), sin(t), t)
 
@@ -95,11 +95,11 @@ class Submanifold(Manifold):
         1-form 'dx' on the 3-dimensional manifold 'R^3'
         sage: S._embedding.pullback(dX[1])
         1-form 'i_*(dx)' on the open subset 'U' of the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
-        sage: S._embedding.pullback(dX[1]).view()
+        sage: S._embedding.pullback(dX[1]).display()
         i_*(dx) = cos(ph)*cos(th) dth - sin(ph)*sin(th) dph
-        sage: S._embedding.pullback(dX[2]).view()
+        sage: S._embedding.pullback(dX[2]).display()
         i_*(dy) = cos(th)*sin(ph) dth + cos(ph)*sin(th) dph
-        sage: S._embedding.pullback(dX[3]).view()
+        sage: S._embedding.pullback(dX[3]).display()
         i_*(dz) = -sin(th) dth
 
     Pushforward of vector fields defined on `S^2` to `\RR^3`::
@@ -110,9 +110,9 @@ class Submanifold(Manifold):
         vector field 'd/dth' on the open subset 'U' of the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
         sage: S.pushforward(e[1])
         vector field 'i_*(d/dth)' along the open subset 'U' of the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3' with values on the 3-dimensional manifold 'R^3'
-        sage: S.pushforward(e[1]).view()
+        sage: S.pushforward(e[1]).display()
         i_*(d/dth) = cos(ph)*cos(th) d/dx + cos(th)*sin(ph) d/dy - sin(th) d/dz
-        sage: S.pushforward(e[2]).view()
+        sage: S.pushforward(e[2]).display()
         i_*(d/dph) = -sin(ph)*sin(th) d/dx + cos(ph)*sin(th) d/dy
 
     """
@@ -260,11 +260,11 @@ class Submanifold(Manifold):
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coordinates on U
             sage: S.def_embedding( S.diff_mapping(M, [sin(th)*cos(ph), sin(th)*sin(ph), cos(th)], name='i', latex_name=r'\iota') )
             sage: v = U.vector_field(name='v')
-            sage: v[2] = 1 ; v.view()  # azimuthal vector field on S^2
+            sage: v[2] = 1 ; v.display()  # azimuthal vector field on S^2
             v = d/dph
             sage: iv = S.pushforward(v) ; iv
             vector field 'i_*(v)' along the open subset 'U' of the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3' with values on the 3-dimensional manifold 'R^3'
-            sage: iv.view()
+            sage: iv.display()
             i_*(v) = -sin(ph)*sin(th) d/dx + cos(ph)*sin(th) d/dy
 
         The components of the pushforward vector are scalar fields on the submanifold::
@@ -278,11 +278,11 @@ class Submanifold(Manifold):
             sage: c_t.<t> = H.chart()
             sage: H.def_embedding( H.diff_mapping(M, [cos(t), sin(t), t], name='iH') )
             sage: u = H.vector_field(name='u')
-            sage: u[0] = 1 ; u.view() # tangent vector to the helix
+            sage: u[0] = 1 ; u.display() # tangent vector to the helix
             u = d/dt
             sage: iu = H.pushforward(u) ; iu
             vector field 'iH_*(u)' along the 1-dimensional submanifold 'H' of the 3-dimensional manifold 'R^3' with values on the 3-dimensional manifold 'R^3'
-            sage: iu.view()
+            sage: iu.display()
             iH_*(u) = -sin(t) d/dx + cos(t) d/dy + d/dz
 
         """

@@ -68,7 +68,7 @@ class FreeModuleAltForm(FreeModuleTensor):
         Free module of type-(0,2) tensors on the
          Rank-3 free module M over the Integer Ring
         sage: a[1,2], a[2,3] = 4, -3
-        sage: a.view()
+        sage: a.display()
         a = 4 e^1/\e^2 - 3 e^2/\e^3
 
     The alternating form acting on the basis elements::
@@ -210,7 +210,7 @@ class FreeModuleAltForm(FreeModuleTensor):
         return self._tensor_rank
 
 
-    def view(self, basis=None, format_spec=None):
+    def display(self, basis=None, format_spec=None):
         r"""
         Display the alternating form ``self`` in terms of its expansion
         onto a given cobasis.
@@ -235,27 +235,27 @@ class FreeModuleAltForm(FreeModuleTensor):
             sage: e = M.basis('e')
             sage: a = M.linear_form('a', latex_name=r'\alpha')
             sage: a[:] = [1,-3,4]
-            sage: a.view()
+            sage: a.display()
             a = e^0 - 3 e^1 + 4 e^2
-            sage: latex(a.view())  # display in the notebook
+            sage: latex(a.display())  # display in the notebook
             \alpha = e^0 -3 e^1 + 4 e^2
 
         Display of an alternating form of degree 2 on a rank-3 free module::
 
             sage: b = M.alternating_form(2, 'b', latex_name=r'\beta')
             sage: b[0,1], b[0,2], b[1,2] = 3, 2, -1
-            sage: b.view()
+            sage: b.display()
             b = 3 e^0/\e^1 + 2 e^0/\e^2 - e^1/\e^2
-            sage: latex(b.view())  # display in the notebook
+            sage: latex(b.display())  # display in the notebook
             \beta = 3 e^0\wedge e^1 + 2 e^0\wedge e^2 -e^1\wedge e^2
 
         Display of an alternating form of degree 3 on a rank-3 free module::
 
             sage: c = M.alternating_form(3, 'c')
             sage: c[0,1,2] = 4
-            sage: c.view()
+            sage: c.display()
             c = 4 e^0/\e^1/\e^2
-            sage: latex(c.view())
+            sage: latex(c.display())
             c = 4 e^0\wedge e^1\wedge e^2
 
         Display of a vanishing alternating form::
@@ -263,9 +263,9 @@ class FreeModuleAltForm(FreeModuleTensor):
             sage: c[0,1,2] = 0  # the only independent component set to zero
             sage: c.is_zero()
             True
-            sage: c.view()
+            sage: c.display()
             c = 0
-            sage: latex(c.view())
+            sage: latex(c.display())
             c = 0
             sage: c[0,1,2] = 4  # value restored for what follows
 
@@ -274,11 +274,11 @@ class FreeModuleAltForm(FreeModuleTensor):
             sage: aut = M.automorphism_tensor()
             sage: aut[:] = [[0,1,0], [0,0,-1], [1,0,0]]
             sage: f = e.new_basis(aut, 'f')
-            sage: a.view(f)
+            sage: a.display(f)
             a = 4 f^0 + f^1 + 3 f^2
-            sage: b.view(f)
+            sage: b.display(f)
             b = -2 f^0/\f^1 - f^0/\f^2 - 3 f^1/\f^2
-            sage: c.view(f)
+            sage: c.display(f)
             c = -4 f^0/\f^1/\f^2
 
         The output format can be set via the argument ``output_formatter``
@@ -288,13 +288,13 @@ class FreeModuleAltForm(FreeModuleTensor):
             sage: e = N.basis('e')
             sage: b = N.alternating_form(2, 'b')
             sage: b[1,2], b[1,3], b[2,3] = 1/3, 5/2, 4
-            sage: b.view()  # default format (53 bits of precision)
+            sage: b.display()  # default format (53 bits of precision)
             b = 0.333333333333333 e^1/\e^2 + 2.50000000000000 e^1/\e^3 + 4.00000000000000 e^2/\e^3
 
         The output format is then controled by the argument ``format_spec`` of
-        the method :meth:`view`::
+        the method :meth:`display`::
 
-            sage: b.view(format_spec=10)  # 10 bits of precision
+            sage: b.display(format_spec=10)  # 10 bits of precision
             b = 0.33 e^1/\e^2 + 2.5 e^1/\e^3 + 4.0 e^2/\e^3
 
         """
@@ -392,11 +392,11 @@ class FreeModuleAltForm(FreeModuleTensor):
             sage: c = a.wedge(b) ; c
             Alternating form A/\B of degree 2 on the Rank-3 free module M
              over the Integer Ring
-            sage: c.view()
+            sage: c.display()
             A/\B = 5 e^0/\e^1 - 6 e^0/\e^2 - 2 e^1/\e^2
             sage: latex(c)
             A\wedge B
-            sage: latex(c.view())
+            sage: latex(c.display())
             A\wedge B = 5 e^0\wedge e^1 -6 e^0\wedge e^2 -2 e^1\wedge e^2
 
         Test of the computation::
@@ -411,7 +411,7 @@ class FreeModuleAltForm(FreeModuleTensor):
             sage: s = d.wedge(c) ; s
             Alternating form D/\A/\B of degree 3 on the Rank-3 free module M
              over the Integer Ring
-            sage: s.view()
+            sage: s.display()
             D/\A/\B = 34 e^0/\e^1/\e^2
 
         Test of the computation::
@@ -512,9 +512,9 @@ class FreeModuleLinForm(FreeModuleAltForm):
         Linear form e^2 on the Rank-3 free module M over the Integer Ring
 
     Any linear form is expanded onto them. In this example, the basis ``e``
-    is the default basis and it is equivalent to ``a.view()``::
+    is the default basis and it is equivalent to ``a.display()``::
 
-        sage: a.view(basis=e)
+        sage: a.display(basis=e)
         A = 2 e^0 - e^1 + 3 e^2
 
     A linear form maps module elements to ring elements::

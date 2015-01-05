@@ -374,13 +374,13 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
             sage: a[:] = [[1, 2], [-1, 3]]
             sage: f = e.new_basis(a, 'f') ; f
             Basis (f_1,f_2) on the Rank-2 free module M over the Rational Field
-            sage: f[1].view()
+            sage: f[1].display()
             f_1 = e_1 - e_2
-            sage: f[2].view()
+            sage: f[2].display()
             f_2 = 2 e_1 + 3 e_2
-            sage: e[1].view(f)
+            sage: e[1].display(f)
             e_1 = 3/5 f_1 + 1/5 f_2
-            sage: e[2].view(f)
+            sage: e[2].display(f)
             e_2 = -2/5 f_1 + 1/5 f_2
 
         """

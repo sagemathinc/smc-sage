@@ -34,7 +34,7 @@ class TangentVector(FiniteRankFreeModuleElement):
         sage: Tp = p.tangent_space()
         sage: v = Tp((-2,1), name='v') ; v
         tangent vector v at point 'p' on 2-dimensional manifold 'M'
-        sage: v.view()
+        sage: v.display()
         v = -2 d/dx + d/dy
         sage: v.parent()
         tangent space at point 'p' on 2-dimensional manifold 'M'
@@ -135,7 +135,7 @@ class TangentSpace(FiniteRankFreeModule):
 
         sage: v = Tp.an_element() ; v
         tangent vector at point 'p' on 2-dimensional manifold 'M'
-        sage: v.view()
+        sage: v.display()
         d/dx + 2 d/dy
         sage: v.parent()
         tangent space at point 'p' on 2-dimensional manifold 'M'
@@ -144,7 +144,7 @@ class TangentSpace(FiniteRankFreeModule):
 
         sage: Tp.zero()
         tangent vector zero at point 'p' on 2-dimensional manifold 'M'
-        sage: Tp.zero().view()
+        sage: Tp.zero().display()
         zero = 0
         sage: Tp.zero().parent()
         tangent space at point 'p' on 2-dimensional manifold 'M'

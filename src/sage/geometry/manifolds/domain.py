@@ -1621,7 +1621,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
             sage: XU.an_element()
             vector field on the open subset 'U' of the 2-dimensional manifold 'S^2'
-            sage: XU.an_element().view()
+            sage: XU.an_element().display()
             2 d/dth + 2 d/dph
 
         Vector field module `\mathcal{X}(U,\Phi)` of the
@@ -1702,7 +1702,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             True
             sage: TU.an_element()
             tensor field of type (2,1) on the open subset 'U' of the 3-dimensional manifold 'M'
-            sage: TU.an_element().view()
+            sage: TU.an_element().display()
             2 d/dx*d/dx*dx
 
         """
@@ -1760,7 +1760,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: c_xyz.<x,y,z> = U.chart()
             sage: f = U.scalar_field(sin(x)*cos(y) + z, name='F'); f
             scalar field 'F' on the open subset 'U' of the 3-dimensional manifold 'M'
-            sage: f.view()
+            sage: f.display()
             F: U --> R
                (x, y, z) |--> cos(y)*sin(x) + z
             sage: f.parent()
@@ -2264,7 +2264,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: g = M.riemann_metric('g'); g
             Riemannian metric 'g' on the 2-dimensional manifold 'S^2'
             sage: g[1,1], g[2,2] = 1, sin(th)^2
-            sage: g.view()
+            sage: g.display()
             g = dth*dth + sin(th)^2 dph*dph
             sage: g.signature()
             2
@@ -2320,7 +2320,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: g = M.lorentz_metric('g'); g
             Lorentzian metric 'g' on the 4-dimensional manifold 'M'
             sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
-            sage: g.view()
+            sage: g.display()
             g = -dt*dt + dx*dx + dy*dy + dz*dz
             sage: g.signature()
             2
@@ -2616,13 +2616,13 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: a = M.automorphism_field()
             sage: a[e,:] = [[1,2],[0,3]]
             sage: M.set_frame_change(e, f, a)
-            sage: f[0].view(e)
+            sage: f[0].display(e)
             f_0 = e_0
-            sage: f[1].view(e)
+            sage: f[1].display(e)
             f_1 = 2 e_0 + 3 e_1
-            sage: e[0].view(f)
+            sage: e[0].display(f)
             e_0 = f_0
-            sage: e[1].view(f)
+            sage: e[1].display(f)
             e_1 = -2/3 f_0 + 1/3 f_1
             sage: M.frame_change(e,f)[e,:]
             [1 2]

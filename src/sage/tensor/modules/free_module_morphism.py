@@ -133,26 +133,26 @@ class FiniteRankFreeModuleMorphism(Morphism):
     The convention is that the columns of this matrix give the components of
     the images of the elements of basis e w.r.t basis f::
 
-        sage: phi(e[0]).view()
+        sage: phi(e[0]).display()
         phi(e_0) = 2 f_0 + f_1
-        sage: phi(e[1]).view()
+        sage: phi(e[1]).display()
         phi(e_1) = -f_0
-        sage: phi(e[2]).view()
+        sage: phi(e[2]).display()
         phi(e_2) = 3 f_0 - 4 f_1
 
     Test of the module homomorphism laws::
 
         sage: phi(M.zero()) == N.zero()
         True
-        sage: u = M([1,2,3], basis=e, name='u') ; u.view()
+        sage: u = M([1,2,3], basis=e, name='u') ; u.display()
         u = e_0 + 2 e_1 + 3 e_2
-        sage: v = M([-2,1,4], basis=e, name='v') ; v.view()
+        sage: v = M([-2,1,4], basis=e, name='v') ; v.display()
         v = -2 e_0 + e_1 + 4 e_2
-        sage: phi(u).view()
+        sage: phi(u).display()
         phi(u) = 9 f_0 - 11 f_1
-        sage: phi(v).view()
+        sage: phi(v).display()
         phi(v) = 7 f_0 - 18 f_1
-        sage: phi(3*u + v).view()
+        sage: phi(3*u + v).display()
         34 f_0 - 51 f_1
         sage: phi(3*u + v) == 3*phi(u) + phi(v)
         True
@@ -814,7 +814,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: v = M([1,2,3], basis=e, name='v')
             sage: w = phi(v) ; w
             Element phi(v) of the Rank-2 free module N over the Integer Ring
-            sage: w.view()
+            sage: w.display()
             phi(v) = 3 f_0 + 13 f_1
 
         Tests::
@@ -826,11 +826,11 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: phi.matrix(e,f)
             [-1  2  0]
             [ 5  1  2]
-            sage: phi(e[0]).view()
+            sage: phi(e[0]).display()
             phi(e_0) = -f_0 + 5 f_1
-            sage: phi(e[1]).view()
+            sage: phi(e[1]).display()
             phi(e_1) = 2 f_0 + f_1
-            sage: phi(e[2]).view()
+            sage: phi(e[2]).display()
             phi(e_2) = 2 f_1
 
         Image of an element that is not defined on the default basis::
@@ -841,7 +841,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: v = M([1,2,3], basis=ep, name='v')
             sage: w = phi(v) ; w
             Element phi(v) of the Rank-2 free module N over the Integer Ring
-            sage: w.view()
+            sage: w.display()
             phi(v) = -5 f_0 + 10 f_1
             sage: for i in range(2):
             ....:     print w[i] == sum( phi.matrix(ep,f)[i,j]*v[ep,j] for j in range(3) ),
@@ -919,7 +919,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         Indeed, phi has a non trivial kernel::
 
-            sage: phi(4*e[0] + 2*e[1] - 11*e[2]).view()
+            sage: phi(4*e[0] + 2*e[1] - 11*e[2]).display()
             0
 
         An injective homomorphism::

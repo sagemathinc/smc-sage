@@ -88,7 +88,7 @@ class ScalarField(CommutativeAlgebraElement):
         sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
         sage: f = M.scalar_field(sin(th)*cos(ph), chart=c_spher, name='f') ; f
         scalar field 'f' on the 2-dimensional manifold 'S^2'
-        sage: f.view(chart=c_spher)
+        sage: f.display(chart=c_spher)
         f: S^2 --> R
         on U: (th, ph) |--> cos(ph)*sin(th)
         sage: f.expr(chart=c_spher)
@@ -99,7 +99,7 @@ class ScalarField(CommutativeAlgebraElement):
 
         sage: f = M.scalar_field(sin(th)*cos(ph),  name='f') ; f
         scalar field 'f' on the 2-dimensional manifold 'S^2'
-        sage: f.view()
+        sage: f.display()
         f: S^2 --> R
         on U: (th, ph) |--> cos(ph)*sin(th)
         sage: f.expr()
@@ -117,16 +117,16 @@ class ScalarField(CommutativeAlgebraElement):
         cos(th)
         sage: f.set_expr(sin(th)*cos(ph)) # restoring the original value
 
-    The function :meth:`view` displays the coordinate expression of the scalar
+    The function :meth:`display` shows the coordinate expression of the scalar
     field::
 
-        sage: f.view()
+        sage: f.display()
         f: S^2 --> R
         on U: (th, ph) |--> cos(ph)*sin(th)
-        sage: f.view(c_spher) # equivalent to above since c_spher is the default chart
+        sage: f.display(c_spher) # equivalent to above since c_spher is the default chart
         f: S^2 --> R
         on U: (th, ph) |--> cos(ph)*sin(th)
-        sage: latex(f.view(c_spher)) # nice LaTeX formatting for the notebook
+        sage: latex(f.display(c_spher)) # nice LaTeX formatting for the notebook
         \begin{array}{llcl} f:& S^2 & \longrightarrow & \RR \\ \mbox{on}\ U : & \left(\theta, \phi\right) & \longmapsto & \cos\left(\phi\right) \sin\left(\theta\right) \end{array}
 
     A scalar field can also be defined by an unspecified function of the
@@ -866,7 +866,7 @@ class ScalarField(CommutativeAlgebraElement):
         The scalar field has been defined only on the domain covered by the
         chart c_xy, i.e. `U`::
 
-            sage: f.view()
+            sage: f.display()
             f: S^2 --> R
             on U: (x, y) |--> arctan(x^2 + y^2)
 
@@ -874,7 +874,7 @@ class ScalarField(CommutativeAlgebraElement):
         coordinates `(u,v)` can be deduced from that in the coordinates
         `(x,y)` thanks to the transition map between the two charts::
 
-            sage: f.view(c_uv.restrict(W))
+            sage: f.display(c_uv.restrict(W))
             f: S^2 --> R
             on W: (u, v) |--> arctan(1/(u^2 + v^2))
 
@@ -885,7 +885,7 @@ class ScalarField(CommutativeAlgebraElement):
 
         Then, `f` is known on the whole sphere::
 
-            sage: f.view()
+            sage: f.display()
             f: S^2 --> R
             on U: (x, y) |--> arctan(x^2 + y^2)
             on V: (u, v) |--> arctan(1/(u^2 + v^2))
@@ -900,7 +900,7 @@ class ScalarField(CommutativeAlgebraElement):
 
     def _display_expression(self, chart, result):
         r"""
-        Helper function for :meth:`view`.
+        Helper function for :meth:`display`.
         """
         from sage.misc.latex import latex
         try:
@@ -921,7 +921,7 @@ class ScalarField(CommutativeAlgebraElement):
         except (TypeError, ValueError):
             pass
 
-    def view(self, chart=None):
+    def display(self, chart=None):
         r"""
         Display the expression of the scalar field in a given chart.
 
@@ -948,16 +948,16 @@ class ScalarField(CommutativeAlgebraElement):
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart()
             sage: f = M.scalar_field(sqrt(x+1), name='f')
-            sage: f.view()
+            sage: f.display()
             f: M --> R
                (x, y) |--> sqrt(x + 1)
-            sage: latex(f.view())
+            sage: latex(f.display())
             \begin{array}{llcl} f:& M & \longrightarrow & \RR \\ & \left(x, y\right) & \longmapsto & \sqrt{x + 1} \end{array}
             sage: g = M.scalar_field(function('G', x, y), name='g')
-            sage: g.view()
+            sage: g.display()
             g: M --> R
                (x, y) |--> G(x, y)
-            sage: latex(g.view())
+            sage: latex(g.display())
             \begin{array}{llcl} g:& M & \longrightarrow & \RR \\ & \left(x, y\right) & \longmapsto & G\left(x, y\right) \end{array}
 
         """
@@ -983,6 +983,33 @@ class ScalarField(CommutativeAlgebraElement):
         result.txt = result.txt[:-1]
         result.latex = result.latex[:-2] + r"\end{array}"
         return result
+
+
+    def view(self, chart=None):
+        r"""
+        Deprecated method.
+
+        Use method :meth:`display` instead.
+
+        EXAMPLE::
+
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart()
+            sage: f = M.scalar_field((x+1)^2, name='f')
+            sage: f.view()
+            doctest:...: DeprecationWarning: Use function display() instead.
+            See http://trac.sagemath.org/15916 for details.
+            f: M --> R
+               (x, y) |--> (x + 1)^2
+            sage: f.display()
+            f: M --> R
+               (x, y) |--> (x + 1)^2
+
+        """
+        from sage.misc.superseded import deprecation
+        deprecation(15916, 'Use function display() instead.')
+        return self.display(chart=chart)
+
 
     def restrict(self, subdomain):
         r"""
@@ -1011,7 +1038,7 @@ class ScalarField(CommutativeAlgebraElement):
             sage: f = M.scalar_field(cos(x*y), name='f')
             sage: f_U = f.restrict(U) ; f_U
             scalar field 'f' on the open subset 'U' of the 2-dimensional manifold 'M'
-            sage: f_U.view()
+            sage: f_U.display()
             f: U --> R
                (x, y) |--> cos(x*y)
             sage: f.parent()
@@ -1470,7 +1497,7 @@ class ScalarField(CommutativeAlgebraElement):
             sage: f = M.scalar_field(cos(x)*z^3 + exp(y)*z^2, name='f')
             sage: df = f.exterior_der() ; df
             1-form 'df' on the 3-dimensional manifold 'M'
-            sage: df.view()
+            sage: df.display()
             df = -z^3*sin(x) dx + z^2*e^y dy + (3*z^2*cos(x) + 2*z*e^y) dz
             sage: latex(df)
             \mathrm{d}f
@@ -1485,7 +1512,7 @@ class ScalarField(CommutativeAlgebraElement):
             {coordinate frame (M, (d/du,d/dv,d/dw)): 1-index components w.r.t. coordinate frame (M, (d/du,d/dv,d/dw))}
             sage: dg.comp(c_uvw.frame())[:, c_uvw]
             [v^2*w^3, 2*u*v*w^3, 3*u*v^2*w^2]
-            sage: dg.view(c_uvw.frame(), c_uvw)
+            sage: dg.display(c_uvw.frame(), c_uvw)
             dg = v^2*w^3 du + 2*u*v*w^3 dv + 3*u*v^2*w^2 dw
 
         The exterior derivative is nilpotent::
@@ -1526,7 +1553,7 @@ class ScalarField(CommutativeAlgebraElement):
             sage: f = M.scalar_field(cos(x)*z**3 + exp(y)*z**2, name='f')
             sage: df = f.differential() ; df
             1-form 'df' on the 3-dimensional manifold 'M'
-            sage: df.view()
+            sage: df.display()
             df = -z^3*sin(x) dx + z^2*e^y dy + (3*z^2*cos(x) + 2*z*e^y) dz
             sage: latex(df)
             \mathrm{d}f
@@ -1593,7 +1620,7 @@ class ScalarField(CommutativeAlgebraElement):
         A vanishing Lie derivative::
 
             sage: f.set_expr(x^2 + y^2)
-            sage: f.lie_der(v).view()
+            sage: f.lie_der(v).display()
             M --> R
             (x, y) |--> 0
 
@@ -1643,11 +1670,11 @@ class ScalarField(CommutativeAlgebraElement):
             sage: f = M.scalar_field(function('F',x,y,z), name='f')
             sage: sf = f.hodge_star(g) ; sf
             3-form '*f' on the 3-dimensional manifold 'M'
-            sage: sf.view()
+            sage: sf.display()
             *f = F(x, y, z) dx/\dy/\dz
             sage: ssf = sf.hodge_star(g) ; ssf
             scalar field '**f' on the 3-dimensional manifold 'M'
-            sage: ssf.view()
+            sage: ssf.display()
             **f: M --> R
                (x, y, z) |--> F(x, y, z)
             sage: ssf == f # must hold for a Riemannian metric

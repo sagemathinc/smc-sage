@@ -217,15 +217,15 @@ class AffConnection(SageObject):
         sage: a[eU,:] = [-y,x]
         sage: a[eV,0] = a[eVW,0,c_uvW].expr()
         sage: a[eV,1] = a[eVW,1,c_uvW].expr()
-        sage: a.view(eU)
+        sage: a.display(eU)
         a = -y d/dx + x d/dy
-        sage: a.view(eV)
+        sage: a.display(eV)
         a = v d/du - u d/dv
         sage: da = nab(a) ; da
         field of endomorphisms 'nabla a' on the 2-dimensional manifold 'M'
-        sage: da.view(eU)
+        sage: da.display(eU)
         nabla a = -x*y d/dx*dx - d/dx*dy + d/dy*dx - x*y^2 d/dy*dy
-        sage: da.view(eV)
+        sage: da.display(eV)
         nabla a = (-1/16*u^3 + 1/16*u^2*v + 1/16*(u + 2)*v^2 - 1/16*v^3 - 1/8*u^2) d/du*du + (1/16*u^3 - 1/16*u^2*v - 1/16*(u - 2)*v^2 + 1/16*v^3 - 1/8*u^2 + 1) d/du*dv + (1/16*u^3 - 1/16*u^2*v - 1/16*(u - 2)*v^2 + 1/16*v^3 - 1/8*u^2 - 1) d/dv*du + (-1/16*u^3 + 1/16*u^2*v + 1/16*(u + 2)*v^2 - 1/16*v^3 - 1/8*u^2) d/dv*dv
 
     A few tests::
@@ -850,7 +850,7 @@ class AffConnection(SageObject):
             sage: nab[2,1,3] = 1+x    # changing the connection
             sage: nab.torsion() is t  # a new computation of the torsion has been made
             False
-            sage: (nab.torsion() - t).view()
+            sage: (nab.torsion() - t).display()
             (-x - 1) d/dy*dx*dz + (x + 1) d/dy*dz*dx
 
         Another example: torsion of some connection on a non-parallelizable
@@ -888,9 +888,9 @@ class AffConnection(SageObject):
             sage: f = M.scalar_field({c_xy: (x+y)^2, c_uv: u^2}, name='f')
             sage: DDf = nab(nab(f)) ; DDf
             tensor field 'nabla df' of type (0,2) on the 2-dimensional manifold 'M'
-            sage: DDf.antisymmetrize().view(eU)
+            sage: DDf.antisymmetrize().display(eU)
             (-x^2*y - (x + 1)*y^2 + x^2) dx/\dy
-            sage: DDf.antisymmetrize().view(eV)
+            sage: DDf.antisymmetrize().display(eV)
             (1/8*u^3 - 1/8*u*v^2 - 1/2*u*v) du/\dv
             sage: 2*DDf.antisymmetrize() == nab(f).contract(nab.torsion())
             True
@@ -980,9 +980,9 @@ class AffConnection(SageObject):
             tensor field of type (1,3) on the 2-dimensional manifold 'M'
             sage: r.parent()
             module T^(1,3)(M) of type-(1,3) tensors fields on the 2-dimensional manifold 'M'
-            sage: r.view(eU)
+            sage: r.display(eU)
             (x^2*y - x*y^2) d/dx*dx*dx*dy + (-x^2*y + x*y^2) d/dx*dx*dy*dx + d/dx*dy*dx*dy - d/dx*dy*dy*dx - (x^2 - 1)*y d/dy*dx*dx*dy + (x^2 - 1)*y d/dy*dx*dy*dx + (-x^2*y + x*y^2) d/dy*dy*dx*dy + (x^2*y - x*y^2) d/dy*dy*dy*dx
-            sage: r.view(eV)
+            sage: r.display(eV)
             (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/du*du*du*dv + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/du*du*dv*du + (1/32*u^3 - 1/32*u*v^2 + 3/32*v^3 - 1/32*(3*u^2 - 4)*v - 1/8*u + 1/4) d/du*dv*du*dv + (-1/32*u^3 + 1/32*u*v^2 - 3/32*v^3 + 1/32*(3*u^2 - 4)*v + 1/8*u - 1/4) d/du*dv*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 5/32*v^3 - 1/32*(5*u^2 + 4)*v + 1/8*u - 1/4) d/dv*du*du*dv + (1/32*u^3 - 1/32*u*v^2 - 5/32*v^3 + 1/32*(5*u^2 + 4)*v - 1/8*u + 1/4) d/dv*du*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/dv*dv*du*dv + (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/dv*dv*dv*du
 
         """
@@ -1322,7 +1322,7 @@ class AffConnection(SageObject):
             sage: nab[3,2,1], nab[3,2,2], nab[3,3,3] = x*y+z, z^3 -y^2, x*z^2 - z*y^2
             sage: nab.curvature_form(1,1)
             2-form 'nabla curvature 2-form (1,1)' on the 3-dimensional manifold 'M'
-            sage: nab.curvature_form(1,1).view()
+            sage: nab.curvature_form(1,1).display()
             nabla curvature 2-form (1,1) = (y^2*z^3 + (x*y^3 - x)*z + 2*x) dx/\dy + (x^3*z^2 - x*y) dx/\dz + (x^4*y*z^2 - z) dy/\dz
 
         Curvature 2-forms w.r.t. a non-holonomic frame::
@@ -1330,14 +1330,14 @@ class AffConnection(SageObject):
             sage: ch_basis = M.automorphism_field()
             sage: ch_basis[1,1], ch_basis[2,2], ch_basis[3,3] = y, z, x
             sage: e = M.default_frame().new_frame(ch_basis, 'e')
-            sage: e[1].view(), e[2].view(), e[3].view()
+            sage: e[1].display(), e[2].display(), e[3].display()
             (e_1 = y d/dx, e_2 = z d/dy, e_3 = x d/dz)
             sage: ef = e.coframe()
-            sage: ef[1].view(), ef[2].view(), ef[3].view()
+            sage: ef[1].display(), ef[2].display(), ef[3].display()
             (e^1 = 1/y dx, e^2 = 1/z dy, e^3 = 1/x dz)
             sage: nab.curvature_form(1,1,e)
             2-form 'nabla curvature 2-form (1,1)' on the 3-dimensional manifold 'M'
-            sage: nab.curvature_form(1,1,e).view(e)
+            sage: nab.curvature_form(1,1,e).display(e)
             nabla curvature 2-form (1,1) = (y^3*z^4 + 2*x*y*z + (x*y^4 - x*y)*z^2) e^1/\e^2 + (x^4*y*z^2 - x^2*y^2) e^1/\e^3 + (x^5*y*z^3 - x*z^2) e^2/\e^3
 
         Cartan's second structure equation is
@@ -1472,7 +1472,7 @@ class LeviCivitaConnection(AffConnection):
         sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
         sage: g = M.metric('g')
         sage: g[1,1], g[2,2], g[3,3] = 1, r^2 , (r*sin(th))^2
-        sage: g.view()
+        sage: g.display()
         g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
         sage: from sage.geometry.manifolds.connection import LeviCivitaConnection
         sage: nab = LeviCivitaConnection(g, 'nabla', r'\nabla') ; nab
@@ -1652,7 +1652,7 @@ class LeviCivitaConnection(AffConnection):
             sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: g = M.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2 , (r*sin(th))^2
-            sage: g.view()
+            sage: g.display()
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
             sage: from sage.geometry.manifolds.connection import LeviCivitaConnection
             sage: nab = LeviCivitaConnection(g, 'nabla', r'\nabla')
@@ -1843,13 +1843,13 @@ class LeviCivitaConnection(AffConnection):
             sage: c_spher.<th,ph> = M.chart(r'th:[0,pi]:\theta ph:[0,2*pi):\phi')
             sage: g = M.metric('g')
             sage: g[1,1], g[2,2] = 1, sin(th)^2
-            sage: g.view() # standard metric on S^2:
+            sage: g.display() # standard metric on S^2:
             g = dth*dth + sin(th)^2 dph*dph
             sage: nab = g.connection() ; nab
             Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the 2-dimensional manifold 'S^2'
             sage: ric = nab.ricci() ; ric
             field of symmetric bilinear forms 'Ric(g)' on the 2-dimensional manifold 'S^2'
-            sage: ric.view()
+            sage: ric.display()
             Ric(g) = dth*dth + sin(th)^2 dph*dph
 
         Checking that the Ricci tensor of the Levi-Civita connection associated
@@ -1861,7 +1861,7 @@ class LeviCivitaConnection(AffConnection):
             sage: m = var('m')  # mass in Schwarzschild metric
             sage: g[0,0], g[1,1] = -(1-2*m/r), 1/(1-2*m/r)
             sage: g[2,2], g[3,3] = r^2, (r*sin(th))^2
-            sage: g.view()
+            sage: g.display()
             g = (2*m - r)/r dt*dt - r/(2*m - r) dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
             sage: nab = g.connection() ; nab
             Levi-Civita connection 'nabla_g' associated with the pseudo-Riemannian metric 'g' on the 4-dimensional manifold 'M'

@@ -93,9 +93,9 @@ class DiffForm(TensorField):
     
         sage: a[eU,0,1] = x*y^2 + 2*x
         sage: a.add_comp_by_continuation(eV, W, c_uv)
-        sage: a.view(eU)
+        sage: a.display(eU)
         a = (x*y^2 + 2*x) dx/\dy
-        sage: a.view(eV)
+        sage: a.display(eV)
         a = (-1/16*u^3 + 1/16*u*v^2 - 1/16*v^3 + 1/16*(u^2 - 8)*v - 1/2*u) du/\dv
         
     """
@@ -305,18 +305,18 @@ class OneForm(DiffForm):
 
         sage: a[eU,:] = [-y, x]
         sage: a.add_comp_by_continuation(eV, W, c_uv)
-        sage: a.view(eU)
+        sage: a.display(eU)
         a = -y dx + x dy
-        sage: a.view(eV)
+        sage: a.display(eV)
         a = 1/2*v du - 1/2*u dv
 
     The exterior derivative of the 1-form is a 2-form::
     
         sage: da = a.exterior_der() ; da
         2-form 'da' on the 2-dimensional manifold 'M'
-        sage: da.view(eU)
+        sage: da.display(eU)
         da = 2 dx/\dy
-        sage: da.view(eV)
+        sage: da.display(eV)
         da = -du/\dv
 
     Another 1-form::
@@ -329,18 +329,18 @@ class OneForm(DiffForm):
     
         sage: s = a + b ; s
         1-form 'a+b' on the 2-dimensional manifold 'M'
-        sage: s.view(eU)
+        sage: s.display(eU)
         a+b = ((x - 1)*y + 1) dx + (x^2 + x) dy
-        sage: s.view(eV)
+        sage: s.display(eV)
         a+b = (1/4*u^2 + 1/4*(u + 2)*v + 1/2) du + (-1/4*u*v - 1/4*v^2 - 1/2*u + 1/2) dv
 
     The exterior product of two 1-forms is a 2-form::
     
         sage: s = a.wedge(b) ; s
         2-form 'a/\b' on the 2-dimensional manifold 'M'
-        sage: s.view(eU)
+        sage: s.display(eU)
         a/\b = (-2*x^2*y - x) dx/\dy
-        sage: s.view(eV)
+        sage: s.display(eV)
         a/\b = (1/8*u^3 - 1/8*u*v^2 - 1/8*v^3 + 1/8*(u^2 + 2)*v + 1/4*u) du/\dv
     
     Multiplying a 1-form by a scalar field results in another 1-form::
@@ -348,9 +348,9 @@ class OneForm(DiffForm):
         sage: f = M.scalar_field({c_xy: (x+y)^2, c_uv: u^2}, name='f')
         sage: s = f*a ; s
         1-form on the 2-dimensional manifold 'M'
-        sage: s.view(eU)
+        sage: s.display(eU)
         (-x^2*y - 2*x*y^2 - y^3) dx + (x^3 + 2*x^2*y + x*y^2) dy
-        sage: s.view(eV)
+        sage: s.display(eV)
         1/2*u^2*v du - 1/2*u^3 dv
 
     """
@@ -437,11 +437,11 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         sage: a[1,2] = 3  # OK
 
     The expansion of a differential form with respect to a given coframe is 
-    displayed via the method :meth:`view`::
+    displayed via the method :meth:`display`::
     
-        sage: a.view() # expansion with respect to the default coframe (dt, dx, dy, dz)
+        sage: a.display() # expansion with respect to the default coframe (dt, dx, dy, dz)
         a = 2 dt/\dx + 3 dx/\dy
-        sage: latex(a.view()) # output for the notebook
+        sage: latex(a.display()) # output for the notebook
         a = 2 \mathrm{d} t\wedge \mathrm{d} x + 3 \mathrm{d} x\wedge \mathrm{d} y
 
     Differential forms can be added or subtracted::
@@ -474,7 +474,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         sage: eps[1,2,3] = 1  # the only independent component
         sage: eps[:] # all the components are set from the previous line:
         [[[0, 0, 0], [0, 0, 1], [0, -1, 0]], [[0, 0, -1], [0, 0, 0], [1, 0, 0]], [[0, 1, 0], [-1, 0, 0], [0, 0, 0]]]
-        sage: eps.view()
+        sage: eps.display()
         epsilon = dx/\dy/\dz
         
     Spherical components of the volume element from the tensorial 
@@ -494,9 +494,9 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         Fully antisymmetric 3-indices components w.r.t. coordinate frame (R3, (d/dr,d/dth,d/dph))
         sage: eps.comp(c_spher.frame())[1,2,3, c_spher]
         r^2*sin(th)
-        sage: eps.view(c_spher.frame())
+        sage: eps.display(c_spher.frame())
         epsilon = sqrt(x^2 + y^2 + z^2)*sqrt(x^2 + y^2) dr/\dth/\dph
-        sage: eps.view(c_spher.frame(), c_spher)
+        sage: eps.display(c_spher.frame(), c_spher)
         epsilon = r^2*sin(th) dr/\dth/\dph
        
     The exterior product of two differential forms is performed via the method 
@@ -512,7 +512,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         [                         0  x*y*z*sin(x) + x*z*cos(z)  x*y*z*cos(y) - y*z*cos(z)]
         [-x*y*z*sin(x) - x*z*cos(z)                          0   -(x*cos(y) + y*sin(x))*z]
         [-x*y*z*cos(y) + y*z*cos(z)    (x*cos(y) + y*sin(x))*z                          0]
-        sage: ab.view()
+        sage: ab.display()
         A/\B = (x*y*z*sin(x) + x*z*cos(z)) dx/\dy + (x*y*z*cos(y) - y*z*cos(z)) dx/\dz - (x*cos(y) + y*sin(x))*z dy/\dz
 
     The tensor product of a 1-form and a 2-form is not a 3-form but a tensor
@@ -532,11 +532,11 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     
         sage: da = a.exterior_der() ; da
         2-form 'dA' on the 3-dimensional manifold 'R3'
-        sage: da.view()
+        sage: da.display()
         dA = -(x + 1)*z dx/\dy - x*y dx/\dz + (x + z) dy/\dz
         sage: db = b.exterior_der() ; db
         2-form 'dB' on the 3-dimensional manifold 'R3'
-        sage: db.view()
+        sage: db.display()
         dB = cos(x) dx/\dy + sin(z) dx/\dz - sin(y) dy/\dz
         sage: dab = ab.exterior_der() ; dab
         3-form 'd(A/\B)' on the 3-dimensional manifold 'R3'
@@ -638,7 +638,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             sage: a[:] = (t*x*y*z, z*y**2, x*z**2, x**2 + y**2)
             sage: da = a.exterior_der() ; da
             2-form 'dA' on the 4-dimensional manifold 'M'
-            sage: da.view()
+            sage: da.display()
             dA = -t*y*z dt/\dx - t*x*z dt/\dy - t*x*y dt/\dz + (-2*y*z + z^2) dx/\dy + (-y^2 + 2*x) dx/\dz + (-2*x*z + 2*y) dy/\dz
             sage: latex(da)
             \mathrm{d}A
@@ -647,7 +647,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         
             sage: dda = da.exterior_der() ; dda
             3-form 'ddA' on the 4-dimensional manifold 'M'
-            sage: dda.view()
+            sage: dda.display()
             ddA = 0
             sage: dda == 0
             True
@@ -783,11 +783,11 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             sage: a[:] = (Ax, Ay, Az)
             sage: sa = a.hodge_star(g) ; sa
             2-form '*A' on the 3-dimensional manifold 'M'
-            sage: sa.view()
+            sage: sa.display()
             *A = Az dx/\dy - Ay dx/\dz + Ax dy/\dz
             sage: ssa = sa.hodge_star(g) ; ssa
             1-form '**A' on the 3-dimensional manifold 'M'
-            sage: ssa.view()
+            sage: ssa.display()
             **A = Ax dx + Ay dy + Az dz
             sage: ssa == a  # must hold for a Riemannian metric in dimension 3
             True
@@ -797,11 +797,11 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             sage: f = M.scalar_field(function('F',x,y,z), name='f')
             sage: sf = f.hodge_star(g) ; sf
             3-form '*f' on the 3-dimensional manifold 'M'
-            sage: sf.view()
+            sage: sf.display()
             *f = F(x, y, z) dx/\dy/\dz
             sage: ssf = sf.hodge_star(g) ; ssf
             scalar field '**f' on the 3-dimensional manifold 'M'
-            sage: ssf.view()
+            sage: ssf.display()
             **f: M --> R
                (x, y, z) |--> F(x, y, z)
             sage: ssf == f # must hold for a Riemannian metric
@@ -813,18 +813,18 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             sage: X.<t,x,y,z> = M.chart()
             sage: g = M.metric('g', signature=2)
             sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
-            sage: g.view()  # Minkowski metric
+            sage: g.display()  # Minkowski metric
             g = -dt*dt + dx*dx + dy*dy + dz*dz
             sage: var('f0')
             f0
             sage: f = M.scalar_field(f0, name='f')
             sage: sf = f.hodge_star(g) ; sf 
             4-form '*f' on the 4-dimensional manifold 'M'
-            sage: sf.view()
+            sage: sf.display()
             *f = f0 dt/\dx/\dy/\dz
             sage: ssf = sf.hodge_star(g) ; ssf
             scalar field '**f' on the 4-dimensional manifold 'M'
-            sage: ssf.view()
+            sage: ssf.display()
             **f: M --> R
                (t, x, y, z) |--> -f0
             sage: ssf == -f  # must hold for a Lorentzian metric             
@@ -836,15 +836,15 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             sage: var('At Ax Ay Az')
             (At, Ax, Ay, Az)
             sage: a[:] = (At, Ax, Ay, Az)
-            sage: a.view()
+            sage: a.display()
             A = At dt + Ax dx + Ay dy + Az dz
             sage: sa = a.hodge_star(g) ; sa
             3-form '*A' on the 4-dimensional manifold 'M'
-            sage: sa.view()
+            sage: sa.display()
             *A = -Az dt/\dx/\dy + Ay dt/\dx/\dz - Ax dt/\dy/\dz - At dx/\dy/\dz
             sage: ssa = sa.hodge_star(g) ; ssa
             1-form '**A' on the 4-dimensional manifold 'M'
-            sage: ssa.view()
+            sage: ssa.display()
             **A = At dt + Ax dx + Ay dy + Az dz
             sage: ssa == a  # must hold for a Lorentzian metric in dimension 4
             True
@@ -875,9 +875,9 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             [-Ex   0 -Bz  By]
             [-Ey  Bz   0 -Bx]
             [-Ez -By  Bx   0]
-            sage: ssF.view()
+            sage: ssF.display()
             **F = Ex dt/\dx + Ey dt/\dy + Ez dt/\dz - Bz dx/\dy + By dx/\dz - Bx dy/\dz
-            sage: F.view()
+            sage: F.display()
             F = -Ex dt/\dx - Ey dt/\dy - Ez dt/\dz + Bz dx/\dy - By dx/\dz + Bx dy/\dz
             sage: ssF == -F  # must hold for a Lorentzian metric in dimension 4
             True
@@ -894,7 +894,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             sage: b = M.one_form('B')
             sage: var('Bt Bx By Bz')
             (Bt, Bx, By, Bz)
-            sage: b[:] = (Bt, Bx, By, Bz) ; b.view()
+            sage: b[:] = (Bt, Bx, By, Bz) ; b.display()
             B = Bt dt + Bx dx + By dy + Bz dz
             sage: epsilon = g.volume_form()
             sage: (a.wedge(b)).hodge_star(g) == epsilon.contract(0, a.up(g), 0).contract(0, b.up(g), 0)
@@ -958,7 +958,7 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
         sage: om[:] = (2*z, x, x-y)
         sage: om[:]
         [2*z, x, x - y]
-        sage: om.view()
+        sage: om.display()
         omega = 2*z dx + x dy + (x - y) dz
         
     A 1-form acts on vector fields::
@@ -967,7 +967,7 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
         sage: v[:] = (x, 2*y, 3*z)
         sage: om(v)
         scalar field 'omega(V)' on the 3-dimensional manifold 'M'
-        sage: om(v).view()
+        sage: om(v).display()
         omega(V): M --> R
            (x, y, z) |--> 2*x*y + (5*x - 3*y)*z
         sage: latex(om(v))

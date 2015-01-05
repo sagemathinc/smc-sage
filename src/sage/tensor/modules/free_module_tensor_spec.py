@@ -82,7 +82,7 @@ class FreeModuleEndomorphismTensor(FreeModuleTensor):
         [1 2 3]
         [4 5 6]
         [7 8 9]
-        sage: t.view()
+        sage: t.display()
         T = e_0*e^0 + 2 e_0*e^1 + 3 e_0*e^2 + 4 e_1*e^0 + 5 e_1*e^1
             + 6 e_1*e^2 + 7 e_2*e^0 + 8 e_2*e^1 + 9 e_2*e^2
 
@@ -175,7 +175,7 @@ class FreeModuleEndomorphismTensor(FreeModuleTensor):
             sage: v = M([2,1,4], name='v')
             sage: s = a.__call__(v) ; s
             Element a(v) of the Rank-3 free module M over the Integer Ring
-            sage: s.view()
+            sage: s.display()
             a(v) = 2 e_0 + 4 e_1 - 5 e_2
             sage: s == a(v)
             True
@@ -266,14 +266,14 @@ class FreeModuleAutomorphismTensor(FreeModuleEndomorphismTensor):
         sage: a[:]
         [ 1  2]
         [-1  3]
-        sage: a.view(basis=e)
+        sage: a.display(basis=e)
         A = e_0*e^0 + 2 e_0*e^1 - e_1*e^0 + 3 e_1*e^1
 
     The inverse automorphism is obtained via the method :meth:`inverse`::
 
         sage: b = a.inverse() ; b
         Automorphism tensor A^(-1) on the Rank-2 free module M over the Rational Field
-        sage: b.view(basis=e)
+        sage: b.display(basis=e)
         A^(-1) = 3/5 e_0*e^0 - 2/5 e_0*e^1 + 1/5 e_1*e^0 + 1/5 e_1*e^1
         sage: b[:]
         [ 3/5 -2/5]
@@ -462,7 +462,7 @@ class FreeModuleIdentityTensor(FreeModuleAutomorphismTensor):
         [0 0 1]
         sage: a.comp() # components in the module's default basis (e)
         Kronecker delta of size 3x3
-        sage: a.view()
+        sage: a.display()
         Id = e_0*e^0 + e_1*e^1 + e_2*e^2
         sage: f = M.basis('f')
         sage: a.comp(basis=f)
@@ -484,7 +484,7 @@ class FreeModuleIdentityTensor(FreeModuleAutomorphismTensor):
     The identity tensor acting on a module element::
 
         sage: v = M([2,-3,1], basis=e, name='v')
-        sage: v.view()
+        sage: v.display()
         v = 2 e_0 - 3 e_1 + e_2
         sage: u = a(v) ; u
         Element v of the Rank-3 free module M over the Integer Ring

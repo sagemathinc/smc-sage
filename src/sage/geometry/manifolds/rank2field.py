@@ -177,18 +177,18 @@ class AutomorphismField(EndomorphismField):
 
     At this stage, the automorphims field `a` is fully defined::
 
-        sage: a.view(eU)
+        sage: a.display(eU)
         a = d/dx*dx + x d/dx*dy + 2 d/dy*dy
-        sage: a.view(eV)
+        sage: a.display(eV)
         a = (1/4*u + 1/4*v + 3/2) d/du*du + (-1/4*u - 1/4*v - 1/2) d/du*dv + (1/4*u + 1/4*v - 1/2) d/dv*du + (-1/4*u - 1/4*v + 3/2) d/dv*dv
 
     In particular, we may ask for its inverse on the whole manifold `M`::
 
         sage: ia = a.inverse() ; ia
         field of tangent-space automorphisms 'a^(-1)' on the 2-dimensional manifold 'M'
-        sage: ia.view(eU)
+        sage: ia.display(eU)
         a^(-1) = d/dx*dx - 1/2*x d/dx*dy + 1/2 d/dy*dy
-        sage: ia.view(eV)
+        sage: ia.display(eV)
         a^(-1) = (-1/8*u - 1/8*v + 3/4) d/du*du + (1/8*u + 1/8*v + 1/4) d/du*dv + (-1/8*u - 1/8*v + 1/4) d/dv*du + (1/8*u + 1/8*v + 3/4) d/dv*dv
 
     """

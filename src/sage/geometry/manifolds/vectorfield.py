@@ -79,9 +79,9 @@ class VectorField(TensorField):
 
     At this stage, the vector field is fully defined on the whole manifold::
 
-        sage: v.view(eU)
+        sage: v.display(eU)
         v = -y d/dx + (x + 1) d/dy
-        sage: v.view(eV)
+        sage: v.display(eV)
         v = (u + 1) d/dt + (-t - 1) d/du
 
     The vector field acting on scalar fields::
@@ -89,7 +89,7 @@ class VectorField(TensorField):
         sage: f = M.scalar_field({c_xy: (x+y)^2, c_tu: t^2}, name='f')
         sage: s = v(f) ; s
         scalar field 'v(f)' on the 2-dimensional manifold 'M'
-        sage: s.view()
+        sage: s.display()
         v(f): M --> R
         on U: (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
         on V: (t, u) |--> 2*t*u + 2*t
@@ -110,19 +110,19 @@ class VectorField(TensorField):
         True
         sage: s = v(f.restrict(W)) ; s
         scalar field 'v(f)' on the open subset 'W' of the 2-dimensional manifold 'M'
-        sage: s.view()
+        sage: s.display()
         v(f): W --> R
            (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
            (t, u) |--> 2*t*u + 2*t
         sage: s = v.restrict(U)(f) ; s
         scalar field 'v(f)' on the open subset 'U' of the 2-dimensional manifold 'M'
-        sage: s.view()
+        sage: s.display()
         v(f): U --> R
            (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
         on W: (t, u) |--> 2*t*u + 2*t
         sage: s = v.restrict(U)(f.restrict(V)) ; s
         scalar field 'v(f)' on the open subset 'W' of the 2-dimensional manifold 'M'
-        sage: s.view()
+        sage: s.display()
         v(f): W --> R
            (x, y) |--> 2*x^2 - 2*y^2 + 2*x + 2*y
            (t, u) |--> 2*t*u + 2*t
@@ -280,9 +280,9 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
         [1, 4, 9]
 
     The components are also read on the expansion on the frame 'e', as provided
-    by the method :meth:`view`::
+    by the method :meth:`display`::
 
-        sage: v.view()   # displays the expansion on the manifold's default frame (e)
+        sage: v.display()   # displays the expansion on the manifold's default frame (e)
         V = e_0 + 4 e_1 + 9 e_2
 
     A subset of the components can be accessed by means of Python's slice
@@ -308,7 +308,7 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
         ...
         sage: v.comp(f)[2]
         27
-        sage: v.view(f)
+        sage: v.display(f)
         V = f_0 + 8 f_1 + 27 f_2
 
     The range of the indices depends on the convention set for the manifold::
@@ -331,7 +331,7 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
         sage: f = M.scalar_field(x*y^2, name='f')
         sage: v = M.vector_field('v')
         sage: v[:] = (-y, x)
-        sage: v.view()
+        sage: v.display()
         v = -y d/dx + x d/dy
         sage: v(f)
         scalar field 'v(f)' on the 2-dimensional manifold 'M'

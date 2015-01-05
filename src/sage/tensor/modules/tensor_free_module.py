@@ -153,7 +153,7 @@ class TensorFreeModule(FiniteRankFreeModule):
         [[[0, 1, 2], [-1, 0, 1], [-2, -1, 0]],
          [[1, 2, 3], [0, 1, 2], [-1, 0, 1]],
          [[2, 3, 4], [1, 2, 3], [0, 1, 2]]]
-        sage: t.view(e)
+        sage: t.display(e)
         t = e_0*e^0*e^1 + 2 e_0*e^0*e^2 - e_0*e^1*e^0 + e_0*e^1*e^2
          - 2 e_0*e^2*e^0 - e_0*e^2*e^1 + e_1*e^0*e^0 + 2 e_1*e^0*e^1
          + 3 e_1*e^0*e^2 + e_1*e^1*e^1 + 2 e_1*e^1*e^2 - e_1*e^2*e^0
@@ -167,7 +167,7 @@ class TensorFreeModule(FiniteRankFreeModule):
         sage: t = T([], name='t')
         sage: t.set_comp(e)[0,1,1] = -3
         sage: t.set_comp(e)[2,0,1] = 4
-        sage: t.view(e)
+        sage: t.display(e)
         t = -3 e_0*e^1*e^1 + 4 e_2*e^0*e^1
 
     See the documentation of
@@ -179,7 +179,7 @@ class TensorFreeModule(FiniteRankFreeModule):
         sage: t = T([], name='t', sym=(1,2))
         sage: t.set_comp(e)[0,1,1] = -3
         sage: t.set_comp(e)[2,0,1] = 4
-        sage: t.view(e)  # notice that t^2_{10} has be set equal to t^2_{01} by symmetry
+        sage: t.display(e)  # notice that t^2_{10} has be set equal to t^2_{01} by symmetry
         t = -3 e_0*e^1*e^1 + 4 e_2*e^0*e^1 + 4 e_2*e^1*e^0
 
     The tensor modules over a given module `M` are unique::
@@ -303,7 +303,7 @@ class TensorFreeModule(FiniteRankFreeModule):
             sage: e = M.basis('e')
             sage: t = T._element_constructor_(comp=[[2,0],[1/2,-3]], basis=e, name='t') ; t
             Type-(1,1) tensor t on the Rank-2 free module M over the Rational Field
-            sage: t.view()
+            sage: t.display()
             t = 2 e_0*e^0 + 1/2 e_1*e^0 - 3 e_1*e^1
             sage: t.parent()
             Free module of type-(1,1) tensors on the
@@ -347,11 +347,11 @@ class TensorFreeModule(FiniteRankFreeModule):
             sage: e = M.basis('e')
             sage: t = T._an_element_() ; t
             Type-(1,1) tensor on the Rank-2 free module M over the Rational Field
-            sage: t.view()
+            sage: t.display()
             1/2 e_0*e^0
             sage: t.parent() is T
             True
-            sage: M.tensor_module(2,3)._an_element_().view()
+            sage: M.tensor_module(2,3)._an_element_().display()
             1/2 e_0*e_0*e^0*e^0*e^0
 
         """

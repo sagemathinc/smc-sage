@@ -107,12 +107,12 @@ class Metric(TensorField):
     view)::
 
         sage: g[eU,1,1], g[eU,2,2] = 4/(1+x^2+y^2)^2, 4/(1+x^2+y^2)^2
-        sage: g.view(eU) # the components of the output are expanded
+        sage: g.display(eU) # the components of the output are expanded
         g = 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) dx*dx + 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) dy*dy
         sage: g[eU,1,1].factor() ; g[eU,2,2].factor() # we enforce the factorization
         4/(x^2 + y^2 + 1)^2
         4/(x^2 + y^2 + 1)^2
-        sage: g.view(eU) # the output looks nicer
+        sage: g.display(eU) # the output looks nicer
         g = 4/(x^2 + y^2 + 1)^2 dx*dx + 4/(x^2 + y^2 + 1)^2 dy*dy
 
     A matrix view of the components::
@@ -126,7 +126,7 @@ class Metric(TensorField):
     check explicitely by asking for the component transformation on the
     common subdomain W::
 
-        sage: g.view(eVW, c_uvW)
+        sage: g.display(eVW, c_uvW)
         g = 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) du*du + 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) dv*dv
 
     Therefore, we set::
@@ -135,7 +135,7 @@ class Metric(TensorField):
         sage: g[eV,1,1].factor() ; g[eV,2,2].factor()
         4/(u^2 + v^2 + 1)^2
         4/(u^2 + v^2 + 1)^2
-        sage: g.view(eV)
+        sage: g.display(eV)
         g = 4/(u^2 + v^2 + 1)^2 du*du + 4/(u^2 + v^2 + 1)^2 dv*dv
 
     At this stage, the metric is fully defined on the whole sphere. Its
@@ -167,7 +167,7 @@ class Metric(TensorField):
         sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
         sage: s = g(a,b) ; s
         scalar field 'g(a,b)' on the 2-dimensional manifold 'S^2'
-        sage: s.view()
+        sage: s.display()
         g(a,b): S^2 --> R
         on U: (x, y) |--> 8*x/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1)
         on V: (u, v) |--> 8*(u^3 + u*v^2)/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1)
@@ -180,9 +180,9 @@ class Metric(TensorField):
         module T^(2,0)(S^2) of type-(2,0) tensors fields on the 2-dimensional manifold 'S^2'
         sage: latex(ginv)
         g^{-1}
-        sage: ginv.view(eU) # again the components are expanded
+        sage: ginv.display(eU) # again the components are expanded
         inv_g = (1/4*x^4 + 1/4*y^4 + 1/2*(x^2 + 1)*y^2 + 1/2*x^2 + 1/4) d/dx*d/dx + (1/4*x^4 + 1/4*y^4 + 1/2*(x^2 + 1)*y^2 + 1/2*x^2 + 1/4) d/dy*d/dy
-        sage: ginv.view(eV)
+        sage: ginv.display(eV)
         inv_g = (1/4*u^4 + 1/4*v^4 + 1/2*(u^2 + 1)*v^2 + 1/2*u^2 + 1/4) d/du*d/du + (1/4*u^4 + 1/4*v^4 + 1/2*(u^2 + 1)*v^2 + 1/2*u^2 + 1/4) d/dv*d/dv
 
     We have::
@@ -198,9 +198,9 @@ class Metric(TensorField):
 
         sage: eps = g.volume_form() ; eps
         2-form 'eps_g' on the 2-dimensional manifold 'S^2'
-        sage: eps.view(eU)
+        sage: eps.display(eU)
         eps_g = 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) dx/\dy
-        sage: eps.view(eV)
+        sage: eps.display(eV)
         eps_g = 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) du/\dv
 
     The unique non-trivial component of the volume form is nothing but the
@@ -245,9 +245,9 @@ class Metric(TensorField):
 
         sage: t = nabla(g) ; t
         tensor field 'nabla_g g' of type (0,3) on the 2-dimensional manifold 'S^2'
-        sage: t.view(eU)
+        sage: t.display(eU)
         nabla_g g = 0
-        sage: t.view(eV)
+        sage: t.display(eV)
         nabla_g g = 0
         sage: t == 0
         True
@@ -256,18 +256,18 @@ class Metric(TensorField):
 
         sage: riem = g.riemann() ; riem
         tensor field 'Riem(g)' of type (1,3) on the 2-dimensional manifold 'S^2'
-        sage: riem.view(eU)
+        sage: riem.display(eU)
         Riem(g) = 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) d/dx*dy*dx*dy - 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) d/dx*dy*dy*dx - 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) d/dy*dx*dx*dy + 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) d/dy*dx*dy*dx
-        sage: riem.view(eV)
+        sage: riem.display(eV)
         Riem(g) = 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) d/du*dv*du*dv - 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) d/du*dv*dv*du - 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) d/dv*du*du*dv + 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) d/dv*du*dv*du
 
     The Ricci tensor of `g`::
 
         sage: ric = g.ricci() ; ric
         field of symmetric bilinear forms 'Ric(g)' on the 2-dimensional manifold 'S^2'
-        sage: ric.view(eU)
+        sage: ric.display(eU)
         Ric(g) = 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) dx*dx + 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) dy*dy
-        sage: ric.view(eV)
+        sage: ric.display(eV)
         Ric(g) = 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) du*du + 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) dv*dv
         sage: ric == g
         True
@@ -276,7 +276,7 @@ class Metric(TensorField):
 
         sage: r = g.ricci_scalar() ; r
         scalar field 'r(g)' on the 2-dimensional manifold 'S^2'
-        sage: r.view()
+        sage: r.display()
         r(g): S^2 --> R
         on U: (x, y) |--> 2
         on V: (u, v) |--> 2
@@ -490,15 +490,15 @@ class Metric(TensorField):
             sage: h = M.sym_bilin_form_field(name='h')
             sage: h[eU,0,0], h[eU,0,1], h[eU,1,1] = 1+x, x*y, 1-y
             sage: h.add_comp_by_continuation(eV, W, c_uv)
-            sage: h.view(eU)
+            sage: h.display(eU)
             h = (x + 1) dx*dx + x*y dx*dy + x*y dy*dx + (-y + 1) dy*dy
-            sage: h.view(eV)
+            sage: h.display(eV)
             h = (1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2) du*du + 1/4*u du*dv + 1/4*u dv*du + (-1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2) dv*dv
             sage: g = M.metric('g')
             sage: g.set(h)
-            sage: g.view(eU)
+            sage: g.display(eU)
             g = (x + 1) dx*dx + x*y dx*dy + x*y dy*dx + (-y + 1) dy*dy
-            sage: g.view(eV)
+            sage: g.display(eV)
             g = (1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2) du*du + 1/4*u du*dv + 1/4*u dv*du + (-1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2) dv*dv
 
         """
@@ -632,7 +632,7 @@ class Metric(TensorField):
             sage: X.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: g = U.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, r^2*sin(th)^2
-            sage: g.view()  # the standard flat metric expressed in spherical coordinates
+            sage: g.display()  # the standard flat metric expressed in spherical coordinates
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
             sage: Gam = g.christoffel_symbols() ; Gam
             3-indices components w.r.t. coordinate frame (U, (d/dr,d/dth,d/dph)), with symmetry on the index positions (1, 2)
@@ -700,7 +700,7 @@ class Metric(TensorField):
             sage: a = var('a') # the sphere radius
             sage: g = U.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
-            sage: g.view() # standard metric on the 2-sphere of radius a:
+            sage: g.display() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
             sage: g.riemann()
             tensor field 'Riem(g)' of type (1,3) on the open subset 'U' of the 2-dimensional manifold 'S^2'
@@ -767,7 +767,7 @@ class Metric(TensorField):
             sage: a = var('a') # the sphere radius
             sage: g = U.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
-            sage: g.view() # standard metric on the 2-sphere of radius a:
+            sage: g.display() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
             sage: g.ricci()
             field of symmetric bilinear forms 'Ric(g)' on the open subset 'U' of the 2-dimensional manifold 'S^2'
@@ -815,11 +815,11 @@ class Metric(TensorField):
             sage: a = var('a') # the sphere radius
             sage: g = U.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
-            sage: g.view() # standard metric on the 2-sphere of radius a:
+            sage: g.display() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
             sage: g.ricci_scalar()
             scalar field 'r(g)' on the open subset 'U' of the 2-dimensional manifold 'S^2'
-            sage: g.ricci_scalar().view() # The Ricci scalar is constant:
+            sage: g.ricci_scalar().display() # The Ricci scalar is constant:
             r(g): U --> R
                (th, ph) |--> 2/a^2
 
@@ -867,7 +867,7 @@ class Metric(TensorField):
             sage: g = U.metric('g')
             sage: b = var('b')
             sage: g[1,1], g[2,2], g[3,3] = b^2, (b*sinh(rh))^2, (b*sinh(rh)*sin(th))^2
-            sage: g.view()  # standard metric on H^3:
+            sage: g.display()  # standard metric on H^3:
             g = b^2 drh*drh + b^2*sinh(rh)^2 dth*dth + b^2*sin(th)^2*sinh(rh)^2 dph*dph
             sage: C = g.weyl() ; C
             tensor field 'C(g)' of type (1,3) on the open subset 'U' of the 3-dimensional manifold 'H^3'
@@ -1005,7 +1005,7 @@ class Metric(TensorField):
             sage: c_spher.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: g = U.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
-            sage: g.view()
+            sage: g.display()
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
             sage: g.sqrt_abs_det().expr()
             r^2*sin(th)
@@ -1113,11 +1113,11 @@ class Metric(TensorField):
             sage: c_spher.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: g = U.metric('g')
             sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
-            sage: g.view()
+            sage: g.display()
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
             sage: eps = g.volume_form() ; eps
             3-form 'eps_g' on the open subset 'U' of the 3-dimensional manifold 'M'
-            sage: eps.view()
+            sage: eps.display()
             eps_g = r^2*sin(th) dr/\dth/\dph
             sage: eps[[1,2,3]] == g.sqrt_abs_det()
             True
@@ -1353,7 +1353,7 @@ class MetricParal(Metric, TensorFieldParal):
         sage: g[:]
         [ x + 1    x*y]
         [   x*y -x + 1]
-        sage: g.view()
+        sage: g.display()
         g = (x + 1) dx*dx + x*y dx*dy + x*y dy*dx + (-x + 1) dy*dy
 
     Metric components in a frame different from the manifold's default one::
@@ -1370,12 +1370,12 @@ class MetricParal(Metric, TensorFieldParal):
         sage: g[c_uv.frame(),:]  # metric components in frame c_uv.frame() expressed in M's default chart (x,y)
         [ 1/2*x*y + 1/2          1/2*x]
         [         1/2*x -1/2*x*y + 1/2]
-        sage: g.view(c_uv.frame())
+        sage: g.display(c_uv.frame())
         g = (1/2*x*y + 1/2) du*du + 1/2*x du*dv + 1/2*x dv*du + (-1/2*x*y + 1/2) dv*dv
         sage: g[c_uv.frame(),:,c_uv]   # metric components in frame c_uv.frame() expressed in chart (u,v)
         [ 1/8*u^2 - 1/8*v^2 + 1/2            1/4*u + 1/4*v]
         [           1/4*u + 1/4*v -1/8*u^2 + 1/8*v^2 + 1/2]
-        sage: g.view(c_uv.frame(), c_uv)
+        sage: g.display(c_uv.frame(), c_uv)
         g = (1/8*u^2 - 1/8*v^2 + 1/2) du*du + (1/4*u + 1/4*v) du*dv + (1/4*u + 1/4*v) dv*du + (-1/8*u^2 + 1/8*v^2 + 1/2) dv*dv
 
 
@@ -1386,7 +1386,7 @@ class MetricParal(Metric, TensorFieldParal):
         sage: ig[:]
         [ (x - 1)/(x^2*y^2 + x^2 - 1)      x*y/(x^2*y^2 + x^2 - 1)]
         [     x*y/(x^2*y^2 + x^2 - 1) -(x + 1)/(x^2*y^2 + x^2 - 1)]
-        sage: ig.view()
+        sage: ig.display()
         inv_g = (x - 1)/(x^2*y^2 + x^2 - 1) d/dx*d/dx + x*y/(x^2*y^2 + x^2 - 1) d/dx*d/dy + x*y/(x^2*y^2 + x^2 - 1) d/dy*d/dx - (x + 1)/(x^2*y^2 + x^2 - 1) d/dy*d/dy
 
     """
@@ -1622,11 +1622,11 @@ class MetricParal(Metric, TensorFieldParal):
             sage: a = var('a') # the sphere radius
             sage: g = U.metric('g')
             sage: g[1,1], g[2,2] = a^2, a^2*sin(th)^2
-            sage: g.view() # standard metric on the 2-sphere of radius a:
+            sage: g.display() # standard metric on the 2-sphere of radius a:
             g = a^2 dth*dth + a^2*sin(th)^2 dph*dph
             sage: g.ricci_scalar()
             scalar field 'r(g)' on the open subset 'U' of the 2-dimensional manifold 'S^2'
-            sage: g.ricci_scalar().view() # The Ricci scalar is constant:
+            sage: g.ricci_scalar().display() # The Ricci scalar is constant:
             r(g): U --> R
                (th, ph) |--> 2/a^2
 
@@ -1690,13 +1690,13 @@ class RiemannMetricParal(MetricParal):
         sage: g.parent()
         free module T^(0,2)(R^2) of type-(0,2) tensors fields on the 2-dimensional manifold 'R^2'
         sage: g[1,1], g[2,2] = 1, 1
-        sage: g.view()
+        sage: g.display()
         g = dx*dx + dy*dy
         sage: g.signature()
         2
         sage: g.riemann()
         tensor field 'Riem(g)' of type (1,3) on the 2-dimensional manifold 'R^2'
-        sage: g.riemann().view()  # the Euclidean metric is flat:
+        sage: g.riemann().display()  # the Euclidean metric is flat:
         Riem(g) = 0
 
     """
@@ -1758,7 +1758,7 @@ class LorentzMetricParal(MetricParal):
         sage: g.parent()
         free module T^(0,2)(M) of type-(0,2) tensors fields on the 4-dimensional manifold 'M'
         sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
-        sage: g.view()
+        sage: g.display()
         g = -dt*dt + dx*dx + dy*dy + dz*dz
         sage: g.signature()
         2
@@ -1773,7 +1773,7 @@ class LorentzMetricParal(MetricParal):
 
         sage: g.riemann()
         tensor field 'Riem(g)' of type (1,3) on the 4-dimensional manifold 'M'
-        sage: g.riemann().view()
+        sage: g.riemann().display()
         Riem(g) = 0
 
     """

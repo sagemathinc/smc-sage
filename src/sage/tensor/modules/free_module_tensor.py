@@ -74,7 +74,7 @@ The unset components are assumed to be zero::
     [-3  0  0]
     [ 0  0  0]
     [ 0  0  0]
-    sage: t.view(e)  # displays the expansion of t on the basis e_i*e^j of T^(1,1)(M)
+    sage: t.display(e)  # displays the expansion of t on the basis e_i*e^j of T^(1,1)(M)
     t = -3 e_0*e^0
 
 The commands ``t.set_comp(e)`` and ``t.comp(e)`` can be abridged by providing
@@ -137,7 +137,7 @@ the indices::
     sage: t.set_comp(e)[0,0] = -3 ; t.set_comp(e)[1,2] = 2
     sage: t.comp(e)._comp  # random output order (dictionary)
     {(0, 0): -3, (1, 2): 2}
-    sage: t.view(e)
+    sage: t.display(e)
     t = -3 e_0*e^0 + 2 e_1*e^2
 
 Further tests of the comparison operator::
@@ -321,14 +321,14 @@ class FreeModuleTensor(ModuleElement):
             sage: t == 0
             True
             sage: t[e,1,0,2] = 4  # setting a non-zero component in basis e
-            sage: t.view()
+            sage: t.display()
             4 e_1*e_0*e^2
             sage: t.__nonzero__()
             True
             sage: t == 0
             False
             sage: t[e,1,0,2] = 0
-            sage: t.view()
+            sage: t.display()
             0
             sage: t.__nonzero__()
             False
@@ -523,7 +523,7 @@ class FreeModuleTensor(ModuleElement):
 
     #### End of simple accessors #####
 
-    def view(self, basis=None, format_spec=None):
+    def display(self, basis=None, format_spec=None):
         r"""
         Display the tensor in terms of its expansion onto a given basis.
 
@@ -545,9 +545,9 @@ class FreeModuleTensor(ModuleElement):
             sage: M = FiniteRankFreeModule(QQ, 2, name='M', start_index=1)
             sage: e = M.basis('e')
             sage: v = M([1/3,-2], name='v')
-            sage: v.view()
+            sage: v.display()
             v = 1/3 e_1 - 2 e_2
-            sage: latex(v.view())  # display in the notebook
+            sage: latex(v.display())  # display in the notebook
             v = \frac{1}{3} e_1 -2 e_2
 
         Display of a linear form (type-`(0,1)` tensor)::
@@ -556,18 +556,18 @@ class FreeModuleTensor(ModuleElement):
             sage: w = - 3/4 * de[1] + de[2] ; w
             Linear form on the Rank-2 free module M over the Rational Field
             sage: w.set_name('w', latex_name='\omega')
-            sage: w.view()
+            sage: w.display()
             w = -3/4 e^1 + e^2
-            sage: latex(w.view())  # display in the notebook
+            sage: latex(w.display())  # display in the notebook
             \omega = -\frac{3}{4} e^1 +e^2
 
         Display of a type-`(1,1)` tensor::
 
             sage: t = v*w ; t  # the type-(1,1) is formed as the tensor product of v by w
             Endomorphism tensor v*w on the Rank-2 free module M over the Rational Field
-            sage: t.view()
+            sage: t.display()
             v*w = -1/4 e_1*e^1 + 1/3 e_1*e^2 + 3/2 e_2*e^1 - 2 e_2*e^2
-            sage: latex(t.view())  # display in the notebook
+            sage: latex(t.display())  # display in the notebook
             v\otimes \omega = -\frac{1}{4} e_1\otimes e^1 + \frac{1}{3} e_1\otimes e^2 + \frac{3}{2} e_2\otimes e^1 -2 e_2\otimes e^2
 
         Display in a basis which is not the default one::
@@ -575,11 +575,11 @@ class FreeModuleTensor(ModuleElement):
             sage: a = M.automorphism_tensor()
             sage: a[:] = [[1,2],[3,4]]
             sage: f = e.new_basis(a, 'f')
-            sage: v.view(f) # the components w.r.t basis f are first computed via the change-of-basis formula defined by a
+            sage: v.display(f) # the components w.r.t basis f are first computed via the change-of-basis formula defined by a
             v = -8/3 f_1 + 3/2 f_2
-            sage: w.view(f)
+            sage: w.display(f)
             w = 9/4 f^1 + 5/2 f^2
-            sage: t.view(f)
+            sage: t.display(f)
             v*w = -6 f_1*f^1 - 20/3 f_1*f^2 + 27/8 f_2*f^1 + 15/4 f_2*f^2
 
         The output format can be set via the argument ``output_formatter``
@@ -588,15 +588,15 @@ class FreeModuleTensor(ModuleElement):
             sage: N = FiniteRankFreeModule(QQ, 2, name='N', start_index=1, output_formatter=Rational.numerical_approx)
             sage: e = N.basis('e')
             sage: v = N([1/3,-2], name='v')
-            sage: v.view()  # default format (53 bits of precision)
+            sage: v.display()  # default format (53 bits of precision)
             v = 0.333333333333333 e_1 - 2.00000000000000 e_2
-            sage: latex(v.view())
+            sage: latex(v.display())
             v = 0.333333333333333 e_1 -2.00000000000000 e_2
 
         The output format is then controled by the argument ``format_spec`` of
-        the method :meth:`view`::
+        the method :meth:`display`::
 
-            sage: v.view(format_spec=10)  # 10 bits of precision
+            sage: v.display(format_spec=10)  # 10 bits of precision
             v = 0.33 e_1 - 2.0 e_2
 
         """
@@ -670,6 +670,29 @@ class FreeModuleTensor(ModuleElement):
         else:
             result.latex = latex(self) + " = " + expansion_latex
         return result
+
+    def view(self, basis=None, format_spec=None):
+        r"""
+        Deprecated method.
+
+        Use method :meth:`display` instead.
+
+        EXAMPLE::
+
+            sage: M = FiniteRankFreeModule(ZZ, 2, 'M')
+            sage: e = M.basis('e')
+            sage: v = M([2,-3], basis=e, name='v')
+            sage: v.view(e)
+            doctest:...: DeprecationWarning: Use function display() instead.
+            See http://trac.sagemath.org/15916 for details.
+            v = 2 e_0 - 3 e_1
+            sage: v.display(e)
+            v = 2 e_0 - 3 e_1
+
+        """
+        from sage.misc.superseded import deprecation
+        deprecation(15916, 'Use function display() instead.')
+        return self.display(basis=basis, format_spec=format_spec)
 
     def set_name(self, name=None, latex_name=None):
         r"""
@@ -924,10 +947,10 @@ class FreeModuleTensor(ModuleElement):
             sage: e = M.basis('e')
             sage: t = M.tensor((1,1), name='t')
             sage: t.set_comp()[0,1] = -3
-            sage: t.view()
+            sage: t.display()
             t = -3 e_0*e^1
             sage: t.set_comp()[1,2] = 2
-            sage: t.view()
+            sage: t.display()
             t = -3 e_0*e^1 + 2 e_1*e^2
             sage: t.set_comp(e)
             2-indices components w.r.t. Basis (e_0,e_1,e_2) on the
@@ -939,7 +962,7 @@ class FreeModuleTensor(ModuleElement):
             sage: t.set_comp(f)[0,1] = 4
             sage: t._components.keys() # the components w.r.t. basis e have been deleted
             [Basis (f_0,f_1,f_2) on the Rank-3 free module M over the Integer Ring]
-            sage: t.view(f)
+            sage: t.display(f)
             t = 4 f_0*f^1
 
         The components w.r.t. basis e can be deduced from those w.r.t. basis f,
@@ -948,7 +971,7 @@ class FreeModuleTensor(ModuleElement):
             sage: a = M.automorphism_tensor()
             sage: a[:] = [[0,0,1], [1,0,0], [0,-1,0]]
             sage: M.set_change_of_basis(e, f, a)
-            sage: t.view(e)
+            sage: t.display(e)
             t = -4 e_1*e^2
             sage: t._components.keys()  # random output (dictionary keys)
             [Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer Ring,
@@ -1000,10 +1023,10 @@ class FreeModuleTensor(ModuleElement):
             sage: e = M.basis('e')
             sage: t = M.tensor((1,1), name='t')
             sage: t.add_comp()[0,1] = -3
-            sage: t.view()
+            sage: t.display()
             t = -3 e_0*e^1
             sage: t.add_comp()[1,2] = 2
-            sage: t.view()
+            sage: t.display()
             t = -3 e_0*e^1 + 2 e_1*e^2
             sage: t.add_comp(e)
             2-indices components w.r.t. Basis (e_0,e_1,e_2) on the
@@ -1019,9 +1042,9 @@ class FreeModuleTensor(ModuleElement):
             sage: t._components.keys() # # random output (dictionary keys)
             [Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer Ring,
              Basis (f_0,f_1,f_2) on the Rank-3 free module M over the Integer Ring]
-            sage: t.view(f)
+            sage: t.display(f)
             t = 4 f_0*f^1
-            sage: t.view(e)
+            sage: t.display(e)
             t = -3 e_0*e^1 + 2 e_1*e^2
 
         """
@@ -1161,13 +1184,13 @@ class FreeModuleTensor(ModuleElement):
             sage: t = M.tensor((0,2), name='t')
             sage: e = M.basis('e')
             sage: t.__setitem__((e,0,1), 5)
-            sage: t.view()
+            sage: t.display()
             t = 5 e^0*e^1
             sage: t.__setitem__((0,1), 5)  # equivalent to above since e is the default basis
-            sage: t.view()
+            sage: t.display()
             t = 5 e^0*e^1
             sage: t[0,1] = 5  # end-user usage
-            sage: t.view()
+            sage: t.display()
             t = 5 e^0*e^1
             sage: t.__setitem__(slice(None), [[1,-2,3], [-4,5,-6], [7,-8,9]])
             sage: t[:]
@@ -1504,7 +1527,7 @@ class FreeModuleTensor(ModuleElement):
             sage: t[0,1] = 7
             sage: p = t.__pos__() ; p
             Type-(2,0) tensor +t on the Rank-3 free module M over the Integer Ring
-            sage: p.view()
+            sage: p.display()
             +t = 7 e_0*e_1
             sage: p == t
             True
@@ -1535,11 +1558,11 @@ class FreeModuleTensor(ModuleElement):
             sage: t = M.tensor((2,0), name='t')
             sage: e = M.basis('e')
             sage: t[0,1], t[1,2] = 7, -4
-            sage: t.view()
+            sage: t.display()
             t = 7 e_0*e_1 - 4 e_1*e_2
             sage: a = t.__neg__() ; a
             Type-(2,0) tensor -t on the Rank-3 free module M over the Integer Ring
-            sage: a.view()
+            sage: a.display()
             -t = -7 e_0*e_1 + 4 e_1*e_2
             sage: a == -t
             True
@@ -1851,7 +1874,7 @@ class FreeModuleTensor(ModuleElement):
             sage: e = M.basis('e')
             sage: t = M.tensor((2,1), name='t', antisym=(0,1))
             sage: t[0,1,0], t[0,1,1] = 3, 2
-            sage: t.view()
+            sage: t.display()
             t = 3 e_0*e_1*e^0 + 2 e_0*e_1*e^1 - 3 e_1*e_0*e^0 - 2 e_1*e_0*e^1
             sage: a = M.linear_form()
             sage: a[:] = 1, 2
@@ -2190,7 +2213,7 @@ class FreeModuleTensor(ModuleElement):
             sage: a[:] = [[-1,2,3],[4,-5,6],[7,8,9]]
             sage: s = a.contract(b) ; s
             Element of the Rank-3 free module M over the Integer Ring
-            sage: s.view()
+            sage: s.display()
             2 e_0 - 29 e_1 + 36 e_2
 
         Since the index positions have not been specified, the contraction
@@ -2879,7 +2902,7 @@ class FiniteRankFreeModuleElement(FreeModuleTensor):
 
         sage: v = M([2,0,-1], basis=e, name='v') ; v
         Element v of the Rank-3 free module M over the Integer Ring
-        sage: v.view()  # expansion on the default basis (e)
+        sage: v.display()  # expansion on the default basis (e)
         v = 2 e_0 - e_2
         sage: v.parent() is M
         True
@@ -2890,7 +2913,7 @@ class FiniteRankFreeModuleElement(FreeModuleTensor):
         sage: v2 = M.tensor((1,0), name='v')
         sage: v2[0], v2[2] = 2, -1 ; v2
         Element v of the Rank-3 free module M over the Integer Ring
-        sage: v2.view()
+        sage: v2.display()
         v = 2 e_0 - e_2
         sage: v2 == v
         True
@@ -2901,7 +2924,7 @@ class FiniteRankFreeModuleElement(FreeModuleTensor):
         sage: v3 = 2*e[0] - e[2]
         sage: v3.set_name('v') ; v3 # in this case, the name has to be set separately
         Element v of the Rank-3 free module M over the Integer Ring
-        sage: v3.view()
+        sage: v3.display()
         v = 2 e_0 - e_2
         sage: v3 == v
         True
@@ -2929,15 +2952,15 @@ class FiniteRankFreeModuleElement(FreeModuleTensor):
         Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer Ring
         sage: a = M([0,1,3], name='a') ; a
         Element a of the Rank-3 free module M over the Integer Ring
-        sage: a.view()
+        sage: a.display()
         a = e_1 + 3 e_2
         sage: b = M([2,-2,1], name='b') ; b
         Element b of the Rank-3 free module M over the Integer Ring
-        sage: b.view()
+        sage: b.display()
         b = 2 e_0 - 2 e_1 + e_2
         sage: s = a + b ; s
         Element a+b of the Rank-3 free module M over the Integer Ring
-        sage: s.view()
+        sage: s.display()
         a+b = 2 e_0 - e_1 + 4 e_2
         sage: all(s[i] == a[i] + b[i] for i in M.irange())
         True
@@ -2946,7 +2969,7 @@ class FiniteRankFreeModuleElement(FreeModuleTensor):
 
         sage: s = a - b ; s
         Element a-b of the Rank-3 free module M over the Integer Ring
-        sage: s.view()
+        sage: s.display()
         a-b = -2 e_0 + 3 e_1 + 2 e_2
         sage: all(s[i] == a[i] - b[i] for i in M.irange())
         True
@@ -2955,9 +2978,9 @@ class FiniteRankFreeModuleElement(FreeModuleTensor):
 
         sage: s = 2*a ; s
         Element of the Rank-3 free module M over the Integer Ring
-        sage: s.view()
+        sage: s.display()
         2 e_1 + 6 e_2
-        sage: a.view()
+        sage: a.display()
         a = e_1 + 3 e_2
 
     Tensor product::

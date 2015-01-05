@@ -171,7 +171,7 @@ EXAMPLES:
         sage: f = M.scalar_field({stereoN: atan(x^2+y^2), stereoS: pi/2-atan(u^2+v^2)}, name='f')
         sage: f
         scalar field 'f' on the 2-dimensional manifold 'S^2'
-        sage: f.view()
+        sage: f.display()
         f: S^2 --> R
         on U: (x, y) |--> arctan(x^2 + y^2)
         on V: (u, v) |--> 1/2*pi - arctan(u^2 + v^2)
@@ -197,9 +197,9 @@ EXAMPLES:
         sage: w = M.vector_field('w')
         sage: w[stereoN.frame(), :] = [x, y]
         sage: w.add_comp_by_continuation(stereoS.frame(), W, stereoS)
-        sage: w.view() # view in the default frame (stereoN.frame())
+        sage: w.display() # display in the default frame (stereoN.frame())
         w = x d/dx + y d/dy
-        sage: w.view(stereoS.frame())
+        sage: w.display(stereoS.frame())
         w = -u d/du - v d/dv
         sage: w.parent()
         module X(S^2) of vector fields on the 2-dimensional manifold 'S^2'
@@ -210,7 +210,7 @@ EXAMPLES:
 
         sage: w(f)
         scalar field 'w(f)' on the 2-dimensional manifold 'S^2'
-        sage: w(f).view()
+        sage: w(f).display()
         w(f): S^2 --> R
         on U: (x, y) |--> 2*(x^2 + y^2)/(x^4 + 2*x^2*y^2 + y^4 + 1)
         on V: (u, v) |--> 2*(u^2 + v^2)/(u^4 + 2*u^2*v^2 + v^4 + 1)
@@ -221,7 +221,7 @@ EXAMPLES:
 
         sage: w.at(p)
         tangent vector w at point 'p' on 2-dimensional manifold 'S^2'
-        sage: w.at(p).view()
+        sage: w.at(p).display()
         w = d/dx + 2 d/dy
         sage: w.at(p).parent()
         tangent space at point 'p' on 2-dimensional manifold 'S^2'
@@ -230,9 +230,9 @@ EXAMPLES:
 
         sage: df = f.differential() ; df
         1-form 'df' on the 2-dimensional manifold 'S^2'
-        sage: df.view()
+        sage: df.display()
         df = 2*x/(x^4 + 2*x^2*y^2 + y^4 + 1) dx + 2*y/(x^4 + 2*x^2*y^2 + y^4 + 1) dy
-        sage: df.view(stereoS.frame())
+        sage: df.display(stereoS.frame())
         df = -2*u/(u^4 + 2*u^2*v^2 + v^4 + 1) du - 2*v/(u^4 + 2*u^2*v^2 + v^4 + 1) dv
         sage: df.parent()
         module T^(0,1)(S^2) of type-(0,1) tensors fields on the 2-dimensional manifold 'S^2'
@@ -243,7 +243,7 @@ EXAMPLES:
 
         sage: df.at(p)
         Linear form df on the tangent space at point 'p' on 2-dimensional manifold 'S^2'
-        sage: df.at(p).view()
+        sage: df.at(p).display()
         df = 1/13 dx + 2/13 dy
         sage: df.at(p).parent()
         Dual of the tangent space at point 'p' on 2-dimensional manifold 'S^2'

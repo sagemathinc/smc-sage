@@ -478,16 +478,16 @@ class Chart(UniqueRepresentation, SageObject):
             vector field 'd/dx' on the 2-dimensional manifold 'M'
             sage: ey = c_xy.frame()[1] ; ey
             vector field 'd/dy' on the 2-dimensional manifold 'M'
-            sage: ex(M.scalar_field(x)).view()
+            sage: ex(M.scalar_field(x)).display()
             M --> R
             (x, y) |--> 1
-            sage: ex(M.scalar_field(y)).view()
+            sage: ex(M.scalar_field(y)).display()
             M --> R
             (x, y) |--> 0
-            sage: ey(M.scalar_field(x)).view()
+            sage: ey(M.scalar_field(x)).display()
             M --> R
             (x, y) |--> 0
-            sage: ey(M.scalar_field(y)).view()
+            sage: ey(M.scalar_field(y)).display()
             M --> R
             (x, y) |--> 1
 
@@ -527,16 +527,16 @@ class Chart(UniqueRepresentation, SageObject):
             vector field 'd/dx' on the 2-dimensional manifold 'M'
             sage: ey = c_xy.frame()[1] ; ey
             vector field 'd/dy' on the 2-dimensional manifold 'M'
-            sage: dx(ex).view()
+            sage: dx(ex).display()
              dx(d/dx): M --> R
                (x, y) |--> 1
-            sage: dx(ey).view()
+            sage: dx(ey).display()
             dx(d/dy): M --> R
                (x, y) |--> 0
-            sage: dy(ex).view()
+            sage: dy(ex).display()
             dy(d/dx): M --> R
                (x, y) |--> 0
-            sage: dy(ey).view()
+            sage: dy(ey).display()
             dy(d/dy): M --> R
                (x, y) |--> 1
 
@@ -1002,7 +1002,7 @@ class Chart(UniqueRepresentation, SageObject):
             sage: f = c_xy.function(sin(x*y))
             sage: type(f)
             <class 'sage.geometry.manifolds.chart.FunctionChart'>
-            sage: f.view()
+            sage: f.display()
             (x, y) |--> sin(x*y)
             sage: f(2,3)
             sin(6)
@@ -1545,7 +1545,7 @@ class FunctionChart(SageObject):
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         sage: f._chart
         chart (M, (x, y))
-        sage: f.view()
+        sage: f.display()
         (x, y) |--> x^2 + 3*y + 1
         sage: f(x,y)
         x^2 + 3*y + 1
@@ -1578,7 +1578,7 @@ class FunctionChart(SageObject):
         sage: g = c_xy.function(function('G', x, y))
         sage: g
         G(x, y)
-        sage: g.view()
+        sage: g.display()
         (x, y) |--> G(x, y)
         sage: g.expr()
         G(x, y)
@@ -1669,9 +1669,9 @@ class FunctionChart(SageObject):
         """
         return self._express
 
-    def view(self):
+    def display(self):
         r"""
-        Displays the function in arrow notation.
+        Display the function in arrow notation.
 
         The output is either text-formatted (console mode) or LaTeX-formatted
         (notebook mode).
@@ -1683,9 +1683,9 @@ class FunctionChart(SageObject):
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart()
             sage: f = c_xy.function(x^2+3*y+1)
-            sage: f.view()
+            sage: f.display()
             (x, y) |--> x^2 + 3*y + 1
-            sage: latex(f.view())
+            sage: latex(f.display())
             (x, y) \mapsto x^{2} + 3 \, y + 1
 
         """
@@ -1695,6 +1695,30 @@ class FunctionChart(SageObject):
         result.txt = repr((self._chart)[:]) + ' |--> ' + repr(self._express)
         result.latex = self._chart._latex_coordinates() + r' \mapsto' + latex(self._express)
         return result
+
+    def view(self):
+        r"""
+        Deprecated method.
+
+        Use method :meth:`display` instead.
+
+        EXAMPLE::
+
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart()
+            sage: f = c_xy.function(x^2+3*y+1)
+            sage: f.view()
+            doctest:...: DeprecationWarning: Use function display() instead.
+            See http://trac.sagemath.org/15916 for details.
+            (x, y) |--> x^2 + 3*y + 1
+            sage: f.display()
+            (x, y) |--> x^2 + 3*y + 1
+
+        """
+        from sage.misc.superseded import deprecation
+        deprecation(15916, 'Use function display() instead.')
+        return self.display()
+
 
     def _del_derived(self):
         r"""
@@ -2219,7 +2243,7 @@ class FunctionChart(SageObject):
             sage: fc = c_xy.function(x+2*y^3)
             sage: f = fc.scalar_field() ; f
             scalar field on the 2-dimensional manifold 'M'
-            sage: f.view()
+            sage: f.display()
             M --> R
             (x, y) |--> 2*y^3 + x
             sage: f.function_chart(c_xy) is fc
@@ -2251,7 +2275,7 @@ class ZeroFunctionChart(FunctionChart):
         sage: from sage.geometry.manifolds.chart import ZeroFunctionChart
         sage: f = ZeroFunctionChart(c_xy) ; f
         0
-        sage: f.view()
+        sage: f.display()
         (x, y) |--> 0
         sage: f.expr()
         0
@@ -2625,7 +2649,7 @@ class MultiFunctionChart(SageObject):
 
         sage: type(f[0])
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
-        sage: f[0].view()
+        sage: f[0].display()
         (x, y) |--> x - y
 
     A MultiFunctionChart can contain a single function, although one should
@@ -2878,7 +2902,7 @@ class MultiFunctionChart(SageObject):
             -1
             sage: type(f.jacobian()[0][1])
             <class 'sage.geometry.manifolds.chart.FunctionChart'>
-            sage: f.jacobian()[0][1].view()
+            sage: f.jacobian()[0][1].display()
             (x, y) |--> -1
 
         """
