@@ -245,9 +245,9 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
             sage: f = e.dual_basis() ; f
             Dual basis (e^1,e^2,e^3) on the Rank-3 free module M over the Integer Ring
 
-        Let us check that the elements of f are tensors of type (0,1) on M::
+        Let us check that the elements of f are elements of the dual of M::
 
-            sage: f[1] in M.tensor_module(0,1)
+            sage: f[1] in M.dual()
             True
             sage: f[1]
             Linear form e^1 on the Rank-3 free module M over the Integer Ring
@@ -461,10 +461,9 @@ class FreeModuleCoBasis(UniqueRepresentation, SageObject):
         sage: f = FreeModuleCoBasis(e, 'f') ; f
         Dual basis (f^1,f^2,f^3) on the Rank-3 free module M over the Integer Ring
 
-    Let us check that the elements of ``f`` are tensors of type `(0,1)`
-    on ``M``::
+    Let us check that the elements of ``f`` are in the dual of ``M``::
 
-        sage: f[1] in M.tensor_module(0,1)
+        sage: f[1] in M.dual()
         True
         sage: f[1]
         Linear form f^1 on the Rank-3 free module M over the Integer Ring

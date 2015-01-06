@@ -1338,12 +1338,12 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: M.dual().rank()
             3
 
-        It is formed by tensors of type (0,1), i.e. linear forms::
+        It is formed by alternating forms of degree 1, i.e. linear forms::
 
-            sage: M.dual() is M.tensor_module(0,1)
+            sage: M.dual() is M.dual_exterior_power(1)
             True
             sage: M.dual().an_element()
-            Type-(0,1) tensor on the Rank-3 free module M over the Integer Ring
+            Linear form on the Rank-3 free module M over the Integer Ring
             sage: a = M.linear_form()
             sage: a in M.dual()
             True

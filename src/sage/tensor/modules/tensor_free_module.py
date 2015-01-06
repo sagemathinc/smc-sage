@@ -84,7 +84,7 @@ class TensorFreeModule(FiniteRankFreeModule):
 
     EXAMPLES:
 
-    Set of tensors of type `(1,2)` on a free module of rank 3 over `\ZZ`::
+    Set of tensors of type `(1,2)` on a free `\ZZ`-module of rank 3::
 
         sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
         sage: e = M.basis('e')
@@ -100,6 +100,8 @@ class TensorFreeModule(FiniteRankFreeModule):
         sage: T = M.tensor_module(1,2) ; T
         Free module of type-(1,2) tensors on the
          Rank-3 free module M over the Integer Ring
+        sage: latex(T)
+        T^{(1, 2)}\left(M\right)
 
     The module ``M`` itself is considered as the set of tensors of
     type `(1,0)`::
@@ -264,11 +266,18 @@ class TensorFreeModule(FiniteRankFreeModule):
         rank = pow(fmodule._rank, tensor_type[0] + tensor_type[1])
         self._zero_element = 0 # provisory (to avoid infinite recursion in what
                                # follows)
-        if tensor_type == (0,1):  # case of the dual
+        if self._tensor_type == (0,1):  # case of the dual
             if name is None and fmodule._name is not None:
                 name = fmodule._name + '*'
             if latex_name is None and fmodule._latex_name is not None:
                 latex_name = fmodule._latex_name + r'^*'
+        else:
+            if name is None and fmodule._name is not None:
+                name = 'T^' + str(self._tensor_type) + '(' + fmodule._name + \
+                       ')'
+            if latex_name is None and fmodule._latex_name is not None:
+                latex_name = r'T^{' + str(self._tensor_type) + r'}\left(' + \
+                             fmodule._latex_name + r'\right)'
         FiniteRankFreeModule.__init__(self, fmodule._ring, rank, name=name,
                                       latex_name=latex_name,
                                       start_index=fmodule._sindex,
@@ -328,6 +337,19 @@ class TensorFreeModule(FiniteRankFreeModule):
             else:
                 raise TypeError("cannot coerce the " + str(endo) +
                                 " to an element of " + str(self))
+        elif isinstance(comp, FreeModuleAltForm):
+            # coercion of an alternating form to a type-(0,p) tensor:
+            form = comp # for readability
+            p = form.degree() 
+            if self._tensor_type != (0,p) or \
+                                           self._fmodule != form.base_module():
+                raise TypeError("cannot coerce the " + str(form) +
+                                " to an element of " + str(self))
+            resu = self.element_class(self._fmodule, (0,p), name=form._name,
+                                      latex_name=form._latex_name,
+                                      antisym=range(p))
+            for basis, comp in form._components.iteritems():
+                resu._components[basis] = comp.copy()
         else:
             # Standard construction:
             resu = self.element_class(self._fmodule, self._tensor_type,
@@ -395,12 +417,16 @@ class TensorFreeModule(FiniteRankFreeModule):
 
         """
         from free_module_homset import FreeModuleHomset
+        from ext_pow_free_module import ExtPowerFreeModule
         if isinstance(other, FreeModuleHomset):
             # Coercion of an endomorphism to a type-(1,1) tensor:
             if self._tensor_type == (1,1):
                 if other.is_endomorphism_set() and \
                                           self._fmodule is other.domain():
                     return True
+        if isinstance(other, ExtPowerFreeModule):
+            if self._tensor_type == (0, other.degree()):
+                return True
         return False
 
     #### End of methods required for any Parent
@@ -421,11 +447,8 @@ class TensorFreeModule(FiniteRankFreeModule):
         """
         if self._tensor_type == (0,1):
             return "Dual of the " + str(self._fmodule)
-        description = "Free module "
-        if self._name is not None:
-            description += self._name + " "
-        description += "of type-({},{}) tensors on the {}".format(
-                        self._tensor_type[0], self._tensor_type[1], self._fmodule)
+        description = "Free module of type-({},{}) tensors on the {}".format(
+                     self._tensor_type[0], self._tensor_type[1], self._fmodule)
         return description
 
     def base_module(self):
@@ -445,6 +468,8 @@ class TensorFreeModule(FiniteRankFreeModule):
             sage: T = M.tensor_module(1,2)
             sage: T.base_module()
             Rank-3 free module M over the Integer Ring
+            sage: T.base_module() is M
+            True
 
         """
         return self._fmodule
