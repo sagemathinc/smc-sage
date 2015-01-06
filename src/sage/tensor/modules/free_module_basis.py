@@ -148,6 +148,11 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         for t in fmodule._tensor_modules.itervalues():
             t._zero_element._components[self] = t._zero_element._new_comp(self)
                                # (since new components are initialized to zero)
+        # Initialization of the components w.r.t the current basis of the zero
+        # elements of all exterior powers constructed up to now 
+        for t in fmodule._dual_exterior_powers.itervalues():
+            t._zero_element._components[self] = t._zero_element._new_comp(self)
+                               # (since new components are initialized to zero)
         # The dual basis:
         self._dual_basis = self._init_dual_basis()
 

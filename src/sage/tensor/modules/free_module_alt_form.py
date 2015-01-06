@@ -15,17 +15,6 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
 
-.. TODO::
-
-    Implement a specific parent for alternating forms of a fixed
-    degree `p > 1`, with element :class:`FreeModuleAltForm` and with
-    coercion to tensor modules of type `(0,p)`.
-
-.. TODO::
-
-    Implement a specific parent for linear forms, with element
-    :class:`FreeModuleLinForm` and with coercion to tensor modules
-    of type `(0,1)`.
 """
 #******************************************************************************
 #       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
@@ -63,10 +52,9 @@ class FreeModuleAltForm(FreeModuleTensor):
         Alternating form a of degree 2 on the
          Rank-3 free module M over the Integer Ring
         sage: type(a)
-        <class 'sage.tensor.modules.free_module_alt_form.FreeModuleAltForm'>
+        <class 'sage.tensor.modules.free_module_alt_form.ExtPowerFreeModule_with_category.element_class'>
         sage: a.parent()
-        Free module of type-(0,2) tensors on the
-         Rank-3 free module M over the Integer Ring
+        2nd exterior power of the dual of the Rank-3 free module M over the Integer Ring
         sage: a[1,2], a[2,3] = 4, -3
         sage: a.display()
         a = 4 e^1/\e^2 - 3 e^2/\e^3
@@ -92,17 +80,25 @@ class FreeModuleAltForm(FreeModuleTensor):
             sage: from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
-            sage: A = FreeModuleAltForm(M, 2, name='a')
-            sage: A[e,0,1] = 2 ; 
-            sage: TestSuite(A).run(skip="_test_category") # see below
+            sage: a = FreeModuleAltForm(M, 2, name='a')
+            sage: a[e,0,1] = 2
+            sage: TestSuite(a).run(skip="_test_category") # see below
 
-        In the above test suite, _test_category fails because A is not an
-        instance of A.parent().category().element_class.
-        
+        In the above test suite, _test_category fails because a is not an
+        instance of a.parent().category().element_class. Actually alternating
+        forms must be constructed via ExtPowerFreeModule.element_class and
+        not by a direct call to FreeModuleAltForm::
+
+            sage: a1 = M.dual_exterior_power(2).element_class(M, 2, name='a')
+            sage: a1[e,0,1] = 2 
+            sage: TestSuite(a1).run()
+
         """
         FreeModuleTensor.__init__(self, fmodule, (0,degree), name=name,
-                                  latex_name=latex_name, antisym=range(degree))
-        FreeModuleAltForm._init_derived(self) # initialization of derived quantities
+                                  latex_name=latex_name, antisym=range(degree),
+                                  parent=fmodule.dual_exterior_power(degree))
+        FreeModuleAltForm._init_derived(self) # initialization of derived
+                                              # quantities
 
     def _repr_(self):
         r"""
@@ -118,10 +114,16 @@ class FreeModuleAltForm(FreeModuleTensor):
             Alternating form a of degree 2 on the
              Rank-3 free module M over the Integer Ring
         """
-        description = "Alternating form "
-        if self._name is not None:
-            description += self._name + " "
-        description += "of degree {} on the {}".format(self._tensor_rank, self._fmodule)
+        if self._tensor_rank == 1:
+            description = "Linear form "
+            if self._name is not None:
+                description += self._name + " "
+        else:
+            description = "Alternating form "
+            if self._name is not None:
+                description += self._name + " "
+            description += "of degree {} ".format(self._tensor_rank)
+        description += "on the {}".format(self._fmodule)
         return description
 
     def _init_derived(self):

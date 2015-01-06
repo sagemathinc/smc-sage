@@ -19,21 +19,13 @@ __ http://creativecommons.org/licenses/by-sa/3.0/
       
    sage/tensor/modules/free_module_basis
    
-   sage/tensor/modules/tensor_free_module
+   tensors
    
-   sage/tensor/modules/free_module_tensor
+   alt_forms
 
-   sage/tensor/modules/free_module_tensor_spec
-   
-   sage/tensor/modules/free_module_alt_form
-
-   sage/tensor/modules/free_module_homset
-
-   sage/tensor/modules/free_module_morphism
+   morphisms
 
    sage/tensor/modules/comp
-
-   sage/tensor/modules/tensor_with_indices
 
 .. include:: ../footer.txt
 

@@ -1,24 +1,18 @@
 r"""
 Tensor free modules
 
-The class :class:`TensorFreeModule` implements the tensor products of the type
+The class :class:`TensorFreeModule` implements tensor products of the type
 
 .. MATH::
 
     T^{(k,l)}(M) = \underbrace{M\otimes\cdots\otimes M}_{k\ \; \mbox{times}}
-    \otimes \underbrace{M^*\otimes\cdots\otimes M^*}_{l\ \; \mbox{times}}
+    \otimes \underbrace{M^*\otimes\cdots\otimes M^*}_{l\ \; \mbox{times}},
 
 where `M` is a free module of finite rank over a commutative ring `R` and
 `M^*=\mathrm{Hom}_R(M,R)` is the dual of `M`.
-`T^{(k,l)}(M)` can be canonically identified with the set of tensors of
-type `(k,l)` acting as multilinear forms on `M`.
-Note that `T^{(1,0)}(M) = M`.
+Note that `T^{(1,0)}(M) = M` and  `T^{(0,1)}(M) = M^*`. 
 
-`T^{(k,l)}(M)` is itself a free module over `R`, of rank `n^{k+l}`, `n`
-being the rank of `M`. Accordingly the class :class:`TensorFreeModule`
-inherits from the class :class:`FiniteRankFreeModule`
-
-Thanks to the canonical isomorphism `M^{**} \simeq M` (which holds because `M`
+Thanks to the canonical isomorphism `M^{**} \simeq M` (which holds since `M`
 is a free module of finite rank), `T^{(k,l)}(M)` can be identified with the
 set of tensors of type `(k,l)` defined as multilinear maps
 
@@ -31,6 +25,11 @@ set of tensors of type `(k,l)` defined as multilinear maps
 Accordingly, :class:`TensorFreeModule` is a Sage *parent* class, whose
 *element* class is
 :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`.
+
+`T^{(k,l)}(M)` is itself a free module over `R`, of rank `n^{k+l}`, `n`
+being the rank of `M`. Accordingly the class :class:`TensorFreeModule`
+inherits from the class
+:class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`.
 
 .. TODO::
 
@@ -56,6 +55,7 @@ AUTHORS:
 from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule
 from sage.tensor.modules.free_module_tensor import (FreeModuleTensor,
                                                     FiniteRankFreeModuleElement)
+from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
 from sage.tensor.modules.free_module_morphism import FiniteRankFreeModuleMorphism
 
 class TensorFreeModule(FiniteRankFreeModule):
@@ -70,7 +70,7 @@ class TensorFreeModule(FiniteRankFreeModule):
         \otimes \underbrace{M^*\otimes\cdots\otimes M^*}_{l\ \; \mbox{times}}
 
     As recalled above, `T^{(k,l)}(M)` can be canonically identified with the
-    set of tensors of type `(k,l)` acting as multilinear forms on `M`.
+    set of tensors of type `(k,l)` on `M`.
 
     INPUT:
 
@@ -270,9 +270,9 @@ class TensorFreeModule(FiniteRankFreeModule):
             if latex_name is None and fmodule._latex_name is not None:
                 latex_name = fmodule._latex_name + r'^*'
         FiniteRankFreeModule.__init__(self, fmodule._ring, rank, name=name,
-                                  latex_name=latex_name,
-                                  start_index=fmodule._sindex,
-                                  output_formatter=fmodule._output_formatter)
+                                      latex_name=latex_name,
+                                      start_index=fmodule._sindex,
+                                    output_formatter=fmodule._output_formatter)
         # Unique representation:
         if self._tensor_type in self._fmodule._tensor_modules:
             raise ValueError("the module of tensors of type" +
@@ -289,6 +289,7 @@ class TensorFreeModule(FiniteRankFreeModule):
             # (since new components are initialized to zero)
 
     #### Methods required for any Parent
+
     def _element_constructor_(self, comp=[], basis=None, name=None,
                               latex_name=None, sym=None, antisym=None):
         r"""

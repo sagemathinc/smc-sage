@@ -206,6 +206,9 @@ class FreeModuleTensor(ModuleElement):
 
     - ``antisym`` -- (default: ``None``) antisymmetry or list of antisymmetries
       among the arguments, with the same convention as for ``sym``
+    - ``parent`` -- (default: ``None``) some specific parent (e.g. exterior
+      power for alternating forms); if ``None``, ``fmodule.tensor_module(k,l)``
+      is used
 
     EXAMPLES:
 
@@ -225,7 +228,7 @@ class FreeModuleTensor(ModuleElement):
 
     """
     def __init__(self, fmodule, tensor_type, name=None, latex_name=None,
-                 sym=None, antisym=None):
+                 sym=None, antisym=None, parent=None):
         r"""
         TESTS::
 
@@ -248,7 +251,9 @@ class FreeModuleTensor(ModuleElement):
             sage: TestSuite(t1).run()
 
         """
-        ModuleElement.__init__(self, fmodule.tensor_module(*tensor_type))
+        if parent is None:
+            parent = fmodule.tensor_module(*tensor_type)
+        ModuleElement.__init__(self, parent)
         self._fmodule = fmodule
         self._tensor_type = tuple(tensor_type)
         self._tensor_rank = self._tensor_type[0] + self._tensor_type[1]

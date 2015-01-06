@@ -378,9 +378,12 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         self._sindex = start_index
         self._output_formatter = output_formatter
         # Dictionary of the tensor modules built on self
-        #   (dict. keys = (k,l) --the tensor type)
+        #   (keys = (k,l) --the tensor type) :
         self._tensor_modules = {(1,0): self} # self is considered as the set of
                                             # tensors of type (1,0)
+        # Dictionary of exterior powers of the dual of self
+        #   (keys = p --the power degree) :
+        self._dual_exterior_powers = {}
         self._known_bases = []  # List of known bases on the free module
         self._def_basis = None # default basis
         self._basis_changes = {} # Dictionary of the changes of bases
@@ -542,6 +545,42 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         if (k,l) not in self._tensor_modules:
             self._tensor_modules[(k,l)] = TensorFreeModule(self, (k,l))
         return self._tensor_modules[(k,l)]
+
+    def dual_exterior_power(self, p):
+        r"""
+        Return the `p`-th exterior power of the dual of ``self``.
+
+        If `M` stands for the free module ``self``, the *p-th exterior power*
+        of the dual of `M` is the set
+        `\Lambda^p(M^*)` of all *alternating forms of degree* `p` on `M`, i.e. of
+        all multilinear maps
+        
+        .. MATH::
+        
+            \underbrace{M\times\cdots\times M}_{p\ \; \mbox{times}}
+            \longrightarrow R
+        
+        that vanish whenever any of two of their arguments are equals.
+        `\Lambda^p(M^*)` is a free module of rank `\left({n\atop p}\right)`
+        over the same ring as `M`, where `n` is the rank of `M`. 
+
+        INPUT:
+
+        - ``p`` -- positive integer
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.tensor.modules.ext_pow_free_module.ExtPowerFreeModule`
+          representing the free module `\Lambda^p(M^*)`
+
+        EXAMPLES:
+
+        """
+        from sage.tensor.modules.ext_pow_free_module import ExtPowerFreeModule
+        if p not in self._dual_exterior_powers:
+            self._dual_exterior_powers[p] = ExtPowerFreeModule(self, p)
+        return self._dual_exterior_powers[p]
 
     def basis(self, symbol=None, latex_symbol=None):
         r"""
@@ -879,12 +918,9 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         for further documentation.
 
         """
-        from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
-        if degree == 1:
-            return FreeModuleLinForm(self, name=name, latex_name=latex_name)
-        else:
-            return FreeModuleAltForm(self, degree, name=name,
-                                     latex_name=latex_name)
+        return self.dual_exterior_power(degree).element_class(self, degree,
+                                                              name=name,
+                                                         latex_name=latex_name)
 
     def linear_form(self, name=None, latex_name=None):
         r"""
@@ -936,8 +972,8 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         for further documentation.
 
         """
-        from free_module_alt_form import FreeModuleLinForm
-        return FreeModuleLinForm(self, name=name, latex_name=latex_name)
+        return self.dual_exterior_power(1).element_class(self, 1, name=name,
+                                                         latex_name=latex_name)
 
     def endomorphism_tensor(self, name=None, latex_name=None):
         r"""
@@ -1319,7 +1355,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             True
 
         """
-        return self.tensor_module(0,1)
+        return self.dual_exterior_power(1)
 
     def irange(self, start=None):
         r"""
