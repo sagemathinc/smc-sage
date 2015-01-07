@@ -3351,7 +3351,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: ap = a.at(p) ; ap
             Alternating form a of degree 2 on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: ap.parent()
-            Free module of type-(0,2) tensors on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            2nd exterior power of the dual of the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: ap.display()
             a = -6 dx/\dy
 

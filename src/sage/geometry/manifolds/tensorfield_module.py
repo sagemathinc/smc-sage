@@ -27,16 +27,16 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from sage.modules.module import Module
 from sage.structure.unique_representation import UniqueRepresentation
+from sage.structure.parent import Parent
+from sage.categories.modules import Modules
 from sage.tensor.modules.tensor_free_module import TensorFreeModule
 from tensorfield import TensorField, TensorFieldParal
 
-class TensorFieldModule(UniqueRepresentation, Module):
+class TensorFieldModule(UniqueRepresentation, Parent):
     r"""
     Module of tensor fields of a given type `(k,l)` along an open subset `U`
-    of some manifold `S` with values in a open subset `V` of
-    a manifold `M`.
+    of some manifold `S` with values in a open subset `V` of a manifold `M`.
 
     This is a module over `C^\infty(U)`, the ring (algebra) of differentiable
     scalar fields on `U`.
@@ -157,7 +157,7 @@ class TensorFieldModule(UniqueRepresentation, Module):
         # the member self._ring is created for efficiency (to avoid calls to
         # self.base_ring()):
         self._ring = domain.scalar_field_algebra()
-        Module.__init__(self, self._ring)
+        Parent.__init__(self, base=self._ring, category=Modules(self._ring))
         self._domain = domain
         self._dest_map = dest_map
         self._ambient_domain = vector_field_module._ambient_domain
