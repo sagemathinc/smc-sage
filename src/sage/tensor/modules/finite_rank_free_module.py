@@ -552,15 +552,15 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         If `M` stands for the free module ``self``, the *p-th exterior power*
         of the dual of `M` is the set
-        `\Lambda^p(M^*)` of all *alternating forms of degree* `p` on `M`, i.e. of
-        all multilinear maps
+        `\Lambda^p(M^*)` of all *alternating forms of degree* `p` on `M`, i.e.
+        of all multilinear maps
         
         .. MATH::
         
             \underbrace{M\times\cdots\times M}_{p\ \; \mbox{times}}
             \longrightarrow R
         
-        that vanish whenever any of two of their arguments are equals.
+        that vanish whenever any of two of their arguments are equal.
         `\Lambda^p(M^*)` is a free module of rank `\left({n\atop p}\right)`
         over the same ring as `M`, where `n` is the rank of `M`. 
 
@@ -570,14 +570,41 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         OUTPUT:
 
-        - instance of
+        - for `p\geq 1`, instance of
           :class:`~sage.tensor.modules.ext_pow_free_module.ExtPowerFreeModule`
-          representing the free module `\Lambda^p(M^*)`
+          representing the free module `\Lambda^p(M^*)`; for `p=0`, the
+          base ring `R` is returned instead
 
         EXAMPLES:
 
+        Exterior powers of the dual of a free `\ZZ`-module of rank 3::
+
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: e = M.basis('e')
+            sage: M.dual_exterior_power(0)  # return the base ring
+            Integer Ring
+            sage: M.dual_exterior_power(1)  # return the dual module
+            Dual of the Rank-3 free module M over the Integer Ring
+            sage: M.dual_exterior_power(1) is M.dual()
+            True
+            sage: M.dual_exterior_power(2)
+            2nd exterior power of the dual of the Rank-3 free module M over the Integer Ring
+            sage: M.dual_exterior_power(2).an_element()
+            Alternating form of degree 2 on the Rank-3 free module M over the Integer Ring
+            sage: M.dual_exterior_power(2).an_element().display()
+            e^0/\e^1
+            sage: M.dual_exterior_power(3)
+            3rd exterior power of the dual of the Rank-3 free module M over the Integer Ring
+            sage: M.dual_exterior_power(3).an_element()
+            Alternating form of degree 3 on the Rank-3 free module M over the Integer Ring
+            sage: M.dual_exterior_power(3).an_element().display()
+            e^0/\e^1/\e^2
+
+
         """
         from sage.tensor.modules.ext_pow_free_module import ExtPowerFreeModule
+        if p == 0:
+            return self._ring
         if p not in self._dual_exterior_powers:
             self._dual_exterior_powers[p] = ExtPowerFreeModule(self, p)
         return self._dual_exterior_powers[p]
@@ -720,15 +747,11 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         """
         from free_module_tensor_spec import FreeModuleEndomorphismTensor
-        from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
+        # Special cases:
         if tensor_type == (1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
-            #!# the above is preferable to
-            # return FiniteRankFreeModuleElement(self, name=name, latex_name=latex_name)
-            # because self.element_class is a (dynamically created) derived
-            # class of FiniteRankFreeModuleElement
         elif tensor_type == (0,1):
-            return FreeModuleLinForm(self, name=name, latex_name=latex_name)
+            return self.linear_form(name=name, latex_name=latex_name)
         elif tensor_type == (1,1):
             return FreeModuleEndomorphismTensor(self, name=name,
                                                 latex_name=latex_name)
@@ -738,19 +761,12 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             else:
                 antisym0 = antisym
             if len(antisym0) == tensor_type[1]:
-                return FreeModuleAltForm(self, tensor_type[1], name=name,
-                                         latex_name=latex_name)
-            else:
-                return self.tensor_module(*tensor_type).element_class(self,
-                                        tensor_type, name=name,
-                                        latex_name=latex_name, sym=sym,
-                                        antisym=antisym)
-        else:
-            return self.tensor_module(*tensor_type).element_class(self,
-                                    tensor_type, name=name,
-                                    latex_name=latex_name, sym=sym,
-                                    antisym=antisym)
-
+                return self.alternating_form(tensor_type[1], name=name,
+                                             latex_name=latex_name)
+        # Generic case:
+        return self.tensor_module(*tensor_type).element_class(self,
+                                 tensor_type, name=name, latex_name=latex_name,
+                                 sym=sym, antisym=antisym)
 
     def tensor_from_comp(self, tensor_type, comp, name=None, latex_name=None):
         r"""
@@ -818,7 +834,6 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         """
         from free_module_tensor_spec import FreeModuleEndomorphismTensor
-        from free_module_alt_form import FreeModuleAltForm, FreeModuleLinForm
         from comp import CompWithSym, CompFullySym, CompFullyAntiSym
         #
         # 0/ Compatibility checks:
@@ -835,19 +850,15 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         # 1/ Construction of the tensor:
         if tensor_type == (1,0):
             resu = self.element_class(self, name=name, latex_name=latex_name)
-            #!# the above is preferable to
-            # resu = FiniteRankFreeModuleElement(self, name=name, latex_name=latex_name)
-            # because self.element_class is a (dynamically created) derived
-            # class of FiniteRankFreeModuleElement
         elif tensor_type == (0,1):
-            resu = FreeModuleLinForm(self, name=name, latex_name=latex_name)
+            resu = self.linear_form(name=name, latex_name=latex_name)
         elif tensor_type == (1,1):
             resu = FreeModuleEndomorphismTensor(self, name=name,
                                                 latex_name=latex_name)
         elif tensor_type[0] == 0 and tensor_type[1] > 1 and \
                                         isinstance(comp, CompFullyAntiSym):
-            resu = FreeModuleAltForm(self, tensor_type[1], name=name,
-                                     latex_name=latex_name)
+            resu = self.alternating_form(tensor_type[1], name=name,
+                                         latex_name=latex_name)
         else:
             resu = self.tensor_module(*tensor_type).element_class(self,
                                  tensor_type, name=name, latex_name=latex_name)
@@ -879,9 +890,6 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         - instance of
           :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm`
-          (``degree`` > 1) or
-          :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm`
-          (``degree`` = 1)
 
         EXAMPLES:
 
@@ -919,8 +927,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         """
         return self.dual_exterior_power(degree).element_class(self, degree,
-                                                              name=name,
-                                                         latex_name=latex_name)
+                                              name=name, latex_name=latex_name)
 
     def linear_form(self, name=None, latex_name=None):
         r"""
@@ -941,7 +948,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         OUTPUT:
 
         - instance of
-          :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm`
+          :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm`
 
         EXAMPLES:
 
@@ -968,7 +975,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             True
 
         See
-        :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm`
+        :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm`
         for further documentation.
 
         """

@@ -189,6 +189,76 @@ class TensorFreeModule(FiniteRankFreeModule):
         sage: T is M.tensor_module(1,2)
         True
 
+    There is a coercion map from `\Lambda^p(M^*)`, the set of alternating
+    forms of degree `p`, to `T^{(0,p)}(M)`::
+
+        sage: L2 = M.dual_exterior_power(2) ; L2
+        2nd exterior power of the dual of the Rank-3 free module M over the
+         Integer Ring
+        sage: T02 = M.tensor_module(0,2) ; T02
+        Free module of type-(0,2) tensors on the Rank-3 free module M over the
+         Integer Ring
+        sage: T02.has_coerce_map_from(L2)
+        True
+
+    Of course, for `p\geq 2`, there is no coercion in the reverse direction,
+    since not every tensor of type (0,p) is alternating::
+    
+        sage: L2.has_coerce_map_from(T02)
+        False
+
+    The coercion map `\Lambda^2(M^*)\rightarrow T^{(0,2)}(M)` in action::
+
+        sage: a = M.alternating_form(2, name='a') ; a
+        Alternating form a of degree 2 on the Rank-3 free module M over the
+         Integer Ring
+        sage: a[0,1], a[1,2] = 4, -3
+        sage: a.display(e)
+        a = 4 e^0/\e^1 - 3 e^1/\e^2
+        sage: a.parent() is L2
+        True
+        sage: ta = T02(a) ; ta
+        Type-(0,2) tensor a on the Rank-3 free module M over the Integer Ring
+        sage: ta.display(e)
+        a = 4 e^0*e^1 - 4 e^1*e^0 - 3 e^1*e^2 + 3 e^2*e^1
+        sage: ta.symmetries() # the antisymmetry is of course preserved
+        no symmetry;  antisymmetry: (0, 1)
+
+    For the degree `p=1`, there is a coercion in both directions::
+
+        sage: L1 = M.dual_exterior_power(1) ; L1
+        Dual of the Rank-3 free module M over the Integer Ring
+        sage: T01 = M.tensor_module(0,1) ; T01
+        Free module of type-(0,1) tensors on the Rank-3 free module M over the
+         Integer Ring
+        sage: T01.has_coerce_map_from(L1)
+        True
+        sage: L1.has_coerce_map_from(T01)
+        True
+
+    The coercion map `\Lambda^1(M^*)\rightarrow T^{(0,1)}(M)` in action::
+
+        sage: a = M.linear_form('a')
+        sage: a[:] = -2, 4, 1 ; a.display(e)
+        a = -2 e^0 + 4 e^1 + e^2
+        sage: a.parent() is L1
+        True
+        sage: ta = T01(a) ; ta
+        Type-(0,1) tensor a on the Rank-3 free module M over the Integer Ring
+        sage: ta.display(e)
+        a = -2 e^0 + 4 e^1 + e^2
+
+    The coercion map `T^{(0,1)}(M) \rightarrow \Lambda^1(M^*)` in action::
+
+        sage: ta.parent() is T01
+        True
+        sage: lta = L1(ta) ; lta
+        Linear form a on the Rank-3 free module M over the Integer Ring
+        sage: lta.display(e)
+        a = -2 e^0 + 4 e^1 + e^2
+        sage: lta == a
+        True
+
     There is a canonical identification between tensors of type (1,1) and
     endomorphisms of module `M`. Accordingly, coercion maps have been
     implemented between `T^{(1,1)}(M)` and `\mathrm{End}(M)` (the module of
@@ -234,7 +304,7 @@ class TensorFreeModule(FiniteRankFreeModule):
         [ 1 -1  1]
         [ 1  1 -2]
 
-    The reverse coercion map in action::
+    The coercion map `T^{(1,1)}(M) \rightarrow \mathrm{End}(M)` in action::
 
         sage: phi1 = End(M)(tphi) ; phi1
         Generic endomorphism of Rank-3 free module M over the Integer Ring
@@ -340,14 +410,19 @@ class TensorFreeModule(FiniteRankFreeModule):
         elif isinstance(comp, FreeModuleAltForm):
             # coercion of an alternating form to a type-(0,p) tensor:
             form = comp # for readability
-            p = form.degree() 
+            p = form.degree()
+            #!# print "coercion of an alternating form to a type-(0,p) tensor"
             if self._tensor_type != (0,p) or \
                                            self._fmodule != form.base_module():
                 raise TypeError("cannot coerce the " + str(form) +
                                 " to an element of " + str(self))
+            if p == 1:
+                asym = None
+            else:
+                asym = range(p)
             resu = self.element_class(self._fmodule, (0,p), name=form._name,
                                       latex_name=form._latex_name,
-                                      antisym=range(p))
+                                      antisym=asym)
             for basis, comp in form._components.iteritems():
                 resu._components[basis] = comp.copy()
         else:
@@ -391,7 +466,7 @@ class TensorFreeModule(FiniteRankFreeModule):
 
         EXAMPLES:
 
-        Sets of module endomorphisms coerces to type-(1,1) tensor modules::
+        Sets of module endomorphisms coerce to type-(1,1) tensor modules::
 
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
@@ -442,11 +517,10 @@ class TensorFreeModule(FiniteRankFreeModule):
             Free module of type-(1,1) tensors on the Rank-2 free module M
              over the Rational Field
             sage: M.tensor_module(0,1)
-            Dual of the Rank-2 free module M over the Rational Field
+            Free module of type-(0,1) tensors on the Rank-2 free module M
+             over the Rational Field
 
         """
-        if self._tensor_type == (0,1):
-            return "Dual of the " + str(self._fmodule)
         description = "Free module of type-({},{}) tensors on the {}".format(
                      self._tensor_type[0], self._tensor_type[1], self._fmodule)
         return description

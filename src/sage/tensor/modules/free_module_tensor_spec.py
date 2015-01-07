@@ -705,7 +705,7 @@ class FreeModuleIdentityTensor(FreeModuleAutomorphismTensor):
 
         """
         from free_module_tensor import FiniteRankFreeModuleElement
-        from free_module_alt_form import FreeModuleLinForm
+        from free_module_alt_form import FreeModuleAltForm
         if len(arg) == 1:
             # the identity map acting as such, on a module element:
             vector = arg[0]
@@ -717,8 +717,10 @@ class FreeModuleIdentityTensor(FreeModuleAutomorphismTensor):
             # the identity map acting as a type-(1,1) tensor on a pair
             # (1-form, vector), returning a scalar:
             linform = arg[0]
-            if not isinstance(linform, FreeModuleLinForm):
+            if not isinstance(linform, FreeModuleAltForm):
                 raise TypeError("the first argument must be a linear form")
+            if linform._tensor_type != (0,1):
+                raise TypeError("the first argument must be a linear form")                
             vector = arg[1]
             if not isinstance(vector, FiniteRankFreeModuleElement):
                 raise TypeError("the second argument must be a module element")

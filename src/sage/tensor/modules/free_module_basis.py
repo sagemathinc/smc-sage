@@ -576,7 +576,8 @@ class FreeModuleCoBasis(UniqueRepresentation, SageObject):
         si = self._fmodule._sindex
         i = index - si
         if i < 0 or i > n-1:
-            raise IndexError("out of range: {} not in [{},{}]".format(i+si. si,n-1+si))
+            raise IndexError("out of range: {} not in [{},{}]".format(i+si,
+                                                                   si, n-1+si))
         return self._form[i]
 
 

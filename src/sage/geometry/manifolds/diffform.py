@@ -45,8 +45,7 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm, \
-                                                              FreeModuleLinForm
+from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
 from tensorfield import TensorField, TensorFieldParal
 
 class DiffForm(TensorField):
@@ -916,7 +915,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         
 #******************************************************************************
 
-class OneFormParal(FreeModuleLinForm, DiffFormParal):
+class OneFormParal(DiffFormParal):
     r"""
     1-form with values in a parallelizable open subset of a differentiable 
     manifold. 
@@ -1007,15 +1006,9 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
 
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
-        FreeModuleLinForm.__init__(self, vector_field_module, name=name, 
-                                   latex_name=latex_name)
-        # DiffFormParal attributes:
-        self._vmodule = vector_field_module
-        self._domain = vector_field_module._domain
-        self._ambient_domain = vector_field_module._ambient_domain
-        # initialization of derived quantities:
-        DiffFormParal._init_derived(self) 
-        
+        DiffFormParal.__init__(self, vector_field_module, 1, name=name,
+                               latex_name=latex_name)
+
     def _repr_(self):
         r"""
         String representation of the object.
@@ -1031,32 +1024,3 @@ class OneFormParal(FreeModuleLinForm, DiffFormParal):
         """
         return self.__class__(self._fmodule)
 
-    def __call__(self, vector):
-        r"""
-        Redefinition of 
-        :meth:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm.__call__` 
-        to allow for domain treatment
-        """
-        dom_resu = self._domain.intersection(vector._domain)
-        return FreeModuleLinForm.__call__(self.restrict(dom_resu), 
-                                          vector.restrict(dom_resu))
-
-    def wedge(self, other):
-        r"""
-        Exterior product with another differential form. 
-        
-        This is a redefinition of 
-        :meth:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm.wedge`
-        to treat properly the domains. 
-        
-        INPUT:
-        
-        - ``other``: another differential form
-        
-        OUTPUT:
-        
-        - instance of :class:`DiffFormParal` representing the exterior 
-          product self/\\other. 
-        
-        """
-        return DiffFormParal.wedge(self, other)

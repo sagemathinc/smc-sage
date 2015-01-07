@@ -27,9 +27,6 @@ tensors:
 * :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm` for
   fully antisymmetric type-`(0, l)` tensors (alternating forms)
 
-  * :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleLinForm` for
-    type-(0, 1) tensors (linear forms)
-
 * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphismTensor`
   for type-(1,1) tensors
 
@@ -185,6 +182,9 @@ from sage.tensor.modules.tensor_with_indices import TensorWithIndices
 class FreeModuleTensor(ModuleElement):
     r"""
     Tensor over a free module of finite rank over a commutative ring.
+
+    This is a Sage *element* class, the corresponding *parent* class being
+    :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule`.
 
     INPUT:
 
@@ -752,11 +752,15 @@ class FreeModuleTensor(ModuleElement):
 
     def _new_comp(self, basis):
         r"""
-        Create some components in the given basis.
+        Create some (uninitialized) components of ``self`` in a given basis.
 
         This method, to be called by :meth:`comp`, must be redefined by derived
         classes to adapt the output to the relevant subclass of
         :class:`~sage.tensor.modules.comp.Components`.
+
+        INPUT:
+
+        - ``basis`` -- basis of the free module on which ``self`` is defined
 
         OUTPUT:
 
@@ -1873,7 +1877,9 @@ class FreeModuleTensor(ModuleElement):
         - ``*args`` -- list of `k` linear forms and `l` module elements
           with ``self`` being a tensor of type `(k, l)`
 
-        EXAMPLES::
+        EXAMPLES:
+
+        Action of a type-(2,1) tensor::
 
             sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
             sage: e = M.basis('e')
@@ -1892,24 +1898,40 @@ class FreeModuleTensor(ModuleElement):
             True
             sage: t(a,b,v) == t.contract(v).contract(b).contract(a)
             True
+
+        Action of a linear form on a vector::
+
             sage: a.__call__(v)
             0
-            sage: v.__call__(a)
-            0
+            sage: a.__call__(v) == a(v)
+            True
+            sage: a(v) == a.contract(v)
+            True
             sage: b.__call__(v)
             -7
+            sage: b.__call__(v) == b(v)
+            True
+            sage: b(v) == b.contract(v)
+            True
+
+        Action of a vector on a linear form::
+
+            sage: v.__call__(a)
+            0
             sage: v.__call__(b)
             -7
 
         """
-        from free_module_alt_form import FreeModuleLinForm
         # Consistency checks:
         p = len(args)
         if p != self._tensor_rank:
             raise TypeError(str(self._tensor_rank) +
                             " arguments must be provided")
         for i in range(self._tensor_type[0]):
-            if not isinstance(args[i], FreeModuleLinForm):
+            if not isinstance(args[i], FreeModuleTensor):
+                raise TypeError("the argument no. " + str(i+1) +
+                                " must be a linear form")
+            if args[i]._tensor_type != (0,1):
                 raise TypeError("the argument no. " + str(i+1) +
                                 " must be a linear form")
         for i in range(self._tensor_type[0],p):
@@ -1917,6 +1939,31 @@ class FreeModuleTensor(ModuleElement):
                 raise TypeError("the argument no. " + str(i+1) +
                                 " must be a module element")
         fmodule = self._fmodule
+        #
+        # Specific case of a linear form acting on a vector (for efficiency):
+        #
+        if self._tensor_type == (0,1):
+            vector = args[0]
+            basis = self.common_basis(vector)
+            if basis is None:
+                raise ValueError("no common basis for the components")
+            omega = self._components[basis]
+            vv = vector._components[basis]
+            resu = 0
+            for i in fmodule.irange():
+                resu += omega[[i]]*vv[[i]]
+            # Name and LaTeX symbol of the output:
+            if hasattr(resu, '_name'):
+                if self._name is not None and vector._name is not None:
+                    resu._name = self._name + "(" + vector._name + ")"
+            if hasattr(resu, '_latex_name'):
+                if self._latex_name is not None and vector._latex_name is not None:
+                    resu._latex_name = self._latex_name + r"\left(" + \
+                                      vector._latex_name + r"\right)"
+            return resu
+        #
+        # Generic case
+        #
         # Search for a common basis
         basis = None
         # First try with the module's default basis
@@ -3050,10 +3097,18 @@ class FiniteRankFreeModuleElement(FreeModuleTensor):
 
     def _new_comp(self, basis):
         r"""
-        Create some components in the given basis.
+        Create some (uninitialized) components of ``self`` in a given basis.
 
         This method, which is already implemented in
-        :meth:`FreeModuleTensor._new_comp`, is redefined here for efficiency
+        :meth:`FreeModuleTensor._new_comp`, is redefined here for efficiency.
+
+        INPUT:
+
+        - ``basis`` -- basis of the free module on which ``self`` is defined
+
+        OUTPUT:
+
+        - an instance of :class:`~sage.tensor.modules.comp.Components`
 
         EXAMPLE::
 
