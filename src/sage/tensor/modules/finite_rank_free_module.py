@@ -394,8 +394,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         # Identity endomorphism:
         self._identity_map = None # not defined yet
 
-
-    #### Methods required for any Parent
+    #### Parent methods
 
     def _element_constructor_(self, comp=[], basis=None, name=None,
                               latex_name=None):
@@ -448,7 +447,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         resu.set_comp()[:] = [self._ring.an_element() for i in range(self._rank)]
         return resu
 
-    #### End of methods required for any Parent
+    #### End of parent methods
 
     #### Methods to be redefined by derived classes ####
 
@@ -566,7 +565,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         INPUT:
 
-        - ``p`` -- positive integer
+        - ``p`` -- non-negative integer
 
         OUTPUT:
 

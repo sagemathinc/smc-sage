@@ -50,8 +50,8 @@ from tensorfield import TensorField, TensorFieldParal
 
 class DiffForm(TensorField):
     r"""
-    Differential form with values in an open subset of a 
-    differentiable manifold. 
+    Differential form with values in an open subset of a differentiable
+    manifold. 
 
     An instance of this class is a field of alternating multilinear forms along 
     an open subset `U` of some immersed  submanifold `S` of a manifold `M` with 
@@ -100,7 +100,8 @@ class DiffForm(TensorField):
     """
     def __init__(self, vector_field_module, degree, name=None, latex_name=None):
         TensorField.__init__(self, vector_field_module, (0,degree), name=name, 
-                             latex_name=latex_name, antisym=range(degree))
+                             latex_name=latex_name, antisym=range(degree),
+                        parent=vector_field_module.dual_exterior_power(degree))
         self._init_derived() # initialization of derived quantities
 
     def _repr_(self):
@@ -121,14 +122,14 @@ class DiffForm(TensorField):
 
     def _init_derived(self):
         r"""
-        Initialize the derived quantities
+        Initialize the derived quantities.
         """
         TensorField._init_derived(self)
         self._exterior_derivative = None
 
     def _del_derived(self):
         r"""
-        Delete the derived quantities
+        Delete the derived quantities.
         """
         TensorField._del_derived(self)
         self._exterior_derivative = None

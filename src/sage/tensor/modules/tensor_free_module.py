@@ -367,7 +367,7 @@ class TensorFreeModule(FiniteRankFreeModule):
                                             self._zero_element._new_comp(basis)
             # (since new components are initialized to zero)
 
-    #### Methods required for any Parent
+    #### Parent Methods
 
     def _element_constructor_(self, comp=[], basis=None, name=None,
                               latex_name=None, sym=None, antisym=None):
@@ -490,6 +490,17 @@ class TensorFreeModule(FiniteRankFreeModule):
             sage: M.tensor_module(1,1)._coerce_map_from_(Hom(M,N))
             False
 
+        Coercion from alternating forms::
+
+            sage: M.tensor_module(0,1)._coerce_map_from_(M.dual_exterior_power(1))
+            True
+            sage: M.tensor_module(0,2)._coerce_map_from_(M.dual_exterior_power(2))
+            True
+            sage: M.tensor_module(0,2)._coerce_map_from_(M.dual_exterior_power(3))
+            False
+            sage: M.tensor_module(0,2)._coerce_map_from_(N.dual_exterior_power(2))
+            False
+
         """
         from free_module_homset import FreeModuleHomset
         from ext_pow_free_module import ExtPowerFreeModule
@@ -500,11 +511,12 @@ class TensorFreeModule(FiniteRankFreeModule):
                                           self._fmodule is other.domain():
                     return True
         if isinstance(other, ExtPowerFreeModule):
-            if self._tensor_type == (0, other.degree()):
+            if self._fmodule is other._fmodule and \
+               self._tensor_type == (0, other.degree()):
                 return True
         return False
 
-    #### End of methods required for any Parent
+    #### End of parent methods
 
     def _repr_(self):
         r"""

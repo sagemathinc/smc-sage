@@ -269,8 +269,8 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
                                             self._zero_element._new_comp(basis)
             # (since new components are initialized to zero)
 
-    #### Methods required for any Parent
-    
+    #### Parent methods
+
     def _element_constructor_(self, comp=[], basis=None, name=None,
                               latex_name=None):
         r"""
@@ -389,11 +389,12 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
         from sage.tensor.modules.tensor_free_module import TensorFreeModule
         if isinstance(other, TensorFreeModule):
             # coercion of a type-(0,1) tensor to a linear form
-            if other.tensor_type() == (0,1) and self._degree == 1:
+            if self._fmodule is other._fmodule and self._degree == 1 and \
+               other.tensor_type() == (0,1):
                 return True
         return False
         
-    #### End of methods required for any Parent
+    #### End of parent methods
 
     def _repr_(self):
         r"""

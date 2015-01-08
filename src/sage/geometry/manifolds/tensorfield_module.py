@@ -164,12 +164,13 @@ class TensorFieldModule(UniqueRepresentation, Parent):
         # NB: self._zero_element is not constructed here, since no element
         # can be constructed here, to avoid some infinite recursion.
 
-    #### Methods required for any Parent
+    #### Parent methods
 
     def _element_constructor_(self, comp=[], frame=None, name=None,
                               latex_name=None, sym=None, antisym=None):
         r"""
-        Construct a tensor field
+        Construct a tensor field.
+        
         """
         if comp == 0:
             if not hasattr(self, '_zero_element'):
@@ -198,16 +199,17 @@ class TensorFieldModule(UniqueRepresentation, Parent):
 
     def _an_element_(self):
         r"""
-        Construct some (unamed) tensor field
+        Construct some (unamed) tensor field.
+        
         """
         resu = self.element_class(self._vmodule, self._tensor_type)
+        #!# a zero element is returned
         return resu
-
-    #### End of methods required for any Parent
 
     def _coerce_map_from_(self, other):
         r"""
-        Determine whether coercion to self exists from other parent
+        Determine whether coercion to self exists from other parent.
+        
         """
         if isinstance(other, (TensorFieldModule, TensorFieldFreeModule)):
             return self._tensor_type == other._tensor_type and \
@@ -216,9 +218,12 @@ class TensorFieldModule(UniqueRepresentation, Parent):
         else:
             return False
 
+    #### End of parent methods
+
     def _repr_(self):
         r"""
-        String representation of the object.
+        Return a string representation of ``self``.
+
         """
         description = "module "
         if self._name is not None:
@@ -235,7 +240,7 @@ class TensorFieldModule(UniqueRepresentation, Parent):
 
     def _latex_(self):
         r"""
-        LaTeX representation of the object.
+        Return a LaTeX representation of ``self``.
         """
         if self._latex_name is None:
             return r'\mbox{' + str(self) + r'}'
@@ -363,10 +368,13 @@ class TensorFieldFreeModule(TensorFreeModule):
         self._dest_map = dest_map
         self._ambient_domain = vector_field_module._ambient_domain
 
-    def _element_constructor_(self, comp=[], basis=None, name=None,
+    #### Parent methods
+
+    def _element_constructor_(self, comp=[], frame=None, name=None,
                               latex_name=None, sym=None, antisym=None):
         r"""
-        Construct a tensor
+        Construct a tensor field.
+        
         """
         if comp == 0:
             return self._zero_element
@@ -382,12 +390,15 @@ class TensorFieldFreeModule(TensorFreeModule):
                                   latex_name=latex_name, sym=sym,
                                   antisym=antisym)
         if comp != []:
-            resu.set_comp(basis)[:] = comp
+            resu.set_comp(frame)[:] = comp
         return resu
+
+    # Rem: _an_element_ is declared in the superclass TensorFreeModule
 
     def _coerce_map_from_(self, other):
         r"""
-        Determine whether coercion to self exists from other parent
+        Determine whether coercion to ``self`` exists from other parent.
+        
         """
         if isinstance(other, (TensorFieldModule, TensorFieldFreeModule)):
             return self._tensor_type == other._tensor_type and \
@@ -396,9 +407,12 @@ class TensorFieldFreeModule(TensorFreeModule):
         else:
             return False
 
+    #### End of parent methods
+
     def _repr_(self):
         r"""
-        String representation of the object.
+        Return a string representation of ``self``.
+
         """
         description = "free module "
         if self._name is not None:

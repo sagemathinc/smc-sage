@@ -358,6 +358,9 @@ class TensorField(ModuleElement):
 
     - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries
       among the arguments, with the same convention as for ``sym``.
+    - ``parent`` -- (default: ``None``) some specific parent (e.g. exterior
+      power for differential forms); if ``None``,
+      ``vector_field_module.tensor_module(k,l)`` is used
 
     EXAMPLES:
 
@@ -484,9 +487,10 @@ class TensorField(ModuleElement):
 
     """
     def __init__(self, vector_field_module, tensor_type, name=None,
-                 latex_name=None, sym=None, antisym=None):
-        ModuleElement.__init__(self,
-                               vector_field_module.tensor_module(*tensor_type))
+                 latex_name=None, sym=None, antisym=None, parent=None):
+        if parent is None:
+            parent = vector_field_module.tensor_module(*tensor_type)
+        ModuleElement.__init__(self, parent)
         self._vmodule = vector_field_module
         self._tensor_type = tuple(tensor_type)
         self._tensor_rank = self._tensor_type[0] + self._tensor_type[1]

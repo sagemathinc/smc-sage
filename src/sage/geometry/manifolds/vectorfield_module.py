@@ -194,6 +194,9 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         #   (dict. keys = (k,l) --the tensor type)
         self._tensor_modules = {(1,0): self} # self is considered as the set of
                                             # tensors of type (1,0)
+        # Dictionary of exterior powers of the dual of self
+        #   (keys = p --the power degree) :
+        self._dual_exterior_powers = {}
         # Zero element:
         if not hasattr(self, '_zero_element'):
             self._zero_element = self._element_constructor_(name='zero',
@@ -203,7 +206,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
                     self._zero_element.add_comp(frame)
                     # (since new components are initialized to zero)
 
-    #### Methods required for any Parent
+    #### Parent methods
 
     def _element_constructor_(self, comp=[], frame=None, name=None,
                               latex_name=None):
@@ -231,8 +234,6 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         resu = self.element_class(self)
         return resu
 
-    #### End of methods required for any Parent
-
     def _coerce_map_from_(self, other):
         r"""
         Determine whether coercion to self exists from other parent
@@ -242,6 +243,8 @@ class VectorFieldModule(UniqueRepresentation, Parent):
                    self._ambient_domain.is_subset(other._ambient_domain)
         else:
             return False
+
+    #### End of parent methods
 
     def _repr_(self):
         r"""
@@ -292,6 +295,37 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         if (k,l) not in self._tensor_modules:
             self._tensor_modules[(k,l)] = TensorFieldModule(self, (k,l))
         return self._tensor_modules[(k,l)]
+
+    def dual_exterior_power(self, p):
+        r"""
+        Return the `p`-th exterior power of the dual of ``self``.
+
+        If ``self`` is the vector field module `\mathcal{X}(U,\Phi)`, the
+        `p`-th exterior power of its dual is the set `\Lambda^p(U,\Phi)` of
+        `p`-forms along `U` with values in `\Phi(U)`. It is a module over
+        `C^\infty(U)`, the ring (algebra) of differentiable scalar fields on
+        `U`.
+        
+        INPUT:
+
+        - ``p`` -- non-negative integer
+
+        OUTPUT:
+
+        - for `p\geq 1`, instance of
+          :class:`~sage.geometry.manifolds.diffform_module.DiffFormModule`
+          representing the module `\Lambda^p(U,\Phi)`; for `p=0`, the
+          base ring, i.e. `C^\infty(U)`, is returned instead
+
+        EXAMPLES:
+
+        """
+        from sage.geometry.manifolds.diffform_module import DiffFormModule
+        if p == 0:
+            return self._ring
+        if p not in self._dual_exterior_powers:
+            self._dual_exterior_powers[p] = DiffFormModule(self, p)
+        return self._dual_exterior_powers[p]
 
     def tensor(self, tensor_type, name=None, latex_name=None, sym=None,
                antisym=None, specific_type=None):
@@ -825,6 +859,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                 self._zero_element.add_comp(frame)
                 # (since new components are initialized to zero)
 
+    #### Parent methods
+
     def _element_constructor_(self, comp=[], basis=None, name=None,
                               latex_name=None):
         r"""
@@ -844,6 +880,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
             resu.set_comp(basis)[:] = comp
         return resu
 
+    # Rem: _an_element_ is declared in the superclass FiniteRankFreeModule
+
     def _coerce_map_from_(self, other):
         r"""
         Determine whether coercion to self exists from other parent
@@ -853,6 +891,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                    self._ambient_domain.is_subset(other._ambient_domain)
         else:
             return False
+
+    #### End of parent methods
 
     #### Methods to be redefined by derived classes of FiniteRankFreeModule ####
 
@@ -898,6 +938,37 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         if (k,l) not in self._tensor_modules:
             self._tensor_modules[(k,l)] = TensorFieldFreeModule(self, (k,l))
         return self._tensor_modules[(k,l)]
+
+    def dual_exterior_power(self, p):
+        r"""
+        Return the `p`-th exterior power of the dual of ``self``.
+
+        If ``self`` is the vector field module `\mathcal{X}(U,\Phi)`, the
+        `p`-th exterior power of its dual is the set `\Lambda^p(U,\Phi)` of
+        `p`-forms along `U` with values in `\Phi(U)`. It is a module over
+        `C^\infty(U)`, the ring (algebra) of differentiable scalar fields on
+        `U`.
+        
+        INPUT:
+
+        - ``p`` -- non-negative integer
+
+        OUTPUT:
+
+        - for `p\geq 1`, instance of
+          :class:`~sage.geometry.manifolds.diffform_module.DiffFormModule`
+          representing the module `\Lambda^p(U,\Phi)`; for `p=0`, the
+          base ring, i.e. `C^\infty(U)`, is returned instead
+
+        EXAMPLES:
+
+        """
+        from sage.geometry.manifolds.diffform_module import DiffFormFreeModule
+        if p == 0:
+            return self._ring
+        if p not in self._dual_exterior_powers:
+            self._dual_exterior_powers[p] = DiffFormFreeModule(self, p)
+        return self._dual_exterior_powers[p]
 
     def basis(self, symbol=None, latex_symbol=None, from_frame=None):
         r"""
