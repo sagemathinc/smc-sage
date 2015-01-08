@@ -405,8 +405,8 @@ class TensorFreeModule(FiniteRankFreeModule):
                 for basis, mat in endo._matrices.iteritems():
                     resu.add_comp(basis[0])[:] = mat
             else:
-                raise TypeError("cannot coerce the " + str(endo) +
-                                " to an element of " + str(self))
+                raise TypeError("cannot coerce the {}".format(endo) +
+                                " to an element of {}".format(self))
         elif isinstance(comp, FreeModuleAltForm):
             # coercion of an alternating form to a type-(0,p) tensor:
             form = comp # for readability
@@ -414,8 +414,8 @@ class TensorFreeModule(FiniteRankFreeModule):
             #!# print "coercion of an alternating form to a type-(0,p) tensor"
             if self._tensor_type != (0,p) or \
                                            self._fmodule != form.base_module():
-                raise TypeError("cannot coerce the " + str(form) +
-                                " to an element of " + str(self))
+                raise TypeError("cannot coerce the {}".format(form) +
+                                " to an element of {}".format(self))
             if p == 1:
                 asym = None
             else:
@@ -507,13 +507,11 @@ class TensorFreeModule(FiniteRankFreeModule):
         if isinstance(other, FreeModuleHomset):
             # Coercion of an endomorphism to a type-(1,1) tensor:
             if self._tensor_type == (1,1):
-                if other.is_endomorphism_set() and \
-                                          self._fmodule is other.domain():
-                    return True
+                return other.is_endomorphism_set() and \
+                                                self._fmodule is other.domain()
         if isinstance(other, ExtPowerFreeModule):
-            if self._fmodule is other._fmodule and \
-               self._tensor_type == (0, other.degree()):
-                return True
+            return self._fmodule is other._fmodule and \
+                                       self._tensor_type == (0, other.degree())
         return False
 
     #### End of parent methods

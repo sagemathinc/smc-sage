@@ -32,6 +32,7 @@ from sage.structure.parent import Parent
 from sage.categories.modules import Modules
 from sage.tensor.modules.tensor_free_module import TensorFreeModule
 from tensorfield import TensorField, TensorFieldParal
+from diffform import DiffForm, DiffFormParal
 
 class TensorFieldModule(UniqueRepresentation, Parent):
     r"""
@@ -188,8 +189,27 @@ class TensorFieldModule(UniqueRepresentation, Parent):
                self._ambient_domain.is_subset(comp._ambient_domain):
                 return comp.restrict(self._domain)
             else:
-                raise TypeError("Cannot coerce the " + str(comp) +
-                                "to a tensor field in " + str(self))
+               raise TypeError("cannot coerce the {}".format(comp) +
+                                " to an element of {}".format(self))
+        if isinstance(comp, DiffForm):
+            # coercion of a p-form to a type-(0,p) tensor:
+            form = comp # for readability
+            p = form.degree()
+            if self._tensor_type != (0,p) or \
+                                           self._vmodule != form.base_module():
+                raise TypeError("cannot coerce the {}".format(form) +
+                                " to an element of {}".format(self))
+            if p == 1:
+                asym = None
+            else:
+                asym = range(p)
+            resu = self.element_class(self._vmodule, (0,p), name=form._name,
+                                      latex_name=form._latex_name,
+                                      antisym=asym)
+            for dom, rst in form._restrictions.iteritems():
+                resu._restrictions[dom] = dom.tensor_module(0,p)(rst)
+            return resu
+        # standard construction
         resu = self.element_class(self._vmodule, self._tensor_type, name=name,
                                   latex_name=latex_name, sym=sym,
                                   antisym=antisym)
@@ -211,12 +231,16 @@ class TensorFieldModule(UniqueRepresentation, Parent):
         Determine whether coercion to self exists from other parent.
         
         """
+        from diffform_module import DiffFormModule
         if isinstance(other, (TensorFieldModule, TensorFieldFreeModule)):
+            # coercion by domain restriction
             return self._tensor_type == other._tensor_type and \
                    self._domain.is_subset(other._domain) and \
                    self._ambient_domain.is_subset(other._ambient_domain)
-        else:
-            return False
+        if isinstance(other, DiffFormModule):
+            return self._vmodule is other._vmodule and \
+                                       self._tensor_type == (0, other.degree())
+        return False
 
     #### End of parent methods
 
@@ -260,6 +284,17 @@ class TensorFieldModule(UniqueRepresentation, Parent):
         """
         return self._vmodule
 
+    def tensor_type(self):
+        r"""
+        Return the tensor type of ``self``.
+
+        OUTPUT:
+
+        - pair `(k,l)` such that ``self`` is the module of tensor fields of
+          type `(k,l)`
+
+        """
+        return self._tensor_type
 
 #******************************************************************************
 

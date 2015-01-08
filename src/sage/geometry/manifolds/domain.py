@@ -1254,8 +1254,6 @@ class ManifoldOpenSubset(ManifoldSubset):
         self._zero_scalar_field = ZeroScalarField(self)
         # dict. of vector field modules along self:
         self._vector_field_modules = {}
-        # dict. of tensor field modules along self:
-        self._tensor_field_modules = {}
         # the identity map on self
         self._identity_map = IdentityMap(self)
         # dict. of tangent spaces at points on self:
@@ -1659,7 +1657,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     def tensor_field_module(self, tensor_type, dest_map=None):
         r"""
-        Returns the set of tensor fields of a given type defined on ``self``,
+        Return the set of tensor fields of a given type defined on ``self``,
         possibly within some ambient manifold, as a module over the algebra of
         scalar fields defined on ``self``.
 
@@ -1706,25 +1704,39 @@ class ManifoldOpenSubset(ManifoldSubset):
             2 d/dx*d/dx*dx
 
         """
-        from tensorfield_module import TensorFieldModule, TensorFieldFreeModule
-        if tensor_type == (1,0):
-            return self.vector_field_module(dest_map=dest_map)
-        if dest_map is None:
-            dest_map = self._identity_map
-        dest_map_name = dest_map._name
-        ttype = tuple(tensor_type)
-        if (ttype, dest_map_name) not in self._tensor_field_modules: #!# to be improved (replace dest_map_name by dest_map)
-            if self.is_manifestly_parallelizable():
-                self._tensor_field_modules[(ttype, dest_map_name)] = \
-                        TensorFieldFreeModule(
-                            self.vector_field_module(dest_map=dest_map), ttype)
-            else:
-                self._tensor_field_modules[(ttype, dest_map_name)] = \
-                        TensorFieldModule(
-                            self.vector_field_module(dest_map=dest_map), ttype)
+        return self.vector_field_module(dest_map=dest_map).tensor_module(
+                                                                  *tensor_type)
 
-        return self._tensor_field_modules[(ttype, dest_map_name)]
+    def diff_form_module(self, degree, dest_map=None):
+        r"""
+        Return the set of differential forms of a given degree defined on
+        ``self``, possibly within some ambient manifold, as a module over the
+        algebra of scalar fields defined on ``self``.
 
+        See :class:`~sage.geometry.manifolds.diffform_module.DiffFormModule`
+        for a complete documentation.
+
+        INPUT:
+    
+        - ``degree`` -- positive integer; the degree `p` of the differential forms
+        - ``dest_map`` -- (default: None) destination map
+          `\Phi:\ U \rightarrow V`, where `U` is ``self``
+          (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`);
+          if none is provided, the identity is assumed (case of differential
+          forms *on* `U`)
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.geometry.manifolds.diffform_module.DiffFormModule`
+          representing the module `\Lambda^p(U,\Phi)` of `p`-forms on the open
+          subset `U` = ``self`` taking values on `\Phi(U)\subset V\subset M`.
+
+        EXAMPLE:
+
+        """
+        return self.vector_field_module(dest_map=dest_map).dual_exterior_power(
+                                                                        degree)
 
     def scalar_field(self, coord_expression=None, chart=None, name=None,
                      latex_name=None):

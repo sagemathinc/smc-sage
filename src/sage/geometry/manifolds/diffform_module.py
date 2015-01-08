@@ -31,6 +31,7 @@ from sage.structure.parent import Parent
 from sage.categories.modules import Modules
 from sage.tensor.modules.ext_pow_free_module import ExtPowerFreeModule
 from diffform import DiffForm, DiffFormParal
+from tensorfield import TensorField, TensorFieldParal
 
 class DiffFormModule(UniqueRepresentation, Parent):
     r"""
@@ -105,13 +106,28 @@ class DiffFormModule(UniqueRepresentation, Parent):
                         # (since new components are initialized to zero)
             return self._zero_element
         if isinstance(comp, DiffForm):
+            # coercion by domain restriction
             if self._degree == comp._tensor_type[1] and \
                self._domain.is_subset(comp._domain) and \
                self._ambient_domain.is_subset(comp._ambient_domain):
                 return comp.restrict(self._domain)
             else:
-                raise TypeError("Cannot coerce the {} ".format(comp) +
-                                "to a differential form in {}".format(self))
+                raise TypeError("cannot coerce the {}".format(comp) +
+                                " to an element of {}".format(self))
+        if isinstance(comp, TensorField):
+            # coercion of a tensor of type (0,1) to a linear form
+            tensor = comp # for readability
+            if tensor.tensor_type() == (0,1) and self._degree == 1 and \
+                                         tensor._vmodule is self._vmodule:
+                resu = self.element_class(self._vmodule, 1, name=tensor._name,
+                                          latex_name=tensor._latex_name)
+                for dom, rst in tensor._restrictions.iteritems():
+                    resu._restrictions[dom] = dom.diff_form_module(1)(rst)
+                return resu
+            else:
+                raise TypeError("cannot coerce the {}".format(tensor) +
+                                " to an element of {}".format(self))
+        # standard construction
         resu = self.element_class(self._vmodule, self._degree, name=name,
                                   latex_name=latex_name)
         if comp != []:
@@ -132,12 +148,17 @@ class DiffFormModule(UniqueRepresentation, Parent):
         Determine whether coercion to ``self`` exists from other parent.
         
         """
+        from tensorfield_module import TensorFieldModule
         if isinstance(other, (DiffFormModule, DiffFormFreeModule)):
+            # coercion by domain restriction
             return self._degree == other._degree and \
                    self._domain.is_subset(other._domain) and \
                    self._ambient_domain.is_subset(other._ambient_domain)
-        else:
-            return False
+        if isinstance(other, TensorFieldModule):
+            # coercion of a type-(0,1) tensor to a linear form
+            return self._vmodule is other._vmodule and self._degree == 1 and \
+               other.tensor_type() == (0,1)
+        return False
 
     #### End of Parent methods
 
@@ -238,6 +259,7 @@ class DiffFormFreeModule(ExtPowerFreeModule):
         if comp == 0:
             return self._zero_element
         if isinstance(comp, DiffForm):
+            # coercion by domain restriction
             if self._degree == comp._tensor_type[1] and \
                self._domain.is_subset(comp._domain) and \
                self._ambient_domain.is_subset(comp._ambient_domain):
@@ -245,6 +267,19 @@ class DiffFormFreeModule(ExtPowerFreeModule):
             else:
                 raise TypeError("Cannot coerce the {} ".format(comp) +
                                 "to a differential form in {}".format(self))
+        if isinstance(comp, TensorFieldParal):
+            # coercion of a tensor of type (0,1) to a linear form
+            tensor = comp # for readability
+            if tensor.tensor_type() == (0,1) and self._degree == 1 and \
+                                         tensor._fmodule is self._fmodule:
+                resu = self.element_class(self._fmodule, 1, name=tensor._name,
+                                          latex_name=tensor._latex_name)
+                for frame, comp in tensor._components.iteritems():
+                    resu._components[frame] = comp.copy()
+                return resu
+            else:
+                raise TypeError("cannot coerce the {}".format(tensor) +
+                                " to an element of {}".format(self))
         resu = self.element_class(self._fmodule, self._degree, name=name,
                                   latex_name=latex_name)
         if comp != []:
@@ -256,12 +291,17 @@ class DiffFormFreeModule(ExtPowerFreeModule):
         Determine whether coercion to ``self`` exists from other parent.
         
         """
+        from tensorfield_module import TensorFieldFreeModule
         if isinstance(other, (DiffFormModule, DiffFormFreeModule)):
+            # coercion by domain restriction
             return self._degree == other._degree and \
                    self._domain.is_subset(other._domain) and \
                    self._ambient_domain.is_subset(other._ambient_domain)
-        else:
-            return False
+        if isinstance(other, TensorFieldFreeModule):
+            # coercion of a type-(0,1) tensor to a linear form
+            return self._fmodule is other._fmodule and self._degree == 1 and \
+               other.tensor_type() == (0,1)
+        return False
 
     #### End of Parent methods
 
@@ -280,13 +320,4 @@ class DiffFormFreeModule(ExtPowerFreeModule):
             description += "along the {} mapped into the {}".format(
                                             self._domain, self._ambient_domain)
         return description
-
-
-
-
-
-
-
-
-
 

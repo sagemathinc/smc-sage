@@ -302,7 +302,6 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
         if isinstance(comp, FreeModuleTensor):
             # coercion of a tensor of type (0,1) to a linear form
             tensor = comp # for readability
-            #!# print "coercion of a tensor of type (0,1) to a linear form"
             if tensor.tensor_type() == (0,1) and self._degree == 1 and \
                                          tensor.base_module() is self._fmodule:
                 resu = self.element_class(self._fmodule, 1, name=tensor._name,
@@ -311,8 +310,8 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
                     resu._components[basis] = comp.copy()
                 return resu
             else:
-                raise TypeError("cannot coerce the " + str(tensor) +
-                                " to an element of " + str(self))
+                raise TypeError("cannot coerce the {} ".format(tensor) +
+                                "to an element of {}".format(self))
         # standard construction
         resu = self.element_class(self._fmodule, self._degree, name=name,
                                   latex_name=latex_name)
