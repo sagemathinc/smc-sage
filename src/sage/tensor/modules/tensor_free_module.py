@@ -411,7 +411,6 @@ class TensorFreeModule(FiniteRankFreeModule):
             # coercion of an alternating form to a type-(0,p) tensor:
             form = comp # for readability
             p = form.degree()
-            #!# print "coercion of an alternating form to a type-(0,p) tensor"
             if self._tensor_type != (0,p) or \
                                            self._fmodule != form.base_module():
                 raise TypeError("cannot coerce the {}".format(form) +

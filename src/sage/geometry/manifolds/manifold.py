@@ -235,14 +235,16 @@ EXAMPLES:
         sage: df.display(stereoS.frame())
         df = -2*u/(u^4 + 2*u^2*v^2 + v^4 + 1) du - 2*v/(u^4 + 2*u^2*v^2 + v^4 + 1) dv
         sage: df.parent()
-        module T^(0,1)(S^2) of type-(0,1) tensors fields on the 2-dimensional manifold 'S^2'
+        Module /\^1(S^2) of 1-forms on the 2-dimensional manifold 'S^2'
         sage: df.parent().category()
-        Category of modules over algebra of scalar fields on the 2-dimensional manifold 'S^2'
+        Category of modules over algebra of scalar fields on the 2-dimensional
+         manifold 'S^2'
 
     The value of the 1-form at point p::
 
         sage: df.at(p)
-        Linear form df on the tangent space at point 'p' on 2-dimensional manifold 'S^2'
+        Linear form df on the tangent space at point 'p' on 2-dimensional
+         manifold 'S^2'
         sage: df.at(p).display()
         df = 1/13 dx + 2/13 dy
         sage: df.at(p).parent()

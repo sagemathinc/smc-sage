@@ -2426,7 +2426,8 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: om = A.one_form('omega', r'\omega') ; om
             1-form 'omega' on the open subset 'A' of the 3-dimensional manifold 'M'
             sage: om.parent()
-            free module T^(0,1)(A) of type-(0,1) tensors fields on the open subset 'A' of the 3-dimensional manifold 'M'
+            Free module /\^1(A) of 1-forms on the open subset 'A' of the
+             3-dimensional manifold 'M'
 
         See the documentation of class
         :class:`~sage.geometry.manifolds.diffform.OneForm` for more examples.

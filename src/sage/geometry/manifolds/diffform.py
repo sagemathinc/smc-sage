@@ -1,14 +1,21 @@
 r"""
 Differential forms
 
-The class :class:`DiffForm` implements differential forms on differentiable 
-manifolds over `\RR`. 
+Let `S` and `M` be two differentiable manifolds over `\RR`. 
+Given a positive integer `p`, an open subset `U` of `S` and a
+differentiable mapping `\Phi: U \rightarrow V = \Phi(U) \subset M`,
+a *diffential form of degree* `p`, or *p-form*,
+*along* `U` *with values in* `V` is a field along `U` of alternating
+multilinear forms of degree `p` in the tangent spaces to `V`.  
+The standard case of a differential form *on* a manifold corresponds 
+to `\Phi=\mathrm{Id}`, `U=V` and `S=M`. 
 
-It is a subclass of :class:`TensorField`, differential forms being a special 
-type of tensor fields. 
+Two classes implement differential forms, depending whether the open
+set `V` is parallelizable:
 
-A subclass of :class:`DiffForm` is :class:`OneForm` for differential forms 
-of degree 1 (i.e. 1-forms). 
+* :class:`DiffFormParal` for the case where `V` is parallelizable
+* :class:`DiffForm` for the generic case, i.e. `V` not assumed
+  parallelizable.
 
 .. NOTE::
 
@@ -53,19 +60,23 @@ class DiffForm(TensorField):
     Differential form with values in an open subset of a differentiable
     manifold. 
 
-    An instance of this class is a field of alternating multilinear forms along 
-    an open subset `U` of some immersed  submanifold `S` of a manifold `M` with 
-    values in an open subset `V` of `M`. 
+    Given an open subset `U` of a manifold `S` and a differentiable mapping
+    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a manifold,
+    an instance of this class is a field of alternating multilinear forms
+    along `U` with values in `V`. 
     The standard case of a differential form *on* a manifold corresponds 
-    to `U=V` (and hence `S=M`).
+    to `\Phi=\mathrm{Id}`, `U=V` and `S=M`. 
 
-    If `V` is parallelizable, the class :class:`DiffFormParal` must be 
+    If `V=\Phi(U)` is parallelizable, the class :class:`DiffFormParal` must be 
     used instead.
+
+    This is a Sage *element* class, the corresponding *parent* class being
+    :class:`~sage.geometry.manifolds.diffform_module.DiffFormModule`.
 
     INPUT:
     
-    - ``vector_field_module`` -- module `\mathcal{X}(U,V)` of vector 
-      fields along `U` with values on `V`
+    - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector 
+      fields along `U` with values on `V=\Phi(U)`
     - ``degree`` -- the degree of the differential form (i.e. its tensor rank)
     - ``name`` -- (default: None) name given to the differential form
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the differential 
@@ -86,10 +97,10 @@ class DiffForm(TensorField):
         sage: a = M.diff_form(2, name='a') ; a
         2-form 'a' on the 2-dimensional manifold 'M'
         sage: a.parent()
-        module T^(0,2)(M) of type-(0,2) tensors fields on the 2-dimensional manifold 'M'
-    
+        Module /\^2(M) of 2-forms on the 2-dimensional manifold 'M'
+
     Setting the components of a::
-    
+
         sage: a[eU,0,1] = x*y^2 + 2*x
         sage: a.add_comp_by_continuation(eV, W, c_uv)
         sage: a.display(eU)
@@ -299,7 +310,7 @@ class OneForm(DiffForm):
         sage: a = M.one_form('a') ; a
         1-form 'a' on the 2-dimensional manifold 'M'
         sage: a.parent()
-        module T^(0,1)(M) of type-(0,1) tensors fields on the 2-dimensional manifold 'M'
+        Module /\^1(M) of 1-forms on the 2-dimensional manifold 'M'
 
     Setting the components of the 1-form in a consistent way::
 
@@ -382,16 +393,23 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     Differential form with values in a parallelizable open subset of a 
     differentiable manifold. 
 
-    An instance of this class is a field of alternating multilinear forms along 
-    an open subset `U` of some immersed  submanifold `S` of a manifold `M` with 
-    values in a parallelizable open subset `V` of `M`. 
+    Given an open subset `U` of a manifold `S` and a differentiable mapping
+    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a manifold,
+    such that `V` is parallelizable, an instance of this class is a field of
+    alternating multilinear forms along `U` with values in `V`. 
     The standard case of a differential form *on* a manifold corresponds 
-    to `U=V` (and hence `S=M`).
+    to `\Phi=\mathrm{Id}`, `U=V` and `S=M`. 
+
+    If `V=\Phi(U)` is not parallelizable, the class :class:`DiffForm` must
+    be used instead. 
+
+    This is a Sage *element* class, the corresponding *parent* class being
+    :class:`~sage.geometry.manifolds.diffform_module.DiffFormFreeModule`.
 
     INPUT:
     
-    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector 
-      fields along `U` with values on `V`
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector 
+      fields along `U` with values on `V=\Phi(U)`
     - ``degree`` -- the degree of the differential form (i.e. its tensor rank)
     - ``name`` -- (default: None) name given to the differential form
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the differential 
@@ -405,12 +423,12 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         sage: c_txyz.<t,x,y,z> = M.chart()
         sage: a = M.diff_form(2, 'a') ; a
         2-form 'a' on the 4-dimensional manifold 'M'
+        sage: a.parent()
+        Free module /\^2(M) of 2-forms on the 4-dimensional manifold 'M'
         
     A differential form is a tensor field of purely covariant type::
     
-        sage: a.parent()
-        free module T^(0,2)(M) of type-(0,2) tensors fields on the 4-dimensional manifold 'M'
-        sage: a._tensor_type  
+        sage: a.tensor_type() 
         (0, 2)
 
     It is antisymmetric, its components being instances of class 
@@ -949,8 +967,8 @@ class OneFormParal(DiffFormParal):
         sage: isinstance(om, sage.geometry.manifolds.diffform.DiffFormParal)
         True
         sage: om.parent()
-        free module T^(0,1)(M) of type-(0,1) tensors fields on the 3-dimensional manifold 'M'
-        sage: om._tensor_type
+        Free module /\^1(M) of 1-forms on the 3-dimensional manifold 'M'
+        sage: om.tensor_type()
         (0, 1)
         
     Setting the components w.r.t. the manifold's default frame::

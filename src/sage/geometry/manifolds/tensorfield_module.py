@@ -184,6 +184,7 @@ class TensorFieldModule(UniqueRepresentation, Parent):
                         # (since new components are initialized to zero)
             return self._zero_element
         if isinstance(comp, TensorField):
+            # coercion by domain restriction
             if self._tensor_type == comp._tensor_type and \
                self._domain.is_subset(comp._domain) and \
                self._ambient_domain.is_subset(comp._ambient_domain):
@@ -238,7 +239,8 @@ class TensorFieldModule(UniqueRepresentation, Parent):
                    self._domain.is_subset(other._domain) and \
                    self._ambient_domain.is_subset(other._ambient_domain)
         if isinstance(other, DiffFormModule):
-            return self._vmodule is other._vmodule and \
+            # coercion of p-forms to type-(0,p) tensor fields
+            return self._vmodule is other.base_module() and \
                                        self._tensor_type == (0, other.degree())
         return False
 
@@ -414,13 +416,32 @@ class TensorFieldFreeModule(TensorFreeModule):
         if comp == 0:
             return self._zero_element
         if isinstance(comp, TensorField):
+            # coercion by domain restriction
             if self._tensor_type == comp._tensor_type and \
                self._domain.is_subset(comp._domain) and \
                self._ambient_domain.is_subset(comp._ambient_domain):
                 return comp.restrict(self._domain)
             else:
-                raise TypeError("Cannot coerce the " + str(comp) +
-                                "to a tensor field in " + str(self))
+                raise TypeError("cannot coerce the {}".format(comp) +
+                                " to an element of {}".format(self))
+        if isinstance(comp, DiffFormParal):
+            # coercion of a p-form to a type-(0,p) tensor field:
+            form = comp # for readability
+            p = form.degree()
+            if self._tensor_type != (0,p) or \
+                                           self._fmodule != form.base_module():
+                raise TypeError("cannot coerce the {}".format(form) +
+                                " to an element of {}".format(self))
+            if p == 1:
+                asym = None
+            else:
+                asym = range(p)
+            resu = self.element_class(self._fmodule, (0,p), name=form._name,
+                                      latex_name=form._latex_name,
+                                      antisym=asym)
+            for frame, comp in form._components.iteritems():
+                resu._components[frame] = comp.copy()
+        # Standard construction
         resu = self.element_class(self._fmodule, self._tensor_type, name=name,
                                   latex_name=latex_name, sym=sym,
                                   antisym=antisym)
@@ -435,12 +456,17 @@ class TensorFieldFreeModule(TensorFreeModule):
         Determine whether coercion to ``self`` exists from other parent.
         
         """
+        from diffform_module import DiffFormFreeModule
         if isinstance(other, (TensorFieldModule, TensorFieldFreeModule)):
+            # coercion by domain restriction
             return self._tensor_type == other._tensor_type and \
                    self._domain.is_subset(other._domain) and \
                    self._ambient_domain.is_subset(other._ambient_domain)
-        else:
-            return False
+        if isinstance(other, DiffFormFreeModule):
+            # coercion of p-forms to type-(0,p) tensor fields
+            return self._fmodule is other.base_module() and \
+                                       self._tensor_type == (0, other.degree())
+        return False
 
     #### End of parent methods
 

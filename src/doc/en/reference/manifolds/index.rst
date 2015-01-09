@@ -10,7 +10,7 @@ More documentation (in particular example worksheets) can be found
    :maxdepth: 2
 
    manifold
-   
+
    sage/geometry/manifolds/tangentspace
 
    sage/geometry/manifolds/diffmapping
@@ -22,13 +22,13 @@ More documentation (in particular example worksheets) can be found
    vectorfield
 
    tensorfield
-         
-   sage/geometry/manifolds/diffform
+
+   diffform
 
    sage/geometry/manifolds/metric
 
    sage/geometry/manifolds/connection
-   
+
 .. include:: ../footer.txt
 
 

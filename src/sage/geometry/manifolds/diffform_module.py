@@ -1,11 +1,12 @@
 r"""
 Differential form modules
 
-The set of differential forms along an open subset `U` of some manifold `S`
-with values in a open subset `V` of a manifold `M` (possibly `S=M` and `U=V`)
-is a module over the algebra `C^\infty(U)` of differentiable scalar fields
-on `U`. It is a free module iff `V` is parallelizable.
-Accordingly, two classes are devoted to differential form modules:
+The set `\Lambda^p(U,\Phi)` of `p`-forms along an open subset `U` of
+some manifold `S` with values in a open subset `V=\Phi(U)` of a manifold `M`
+(`\Phi` being a differentiable mapping `U\rightarrow M`; possibly
+`\Phi=\mathrm{Id}`, `S=M` and `U=V`) is a module over the algebra `C^\infty(U)`
+of differentiable scalar fields on `U`. It is a free module iff `V` is
+parallelizable. Accordingly, two classes are implementing `\Lambda^p(U,\Phi)`:
 
 - :class:`DiffFormModule` for differential forms with values in a generic (in
   practice, not parallelizable) open set `V`
@@ -35,21 +36,26 @@ from tensorfield import TensorField, TensorFieldParal
 
 class DiffFormModule(UniqueRepresentation, Parent):
     r"""
-    Module of differential forms of a given degree `p` along an open subset `U`
-    of some manifold `S` with values in a open subset `V` of a manifold `M`.
+    Module of differential forms of a given degree `p` (`p`-forms) along an
+    open subset `U` of some manifold `S` with values in an open subset `V` of
+    a manifold `M`.
 
-    This is a module over `C^\infty(U)`, the ring (algebra) of differentiable
-    scalar fields on `U`.
-
-    The standard case of differential forms *on* a manifold corresponds to
-    `U=V` (and hence `S=M`). Another common case is `\Phi` being an
+    Given an open subset `U` of a manifold `S` and a differentiable mapping
+    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a differentiable
+    manifold, the set `\Lambda^p(U,\Phi)` of `p`-forms along `U` with values
+    in `V` is a module over `C^\infty(U)`, the commutative algebra of
+    differentiable scalar fields on `U`.
+    The standard case of `p`-forms *on* a manifold corresponds to
+    `\Phi=\mathrm{Id}`, `U=V` and `S=M`. Another common case is `\Phi` being an
     immersion.
 
-    If `V` is parallelizable, the class :class:`DiffFormFreeModule` should
-    be used instead.
-
+    This class implements `\Lambda^p(U,\Phi)` in the case where `V=\Phi(U)` is
+    not assumed to be parallelizable; the module `\Lambda^p(U,\Phi)` is then
+    not necessarily free. If `V` is parallelizable, the class
+    :class:`DiffFormFreeModule` must be used instead. 
+    
     This is a Sage *parent* class, whose *element* class is
-    :class:`~sage.tensor.geometry.manifolds.DiffForm`.
+    :class:`~sage.geometry.manifolds.diffform.DiffForm`.
 
     INPUT:
 
@@ -206,19 +212,25 @@ class DiffFormModule(UniqueRepresentation, Parent):
 
 class DiffFormFreeModule(ExtPowerFreeModule):
     r"""
-    Module of differential forms of a given degree `p` along an open subset `U`
-    of some manifold `S` with values in a parallelizable open subset `V` of
-    a manifold `M`.
+    Module of differential forms of a given degree `p` (`p`-forms) along an
+    open subset `U` of some manifold `S` with values in a parallelizable open
+    subset `V` of a manifold `M`.
 
-    Since `V` is parallelizable, the module is a free module over `C^\infty(U)`,
-    the ring (algebra) of differentiable scalar fields on `U`.
-
-    The standard case of differential forms *on* a manifold corresponds to
-    `U=V` (and hence `S=M`). Another common case is `\Phi` being an
+    Given an open subset `U` of a manifold `S` and a differentiable mapping
+    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a differentiable
+    manifold, the set `\Lambda^p(U,\Phi)` of `p`-forms along `U` with values
+    in `V` is a module over `C^\infty(U)`, the commutative algebra of
+    differentiable scalar fields on `U`.
+    The standard case of `p`-forms *on* a manifold corresponds to
+    `\Phi=\mathrm{Id}`, `U=V` and `S=M`. Another common case is `\Phi` being an
     immersion.
 
+    This class implements `\Lambda^p(U,\Phi)` in the case where `V=\Phi(U)` is
+    parallelizable; `\Lambda^p(U,\Phi)` is then a *free* module. If `V` is not
+    parallelizable, the class :class:`DiffFormModule` must be used instead. 
+    
     This is a Sage *parent* class, whose *element* class is
-    :class:`~sage.tensor.geometry.manifolds.DiffFormParal`.
+    :class:`~sage.geometry.manifolds.diffform.DiffFormParal`.
 
     INPUT:
 

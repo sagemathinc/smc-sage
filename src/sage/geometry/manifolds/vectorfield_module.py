@@ -440,11 +440,8 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         for further documentation.
 
         """
-        from diffform import DiffForm, OneForm
-        if degree == 1:
-            return OneForm(self, name=name, latex_name=latex_name)
-        else:
-            return DiffForm(self, degree, name=name, latex_name=latex_name)
+        return self.dual_exterior_power(degree).element_class(self, degree,
+                                              name=name, latex_name=latex_name)
 
     def linear_form(self, name=None, latex_name=None):
         r"""
@@ -473,8 +470,8 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
 
         """
-        from diffform import OneForm
-        return OneForm(self, name=name, latex_name=latex_name)
+        return self.dual_exterior_power(1).element_class(self, 1, name=name,
+                                                         latex_name=latex_name)
 
     def endomorphism(self, name=None, latex_name=None):
         r"""
@@ -1173,71 +1170,6 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         resu._components[comp._frame] = comp
         #
         return resu
-
-    def alternating_form(self, degree, name=None, latex_name=None):
-        r"""
-        Construct an alternating form on the free module.
-
-        INPUT:
-
-        - ``degree`` -- the degree of the alternating form (i.e. its tensor rank)
-        - ``name`` -- (string; default: None) name given to the alternating
-          form
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
-          alternating form; if none is provided, the LaTeX symbol is set to
-          ``name``
-
-        OUTPUT:
-
-        - instance of
-          :class:`~sage.geometry.manifolds.diffform.DiffFormParal`
-          (``degree`` > 1) or
-          :class:`~sage.geometry.manifolds.diffform.OneFormParal`
-          (``degree`` = 1)
-
-        EXAMPLES:
-
-
-        See
-        :class:`~sage.geometry.manifolds.diffform.DiffFormParal`
-        for further documentation.
-
-        """
-        from diffform import DiffFormParal, OneFormParal
-        if degree == 1:
-            return OneFormParal(self, name=name, latex_name=latex_name)
-        else:
-            return DiffFormParal(self, degree, name=name,
-                                 latex_name=latex_name)
-
-
-    def linear_form(self, name=None, latex_name=None):
-        r"""
-        Construct a linear form on the free module.
-
-        A linear form on the vector free module ``self`` is actually a field
-        of linear forms (i.e. a 1-form) along the open subset `U` on which
-        ``self`` is defined.
-
-        INPUT:
-
-        - ``name`` -- (string; default: None) name given to the linear
-          form
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
-          linear form; if none is provided, the LaTeX symbol is set to
-          ``name``
-
-        OUTPUT:
-
-        - instance of
-          :class:`~sage.geometry.manifolds.diffform.OneFormParal`
-
-        EXAMPLES:
-
-
-        """
-        from diffform import OneFormParal
-        return OneFormParal(self, name=name, latex_name=latex_name)
 
     def endomorphism(self, name=None, latex_name=None):
         r"""
