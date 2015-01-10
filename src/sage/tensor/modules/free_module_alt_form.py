@@ -529,11 +529,11 @@ class FreeModuleAltForm(FreeModuleTensor):
 
     def wedge(self, other):
         r"""
-        Exterior product of ``self`` with another alternating form ``other``.
+        Exterior product of ``self`` with the alternating form ``other``.
 
         INPUT:
 
-        - ``other`` -- another alternating form
+        - ``other`` -- an alternating form
 
         OUTPUT:
 

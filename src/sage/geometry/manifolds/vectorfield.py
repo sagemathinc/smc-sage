@@ -9,6 +9,14 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2013, 2014) : initial version
 
+REFERENCES:
+
+- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
+  Interscience Publishers (New York, 1963)
+- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
+  2013)
+- B O'Neill : "Semi-Riemannian Geometry", Academic Press (San Diego, 1983)
+
 """
 
 #******************************************************************************
@@ -280,7 +288,8 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
         [1, 4, 9]
 
     The components are also read on the expansion on the frame 'e', as provided
-    by the method :meth:`display`::
+    by the method
+    :meth:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor.display`::
 
         sage: v.display()   # displays the expansion on the manifold's default frame (e)
         V = e_0 + 4 e_1 + 9 e_2

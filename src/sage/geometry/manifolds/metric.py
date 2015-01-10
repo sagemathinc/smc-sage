@@ -23,6 +23,13 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2013, 2014) : initial version
 
+REFERENCES:
+
+- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
+  Interscience Publishers (New York, 1963)
+- J.M. Lee : "Riemannian Manifolds", Springer (New York, 1997)
+- B O'Neill : "Semi-Riemannian Geometry", Academic Press (San Diego, 1983)
+
 """
 #******************************************************************************
 #       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>

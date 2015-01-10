@@ -18,6 +18,14 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
 
+REFERENCES:
+
+- J.M. Lee : "Introduction to Topological Manifolds", 2nd ed., Springer (New
+  York, 2011)
+- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
+  2013)
+
+
 EXAMPLES:
 
 Two subsets on a manifold::
@@ -2396,7 +2404,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         r"""
         Define a 1-form on ``self``.
 
-        See :class:`~sage.geometry.manifolds.diffform.OneForm` for a complete
+        See :class:`~sage.geometry.manifolds.diffform.DiffForm` for a complete
         documentation.
 
         INPUT:
@@ -2413,7 +2421,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         OUTPUT:
 
         - the 1-form, as an instance of
-          :class:`~sage.geometry.manifolds.diffform.OneForm`
+          :class:`~sage.geometry.manifolds.diffform.DiffForm`
 
         EXAMPLE:
 
@@ -2430,7 +2438,7 @@ class ManifoldOpenSubset(ManifoldSubset):
              3-dimensional manifold 'M'
 
         See the documentation of class
-        :class:`~sage.geometry.manifolds.diffform.OneForm` for more examples.
+        :class:`~sage.geometry.manifolds.diffform.DiffForm` for more examples.
 
         """
         vmodule = self.vector_field_module(dest_map)

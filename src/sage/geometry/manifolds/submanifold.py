@@ -19,6 +19,13 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
 
+REFERENCES:
+
+- M. Berger & B. Gostiaux: "Geometrie differentielle, varietes, courbes et
+  surfaces", Presses Universitaires de France (Paris, 1987)
+- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
+  2013)
+
 """
 
 #******************************************************************************

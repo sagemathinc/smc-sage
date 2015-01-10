@@ -39,6 +39,13 @@ AUTHORS:
   above note), which inspired the storage of the non-zero components as a 
   dictionary whose keys are the indices.
 
+REFERENCES:
+
+- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
+  Interscience Publishers (New York, 1963)
+- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
+  2013)
+
 """
 
 #******************************************************************************
@@ -107,9 +114,88 @@ class DiffForm(TensorField):
         a = (x*y^2 + 2*x) dx/\dy
         sage: a.display(eV)
         a = (-1/16*u^3 + 1/16*u*v^2 - 1/16*v^3 + 1/16*(u^2 - 8)*v - 1/2*u) du/\dv
+
+    A 1-form on M::
+
+        sage: a = M.one_form('a') ; a
+        1-form 'a' on the 2-dimensional manifold 'M'
+        sage: a.parent()
+        Module /\^1(M) of 1-forms on the 2-dimensional manifold 'M'
+
+    Setting the components of the 1-form in a consistent way::
+
+        sage: a[eU,:] = [-y, x]
+        sage: a.add_comp_by_continuation(eV, W, c_uv)
+        sage: a.display(eU)
+        a = -y dx + x dy
+        sage: a.display(eV)
+        a = 1/2*v du - 1/2*u dv
+
+    The exterior derivative of the 1-form is a 2-form::
+    
+        sage: da = a.exterior_der() ; da
+        2-form 'da' on the 2-dimensional manifold 'M'
+        sage: da.display(eU)
+        da = 2 dx/\dy
+        sage: da.display(eV)
+        da = -du/\dv
+
+    Another 1-form::
         
+        sage: b = M.one_form('b')
+        sage: b[eU,:] = [1+x*y, x^2]
+        sage: b.add_comp_by_continuation(eV, W, c_uv)
+
+    Adding two 1-forms results in another 1-form::
+    
+        sage: s = a + b ; s
+        1-form 'a+b' on the 2-dimensional manifold 'M'
+        sage: s.display(eU)
+        a+b = ((x - 1)*y + 1) dx + (x^2 + x) dy
+        sage: s.display(eV)
+        a+b = (1/4*u^2 + 1/4*(u + 2)*v + 1/2) du + (-1/4*u*v - 1/4*v^2 - 1/2*u + 1/2) dv
+
+    The exterior product of two 1-forms is a 2-form::
+    
+        sage: s = a.wedge(b) ; s
+        2-form 'a/\b' on the 2-dimensional manifold 'M'
+        sage: s.display(eU)
+        a/\b = (-2*x^2*y - x) dx/\dy
+        sage: s.display(eV)
+        a/\b = (1/8*u^3 - 1/8*u*v^2 - 1/8*v^3 + 1/8*(u^2 + 2)*v + 1/4*u) du/\dv
+    
+    Multiplying a 1-form by a scalar field results in another 1-form::
+    
+        sage: f = M.scalar_field({c_xy: (x+y)^2, c_uv: u^2}, name='f')
+        sage: s = f*a ; s
+        1-form on the 2-dimensional manifold 'M'
+        sage: s.display(eU)
+        (-x^2*y - 2*x*y^2 - y^3) dx + (x^3 + 2*x^2*y + x*y^2) dy
+        sage: s.display(eV)
+        1/2*u^2*v du - 1/2*u^3 dv
+
     """
     def __init__(self, vector_field_module, degree, name=None, latex_name=None):
+        r"""
+        Construct a differential form.
+
+        TEST::
+
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V') 
+            sage: M.declare_union(U,V)   # M is the union of U and V
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+            sage: transf = c_xy.transition_map(c_uv, (x+y, x-y),
+            ....:  intersection_name='W', restrictions1= x>0,
+            ....:  restrictions2= u+v>0)
+            sage: inv = transf.inverse()
+            sage: W = U.intersection(V)
+            sage: eU = c_xy.frame() ; eV = c_uv.frame()
+            sage: a = M.diff_form(2, name='a') ; a
+            sage: a[eU,0,1] = x*y^2 + 2*x
+            sage: a.add_comp_by_continuation(eV, W, c_uv)
+
+        """
         TensorField.__init__(self, vector_field_module, (0,degree), name=name, 
                              latex_name=latex_name, antisym=range(degree),
                         parent=vector_field_module.dual_exterior_power(degree))
@@ -273,121 +359,6 @@ class DiffForm(TensorField):
 
 #******************************************************************************
 
-class OneForm(DiffForm):
-    r"""
-    1-form with values in an open subset of a differentiable 
-    manifold. 
-
-    An instance of this class is a field of linear forms along an open subset 
-    `U` of some immersed  submanifold `S` of a manifold `M` with values in an 
-    open subset `V` of `M`. 
-    The standard case of a 1-form *on* a manifold corresponds to `U=V` 
-    (and hence `S=M`).
-
-    If `V` is parallelizable, the class :class:`OneFormParal` must be 
-    used instead.
-
-    INPUT:
-    
-    - ``vector_field_module`` -- module `\mathcal{X}(U,V)` of vector 
-      fields along `U` with values on `V`
-    - ``name`` -- (default: None) name given to the 1-form
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the 1-form; 
-      if none is provided, the LaTeX symbol is set to ``name``
-
-    EXAMPLES:
-
-    1-form on a non-parallelizable 2-dimensional manifold::
-
-        sage: M = Manifold(2, 'M')
-        sage: U = M.open_subset('U') ; V = M.open_subset('V') 
-        sage: M.declare_union(U,V)   # M is the union of U and V
-        sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
-        sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
-        sage: inv = transf.inverse()
-        sage: W = U.intersection(V)
-        sage: eU = c_xy.frame() ; eV = c_uv.frame()
-        sage: a = M.one_form('a') ; a
-        1-form 'a' on the 2-dimensional manifold 'M'
-        sage: a.parent()
-        Module /\^1(M) of 1-forms on the 2-dimensional manifold 'M'
-
-    Setting the components of the 1-form in a consistent way::
-
-        sage: a[eU,:] = [-y, x]
-        sage: a.add_comp_by_continuation(eV, W, c_uv)
-        sage: a.display(eU)
-        a = -y dx + x dy
-        sage: a.display(eV)
-        a = 1/2*v du - 1/2*u dv
-
-    The exterior derivative of the 1-form is a 2-form::
-    
-        sage: da = a.exterior_der() ; da
-        2-form 'da' on the 2-dimensional manifold 'M'
-        sage: da.display(eU)
-        da = 2 dx/\dy
-        sage: da.display(eV)
-        da = -du/\dv
-
-    Another 1-form::
-        
-        sage: b = M.one_form('b')
-        sage: b[eU,:] = [1+x*y, x^2]
-        sage: b.add_comp_by_continuation(eV, W, c_uv)
-
-    Adding two 1-forms results in another 1-form::
-    
-        sage: s = a + b ; s
-        1-form 'a+b' on the 2-dimensional manifold 'M'
-        sage: s.display(eU)
-        a+b = ((x - 1)*y + 1) dx + (x^2 + x) dy
-        sage: s.display(eV)
-        a+b = (1/4*u^2 + 1/4*(u + 2)*v + 1/2) du + (-1/4*u*v - 1/4*v^2 - 1/2*u + 1/2) dv
-
-    The exterior product of two 1-forms is a 2-form::
-    
-        sage: s = a.wedge(b) ; s
-        2-form 'a/\b' on the 2-dimensional manifold 'M'
-        sage: s.display(eU)
-        a/\b = (-2*x^2*y - x) dx/\dy
-        sage: s.display(eV)
-        a/\b = (1/8*u^3 - 1/8*u*v^2 - 1/8*v^3 + 1/8*(u^2 + 2)*v + 1/4*u) du/\dv
-    
-    Multiplying a 1-form by a scalar field results in another 1-form::
-    
-        sage: f = M.scalar_field({c_xy: (x+y)^2, c_uv: u^2}, name='f')
-        sage: s = f*a ; s
-        1-form on the 2-dimensional manifold 'M'
-        sage: s.display(eU)
-        (-x^2*y - 2*x*y^2 - y^3) dx + (x^3 + 2*x^2*y + x*y^2) dy
-        sage: s.display(eV)
-        1/2*u^2*v du - 1/2*u^3 dv
-
-    """
-    def __init__(self, vector_field_module, name=None, latex_name=None):
-        DiffForm.__init__(self, vector_field_module, 1, name=name, 
-                                                         latex_name=latex_name)
-        
-    def _repr_(self):
-        r"""
-        String representation of the object.
-        """
-        description = "1-form "
-        if self._name is not None:
-            description += "'%s' " % self._name
-        return self._final_repr(description)
-
-    def _new_instance(self):
-        r"""
-        Create an instance of the same class on the same domain. 
-        """
-        return self.__class__(self._vmodule)
-
-
-
-#******************************************************************************
-
 class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     r"""
     Differential form with values in a parallelizable open subset of a 
@@ -455,7 +426,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         sage: a[1,2] = 3  # OK
 
     The expansion of a differential form with respect to a given coframe is 
-    displayed via the method :meth:`display`::
+    displayed via the method
+    :meth:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm.display`::
     
         sage: a.display() # expansion with respect to the default coframe (dt, dx, dy, dz)
         a = 2 dt/\dx + 3 dx/\dy
@@ -517,8 +489,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         sage: eps.display(c_spher.frame(), c_spher)
         epsilon = r^2*sin(th) dr/\dth/\dph
        
-    The exterior product of two differential forms is performed via the method 
-    :meth:`~sage.tensor.modules.free_module_alt_form.wedge`::
+    The exterior product of two differential forms is performed via the method
+    :meth:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm.wedge`::
     
         sage: a = M.one_form('A')
         sage: a[:] = (x*y*z, -z*x, y*z)
@@ -582,9 +554,90 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     
         sage: ab.lie_der(v) == v.contract(0, ab.exterior_der(), 0) + (v.contract(0,ab,0)).exterior_der() 
         True
+
+    A 1-form on a `\RR^3`::
     
+        sage: om = M.one_form('omega', r'\omega') ; om  
+        1-form 'omega' on the 3-dimensional manifold 'R3'
+
+    A 1-form is of course a differential form::
+    
+        sage: isinstance(om, sage.geometry.manifolds.diffform.DiffFormParal)
+        True
+        sage: om.parent()
+        Free module /\^1(R3) of 1-forms on the 3-dimensional manifold 'R3'
+        sage: om.tensor_type()
+        (0, 1)
+        
+    Setting the components w.r.t. the manifold's default frame::
+    
+        sage: om[:] = (2*z, x, x-y)
+        sage: om[:]
+        [2*z, x, x - y]
+        sage: om.display()
+        omega = 2*z dx + x dy + (x - y) dz
+        
+    A 1-form acts on vector fields::
+    
+        sage: v = M.vector_field('V')
+        sage: v[:] = (x, 2*y, 3*z)
+        sage: om(v)
+        scalar field 'omega(V)' on the 3-dimensional manifold 'R3'
+        sage: om(v).display()
+        omega(V): R3 --> R
+           (x, y, z) |--> 2*x*y + (5*x - 3*y)*z
+        sage: latex(om(v))
+        \omega\left(V\right)
+
+    The tensor product of two 1-forms is a tensor field of type (0,2)::
+    
+        sage: a = M.one_form('A')                       
+        sage: a[:] = (1, 2, 3)                          
+        sage: b = M.one_form('B')
+        sage: b[:] = (6, 5, 4)
+        sage: c = a*b ; c       
+        tensor field 'A*B' of type (0,2) on the 3-dimensional manifold 'R3'
+        sage: c[:]
+        [ 6  5  4]
+        [12 10  8]
+        [18 15 12]
+        sage: c.symmetries()    # c has no symmetries:
+        no symmetry;  no antisymmetry
+        
+    The exterior product of two 1-forms is a 2-form::
+    
+        sage: d = a.wedge(b) ; d
+        2-form 'A/\B' on the 3-dimensional manifold 'R3'
+        sage: d[:]
+        [  0  -7 -14]
+        [  7   0  -7]
+        [ 14   7   0]
+        sage: d.symmetries()
+        no symmetry;  antisymmetry: (0, 1)
+
+    We can check the standard formula relating the exterior product to the
+    tensor product::
+    
+        sage: a.wedge(b) == a*b - b*a
+        True
+
     """
     def __init__(self, vector_field_module, degree, name=None, latex_name=None):
+        r"""
+        Construct a differential form.
+
+        TEST::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: a = M.diff_form(2, name='a') ; a
+            2-form 'a' on the 2-dimensional manifold 'M'
+            sage: a.parent()
+            Free module /\^2(M) of 2-forms on the 2-dimensional manifold 'M'
+            sage: a[0,1] = x*y
+            sage: TestSuite(a).run()
+
+        """
         FreeModuleAltForm.__init__(self, vector_field_module, degree, 
                                    name=name, latex_name=latex_name)
         # TensorFieldParal attributes:
@@ -931,115 +984,3 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         resu.set_name(name=format_unop_txt('*', self._name),
                      latex_name=format_unop_latex(r'\star ', self._latex_name))
         return resu
-        
-#******************************************************************************
-
-class OneFormParal(DiffFormParal):
-    r"""
-    1-form with values in a parallelizable open subset of a differentiable 
-    manifold. 
-
-    An instance of this class is a field of linear forms along an open subset 
-    `U` of some immersed  submanifold `S` of a manifold `M` with values in a 
-    parallelizable open subset `V` of `M`. 
-    The standard case of a 1-form *on* a manifold corresponds to `U=V` 
-    (and hence `S=M`).
-   
-    INPUT:
-    
-    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector 
-      fields along `U` with values on `V`
-    - ``name`` -- (default: None) name given to the 1-form
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the 1-form; 
-      if none is provided, the LaTeX symbol is set to ``name``
-
-    EXAMPLES:
-    
-    A 1-form on a 3-dimensional manifold::
-    
-        sage: M = Manifold(3, 'M')                      
-        sage: c_xyz.<x,y,z> = M.chart()
-        sage: om = M.one_form('omega', r'\omega') ; om  
-        1-form 'omega' on the 3-dimensional manifold 'M'
-
-    A 1-form is of course a differential form::
-    
-        sage: isinstance(om, sage.geometry.manifolds.diffform.DiffFormParal)
-        True
-        sage: om.parent()
-        Free module /\^1(M) of 1-forms on the 3-dimensional manifold 'M'
-        sage: om.tensor_type()
-        (0, 1)
-        
-    Setting the components w.r.t. the manifold's default frame::
-    
-        sage: om[:] = (2*z, x, x-y)
-        sage: om[:]
-        [2*z, x, x - y]
-        sage: om.display()
-        omega = 2*z dx + x dy + (x - y) dz
-        
-    A 1-form acts on vector fields::
-    
-        sage: v = M.vector_field('V')
-        sage: v[:] = (x, 2*y, 3*z)
-        sage: om(v)
-        scalar field 'omega(V)' on the 3-dimensional manifold 'M'
-        sage: om(v).display()
-        omega(V): M --> R
-           (x, y, z) |--> 2*x*y + (5*x - 3*y)*z
-        sage: latex(om(v))
-        \omega\left(V\right)
-
-    The tensor product of two 1-forms is a tensor field of type (0,2)::
-    
-        sage: a = M.one_form('A')                       
-        sage: a[:] = (1, 2, 3)                          
-        sage: b = M.one_form('B')
-        sage: b[:] = (6, 5, 4)
-        sage: c = a*b ; c       
-        tensor field 'A*B' of type (0,2) on the 3-dimensional manifold 'M'
-        sage: c[:]
-        [ 6  5  4]
-        [12 10  8]
-        [18 15 12]
-        sage: c.symmetries()    # c has no symmetries:
-        no symmetry;  no antisymmetry
-        
-    The exterior product of two 1-forms is a 2-form::
-    
-        sage: d = a.wedge(b) ; d
-        2-form 'A/\B' on the 3-dimensional manifold 'M'
-        sage: d[:]
-        [  0  -7 -14]
-        [  7   0  -7]
-        [ 14   7   0]
-        sage: d.symmetries()
-        no symmetry;  antisymmetry: (0, 1)
-
-    We can check the standard formula relating the exterior product to the
-    tensor product::
-    
-        sage: a.wedge(b) == a*b - b*a
-        True
-
-    """
-    def __init__(self, vector_field_module, name=None, latex_name=None):
-        DiffFormParal.__init__(self, vector_field_module, 1, name=name,
-                               latex_name=latex_name)
-
-    def _repr_(self):
-        r"""
-        String representation of the object.
-        """
-        description = "1-form "
-        if self._name is not None:
-            description += "'%s' " % self._name
-        return self._final_repr(description)
-
-    def _new_instance(self):
-        r"""
-        Create an instance of the same class on the same domain. 
-        """
-        return self.__class__(self._fmodule)
-

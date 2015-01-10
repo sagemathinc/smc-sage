@@ -4,6 +4,12 @@ Tangent spaces
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
+
+REFERENCES:
+
+- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
+  2013)
+
 """
 
 #******************************************************************************

@@ -17,6 +17,13 @@ AUTHORS:
 
 - Eric Gourgoulhon (2015): initial version
 
+REFERENCES:
+
+- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
+  Interscience Publishers (New York, 1963)
+- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
+  2013)
+
 """
 #******************************************************************************
 #       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
@@ -238,6 +245,148 @@ class DiffFormFreeModule(ExtPowerFreeModule):
       fields along `U` associated with the mapping `\Phi:\; U \rightarrow V`.
     - ``degree`` -- positive integer; the degree `p` of the differential forms
 
+    EXEMPLE:
+
+    Free module of 2-forms on a parallelizable 3-dimensional manifold::
+
+        sage: M = Manifold(3, 'M')
+        sage: X.<x,y,z> = M.chart()
+        sage: XM = M.vector_field_module() ; XM
+        free module X(M) of vector fields on the 3-dimensional manifold 'M'
+        sage: from sage.geometry.manifolds.diffform_module import DiffFormFreeModule
+        sage: A = DiffFormFreeModule(XM, 2) ; A
+        Free module /\^2(M) of 2-forms on the 3-dimensional manifold 'M'
+        sage: type(A)
+        <class 'sage.geometry.manifolds.diffform_module.DiffFormFreeModule_with_category'>
+        sage: latex(A)
+        \Lambda^{2}\left(M\right)
+
+    Instead of importing DiffFormFreeModule in the global name space, it is
+    recommended to use the method
+    :meth:`~sage.geometry.manifolds.domain.ManifoldOpenSubset.diff_form_module`::
+
+        sage: A = M.diff_form_module(2) ; A
+        Free module /\^2(M) of 2-forms on the 3-dimensional manifold 'M'
+
+    Modules of differential forms have a unique representation::
+
+        sage: A is DiffFormFreeModule(XM, 2)
+        True
+        sage: A is M.diff_form_module(2)
+        True
+
+    A is a module over the algebra `C^\infty(M)` of (smooth) scalar fields
+    on M::
+    
+        sage: A.category()
+        Category of modules over algebra of scalar fields on the 3-dimensional
+         manifold 'M'
+        sage: CM = M.scalar_field_algebra() ; CM
+        algebra of scalar fields on the 3-dimensional manifold 'M'
+        sage: A in Modules(CM)
+        True
+        sage: A.base_ring()
+        algebra of scalar fields on the 3-dimensional manifold 'M'
+        sage: A.base_module()
+        free module X(M) of vector fields on the 3-dimensional manifold 'M'
+        sage: A.base_module() is XM
+        True
+        sage: A.rank()
+        3
+        
+    A is a *parent* object, whose elements are 2-forms, represented by
+    instances of the class
+    :class:`~sage.geometry.manifolds.diffform.DiffFormParal`::
+
+        sage: A.Element
+        <class 'sage.geometry.manifolds.diffform.DiffFormParal'>
+        sage: a = A.an_element() ; a 
+        2-form on the 3-dimensional manifold 'M'
+        sage: a.display()
+        2 dx/\dy
+        sage: type(a)
+        <class 'sage.geometry.manifolds.diffform.DiffFormFreeModule_with_category.element_class'>
+        sage: a in A
+        True
+        sage: A.is_parent_of(a)
+        True
+
+    Elements can be constructed from A. In particular, 0 yields the zero
+    element of A::
+
+        sage: A(0)
+        2-form 'zero' on the 3-dimensional manifold 'M'
+        sage: A(0) is A.zero()
+        True
+
+    while non-zero elements are constructed by providing their components in a
+    given vector frame::
+
+        sage: comp = [[0,3*x,-z],[-3*x,0,4],[z,-4,0]]
+        sage: a = A(comp, frame=X.frame(), name='a') ; a
+        2-form 'a' on the 3-dimensional manifold 'M'
+        sage: a.display()
+        a = 3*x dx/\dy - z dx/\dz + 4 dy/\dz
+
+    An alternative is to construct the 2-form from an empty list of
+    components and to set the nonzero nonredundant components afterwards::
+
+        sage: a = A([], name='a')
+        sage: a[0,1] = 3*x  # component in the manifold's default frame
+        sage: a[0,2] = -z
+        sage: a[1,2] = 4
+        sage: a.display()
+        a = 3*x dx/\dy - z dx/\dz + 4 dy/\dz
+
+    The module `\Lambda^1(M)` is nothing but the dual of `\mathcal{X}(M)` (the
+    free module of vector fields on `M`)::
+
+        sage: L1 = M.diff_form_module(1) ; L1
+        Free module /\^1(M) of 1-forms on the 3-dimensional manifold 'M'
+        sage: L1 is XM.dual()
+        True
+
+    Since any tensor field of type (0,1) is a 1-form, there is a coercion map
+    from the set `T^{(0,1)}(M)` of such tensors to `\Lambda^1(M)`::
+
+        sage: T01 = M.tensor_field_module((0,1)) ; T01
+        free module T^(0,1)(M) of type-(0,1) tensors fields on the
+         3-dimensional manifold 'M'
+
+    There is also a coercion map in the reverse direction:: 
+
+        sage: T01.has_coerce_map_from(L1)
+        True
+
+    For a degree `p\geq 2`, the coercion holds only in the direction
+    `\Lambda^p(M)\rightarrow T^{(0,p)}(M)`::
+
+        sage: T02 = M.tensor_field_module((0,2)) ; T02
+        free module T^(0,2)(M) of type-(0,2) tensors fields on the
+         3-dimensional manifold 'M'
+        sage: T02.has_coerce_map_from(A)
+        True
+        sage: A.has_coerce_map_from(T02)
+        False
+
+    The coercion map `T^{(0,1)}(M) \rightarrow \Lambda^1(M)` in action::
+
+        sage: b = T01([-x,2,3*y], name='b') ; b
+        tensor field 'b' of type (0,1) on the 3-dimensional manifold 'M'
+        sage: b.display()
+        b = -x dx + 2 dy + 3*y dz
+        sage: lb = L1(b) ; lb
+        1-form 'b' on the 3-dimensional manifold 'M'
+        sage: lb.display()
+        b = -x dx + 2 dy + 3*y dz
+
+    The coercion map `\Lambda^1(M) \rightarrow T^{(0,1)}(M)` in action::
+
+        sage: tlb = T01(lb) ; tlb
+        tensor field 'b' of type (0,1) on the 3-dimensional manifold 'M'
+        sage: tlb == b
+        True
+    
     """
 
     Element = DiffFormParal

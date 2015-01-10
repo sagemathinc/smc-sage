@@ -15,6 +15,15 @@ Accordingly, two classes are devoted to vector field modules:
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
+
+REFERENCES:
+
+- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
+  Interscience Publishers (New York, 1963)
+- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
+  2013)
+- B O'Neill : "Semi-Riemannian Geometry", Academic Press (San Diego, 1983)
+
 """
 
 #******************************************************************************
@@ -369,12 +378,11 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         """
         from rank2field import EndomorphismField, AutomorphismField, \
                                                            TangentIdentityField
-        from diffform import DiffForm, OneForm
         from metric import Metric, RiemannMetric, LorentzMetric
         if tensor_type==(1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type==(0,1):
-            return OneForm(self, name=name, latex_name=latex_name)
+            return self.linear_form(name=name, latex_name=latex_name)
         elif tensor_type==(1,1):
             if specific_type == AutomorphismField:
                 return AutomorphismField(self, name=name, latex_name=latex_name)
@@ -390,8 +398,8 @@ class VectorFieldModule(UniqueRepresentation, Parent):
             else:
                 antisym0 = antisym
             if len(antisym0)==tensor_type[1]:
-                return DiffForm(self, tensor_type[1], name=name,
-                                                         latex_name=latex_name)
+                return self.alternating_form(tensor_type[1], name=name,
+                                             latex_name=latex_name)
             else:
                 return self.tensor_module(*tensor_type).element_class(self,
                                  tensor_type, name=name, latex_name=latex_name,
@@ -431,9 +439,6 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         - instance of
           :class:`~sage.geometry.manifolds.diffform.DiffForm`
-          (``degree`` > 1) or
-          :class:`~sage.geometry.manifolds.diffform.OneForm`
-          (``degree`` = 1)
 
         See
         :class:`~sage.geometry.manifolds.diffform.DiffForm`
@@ -462,10 +467,10 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.manifolds.diffform.OneForm`
+          :class:`~sage.geometry.manifolds.diffform.DiffForm`
 
         See
-        :class:`~sage.geometry.manifolds.diffform.OneForm`
+        :class:`~sage.geometry.manifolds.diffform.DiffForm`
         for further documentation.
 
 
@@ -838,7 +843,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         if dest_map is None:
             dest_map = domain._identity_map
         self._dest_map = dest_map
-        if dest_map is domain._identity_map:
+        if dest_map == domain._identity_map:
             name += ")"
             latex_name += r"\right)"
         else:
@@ -1051,13 +1056,12 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         from rank2field import EndomorphismFieldParal, AutomorphismField, \
                                AutomorphismFieldParal, TangentIdentityField, \
                                TangentIdentityFieldParal
-        from diffform import DiffFormParal, OneFormParal
         from metric import Metric, RiemannMetric, LorentzMetric, MetricParal, \
                            RiemannMetricParal, LorentzMetricParal
         if tensor_type==(1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type==(0,1):
-            return OneFormParal(self, name=name, latex_name=latex_name)
+            return self.linear_form(name=name, latex_name=latex_name)
         elif tensor_type==(1,1):
             if specific_type == AutomorphismFieldParal or \
                                            specific_type == AutomorphismField:
@@ -1077,8 +1081,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
             else:
                 antisym0 = antisym
             if len(antisym0)==tensor_type[1]:
-                return DiffFormParal(self, tensor_type[1], name=name,
-                                                         latex_name=latex_name)
+                return self.alternating_form(tensor_type[1], name=name,
+                                             latex_name=latex_name)
             else:
                 return self.tensor_module(*tensor_type).element_class(self,
                                  tensor_type, name=name, latex_name=latex_name,
@@ -1131,33 +1135,32 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
         """
         from rank2field import EndomorphismFieldParal
-        from diffform import DiffFormParal, OneFormParal
         from sage.tensor.modules.comp import CompWithSym, CompFullySym, \
                                                                CompFullyAntiSym
         #
         # 0/ Compatibility checks:
         if comp._ring is not self._ring:
-             raise TypeError("The components are not defined on the same" +
-                            " ring as the module.")
+             raise TypeError("the components are not defined on the same" +
+                            " ring as the module")
         if comp._frame not in self._known_bases:
-            raise TypeError("The components are not defined on a basis of" +
-                            " the module.")
+            raise TypeError("the components are not defined on a basis of" +
+                            " the module")
         if comp._nid != tensor_type[0] + tensor_type[1]:
-            raise TypeError("Number of component indices not compatible with "+
-                            " the tensor type.")
+            raise TypeError("number of component indices not compatible with "+
+                            " the tensor type")
         #
         # 1/ Construction of the tensor:
         if tensor_type == (1,0):
             resu = self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type == (0,1):
-            resu = OneFormParal(self, name=name, latex_name=latex_name)
+            resu = self.linear_form(name=name, latex_name=latex_name)
         elif tensor_type == (1,1):
             resu = EndomorphismFieldParal(self, name=name,
                                           latex_name=latex_name)
         elif tensor_type[0] == 0 and tensor_type[1] > 1 and \
                                         isinstance(comp, CompFullyAntiSym):
-            resu = DiffFormParal(self, tensor_type[1], name=name,
-                                                         latex_name=latex_name)
+            resu = self.alternating_form(tensor_type[1], name=name,
+                                         latex_name=latex_name)
         else:
             resu = self.tensor_module(*tensor_type).element_class(self,
                                  tensor_type, name=name, latex_name=latex_name)
