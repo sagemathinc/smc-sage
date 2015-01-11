@@ -105,6 +105,8 @@ class DiffForm(TensorField):
         2-form 'a' on the 2-dimensional manifold 'M'
         sage: a.parent()
         Module /\^2(M) of 2-forms on the 2-dimensional manifold 'M'
+        sage: a.degree()
+        2
 
     Setting the components of a::
 
@@ -121,6 +123,8 @@ class DiffForm(TensorField):
         1-form 'a' on the 2-dimensional manifold 'M'
         sage: a.parent()
         Module /\^1(M) of 1-forms on the 2-dimensional manifold 'M'
+        sage: a.degree()
+        1
 
     Setting the components of the 1-form in a consistent way::
 
@@ -192,6 +196,7 @@ class DiffForm(TensorField):
             sage: W = U.intersection(V)
             sage: eU = c_xy.frame() ; eV = c_uv.frame()
             sage: a = M.diff_form(2, name='a') ; a
+            2-form 'a' on the 2-dimensional manifold 'M'
             sage: a[eU,0,1] = x*y^2 + 2*x
             sage: a.add_comp_by_continuation(eV, W, c_uv)
 
@@ -356,6 +361,28 @@ class DiffForm(TensorField):
         resu.set_name(name=format_unop_txt('*', self._name),
                      latex_name=format_unop_latex(r'\star ', self._latex_name))
         return resu
+
+    def degree(self):
+        r"""
+        Return the degree of ``self``.
+
+        """
+        return self._tensor_rank
+
+
+    def base_module(self):
+        r"""
+        Return the vector field module on which ``self`` acts as an
+        alternating form.
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`
+          representing the module on which ``self`` is defined.
+
+        """
+        return self._vmodule
 
 #******************************************************************************
 
@@ -552,7 +579,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     Let us check Cartan formula, which expresses the Lie derivative in terms
     of exterior derivatives::
     
-        sage: ab.lie_der(v) == v.contract(0, ab.exterior_der(), 0) + (v.contract(0,ab,0)).exterior_der() 
+        sage: ab.lie_der(v) == v.contract(ab.exterior_der()) + (v.contract(ab)).exterior_der() 
         True
 
     A 1-form on a `\RR^3`::
@@ -586,6 +613,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         sage: om(v).display()
         omega(V): R3 --> R
            (x, y, z) |--> 2*x*y + (5*x - 3*y)*z
+           (r, th, ph) |--> 2*r^2*cos(ph)*sin(ph)*sin(th)^2 + r^2*(5*cos(ph)
+                            - 3*sin(ph))*cos(th)*sin(th)
         sage: latex(om(v))
         \omega\left(V\right)
 
@@ -628,6 +657,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
 
         TEST::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: a = M.diff_form(2, name='a') ; a
@@ -787,7 +817,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         Exterior product with another differential form. 
         
         This is a redefinition of 
-        :meth:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm.wedge`
+        :meth:`sage.tensor.modules.free_module_alt_form.FreeModuleAltForm.wedge`
         to treat properly the domains. 
         
         INPUT:
@@ -968,7 +998,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             sage: b[:] = (Bt, Bx, By, Bz) ; b.display()
             B = Bt dt + Bx dx + By dy + Bz dz
             sage: epsilon = g.volume_form()
-            sage: (a.wedge(b)).hodge_star(g) == epsilon.contract(0, a.up(g), 0).contract(0, b.up(g), 0)
+            sage: (a.wedge(b)).hodge_star(g) == epsilon.contract(0,a.up(g)).contract(0,b.up(g))
             True
 
         """

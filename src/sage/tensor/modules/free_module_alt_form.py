@@ -358,7 +358,7 @@ class FreeModuleAltForm(FreeModuleTensor):
 
     def degree(self):
         r"""
-        Return the degree of the alternating form.
+        Return the degree of ``self``.
 
         EXAMPLE::
 

@@ -78,7 +78,8 @@ class DiffFormModule(UniqueRepresentation, Parent):
         sage: U = M.open_subset('U') ; V = M.open_subset('V') 
         sage: M.declare_union(U,V)   # M is the union of U and V
         sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
-        sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+        sage: transf = c_xy.transition_map(c_uv, (x+y, x-y),
+        ....:  intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
         sage: inv = transf.inverse()
         sage: W = U.intersection(V)
         sage: eU = c_xy.frame() ; eV = c_uv.frame()
@@ -210,11 +211,70 @@ class DiffFormModule(UniqueRepresentation, Parent):
         sage: lb.display(eV)
         b = 1/2*u du - 1/2*v dv
 
+    The coercion map `\Lambda^1(M) \rightarrow T^{(0,1)}(M)` in action::
+
+        sage: tlb = T01(lb) ; tlb
+        tensor field 'b' of type (0,1) on the 2-dimensional manifold 'M'
+        sage: tlb.display(eU)
+        b = y dx + x dy
+        sage: tlb.display(eV)
+        b = 1/2*u du - 1/2*v dv
+        sage: tlb == b
+        True    
+
+    The coercion map `\Lambda^2(M) \rightarrow T^{(0,2)}(M)` in action::
+
+        sage: ta = T02(a) ; ta
+        tensor field 'a' of type (0,2) on the 2-dimensional manifold 'M'
+        sage: ta.display(eU)
+        a = 3*x dx*dy - 3*x dy*dx
+        sage: a.display(eU)
+        a = 3*x dx/\dy
+        sage: ta.display(eV)
+        a = (-3/4*u - 3/4*v) du*dv + (3/4*u + 3/4*v) dv*du
+        sage: a.display(eV)
+        a = (-3/4*u - 3/4*v) du/\dv
+
+    There is also coercion to subdomains, which is nothing but the restriction
+    of the differential form to some subset of its domain::
+
+        sage: L2U = U.diff_form_module(2) ; L2U
+        Free module /\^2(U) of 2-forms on the open subset 'U' of the 2-dimensional manifold 'M'
+        sage: L2U.has_coerce_map_from(A)
+        True
+        sage: a_U = L2U(a) ; a_U
+        2-form 'a' on the open subset 'U' of the 2-dimensional manifold 'M'
+        sage: a_U.display(eU)
+        a = 3*x dx/\dy
+
     """
 
     Element = DiffForm
 
     def __init__(self, vector_field_module, degree):
+        r"""
+        Construction a module of differential forms.
+
+        TEST:
+
+        Module of 2-forms on a non-parallelizable 2-dimensional manifold::
+
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V') 
+            sage: M.declare_union(U,V)   # M is the union of U and V
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+            sage: transf = c_xy.transition_map(c_uv, (x+y, x-y),
+            ....:  intersection_name='W', restrictions1= x>0,
+            ....:  restrictions2= u+v>0)
+            sage: inv = transf.inverse()
+            sage: W = U.intersection(V)
+            sage: eU = c_xy.frame() ; eV = c_uv.frame()
+            sage: from sage.geometry.manifolds.diffform_module import DiffFormModule
+            sage: A = DiffFormModule(M.vector_field_module(), 2) ; A
+            Module /\^2(M) of 2-forms on the 2-dimensional manifold 'M'
+            sage: TestSuite(A).run()
+
+        """
         domain = vector_field_module._domain
         dest_map = vector_field_module._dest_map
         name = "/\^{}(".format(degree) + domain._name
@@ -351,6 +411,21 @@ class DiffFormModule(UniqueRepresentation, Parent):
           :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`
           representing the module on which the tensor module is defined.
 
+        EXAMPLES::
+
+            sage: M = Manifold(3, 'M')
+            sage: A2 = M.diff_form_module(2) ; A2
+            Module /\^2(M) of 2-forms on the 3-dimensional manifold 'M'
+            sage: A2.base_module()
+            module X(M) of vector fields on the 3-dimensional manifold 'M'
+            sage: A2.base_module() is M.vector_field_module()
+            True
+            sage: U = M.open_subset('U')
+            sage: A2U = U.diff_form_module(2) ; A2U
+            Module /\^2(U) of 2-forms on the open subset 'U' of the 3-dimensional manifold 'M'
+            sage: A2U.base_module()
+            module X(U) of vector fields on the open subset 'U' of the 3-dimensional manifold 'M'
+        
         """
         return self._vmodule
 
@@ -362,6 +437,16 @@ class DiffFormModule(UniqueRepresentation, Parent):
         OUTPUT:
 
         - integer `p` such that ``self`` is a set of p-forms
+
+        EXAMPLES::
+
+            sage: M = Manifold(3, 'M')
+            sage: M.diff_form_module(1).degree()
+            1
+            sage: M.diff_form_module(2).degree()
+            2
+            sage: M.diff_form_module(3).degree()
+            3
 
         """
         return self._degree
@@ -400,6 +485,7 @@ class DiffFormFreeModule(ExtPowerFreeModule):
 
     Free module of 2-forms on a parallelizable 3-dimensional manifold::
 
+        sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(3, 'M')
         sage: X.<x,y,z> = M.chart()
         sage: XM = M.vector_field_module() ; XM
@@ -571,6 +657,19 @@ class DiffFormFreeModule(ExtPowerFreeModule):
     Element = DiffFormParal
 
     def __init__(self, vector_field_module, degree):
+        r"""
+        Construct a free module of differential forms.
+
+        TEST::
+
+            sage: M = Manifold(3, 'M')
+            sage: X.<x,y,z> = M.chart()
+            sage: from sage.geometry.manifolds.diffform_module import DiffFormFreeModule
+            sage: A = DiffFormFreeModule(M.vector_field_module(), 2) ; A
+            Free module /\^2(M) of 2-forms on the 3-dimensional manifold 'M'
+            sage: TestSuite(A).run()
+        
+        """
         domain = vector_field_module._domain
         dest_map = vector_field_module._dest_map
         name = "/\^{}(".format(degree) + domain._name
@@ -660,4 +759,3 @@ class DiffFormFreeModule(ExtPowerFreeModule):
             description += "along the {} mapped into the {}".format(
                                             self._domain, self._ambient_domain)
         return description
-

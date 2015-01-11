@@ -217,7 +217,7 @@ class TensorFieldModule(UniqueRepresentation, Parent):
                                       latex_name=form._latex_name,
                                       antisym=asym)
             for dom, rst in form._restrictions.iteritems():
-                resu._restrictions[dom] = dom.tensor_module(0,p)(rst)
+                resu._restrictions[dom] = dom.tensor_field_module((0,p))(rst)
             return resu
         # standard construction
         resu = self.element_class(self._vmodule, self._tensor_type, name=name,
