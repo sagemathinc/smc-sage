@@ -70,6 +70,146 @@ class DiffFormModule(UniqueRepresentation, Parent):
       fields along `U` associated with the mapping `\Phi:\; U \rightarrow V`.
     - ``degree`` -- positive integer; the degree `p` of the differential forms
 
+    EXAMPLES:
+
+    Module of 2-forms on a non-parallelizable 2-dimensional manifold::
+
+        sage: M = Manifold(2, 'M')
+        sage: U = M.open_subset('U') ; V = M.open_subset('V') 
+        sage: M.declare_union(U,V)   # M is the union of U and V
+        sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+        sage: transf = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+        sage: inv = transf.inverse()
+        sage: W = U.intersection(V)
+        sage: eU = c_xy.frame() ; eV = c_uv.frame()
+        sage: XM = M.vector_field_module() ; XM
+        module X(M) of vector fields on the 2-dimensional manifold 'M'
+        sage: from sage.geometry.manifolds.diffform_module import DiffFormModule
+        sage: A = DiffFormModule(XM, 2) ; A
+        Module /\^2(M) of 2-forms on the 2-dimensional manifold 'M'
+        sage: type(A)
+        <class 'sage.geometry.manifolds.diffform_module.DiffFormModule_with_category'>
+        sage: latex(A)
+        \Lambda^{2}\left(M\right)
+
+    Instead of importing DiffFormModule in the global name space, it is
+    recommended to use the method
+    :meth:`~sage.geometry.manifolds.domain.ManifoldOpenSubset.diff_form_module`::
+
+        sage: A = M.diff_form_module(2) ; A
+        Module /\^2(M) of 2-forms on the 2-dimensional manifold 'M'
+
+    Modules of differential forms are unique::
+
+        sage: A is DiffFormModule(XM, 2)
+        True
+        sage: A is M.diff_form_module(2)
+        True
+
+    `\Lambda^2(M)` is a module over the algebra `C^\infty(M)` of (smooth)
+    scalar fields on M::
+
+        sage: A.category()
+        Category of modules over algebra of scalar fields on the 2-dimensional manifold 'M'
+        sage: CM = M.scalar_field_algebra() ; CM
+        algebra of scalar fields on the 2-dimensional manifold 'M'
+        sage: A in Modules(CM)
+        True
+        sage: A.base_ring() is CM
+        True
+        sage: A.base_module()
+        module X(M) of vector fields on the 2-dimensional manifold 'M'
+        sage: A.base_module() is XM
+        True
+
+    A is a *parent* object, whose elements are 2-forms, represented by
+    instances of the class
+    :class:`~sage.geometry.manifolds.diffform.DiffForm`::
+
+        sage: A.Element
+        <class 'sage.geometry.manifolds.diffform.DiffForm'>
+
+    Elements can be constructed from ``A()``. In particular, 0 yields the zero
+    element of A::
+
+        sage: z = A(0) ; z
+        2-form 'zero' on the 2-dimensional manifold 'M'
+        sage: z.display(eU)
+        zero = 0
+        sage: z.display(eV)
+        zero = 0
+        sage: z is A.zero()
+        True
+
+    while non-zero elements are constructed by providing their components in a
+    given vector frame::
+
+        sage: a = A([[0,3*x],[-3*x,0]], frame=eU, name='a') ; a
+        2-form 'a' on the 2-dimensional manifold 'M'
+        sage: a.add_comp_by_continuation(eV, W, c_uv) # finishes the initialization of a
+        sage: a.display(eU)
+        a = 3*x dx/\dy
+        sage: a.display(eV)
+        a = (-3/4*u - 3/4*v) du/\dv
+
+    An alternative is to construct the 2-form from an empty list of
+    components and to set the nonzero nonredundant components afterwards::
+
+        sage: a = A([], name='a')
+        sage: a[eU,0,1] = 3*x
+        sage: a.add_comp_by_continuation(eV, W, c_uv)
+        sage: a.display(eU)
+        a = 3*x dx/\dy
+        sage: a.display(eV)
+        a = (-3/4*u - 3/4*v) du/\dv
+
+    The module `\Lambda^1(M)` is nothing but the dual of `\mathcal{X}(M)` (the
+    module of vector fields on `M`)::
+        
+        sage: L1 = M.diff_form_module(1) ; L1
+        Module /\^1(M) of 1-forms on the 2-dimensional manifold 'M'
+        sage: L1 is XM.dual()
+        True
+        
+    Since any tensor field of type (0,1) is a 1-form, there is a coercion map
+    from the set `T^{(0,1)}(M)` of such tensors to `\Lambda^1(M)`::
+
+        sage: T01 = M.tensor_field_module((0,1)) ; T01
+        module T^(0,1)(M) of type-(0,1) tensors fields on the 2-dimensional manifold 'M'
+        sage: L1.has_coerce_map_from(T01)
+        True
+
+    There is also a coercion map in the reverse direction:: 
+
+        sage: T01.has_coerce_map_from(L1)
+        True
+
+    For a degree `p\geq 2`, the coercion holds only in the direction
+    `\Lambda^p(M)\rightarrow T^{(0,p)}(M)`::
+
+        sage: T02 = M.tensor_field_module((0,2)) ; T02
+        module T^(0,2)(M) of type-(0,2) tensors fields on the 2-dimensional manifold 'M'
+        sage: T02.has_coerce_map_from(A)
+        True
+        sage: A.has_coerce_map_from(T02)
+        False
+
+    The coercion map `T^{(0,1)}(M) \rightarrow \Lambda^1(M)` in action::
+
+        sage: b = T01([y,x], frame=eU, name='b') ; b
+        tensor field 'b' of type (0,1) on the 2-dimensional manifold 'M'
+        sage: b.add_comp_by_continuation(eV, W, c_uv)
+        sage: b.display(eU)
+        b = y dx + x dy
+        sage: b.display(eV)
+        b = 1/2*u du - 1/2*v dv
+        sage: lb = L1(b) ; lb
+        1-form 'b' on the 2-dimensional manifold 'M'
+        sage: lb.display(eU)
+        b = y dx + x dy
+        sage: lb.display(eV)
+        b = 1/2*u du - 1/2*v dv
+
     """
 
     Element = DiffForm
@@ -118,7 +258,7 @@ class DiffFormModule(UniqueRepresentation, Parent):
                         self._zero_element.add_comp(frame)
                         # (since new components are initialized to zero)
             return self._zero_element
-        if isinstance(comp, DiffForm):
+        if isinstance(comp, (DiffForm, DiffFormParal)):
             # coercion by domain restriction
             if self._degree == comp._tensor_type[1] and \
                self._domain.is_subset(comp._domain) and \
@@ -215,6 +355,17 @@ class DiffFormModule(UniqueRepresentation, Parent):
         return self._vmodule
 
 
+    def degree(self):
+        r"""
+        Return the degree of the differential forms in ``self``.
+
+        OUTPUT:
+
+        - integer `p` such that ``self`` is a set of p-forms
+
+        """
+        return self._degree
+
 #******************************************************************************
 
 class DiffFormFreeModule(ExtPowerFreeModule):
@@ -245,7 +396,7 @@ class DiffFormFreeModule(ExtPowerFreeModule):
       fields along `U` associated with the mapping `\Phi:\; U \rightarrow V`.
     - ``degree`` -- positive integer; the degree `p` of the differential forms
 
-    EXEMPLE:
+    EXAMPLES:
 
     Free module of 2-forms on a parallelizable 3-dimensional manifold::
 
@@ -352,6 +503,8 @@ class DiffFormFreeModule(ExtPowerFreeModule):
         sage: T01 = M.tensor_field_module((0,1)) ; T01
         free module T^(0,1)(M) of type-(0,1) tensors fields on the
          3-dimensional manifold 'M'
+        sage: L1.has_coerce_map_from(T01)
+        True
 
     There is also a coercion map in the reverse direction:: 
 
@@ -386,6 +539,32 @@ class DiffFormFreeModule(ExtPowerFreeModule):
         tensor field 'b' of type (0,1) on the 3-dimensional manifold 'M'
         sage: tlb == b
         True
+
+    The coercion map `\Lambda^2(M) \rightarrow T^{(0,2)}(M)` in action::
+
+        sage: T02 = M.tensor_field_module((0,2)) ; T02
+        free module T^(0,2)(M) of type-(0,2) tensors fields on the 3-dimensional manifold 'M'
+        sage: ta = T02(a) ; ta
+        tensor field 'a' of type (0,2) on the 3-dimensional manifold 'M'
+        sage: ta.display()
+        a = 3*x dx*dy - z dx*dz - 3*x dy*dx + 4 dy*dz + z dz*dx - 4 dz*dy
+        sage: a.display()
+        a = 3*x dx/\dy - z dx/\dz + 4 dy/\dz
+        sage: ta.symmetries()  # the antisymmetry is preserved
+        no symmetry;  antisymmetry: (0, 1)
+
+    There is also coercion to subdomains, which is nothing but the restriction
+    of the differential form to some subset of its domain::
+
+        sage: U = M.open_subset('U', coord_def={X: x^2+y^2<1})
+        sage: B = U.diff_form_module(2) ; B
+        Free module /\^2(U) of 2-forms on the open subset 'U' of the 3-dimensional manifold 'M'
+        sage: B.has_coerce_map_from(A)
+        True
+        sage: a_U = B(a) ; a_U
+        2-form 'a' on the open subset 'U' of the 3-dimensional manifold 'M'
+        sage: a_U.display()
+        a = 3*x dx/\dy - z dx/\dz + 4 dy/\dz
     
     """
 
@@ -419,7 +598,7 @@ class DiffFormFreeModule(ExtPowerFreeModule):
         """
         if comp == 0:
             return self._zero_element
-        if isinstance(comp, DiffForm):
+        if isinstance(comp, (DiffForm, DiffFormParal)):
             # coercion by domain restriction
             if self._degree == comp._tensor_type[1] and \
                self._domain.is_subset(comp._domain) and \

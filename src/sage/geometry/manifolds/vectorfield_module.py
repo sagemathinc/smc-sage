@@ -336,6 +336,15 @@ class VectorFieldModule(UniqueRepresentation, Parent):
             self._dual_exterior_powers[p] = DiffFormModule(self, p)
         return self._dual_exterior_powers[p]
 
+    def dual(self):
+        r"""
+        Return the dual module.
+
+        EXAMPLE:
+
+        """
+        return self.dual_exterior_power(1)
+
     def tensor(self, tensor_type, name=None, latex_name=None, sym=None,
                antisym=None, specific_type=None):
         r"""
