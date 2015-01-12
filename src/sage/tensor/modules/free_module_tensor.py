@@ -27,14 +27,11 @@ tensors:
 * :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm` for
   fully antisymmetric type-`(0, l)` tensors (alternating forms)
 
-* :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphismTensor`
-  for type-(1,1) tensors
+* :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphismTensor`
+  for type-(1,1) tensors representing invertible endomorphisms
 
-  * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphismTensor`
-    for type-(1,1) tensors representing invertible endomorphisms
-
-    * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityTensor`
-      for the type-(1,1) tensor representing the free module identity map
+  * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityTensor`
+    for the type-(1,1) tensor representing the free module identity map
 
 :class:`FreeModuleTensor` is a Sage *element* class, the corresponding *parent*
 class being :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule`.
@@ -50,7 +47,7 @@ A tensor of type `(1, 1)` on a rank-3 free module over `\ZZ`::
 
     sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
     sage: t = M.tensor((1,1), name='t') ; t
-    Endomorphism tensor t on the Rank-3 free module M over the Integer Ring
+    Type-(1,1) tensor t on the Rank-3 free module M over the Integer Ring
     sage: t.parent()
     Free module of type-(1,1) tensors on the Rank-3 free module M
      over the Integer Ring
@@ -216,7 +213,7 @@ class FreeModuleTensor(ModuleElement):
 
         sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
         sage: t = M.tensor((1,1), name='t') ; t
-        Endomorphism tensor t on the Rank-3 free module M over the Integer Ring
+        Type-(1,1) tensor t on the Rank-3 free module M over the Integer Ring
 
     Tensors are *Element* objects whose parents are tensor free modules::
 
@@ -569,7 +566,7 @@ class FreeModuleTensor(ModuleElement):
         Display of a type-`(1,1)` tensor::
 
             sage: t = v*w ; t  # the type-(1,1) is formed as the tensor product of v by w
-            Endomorphism tensor v*w on the Rank-2 free module M over the Rational Field
+            Type-(1,1) tensor v*w on the Rank-2 free module M over the Rational Field
             sage: t.display()
             v*w = -1/4 e_1*e^1 + 1/3 e_1*e^2 + 3/2 e_2*e^1 - 2 e_2*e^2
             sage: latex(t.display())  # display in the notebook
@@ -2068,7 +2065,7 @@ class FreeModuleTensor(ModuleElement):
             sage: e = M.basis('e') ; e
             Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer Ring
             sage: a = M.tensor((1,1), name='a') ; a
-            Endomorphism tensor a on the Rank-3 free module M over the Integer Ring
+            Type-(1,1) tensor a on the Rank-3 free module M over the Integer Ring
             sage: a[:] = [[1,2,3], [4,5,6], [7,8,9]]
             sage: a.trace()
             15
@@ -2304,12 +2301,6 @@ class FreeModuleTensor(ModuleElement):
             ...
             TypeError: contraction on two contravariant indices not permitted
 
-        In the present case, performing the contraction is identical to
-        applying the endomorphism to the module element::
-
-            sage: a.contract(b) == a(b)
-            True
-
         Contraction of a tensor of type `(2,1)` with a tensor of type `(0,2)`::
 
             sage: a = a*b ; a
@@ -2374,7 +2365,7 @@ class FreeModuleTensor(ModuleElement):
             sage: b = M([1,-1,2])*b ; b # a tensor of type (1,2)
             Type-(1,2) tensor on the Rank-3 free module M over the Integer Ring
             sage: s = a.contract(1,2,b,1,0) ; s # the double contraction
-            Endomorphism tensor on the Rank-3 free module M over the Integer Ring
+            Type-(1,1) tensor on the Rank-3 free module M over the Integer Ring
             sage: s[:]
             [ -36   30   15]
             [-252  210  105]

@@ -1,35 +1,13 @@
 """
-Type-(1,1) tensors on free modules
-
-Three derived classes of
-:class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor` are devoted
-to type-(1,1) tensors:
-
-* :class:`FreeModuleEndomorphismTensor` for endomorphisms viewed as type-(1,1)
-  tensors
-
-  * :class:`FreeModuleAutomorphismTensor` for invertible endomorphisms viewed
-    as type-(1,1) tensors
-
-    * :class:`FreeModuleIdentityTensor` for the identity map viewed as a 
-      type-(1,1) tensor
-
+Module automorphisms.
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2014): initial version
-
-.. TODO::
-
-    Suppress :class:`FreeModuleEndomorphismTensor` ? (since the
-    coercion of type-(1,1) tensors to free module endomorphisms is implemented
-    now) This would leave only :class:`FreeModuleAutomorphismTensor` and
-    :class:`FreeModuleIdentityTensor`.
+- Eric Gourgoulhon (2015): initial version
 
 """
 #******************************************************************************
-#       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -39,196 +17,7 @@ AUTHORS:
 
 from sage.tensor.modules.free_module_tensor import FreeModuleTensor
 
-class FreeModuleEndomorphismTensor(FreeModuleTensor):
-    r"""
-    Endomorphism (considered as a type-`(1,1)` tensor) on a free module.
-
-    INPUT:
-
-    - ``fmodule`` -- free module `M` over a commutative ring `R`
-      (must be an instance of :class:`FiniteRankFreeModule`)
-    - ``name`` -- (default: ``None``) name given to the endomorphism
-    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
-      endomorphism; if none is provided, the LaTeX symbol is set to ``name``
-
-    EXAMPLES:
-
-    Endomorphism tensor on a rank-3 module::
-
-        sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-        sage: t = M.endomorphism_tensor('T') ; t
-        Endomorphism tensor T on the Rank-3 free module M over the Integer Ring
-        sage: t.parent()
-        Free module of type-(1,1) tensors on the
-         Rank-3 free module M over the Integer Ring
-        sage: t.tensor_type()
-        (1, 1)
-        sage: t.tensor_rank()
-        2
-
-    The method
-    :meth:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule.tensor`
-    with the argument ``(1,1)`` can be used as well to create such a tensor::
-
-        sage: t = M.tensor((1,1), name='T') ; t
-        Endomorphism tensor T on the Rank-3 free module M over the Integer Ring
-
-    Components of the endomorphism with respect to a given basis::
-
-        sage: e = M.basis('e') ; e
-        Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer Ring
-        sage: t[:] = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-        sage: t[:]
-        [1 2 3]
-        [4 5 6]
-        [7 8 9]
-        sage: t.display()
-        T = e_0*e^0 + 2 e_0*e^1 + 3 e_0*e^2 + 4 e_1*e^0 + 5 e_1*e^1
-            + 6 e_1*e^2 + 7 e_2*e^0 + 8 e_2*e^1 + 9 e_2*e^2
-
-    The matrix of components w.r.t. to a given basis::
-
-        sage: m = matrix(t.components(e)) ; m
-        [1 2 3]
-        [4 5 6]
-        [7 8 9]
-        sage: m.parent()
-        Full MatrixSpace of 3 by 3 dense matrices over Integer Ring
-
-    The endomorphism acting on a module element::
-
-        sage: v = M([1,2,3], basis=e, name='v') ; v
-        Element v of the Rank-3 free module M over the Integer Ring
-        sage: w = t(v) ; w
-        Element T(v) of the Rank-3 free module M over the Integer Ring
-        sage: w[:]
-        [14, 32, 50]
-        sage: for i in M.irange():   # Check:
-        ....:     print sum( t[i,j]*v[j] for j in M.irange() ),
-        14 32 50
-
-    """
-    def __init__(self, fmodule, name=None, latex_name=None):
-        r"""
-        TESTS::
-
-            sage: from sage.tensor.modules.free_module_tensor_spec import FreeModuleEndomorphismTensor
-            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-            sage: e = M.basis('e')
-            sage: E = FreeModuleEndomorphismTensor(M, name='a')
-            sage: E[e,0,1] = -3
-            sage: TestSuite(E).run(skip="_test_category") # see below
-
-        In the above test suite, _test_category fails because E is not an
-        instance of E.parent().category().element_class.
-
-        """
-        FreeModuleTensor.__init__(self, fmodule, (1,1), name=name,
-                                  latex_name=latex_name)
-
-    def _repr_(self):
-        r"""
-        Return a string representation of ``self``.
-
-        EXAMPLES::
-
-            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-            sage: M.endomorphism_tensor()
-            Endomorphism tensor on the Rank-3 free module M over the Integer Ring
-            sage: M.endomorphism_tensor(name='a')
-            Endomorphism tensor a on the Rank-3 free module M over the Integer Ring
-
-        """
-        description = "Endomorphism tensor "
-        if self._name is not None:
-            description += self._name + " "
-        description += "on the " + str(self._fmodule)
-        return description
-
-    def _new_instance(self):
-        r"""
-        Create an instance of the same class as ``self``.
-
-        EXAMPLE::
-
-            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-            sage: a = M.endomorphism_tensor(name='a')
-            sage: a._new_instance()
-            Endomorphism tensor on the Rank-3 free module M over the Integer Ring
-
-        """
-        return self.__class__(self._fmodule)
-
-    def __call__(self, *arg):
-        r"""
-        Redefinition of :meth:`FreeModuleTensor.__call__` to allow for a single
-        argument (module element).
-
-        EXAMPLES:
-
-        Call with a single argument --> return a module element::
-
-            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-            sage: a = M.endomorphism_tensor(name='a')
-            sage: e = M.basis('e')
-            sage: a[0,1], a[1,1], a[2,1] = 2, 4, -5
-            sage: v = M([2,1,4], name='v')
-            sage: s = a.__call__(v) ; s
-            Element a(v) of the Rank-3 free module M over the Integer Ring
-            sage: s.display()
-            a(v) = 2 e_0 + 4 e_1 - 5 e_2
-            sage: s == a(v)
-            True
-            sage: s == a.contract(v)
-            True
-
-        Call with two arguments (:class:`FreeModuleTensor` behaviour)
-        --> return a scalar::
-
-            sage: b = M.linear_form(name='b')
-            sage: b[:] = 7, 0, 2
-            sage: a.__call__(b,v)
-            4
-            sage: a(b,v) == a.__call__(b,v)
-            True
-            sage: a(b,v) == s(b)
-            True
-
-        """
-        from free_module_tensor import FiniteRankFreeModuleElement
-        if len(arg) > 1:
-            # the endomorphism acting as a type-(1,1) tensor on a pair
-            # (linear form, module element), returning a scalar:
-            return FreeModuleTensor.__call__(self, *arg)
-        # the endomorphism acting as such, on a module element, returning a
-        # module element:
-        vector = arg[0]
-        if not isinstance(vector, FiniteRankFreeModuleElement):
-            raise TypeError("the argument must be an element of a free module")
-        basis = self.common_basis(vector)
-        t = self._components[basis]
-        v = vector._components[basis]
-        fmodule = self._fmodule
-        result = vector._new_instance()
-        for i in fmodule.irange():
-            res = 0
-            for j in fmodule.irange():
-                res += t[[i,j]]*v[[j]]
-            result.set_comp(basis)[i] = res
-        # Name of the output:
-        result._name = None
-        if self._name is not None and vector._name is not None:
-            result._name = self._name + "(" + vector._name + ")"
-        # LaTeX symbol for the output:
-        result._latex_name = None
-        if self._latex_name is not None and vector._latex_name is not None:
-            result._latex_name = self._latex_name + r"\left(" + \
-                              vector._latex_name + r"\right)"
-        return result
-
-#******************************************************************************
-
-class FreeModuleAutomorphismTensor(FreeModuleEndomorphismTensor):
+class FreeModuleAutomorphismTensor(FreeModuleTensor):
     r"""
     Automorphism (considered as a type-`(1,1)` tensor) on a free module.
 
@@ -298,8 +87,8 @@ class FreeModuleAutomorphismTensor(FreeModuleEndomorphismTensor):
         instance of a.parent().category().element_class.
 
         """
-        FreeModuleEndomorphismTensor.__init__(self, fmodule, name=name,
-                                        latex_name=latex_name)
+        FreeModuleTensor.__init__(self, fmodule, (1,1), name=name,
+                                  latex_name=latex_name)
         self._inverse = None    # inverse automorphism not set yet
 
     def _repr_(self):
@@ -321,6 +110,20 @@ class FreeModuleAutomorphismTensor(FreeModuleEndomorphismTensor):
         description += "on the " + str(self._fmodule)
         return description
 
+    def _new_instance(self):
+        r"""
+        Create an instance of the same class as ``self``.
+
+        EXAMPLE::
+
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: a = M.automorphism_tensor(name='a')
+            sage: a._new_instance()
+            Automorphism tensor on the Rank-3 free module M over the Integer Ring
+
+        """
+        return self.__class__(self._fmodule)
+
     def _del_derived(self):
         r"""
         Delete the derived quantities.
@@ -339,7 +142,7 @@ class FreeModuleAutomorphismTensor(FreeModuleEndomorphismTensor):
 
         """
         # First delete the derived quantities pertaining to the mother class:
-        FreeModuleEndomorphismTensor._del_derived(self)
+        FreeModuleTensor._del_derived(self)
         # Then deletes the inverse automorphism:
         self._inverse = None
 
@@ -412,6 +215,72 @@ class FreeModuleAutomorphismTensor(FreeModuleEndomorphismTensor):
                 self._inverse._components[basis] = cinv
         return self._inverse
 
+    def __call__(self, *arg):
+        r"""
+        Redefinition of :meth:`FreeModuleTensor.__call__` to allow for a single
+        argument (module element).
+
+        EXAMPLES:
+
+        Call with a single argument --> return a module element::
+
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: a = M.automorphism_tensor(name='a')
+            sage: e = M.basis('e')
+            sage: a[0,1], a[1,1], a[2,1] = 2, 4, -5
+            sage: v = M([2,1,4], name='v')
+            sage: s = a.__call__(v) ; s
+            Element a(v) of the Rank-3 free module M over the Integer Ring
+            sage: s.display()
+            a(v) = 2 e_0 + 4 e_1 - 5 e_2
+            sage: s == a(v)
+            True
+            sage: s == a.contract(v)
+            True
+
+        Call with two arguments (:class:`FreeModuleTensor` behaviour)
+        --> return a scalar::
+
+            sage: b = M.linear_form(name='b')
+            sage: b[:] = 7, 0, 2
+            sage: a.__call__(b,v)
+            4
+            sage: a(b,v) == a.__call__(b,v)
+            True
+            sage: a(b,v) == s(b)
+            True
+
+        """
+        from free_module_tensor import FiniteRankFreeModuleElement
+        if len(arg) > 1:
+            # the endomorphism acting as a type-(1,1) tensor on a pair
+            # (linear form, module element), returning a scalar:
+            return FreeModuleTensor.__call__(self, *arg)
+        # the endomorphism acting as such, on a module element, returning a
+        # module element:
+        vector = arg[0]
+        if not isinstance(vector, FiniteRankFreeModuleElement):
+            raise TypeError("the argument must be an element of a free module")
+        basis = self.common_basis(vector)
+        t = self._components[basis]
+        v = vector._components[basis]
+        fmodule = self._fmodule
+        result = vector._new_instance()
+        for i in fmodule.irange():
+            res = 0
+            for j in fmodule.irange():
+                res += t[[i,j]]*v[[j]]
+            result.set_comp(basis)[i] = res
+        # Name of the output:
+        result._name = None
+        if self._name is not None and vector._name is not None:
+            result._name = self._name + "(" + vector._name + ")"
+        # LaTeX symbol for the output:
+        result._latex_name = None
+        if self._latex_name is not None and vector._latex_name is not None:
+            result._latex_name = self._latex_name + r"\left(" + \
+                              vector._latex_name + r"\right)"
+        return result
 
 #******************************************************************************
 
@@ -562,7 +431,7 @@ class FreeModuleIdentityTensor(FreeModuleAutomorphismTensor):
 
         """
         # FreeModuleAutomorphismTensor._del_derived is bypassed:
-        FreeModuleEndomorphismTensor._del_derived(self)
+        FreeModuleTensor._del_derived(self)
 
     def _new_comp(self, basis):
         r"""
@@ -672,7 +541,7 @@ class FreeModuleIdentityTensor(FreeModuleAutomorphismTensor):
 
     def __call__(self, *arg):
         r"""
-        Redefinition of :meth:`FreeModuleEndomorphismTensor.__call__`.
+        Redefinition of :meth:`FreeModuleAutomorphismTensor.__call__`.
 
         EXAMPLES:
 

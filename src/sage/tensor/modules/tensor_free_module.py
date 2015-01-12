@@ -298,7 +298,7 @@ class TensorFreeModule(FiniteRankFreeModule):
         [ 0 -2  0]
         [ 0  0 -3]
         sage: s = t + phi ; s  # phi is coerced to a type-(1,1) tensor prior to the addition
-        Endomorphism tensor on the Rank-3 free module M over the Integer Ring
+        Type-(1,1) tensor on the Rank-3 free module M over the Integer Ring
         sage: s[:]
         [ 0  1  1]
         [ 1 -1  1]

@@ -731,7 +731,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: t = M.tensor((0,1), name='t') ; t
             Linear form t on the Rank-3 free module M over the Integer Ring
             sage: t = M.tensor((1,1), name='t') ; t
-            Endomorphism tensor t on the Rank-3 free module M over the Integer Ring
+            Type-(1,1) tensor t on the Rank-3 free module M over the Integer Ring
             sage: t = M.tensor((0,2), name='t', sym=(0,1)) ; t
             Symmetric bilinear form t on the
              Rank-3 free module M over the Integer Ring
@@ -745,15 +745,11 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         for more examples and documentation.
 
         """
-        from free_module_tensor_spec import FreeModuleEndomorphismTensor
         # Special cases:
         if tensor_type == (1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type == (0,1):
             return self.linear_form(name=name, latex_name=latex_name)
-        elif tensor_type == (1,1):
-            return FreeModuleEndomorphismTensor(self, name=name,
-                                                latex_name=latex_name)
         elif tensor_type[0] == 0 and tensor_type[1] > 1 and antisym:
             if isinstance(antisym, list):
                 antisym0 = antisym[0]
@@ -832,7 +828,6 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             4 e^0/\e^1 + 5 e^1/\e^2
 
         """
-        from free_module_tensor_spec import FreeModuleEndomorphismTensor
         from comp import CompWithSym, CompFullySym, CompFullyAntiSym
         #
         # 0/ Compatibility checks:
@@ -851,9 +846,6 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             resu = self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type == (0,1):
             resu = self.linear_form(name=name, latex_name=latex_name)
-        elif tensor_type == (1,1):
-            resu = FreeModuleEndomorphismTensor(self, name=name,
-                                                latex_name=latex_name)
         elif tensor_type[0] == 0 and tensor_type[1] > 1 and \
                                         isinstance(comp, CompFullyAntiSym):
             resu = self.alternating_form(tensor_type[1], name=name,
@@ -1002,7 +994,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         OUTPUT:
 
         - instance of
-          :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphismTensor`
+          :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`
 
         EXAMPLES:
 
@@ -1010,7 +1002,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: t = M.endomorphism_tensor('T') ; t
-            Endomorphism tensor T on the Rank-3 free module M over the Integer Ring
+            Type-(1,1) tensor T on the Rank-3 free module M over the Integer Ring
             sage: t.parent()
             Free module of type-(1,1) tensors on the
              Rank-3 free module M over the Integer Ring
@@ -1021,16 +1013,15 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         well::
 
             sage: t = M.tensor((1,1), name='T') ; t
-            Endomorphism tensor T on the Rank-3 free module M over the Integer Ring
+            Type-(1,1) tensor T on the Rank-3 free module M over the Integer Ring
 
         See
-        :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleEndomorphismTensor`
+        :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleTensor`
         for further documentation.
 
         """
-        from free_module_tensor_spec import FreeModuleEndomorphismTensor
-        return FreeModuleEndomorphismTensor(self, name=name, latex_name=latex_name)
-
+        return self.tensor_module(1,1).element_class(self, (1,1), name=name,
+                                                     latex_name=latex_name)
 
     def automorphism_tensor(self, name=None, latex_name=None):
         r"""
