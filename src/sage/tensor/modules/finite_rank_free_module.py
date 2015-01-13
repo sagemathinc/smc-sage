@@ -392,7 +392,10 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             self._zero_element = self._element_constructor_(name='zero',
                                                             latex_name='0')
         # Identity endomorphism:
-        self._identity_map = None # not defined yet
+        self._identity_map = None # to be set by self.identity_map()
+        # General linear group:
+        self._general_linear_group = None # to be set by
+                                          # self.general_linear_group()
 
     #### Parent methods
 
@@ -607,6 +610,20 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         if p not in self._dual_exterior_powers:
             self._dual_exterior_powers[p] = ExtPowerFreeModule(self, p)
         return self._dual_exterior_powers[p]
+
+    def general_linear_group(self):
+        r"""
+        Return the general linear group of ``self``.
+
+        If ``self`` is the free module `M`, the *general linear group* is the
+        group `\mathrm{GL}(M)` of automorphisms of `M`.
+        
+        """
+        from sage.tensor.modules.free_module_linear_group import \
+                                                          FreeModuleLinearGroup
+        if self._general_linear_group is None:
+            self._general_linear_group = FreeModuleLinearGroup(self)
+        return self._general_linear_group
 
     def basis(self, symbol=None, latex_symbol=None):
         r"""
@@ -1016,7 +1033,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             Type-(1,1) tensor T on the Rank-3 free module M over the Integer Ring
 
         See
-        :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleTensor`
+        :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleTensor`
         for further documentation.
 
         """
@@ -1038,7 +1055,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         OUTPUT:
 
         - instance of
-          :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphismTensor`
+          :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
 
         EXAMPLES:
 
@@ -1054,12 +1071,12 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             (1, 1)
 
         See
-        :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphismTensor`
+        :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
         for further documentation.
 
         """
-        from free_module_tensor_spec import FreeModuleAutomorphismTensor
-        return FreeModuleAutomorphismTensor(self, name=name,
+        from free_module_automorphism import FreeModuleAutomorphism
+        return FreeModuleAutomorphism(self, name=name,
                                             latex_name=latex_name)
 
 
@@ -1079,7 +1096,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         OUTPUT:
 
         - instance of
-          :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityTensor`
+          :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleIdentityTensor`
 
         EXAMPLES:
 
@@ -1108,11 +1125,11 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             (1, 1)
 
         See
-        :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityTensor`
+        :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleIdentityTensor`
         for further documentation.
 
         """
-        from free_module_tensor_spec import FreeModuleIdentityTensor
+        from free_module_automorphism import FreeModuleIdentityTensor
         return FreeModuleIdentityTensor(self, name=name, latex_name=latex_name)
 
 
@@ -1557,7 +1574,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         OUTPUT:
 
         - instance of
-          :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphismTensor`
+          :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
           describing the automorphism `P` that relates the basis `(e_i)` to the
           basis `(f_i)` according to `f_i = P(e_i)`
 
@@ -1608,7 +1625,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         - ``basis1`` -- basis 1, denoted `(e_i)` below
         - ``basis2`` -- basis 2, denoted `(f_i)` below
         - ``change_of_basis`` -- instance of class
-          :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphismTensor`
+          :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
           describing the automorphism `P` that relates the basis `(e_i)` to
           the basis `(f_i)` according to `f_i = P(e_i)`
         - ``compute_inverse`` (default: ``True``) -- if set to ``True``, the
@@ -1644,10 +1661,10 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             e_0 = 3/5 f_0 + 1/5 f_1
 
         """
-        from free_module_tensor_spec import FreeModuleAutomorphismTensor
-        if not isinstance(change_of_basis, FreeModuleAutomorphismTensor):
+        from free_module_automorphism import FreeModuleAutomorphism
+        if not isinstance(change_of_basis, FreeModuleAutomorphism):
             raise TypeError("the argument change_of_basis must be some " +
-                            "instance of FreeModuleAutomorphismTensor")
+                            "instance of FreeModuleAutomorphism")
         self._basis_changes[(basis1, basis2)] = change_of_basis
         if compute_inverse:
             self._basis_changes[(basis2, basis1)] = change_of_basis.inverse()

@@ -23,7 +23,7 @@ AUTHORS:
 from sage.categories.homset import Homset
 from sage.tensor.modules.free_module_morphism import FiniteRankFreeModuleMorphism
 from sage.tensor.modules.free_module_tensor import FreeModuleTensor
-from sage.tensor.modules.free_module_tensor_spec import FreeModuleIdentityTensor
+from sage.tensor.modules.free_module_automorphism import FreeModuleIdentityTensor
 
 class FreeModuleHomset(Homset):
     r"""

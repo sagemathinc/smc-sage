@@ -355,7 +355,7 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         INPUT:
 
         - ``change_of_basis`` -- instance of
-          :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphismTensor`
+          :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
           describing the automorphism `P` that relates the current basis
           `(e_i)` (described by ``self``) to the new basis `(n_i)` according
           to `n_i = P(e_i)`
@@ -389,10 +389,10 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
             e_2 = -2/5 f_1 + 1/5 f_2
 
         """
-        from free_module_tensor_spec import FreeModuleAutomorphismTensor
-        if not isinstance(change_of_basis, FreeModuleAutomorphismTensor):
+        from free_module_automorphism import FreeModuleAutomorphism
+        if not isinstance(change_of_basis, FreeModuleAutomorphism):
             raise TypeError("the argument change_of_basis must be some " +
-                            "instance of FreeModuleAutomorphismTensor")
+                            "instance of FreeModuleAutomorphism")
         fmodule = self._fmodule
         # self._new_instance used instead of FreeModuleBasis for a correct
         # construction in case of derived classes:

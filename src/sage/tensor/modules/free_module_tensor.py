@@ -27,10 +27,10 @@ tensors:
 * :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm` for
   fully antisymmetric type-`(0, l)` tensors (alternating forms)
 
-* :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleAutomorphismTensor`
+* :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
   for type-(1,1) tensors representing invertible endomorphisms
 
-  * :class:`~sage.tensor.modules.free_module_tensor_spec.FreeModuleIdentityTensor`
+  * :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleIdentityTensor`
     for the type-(1,1) tensor representing the free module identity map
 
 :class:`FreeModuleTensor` is a Sage *element* class, the corresponding *parent*
