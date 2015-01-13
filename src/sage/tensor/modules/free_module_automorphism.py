@@ -34,11 +34,11 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
 
     EXAMPLES:
 
-    Automorphism tensor on a rank-2 free module (vector space) on `\QQ`::
+    Automorphism of a rank-2 free module (vector space) on `\QQ`::
 
         sage: M = FiniteRankFreeModule(QQ, 2, name='M')
-        sage: a = M.automorphism_tensor('A') ; a
-        Automorphism tensor A on the Rank-2 free module M over the Rational Field
+        sage: a = M.automorphism('A') ; a
+        Automorphism A of the Rank-2 free module M over the Rational Field
 
     Automorphisms are tensors of type `(1,1)`::
 
@@ -64,7 +64,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
     The inverse automorphism is obtained via the method :meth:`inverse`::
 
         sage: b = a.inverse() ; b
-        Automorphism tensor A^(-1) on the Rank-2 free module M over the Rational Field
+        Automorphism A^(-1) on the Rank-2 free module M over the Rational Field
         sage: b.display(basis=e)
         A^(-1) = 3/5 e_0*e^0 - 2/5 e_0*e^1 + 1/5 e_1*e^0 + 1/5 e_1*e^1
         sage: b[:]
@@ -100,6 +100,8 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
         self._is_identity = False
         self._matrices = {}
 
+    #### SageObject methods ####
+
     def _repr_(self):
         r"""
         Return a string representation of ``self``.
@@ -107,17 +109,19 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
         EXAMPLES::
 
             sage: M = FiniteRankFreeModule(QQ, 3, name='M')
-            sage: M.automorphism_tensor()
-            Automorphism tensor on the Rank-3 free module M over the Rational Field
-            sage: M.automorphism_tensor(name='a')
-            Automorphism tensor a on the Rank-3 free module M over the Rational Field
+            sage: M.automorphism()
+            Automorphism of the Rank-3 free module M over the Rational Field
+            sage: M.automorphism(name='a')
+            Automorphism a of the Rank-3 free module M over the Rational Field
 
         """
         description = "Automorphism "
         if self._name is not None:
             description += self._name + " "
-        description += "on the {}".format(self._fmodule)
+        description += "of the {}".format(self._fmodule)
         return description
+
+    #### FreeModuleTensor methods ####
 
     def _new_instance(self):
         r"""
@@ -126,9 +130,9 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
         EXAMPLE::
 
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-            sage: a = M.automorphism_tensor(name='a')
+            sage: a = M.automorphism(name='a')
             sage: a._new_instance()
-            Automorphism tensor on the Rank-3 free module M over the Integer Ring
+            Automorphism of the Rank-3 free module M over the Integer Ring
 
         """
         return self.__class__(self._fmodule)
@@ -140,89 +144,23 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
         EXAMPLE::
 
             sage: M = FiniteRankFreeModule(QQ, 3, name='M')
-            sage: a = M.automorphism_tensor(name='a')
+            sage: a = M.automorphism(name='a')
             sage: e = M.basis('e')
             sage: a[e,:] = [[1,0,-1], [0,3,0], [0,0,2]]
             sage: b = a.inverse()
             sage: a._inverse
-            Automorphism tensor a^(-1) on the Rank-3 free module M over the Rational Field
+            Automorphism a^(-1) on the Rank-3 free module M over the Rational Field
             sage: a._del_derived()
             sage: a._inverse  # has been reset to None
 
         """
-        # First delete the derived quantities pertaining to the mother class:
+        # First delete the derived quantities pertaining to FreeModuleTensor:
         FreeModuleTensor._del_derived(self)
         # Then deletes the inverse automorphism:
         self._inverse = None
-
-    def inverse(self):
-        r"""
-        Return the inverse automorphism.
-
-        OUTPUT:
-
-        - instance of :class:`FreeModuleAutomorphism` representing the
-          automorphism that is the inverse of ``self``.
-
-        EXAMPLES:
-
-        Inverse of an automorphism on a rank-3 free module::
-
-            sage: M = FiniteRankFreeModule(QQ, 3, name='M')
-            sage: a = M.automorphism_tensor('A')
-            sage: e = M.basis('e')
-            sage: a[:] = [[1,0,-1], [0,3,0], [0,0,2]]
-            sage: b = a.inverse() ; b
-            Automorphism tensor A^(-1) on the Rank-3 free module M over the Rational Field
-            sage: b[:]
-            [  1   0 1/2]
-            [  0 1/3   0]
-            [  0   0 1/2]
-
-        We may check that ``b`` is the inverse of ``a`` by performing the
-        matrix product of the components in the basis ``e``::
-
-            sage: a[:] * b[:]
-            [1 0 0]
-            [0 1 0]
-            [0 0 1]
-
-        Another check is of course::
-
-            sage: b.inverse() == a
-            True
-
-        """
-        from sage.matrix.constructor import matrix
-        from comp import Components
-        if self._inverse is None:
-            if self._name is None:
-                inv_name = None
-            else:
-                inv_name = self._name  + '^(-1)'
-            if self._latex_name is None:
-                inv_latex_name = None
-            else:
-                inv_latex_name = self._latex_name + r'^{-1}'
-            fmodule = self._fmodule
-            si = fmodule._sindex
-            nsi = fmodule._rank + si
-            self._inverse = self.__class__(fmodule, inv_name, inv_latex_name)
-            for basis in self._components:
-                try:
-                    mat_self = matrix(
-                              [[self.comp(basis)[[i, j]]
-                              for j in range(si, nsi)] for i in range(si, nsi)])
-                except (KeyError, ValueError):
-                    continue
-                mat_inv = mat_self.inverse()
-                cinv = Components(fmodule._ring, basis, 2, start_index=si,
-                                  output_formatter=fmodule._output_formatter)
-                for i in range(si, nsi):
-                    for j in range(si, nsi):
-                        cinv[i, j] = mat_inv[i-si,j-si]
-                self._inverse._components[basis] = cinv
-        return self._inverse
+        # and the matrices:
+        self._matrices.clear()
+        
 
     def __call__(self, *arg):
         r"""
@@ -234,7 +172,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
         Call with a single argument --> return a module element::
 
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-            sage: a = M.automorphism_tensor(name='a')
+            sage: a = M.automorphism(name='a')
             sage: e = M.basis('e')
             sage: a[0,1], a[1,1], a[2,1] = 2, 4, -5
             sage: v = M([2,1,4], name='v')
@@ -290,6 +228,137 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
             result._latex_name = self._latex_name + r"\left(" + \
                               vector._latex_name + r"\right)"
         return result
+
+    #### End of FreeModuleTensor methods ####
+
+    #### MultiplicativeGroupElement methods ####
+
+    def __invert__(self):
+        r"""
+        Return the inverse automorphism.
+
+        OUTPUT:
+
+        - instance of :class:`FreeModuleAutomorphism` representing the
+          automorphism that is the inverse of ``self``.
+
+        EXAMPLES:
+
+        Inverse of an automorphism on a rank-3 free module::
+
+            sage: M = FiniteRankFreeModule(QQ, 3, name='M')
+            sage: a = M.automorphism('A')
+            sage: e = M.basis('e')
+            sage: a[:] = [[1,0,-1], [0,3,0], [0,0,2]]
+            sage: b = a.__invert__() ; b
+            Automorphism A^(-1) on the Rank-3 free module M over the Rational Field
+            sage: b[:]
+            [  1   0 1/2]
+            [  0 1/3   0]
+            [  0   0 1/2]
+
+        We may check that ``b`` is the inverse of ``a`` by performing the
+        matrix product of the components in the basis ``e``::
+
+            sage: a[:] * b[:]
+            [1 0 0]
+            [0 1 0]
+            [0 0 1]
+
+        Another check is of course::
+
+            sage: b.__invert__() == a
+            True
+
+        """
+        from sage.matrix.constructor import matrix
+        from comp import Components
+        if self._inverse is None:
+            if self._name is None:
+                inv_name = None
+            else:
+                inv_name = self._name  + '^(-1)'
+            if self._latex_name is None:
+                inv_latex_name = None
+            else:
+                inv_latex_name = self._latex_name + r'^{-1}'
+            fmodule = self._fmodule
+            si = fmodule._sindex
+            nsi = fmodule._rank + si
+            self._inverse = self.__class__(fmodule, inv_name, inv_latex_name)
+            for basis in self._components:
+                try:
+                    mat = self.matrix(basis)
+                except (KeyError, ValueError):
+                    continue
+                mat_inv = mat.inverse()
+                cinv = Components(fmodule._ring, basis, 2, start_index=si,
+                                  output_formatter=fmodule._output_formatter)
+                for i in range(si, nsi):
+                    for j in range(si, nsi):
+                        cinv[i, j] = mat_inv[i-si,j-si]
+                self._inverse._components[basis] = cinv
+        return self._inverse
+
+    #### End of MultiplicativeGroupElement methods ####
+
+    #### FiniteRankFreeModuleMorphism methods ####
+
+    def matrix(self, basis1=None, basis2=None):
+        r"""
+        Return the matrix of ``self`` w.r.t to a pair of bases.
+
+        If the matrix is not known already, it is computed from the matrix in
+        another pair of bases by means of the change-of-bases formula.
+
+        INPUT:
+
+        - ``basis1`` -- (default: ``None``) basis of the free module on which
+          ``self`` is defined ; if none is provided, the module's default basis
+            is assumed
+        - ``basis2`` -- (default: ``None``) basis of the free module on which
+          ``self`` is defined ; if none is provided, ``basis2`` is set to
+          ``basis1``.
+
+        OUTPUT:
+
+        - the matrix representing representing the automorphism ``self`` w.r.t
+          to bases ``basis1`` and ``basis2``; more precisely, the columns of
+          this matrix are formed by the components w.r.t. ``basis2`` of 
+          the images of the elements of ``basis1``.
+
+        EXAMPLES:
+
+        """
+        from sage.matrix.constructor import matrix
+        fmodule = self._fmodule
+        if basis1 is None:
+            basis1 = fmodule.default_basis()
+        elif basis1 not in fmodule.bases():
+            raise TypeError("{} is not a basis on the {}".format(basis1,
+                                                                 fmodule))
+        if basis2 is None:
+            basis2 = basis1
+        elif basis2 not in fmodule.bases():
+            raise TypeError("{} is not a basis on the {}".format(basis2,
+                                                                 fmodule))
+        if (basis1, basis2) not in self._matrices:
+            if basis2 == basis1:
+                comp = self.components(basis1)
+                mat = [[comp[[i,j]] for j in fmodule.irange()] 
+                                                     for i in fmodule.irange()]
+                self._matrices[(basis1, basis1)] = matrix(mat)
+            else:
+                # 1/ determine the matrix w.r.t. basis1:
+                self.matrix(basis1)
+                # 2/ perform the change (basis1, basis1) --> (basis1, basis2):
+                return FiniteRankFreeModuleMorphism.matrix(self, basis1,
+                                                           basis2)
+        return self._matrices[(basis1, basis2)]
+
+    #### End of FiniteRankFreeModuleMorphism methods ####
+
+
 
 #******************************************************************************
 

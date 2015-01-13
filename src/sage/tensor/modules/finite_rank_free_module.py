@@ -89,7 +89,7 @@ Module elements can be compared::
 We define a second basis on M by linking it to ``e`` via a module
 automorphism::
 
-    sage: a = M.automorphism_tensor()
+    sage: a = M.automorphism()
     sage: a.set_comp(basis=e)[0,1] = -1 ; a.set_comp(basis=e)[1,0] = 1 # only the non-zero components have to be set
     sage: a[:]  # a matrix view of the automorphism in the module's default basis
     [ 0 -1]
@@ -1040,7 +1040,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         return self.tensor_module(1,1).element_class(self, (1,1), name=name,
                                                      latex_name=latex_name)
 
-    def automorphism_tensor(self, name=None, latex_name=None):
+    def automorphism(self, name=None, latex_name=None):
         r"""
         Construct an invertible type-(1,1) tensor on the free module ``self``.
 
@@ -1059,11 +1059,11 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         EXAMPLES:
 
-        Automorphism tensor on a rank-2 free module (vector space) on `\QQ`::
+        Automorphism of a rank-2 free module (vector space) on `\QQ`::
 
             sage: M = FiniteRankFreeModule(QQ, 2, name='M')
-            sage: a = M.automorphism_tensor('A') ; a
-            Automorphism tensor A on the Rank-2 free module M over the Rational Field
+            sage: a = M.automorphism('A') ; a
+            Automorphism A of the Rank-2 free module M over the Rational Field
             sage: a.parent()
             Free module of type-(1,1) tensors on the
              Rank-2 free module M over the Rational Field
@@ -1075,9 +1075,8 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         for further documentation.
 
         """
-        from free_module_automorphism import FreeModuleAutomorphism
-        return FreeModuleAutomorphism(self, name=name,
-                                            latex_name=latex_name)
+        return self.general_linear_group().element_class(self, name=name,
+                                                         latex_name=latex_name)
 
 
     def identity_tensor(self, name='Id', latex_name=None):
@@ -1590,11 +1589,11 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
             sage: M = FiniteRankFreeModule(QQ, 2, name='M', start_index=1)
             sage: e = M.basis('e')
-            sage: a = M.automorphism_tensor()
+            sage: a = M.automorphism()
             sage: a[:] = [[1, 2], [-1, 3]]
             sage: f = e.new_basis(a, 'f')
             sage: M.change_of_basis(e,f)
-            Automorphism tensor on the Rank-2 free module M over the Rational Field
+            Automorphism of the Rank-2 free module M over the Rational Field
             sage: M.change_of_basis(e,f)[:]
             [ 1  2]
             [-1  3]
@@ -1640,7 +1639,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: M = FiniteRankFreeModule(QQ, 2, name='M')
             sage: e = M.basis('e')
             sage: f = M.basis('f')
-            sage: a = M.automorphism_tensor()
+            sage: a = M.automorphism()
             sage: a[:] = [[1, 2], [-1, 3]]
             sage: M.set_change_of_basis(e, f, a)
 
@@ -1811,7 +1810,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         Construction with full list of arguments (matrix given a basis
         different from the default one)::
 
-            sage: a = M.automorphism_tensor() ; a[0,1], a[1,0] = 1, -1
+            sage: a = M.automorphism() ; a[0,1], a[1,0] = 1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
             sage: phi = M.endomorphism([[1,-2], [-3,4]], basis=ep, name='phi',
             ....:                      latex_name=r'\phi')

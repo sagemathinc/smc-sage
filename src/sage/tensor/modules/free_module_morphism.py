@@ -372,7 +372,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         Comparison of homomorphisms defined on different bases::
 
-            sage: a = M.automorphism_tensor() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
+            sage: a = M.automorphism() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
             sage: psi = M.hom(N, [[-2,0,-1], [-1,-2, 5]], bases=(ep,f))
             sage: phi.__eq__(psi)
@@ -551,9 +551,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         Addition of homomorphisms defined on different bases::
 
-            sage: a = M.automorphism_tensor() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
+            sage: a = M.automorphism() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
-            sage: b = N.automorphism_tensor() ; b[0,1], b[1,0] = -1, 1
+            sage: b = N.automorphism() ; b[0,1], b[1,0] = -1, 1
             sage: fp = f.new_basis(b, 'fp', latex_symbol="f'")
             sage: psi = M.hom(N, [[-2,0,-1], [-1,-2, 5]], bases=(ep,fp))
             sage: s = phi._add_(psi) ; s
@@ -627,9 +627,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         Addition of homomorphisms defined on different bases::
 
-            sage: a = M.automorphism_tensor() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
+            sage: a = M.automorphism() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
-            sage: b = N.automorphism_tensor() ; b[0,1], b[1,0] = -1, 1
+            sage: b = N.automorphism() ; b[0,1], b[1,0] = -1, 1
             sage: fp = f.new_basis(b, 'fp', latex_symbol="f'")
             sage: psi = M.hom(N, [[-2,0,-1], [-1,-2, 5]], bases=(ep,fp))
             sage: s = phi._sub_(psi) ; s
@@ -835,7 +835,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         Image of an element that is not defined on the default basis::
 
-            sage: a = M.automorphism_tensor()
+            sage: a = M.automorphism()
             sage: a[0,2], a[1,0], a[2,1] = 1, -1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
             sage: v = M([1,2,3], basis=ep, name='v')
@@ -998,7 +998,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
             False
             sage: End(M).zero().is_identity()
             False
-            sage: a = M.automorphism_tensor() ; a[0,1], a[1,0] = 1, -1
+            sage: a = M.automorphism() ; a[0,1], a[1,0] = 1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
             sage: phi = M.endomorphism([[1,0], [0,1]], basis=ep)
             sage: phi.is_identity()
@@ -1086,14 +1086,14 @@ class FiniteRankFreeModuleMorphism(Morphism):
         Matrix in bases different from those in which the homomorphism has
         been defined::
 
-            sage: a = M.automorphism_tensor()
+            sage: a = M.automorphism()
             sage: a[0,2], a[1,0], a[2,1] = 1, -1, -1
             sage: a[:]
             [ 0  0  1]
             [-1  0  0]
             [ 0 -1  0]
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
-            sage: b = N.automorphism_tensor()
+            sage: b = N.automorphism()
             sage: b[0,1], b[1,0] = -1, 1
             sage: b[:]
             [ 0 -1]
@@ -1249,7 +1249,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: phi._common_bases(psi) # matrices of phi and psi both defined on (e,f)
             (Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer Ring,
              Basis (f_0,f_1) on the Rank-2 free module N over the Integer Ring)
-            sage: a = M.automorphism_tensor() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
+            sage: a = M.automorphism() ; a[0,2], a[1,0], a[2,1] = 1, -1, -1
             sage: ep = e.new_basis(a, 'ep', latex_symbol="e'")
             sage: psi = M.hom(N, [[1,1,0], [4,1,3]], bases=(ep,f))
             sage: phi._common_bases(psi) # matrix of psi w.r.t. (e,f) computed

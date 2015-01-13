@@ -574,7 +574,7 @@ class FreeModuleTensor(ModuleElement):
 
         Display in a basis which is not the default one::
 
-            sage: a = M.automorphism_tensor()
+            sage: a = M.automorphism()
             sage: a[:] = [[1,2],[3,4]]
             sage: f = e.new_basis(a, 'f')
             sage: v.display(f) # the components w.r.t basis f are first computed via the change-of-basis formula defined by a
@@ -814,7 +814,8 @@ class FreeModuleTensor(ModuleElement):
         - ``from_basis`` -- (default: ``None``) basis from which the
           required components are computed, via the tensor change-of-basis
           formula, if they are not known already in the basis ``basis``;
-          if none, a basis is picked in ``self._components``
+          if none, a basis from which both the components and a change-of-basis
+          to ``basis`` are known is selected.
 
         OUTPUT:
 
@@ -856,7 +857,7 @@ class FreeModuleTensor(ModuleElement):
 
         Components computed via a change-of-basis formula::
 
-            sage: a = M.automorphism_tensor()
+            sage: a = M.automorphism()
             sage: a[:] = [[0,0,1], [1,0,0], [0,-1,0]]
             sage: f = e.new_basis(a, 'f')
             sage: t.comp(f)
@@ -974,7 +975,7 @@ class FreeModuleTensor(ModuleElement):
         The components w.r.t. basis e can be deduced from those w.r.t. basis f,
         once a relation between the two bases has been set::
 
-            sage: a = M.automorphism_tensor()
+            sage: a = M.automorphism()
             sage: a[:] = [[0,0,1], [1,0,0], [0,-1,0]]
             sage: M.set_change_of_basis(e, f, a)
             sage: t.display(e)
@@ -1307,7 +1308,7 @@ class FreeModuleTensor(ModuleElement):
 
         Linking bases ``e`` and ``f`` changes the result::
 
-            sage: a = M.automorphism_tensor()
+            sage: a = M.automorphism()
             sage: a[:] = [[0,0,1], [1,0,0], [0,-1,0]]
             sage: M.set_change_of_basis(e, f, a)
             sage: u.common_basis(v)
@@ -2339,7 +2340,7 @@ class FreeModuleTensor(ModuleElement):
         contraction to take place, reflecting the fact that the contraction is
         basis-independent::
 
-            sage: A = M.automorphism_tensor()
+            sage: A = M.automorphism()
             sage: A[:] =  [[0,0,1], [1,0,0], [0,-1,0]]
             sage: h = e.new_basis(A, 'h')
             sage: b.comp(h)[:]  # forces the computation of b's components w.r.t. basis h

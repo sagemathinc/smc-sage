@@ -375,7 +375,7 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
 
             sage: M = FiniteRankFreeModule(QQ, 2, name='M', start_index=1)
             sage: e = M.basis('e')
-            sage: a = M.automorphism_tensor()
+            sage: a = M.automorphism()
             sage: a[:] = [[1, 2], [-1, 3]]
             sage: f = e.new_basis(a, 'f') ; f
             Basis (f_1,f_2) on the Rank-2 free module M over the Rational Field
