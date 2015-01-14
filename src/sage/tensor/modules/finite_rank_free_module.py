@@ -146,11 +146,13 @@ Tensor products are implemented::
     sage: t.display()
     u*v = -8 e_0*e_0 + 4 e_0*e_1 + 12 e_1*e_0 - 6 e_1*e_1
 
-The automorphism ``a`` is considered as a tensor of type `(1,1)` on ``M``::
+The parent of the automorphism ``a`` is GL(M), but it can also be considered as
+a tensor of type `(1,1)` on ``M``::
 
     sage: a.parent()
-    Free module of type-(1,1) tensors on the
-     Rank-2 free module M over the Integer Ring
+    General linear group of the Rank-2 free module M over the Integer Ring
+    sage: a.tensor_type()
+    (1, 1)
     sage: a.display()
     -e_0*e^1 + e_1*e^0
 
@@ -625,21 +627,32 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             self._general_linear_group = FreeModuleLinearGroup(self)
         return self._general_linear_group
 
-    def basis(self, symbol=None, latex_symbol=None):
+    def basis(self, symbol, latex_symbol=None, from_family=None):
         r"""
-        Define a basis of the free module.
+        Define or return a basis of the free module.
+
+        Let `M` denotes the free module ``self`` and `n` its rank.
+        
+        The basis can be defined from a set of `n` linearly independent
+        elements of `M` by means of the argument ``from_family``.
+        If `from_family`` is not specified, the basis is created from
+        scratch and, at this stage, is unrelated to bases that could have been
+        defined previously on `M`. 
 
         If the basis specified by the given symbol already exists, it is
-        simply returned.
+        simply returned, whatever the value of the arguments ``latex_symbol``
+        or ``from_family``.
 
         INPUT:
 
-        - ``symbol`` -- (default: ``None``) string; a letter (of a few letters)
-          to denote a generic element of the basis; if ``None``, the module's
-          default basis is returned
+        - ``symbol`` -- string; a letter (of a few letters) to denote a generic
+          element of the basis
         - ``latex_symbol`` -- (default: ``None``) string; symbol to denote a
           generic element of the basis; if ``None``, the value of ``symbol``
           is used
+        - ``from_family`` -- (default: ``None``) a tuple of `n` linearly
+          independent elements of the free module ``self`` (`n` being the
+          rank of ``self``)
 
         OUTPUT:
 
@@ -676,15 +689,6 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: M.basis('eps') is eps
             True
 
-        If no symbol is provided, the module's default basis is returned::
-
-            sage: M.basis()
-            Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer Ring
-            sage: M.basis() is e
-            True
-            sage: M.basis() is M.default_basis()
-            True
-
         The individual elements of the basis are labelled according the
         parameter ``start_index`` provided at the free module construction::
 
@@ -696,14 +700,32 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         """
         from free_module_basis import FreeModuleBasis
-        if symbol is None:
-            return self.default_basis()
-
         for other in self._known_bases:
             if symbol == other._symbol:
                 return other
-        return FreeModuleBasis(self, symbol, latex_symbol)
-
+        resu = FreeModuleBasis(self, symbol, latex_symbol)
+        if from_family:
+            n = self._rank
+            if len(from_family) != n:
+                raise ValueError("the size of the family is not {}".format(n))
+            for ff in from_family:
+                if ff not in self:
+                    raise TypeError("{} is not an element of {}".format(ff,
+                                                                        self))
+            # The automorphisms relating the family to previously defined
+            # bases are registered:
+            ff0 = from_family[0]
+            for basis in ff0._components:
+                try:
+                    comp = [ff.components(basis) for ff in from_family]
+                except ValueError:
+                    continue
+                mat = [[comp_ff[[i]] for comp_ff in comp]
+                                                        for i in self.irange()]
+                aut = self.automorphism()
+                aut.set_comp(basis)[:] = mat
+                self.set_change_of_basis(basis, resu, aut)
+        return resu
 
     def tensor(self, tensor_type, name=None, latex_name=None, sym=None,
                antisym=None):
@@ -1042,14 +1064,14 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
     def automorphism(self, name=None, latex_name=None):
         r"""
-        Construct an invertible type-(1,1) tensor on the free module ``self``.
+        Construct a module automorphism of ``self``.
 
         INPUT:
 
         - ``name`` -- (default: ``None``) string; name given to the
-          tensor
+          automorphism
         - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to
-          denote the tensor; if none is provided, the LaTeX symbol
+          denote the automorphism; if none is provided, the LaTeX symbol
           is set to ``name``
 
         OUTPUT:
@@ -1065,8 +1087,8 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: a = M.automorphism('A') ; a
             Automorphism A of the Rank-2 free module M over the Rational Field
             sage: a.parent()
-            Free module of type-(1,1) tensors on the
-             Rank-2 free module M over the Rational Field
+            General linear group of the Rank-2 free module M over the Rational
+             Field
             sage: a.tensor_type()
             (1, 1)
 
@@ -1118,8 +1140,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         The identity is a tensor of type `(1,1)` on the free module::
 
             sage: a.parent()
-            Free module of type-(1,1) tensors on the
-             Rank-3 free module M over the Integer Ring
+            General linear group of the Rank-3 free module M over the Integer Ring
             sage: a.tensor_type()
             (1, 1)
 
@@ -1613,7 +1634,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         return self._basis_changes[(basis1, basis2)]
 
     def set_change_of_basis(self, basis1, basis2, change_of_basis,
-                         compute_inverse=True):
+                            compute_inverse=True):
         r"""
         Relates two bases by an automorphism.
 

@@ -17,10 +17,8 @@ AUTHORS:
 
 from sage.structure.element import MultiplicativeGroupElement
 from sage.tensor.modules.free_module_tensor import FreeModuleTensor
-from sage.tensor.modules.free_module_morphism import FiniteRankFreeModuleMorphism
 
-class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
-                             FiniteRankFreeModuleMorphism):
+class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
     r"""
     Automorphism (considered as a type-`(1,1)` tensor) on a free module.
 
@@ -43,8 +41,8 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
     Automorphisms are tensors of type `(1,1)`::
 
         sage: a.parent()
-        Free module of type-(1,1) tensors on the
-         Rank-2 free module M over the Rational Field
+        General linear group of the Rank-2 free module M over the Rational
+         Field
         sage: a.tensor_type()
         (1, 1)
         sage: a.tensor_rank()
@@ -61,10 +59,15 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
         sage: a.display(basis=e)
         A = e_0*e^0 + 2 e_0*e^1 - e_1*e^0 + 3 e_1*e^1
 
-    The inverse automorphism is obtained via the method :meth:`inverse`::
+    The inverse automorphism is obtained via the method :meth:`inverse`,
+    or the operator ~, or the exponent -1::
 
         sage: b = a.inverse() ; b
-        Automorphism A^(-1) on the Rank-2 free module M over the Rational Field
+        Automorphism A^(-1) of the Rank-2 free module M over the Rational Field
+        sage: b is ~a
+        True
+        sage: b is a^(-1)
+        True
         sage: b.display(basis=e)
         A^(-1) = 3/5 e_0*e^0 - 2/5 e_0*e^1 + 1/5 e_1*e^0 + 1/5 e_1*e^1
         sage: b[:]
@@ -149,18 +152,19 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
             sage: a[e,:] = [[1,0,-1], [0,3,0], [0,0,2]]
             sage: b = a.inverse()
             sage: a._inverse
-            Automorphism a^(-1) on the Rank-3 free module M over the Rational Field
+            Automorphism a^(-1) of the Rank-3 free module M over the Rational Field
             sage: a._del_derived()
             sage: a._inverse  # has been reset to None
 
         """
         # First delete the derived quantities pertaining to FreeModuleTensor:
         FreeModuleTensor._del_derived(self)
-        # Then deletes the inverse automorphism:
-        self._inverse = None
-        # and the matrices:
+        # Then reset the inverse automorphism to None:
+        if self._inverse is not None:
+            self._inverse._inverse = None  # (it was set to self)
+            self._inverse = None
+        # and delete the matrices:
         self._matrices.clear()
-        
 
     def __call__(self, *arg):
         r"""
@@ -251,7 +255,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
             sage: e = M.basis('e')
             sage: a[:] = [[1,0,-1], [0,3,0], [0,0,2]]
             sage: b = a.__invert__() ; b
-            Automorphism A^(-1) on the Rank-3 free module M over the Rational Field
+            Automorphism A^(-1) of the Rank-3 free module M over the Rational Field
             sage: b[:]
             [  1   0 1/2]
             [  0 1/3   0]
@@ -298,11 +302,10 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
                     for j in range(si, nsi):
                         cinv[i, j] = mat_inv[i-si,j-si]
                 self._inverse._components[basis] = cinv
+            self._inverse._inverse = self
         return self._inverse
 
     #### End of MultiplicativeGroupElement methods ####
-
-    #### FiniteRankFreeModuleMorphism methods ####
 
     def matrix(self, basis1=None, basis2=None):
         r"""
@@ -356,11 +359,9 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement,
                                                            basis2)
         return self._matrices[(basis1, basis2)]
 
-    #### End of FiniteRankFreeModuleMorphism methods ####
+    inverse = __invert__
 
-
-
-#******************************************************************************
+#******************************************************************************        
 
 class FreeModuleIdentityTensor(FreeModuleAutomorphism):
     r"""
@@ -394,8 +395,7 @@ class FreeModuleIdentityTensor(FreeModuleAutomorphism):
     The identity is a tensor of type `(1,1)` on the free module::
 
         sage: a.parent()
-        Free module of type-(1,1) tensors on the
-         Rank-3 free module M over the Integer Ring
+        General linear group of the Rank-3 free module M over the Integer Ring
         sage: a.tensor_type()
         (1, 1)
         sage: a.tensor_rank()
@@ -465,7 +465,7 @@ class FreeModuleIdentityTensor(FreeModuleAutomorphism):
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
             sage: Id = FreeModuleIdentityTensor(M)
-            sage: #!# TestSuite(Id).run(skip="_test_category") # see below
+            sage: TestSuite(Id).run(skip="_test_category") # see below
 
         In the above test suite, _test_category fails because Id is not an
         instance of Id.parent().category().element_class.
@@ -619,7 +619,7 @@ class FreeModuleIdentityTensor(FreeModuleAutomorphism):
 
     def __call__(self, *arg):
         r"""
-        Redefinition of :meth:`FreeModuleAutomorphism.__call__`.
+        Redefinition of :meth:`FreeModuleEndomorphismTensor.__call__`.
 
         EXAMPLES:
 
