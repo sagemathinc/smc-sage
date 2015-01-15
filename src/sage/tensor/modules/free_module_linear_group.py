@@ -1,5 +1,5 @@
 """
-General linear group of a free module.
+General linear group of a free module
 
 AUTHORS:
 

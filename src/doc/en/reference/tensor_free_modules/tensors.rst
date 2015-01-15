@@ -8,6 +8,4 @@ Tensors
 
    sage/tensor/modules/free_module_tensor
 
-   sage/tensor/modules/free_module_tensor_spec
-
    sage/tensor/modules/tensor_with_indices

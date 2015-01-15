@@ -698,6 +698,40 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: e[1]
             Element e_1 of the Rank-3 free module M over the Integer Ring
 
+        Construction of a basis from a family of linearly independent module
+        elements::
+
+            sage: f1 = -e[2]
+            sage: f2 = 4*e[1] + 3*e[3]
+            sage: f3 = 7*e[1] + 5*e[3]
+            sage: f = M.basis('f', from_family=(f1,f2,f3))
+            sage: f[1].display()
+            f_1 = -e_2
+            sage: f[2].display()
+            f_2 = 4 e_1 + 3 e_3
+            sage: f[3].display()
+            f_3 = 7 e_1 + 5 e_3
+
+        The change-of-basis automorphisms have been registered::
+
+            sage: M.change_of_basis(e,f).matrix(e)
+            [ 0  4  7]
+            [-1  0  0]
+            [ 0  3  5]
+            sage: M.change_of_basis(f,e).matrix(e)
+            [ 0 -1  0]
+            [-5  0  7]
+            [ 3  0 -4]
+            sage: M.change_of_basis(f,e) == M.change_of_basis(e,f).inverse()
+            True
+
+        Check of the change-of-basis e --> f::
+
+            sage: a = M.change_of_basis(e,f) ; a
+            Automorphism of the Rank-3 free module M over the Integer Ring
+            sage: all( f[i] == a(e[i]) for i in M.irange() )
+            True
+
         """
         from free_module_basis import FreeModuleBasis
         for other in self._known_bases:

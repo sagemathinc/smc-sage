@@ -1,5 +1,5 @@
 """
-Free Module automorphisms.
+Free module automorphisms
 
 AUTHORS:
 
@@ -37,12 +37,14 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
         sage: M = FiniteRankFreeModule(QQ, 2, name='M')
         sage: a = M.automorphism('A') ; a
         Automorphism A of the Rank-2 free module M over the Rational Field
-
-    Automorphisms are tensors of type `(1,1)`::
-
         sage: a.parent()
         General linear group of the Rank-2 free module M over the Rational
          Field
+        sage: a.parent() is M.general_linear_group()
+        True
+
+    Automorphisms are tensors of type `(1,1)`::
+
         sage: a.tensor_type()
         (1, 1)
         sage: a.tensor_rank()
@@ -305,6 +307,8 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
             self._inverse._inverse = self
         return self._inverse
 
+    inverse = __invert__
+
     #### End of MultiplicativeGroupElement methods ####
 
     def matrix(self, basis1=None, basis2=None):
@@ -359,8 +363,72 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
                                                            basis2)
         return self._matrices[(basis1, basis2)]
 
-    inverse = __invert__
+    def det(self):
+        r"""
+        Return the determinant of ``self``.
 
+        OUTPUT:
+
+        - element of the base ring of the module on which ``self`` is defined,
+          equal to the determinant of ``self``.
+          
+        EXAMPLES:
+
+        Determinant of an automorphism on a `\ZZ`-module of rank 2::
+
+            sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
+            sage: e = M.basis('e')
+            sage: a = M.automorphism('a')
+            sage: a[:] = [[4,7],[3,5]]
+            sage: a.matrix(e)
+            [4 7]
+            [3 5]
+            sage: a.det()
+            -1
+            sage: ~a.det()  # determinant of the inverse automorphism
+            -1
+
+        """
+        self.matrix() # forces the update of the matrix in the module's default
+                      # basis, to make sure that the dictionary self._matrices
+                      # is not empty
+        return self._matrices.values()[0].det() # pick a random value in the
+                                                # dictionary self._matrices
+                                                # and compute the determinant
+
+
+    def trace(self):
+        r"""
+        Return the trace of ``self``.
+
+        OUTPUT:
+
+        - element of the base ring of the module on which ``self`` is defined,
+          equal to the trace of ``self``.
+          
+        EXAMPLES:
+
+        Trace of an automorphism on a `\ZZ`-module of rank 2::
+
+            sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
+            sage: e = M.basis('e')
+            sage: a = M.automorphism('a')
+            sage: a[:] = [[4,7],[3,5]]
+            sage: a.matrix(e)
+            [4 7]
+            [3 5]
+            sage: a.trace()
+            9
+        
+        """
+        self.matrix() # forces the update of the matrix in the module's default
+                      # basis, to make sure that the dictionary self._matrices
+                      # is not empty
+        return self._matrices.values()[0].trace() # pick a random value in the
+                                                  # dictionary self._matrices
+                                                  # and compute the trace
+
+        
 #******************************************************************************        
 
 class FreeModuleIdentityTensor(FreeModuleAutomorphism):
