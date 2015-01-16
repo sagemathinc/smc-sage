@@ -159,18 +159,13 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
     The identity endomorphism::
 
-        sage: Id = M.identity_map() ; Id
+        sage: Id = End(M).one() ; Id
         Identity endomorphism of Rank-3 free module M over the Integer Ring
         sage: Id.parent()
         Set of Morphisms from Rank-3 free module M over the Integer Ring to
          Rank-3 free module M over the Integer Ring in Category of modules
          over Integer Ring
         sage: Id.parent() is End(M)
-        True
-
-    The identity endomorphism is actually the unit of End(M)::
-
-        sage: Id is End(M).one()
         True
 
     The matrix of Id with respect to the basis e is of course the identity
@@ -934,9 +929,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         Of course, the identity endomorphism is injective::
 
-            sage: M.identity_map().is_injective()
+            sage: End(M).one().is_injective()
             True
-            sage: N.identity_map().is_injective()
+            sage: End(N).one().is_injective()
             True
 
         """
@@ -966,11 +961,11 @@ class FiniteRankFreeModuleMorphism(Morphism):
             ...
             NotImplementedError: FiniteRankFreeModuleMorphism.is_surjective() has not been implemented yet
 
-        except for the identity map (!)::
+        except for the identity endomorphisme (!)::
 
-            sage: M.identity_map().is_surjective()
+            sage: End(M).one().is_surjective()
             True
-            sage: N.identity_map().is_surjective()
+            sage: End(N).one().is_surjective()
             True
 
         """

@@ -36,6 +36,21 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
     Element = FreeModuleAutomorphism
     
     def __init__(self, fmodule):
+        r"""
+        See :class:`FreeModuleLinearGroup` for documentation and examples.
+
+        TESTS::
+
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: e = M.basis('e')
+            sage: from sage.tensor.modules.free_module_linear_group import FreeModuleLinearGroup
+            sage: GL = FreeModuleLinearGroup(M) ; GL
+            General linear group of the Rank-3 free module M over the Integer Ring
+            sage: GL.category()
+            Category of groups
+            sage: TestSuite(GL).run()
+
+        """
         if not isinstance(fmodule, FiniteRankFreeModule):
             raise TypeError("{} is not a free module of finite rank".format(
                             fmodule))
@@ -85,11 +100,10 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
         Return the group unit element.
         """
         if self._one is None:
-            self._one = self.element_class(self._fmodule)
-            for basis in self._fmodule._known_bases:
-                comp = self._one.add_comp(basis)
-                for i in self._fmodule.irange():
-                    comp[[i,i]] = self._fmodule._ring.one()
+            self._one = self.element_class(self._fmodule, is_identity=True)
+            if self._fmodule.bases():
+                self._one.components(self._fmodule.bases()[0]) # initializes
+                                                # the components in some basis
         return self._one
 
     #### End of monoid methods ####

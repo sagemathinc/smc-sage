@@ -30,12 +30,8 @@ tensors:
 * :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
   for type-(1,1) tensors representing invertible endomorphisms
 
-  * :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleIdentityTensor`
-    for the type-(1,1) tensor representing the free module identity map
-
 :class:`FreeModuleTensor` is a Sage *element* class, the corresponding *parent*
 class being :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule`.
-
 
 AUTHORS:
 

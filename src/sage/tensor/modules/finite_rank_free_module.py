@@ -1096,12 +1096,28 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         return self.tensor_module(1,1).element_class(self, (1,1), name=name,
                                                      latex_name=latex_name)
 
-    def automorphism(self, name=None, latex_name=None):
+    def automorphism(self, matrix=None, basis=None, name=None,
+                     latex_name=None):
         r"""
         Construct a module automorphism of ``self``.
 
+        Denoting ``self`` by `M`, an automorphism of ``self`` is an element
+        of the general linear group `\mathrm{GL}(M)`. 
+
         INPUT:
 
+        - ``matrix`` -- (default: ``None``) matrix of size rank(M)*rank(M)
+          representing the automorphism with respect to ``basis``;
+          this entry can actually be any material from which a matrix of
+          elements of ``self`` base ring can be constructed; the *columns* of
+          ``matrix`` must be the components w.r.t. ``basis`` of
+          the images of the elements of ``basis``. If ``matrix`` is ``None``,
+          the automorphism has to be initialized afterwards by
+          method :meth:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor.set_comp`
+          or via the operator []. 
+        - ``basis`` -- (default: ``None``) basis of ``self`` defining the
+          matrix representation; if ``None`` the default basis of ``self`` is
+          assumed.
         - ``name`` -- (default: ``None``) string; name given to the
           automorphism
         - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to
@@ -1115,77 +1131,61 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         EXAMPLES:
 
-        Automorphism of a rank-2 free module (vector space) on `\QQ`::
+        Automorphism of a rank-2 free `\ZZ`-module::
 
-            sage: M = FiniteRankFreeModule(QQ, 2, name='M')
-            sage: a = M.automorphism('A') ; a
-            Automorphism A of the Rank-2 free module M over the Rational Field
+            sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
+            sage: e = M.basis('e')
+            sage: a = M.automorphism(matrix=[[1,2],[1,3]], basis=e, name='a') ; a
+            Automorphism a of the Rank-2 free module M over the Integer Ring
             sage: a.parent()
-            General linear group of the Rank-2 free module M over the Rational
-             Field
+            General linear group of the Rank-2 free module M over the Integer Ring
+            sage: a.matrix(e)
+            [1 2]
+            [1 3]
+
+        An automorphism is a tensor of type (1,1)::
+
             sage: a.tensor_type()
             (1, 1)
+            sage: a.display(e)
+            a = e_0*e^0 + 2 e_0*e^1 + e_1*e^0 + 3 e_1*e^1
+
+        The automorphism components can be specified in a second step, as
+        components of a type-(1,1) tensor::
+        
+            sage: a1 = M.automorphism(name='a')
+            sage: a1[e,:] = [[1,2],[1,3]]
+            sage: a1.matrix(e)
+            [1 2]
+            [1 3]
+            sage: a1 == a
+            True
+
+        Component by component specification::
+        
+            sage: a2 = M.automorphism(name='a')
+            sage: a2[0,0] = 1  # component set in the module's default basis (e)
+            sage: a2[0,1] = 2
+            sage: a2[1,0] = 1
+            sage: a2[1,1] = 3
+            sage: a2.matrix(e)
+            [1 2]
+            [1 3]
+            sage: a2 == a
+            True
 
         See
         :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
         for further documentation.
 
         """
-        return self.general_linear_group().element_class(self, name=name,
+        resu = self.general_linear_group().element_class(self, name=name,
                                                          latex_name=latex_name)
-
-
-    def identity_tensor(self, name='Id', latex_name=None):
-        r"""
-        Construct the type-(1,1) tensor representing the identity map of
-        the free module ``self``
-
-        INPUT:
-
-        - ``name`` -- (default: ``'Id'``) string; name given to the
-          identity tensor
-        - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to
-          denote the identity tensor; if none is provided, the LaTeX symbol
-          is set to ``name``
-
-        OUTPUT:
-
-        - instance of
-          :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleIdentityTensor`
-
-        EXAMPLES:
-
-        Identity tensor of a rank-3 free module::
-
-            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-            sage: e = M.basis('e')
-            sage: a = M.identity_tensor() ; a
-            Identity tensor on the Rank-3 free module M over the Integer Ring
-
-        The LaTeX symbol is set by default to `\mathrm{Id}`, but can
-        be changed::
-
-            sage: latex(a)
-            \mathrm{Id}
-            sage: a = M.identity_tensor(latex_name=r'\mathrm{1}')
-            sage: latex(a)
-            \mathrm{1}
-
-        The identity is a tensor of type `(1,1)` on the free module::
-
-            sage: a.parent()
-            General linear group of the Rank-3 free module M over the Integer Ring
-            sage: a.tensor_type()
-            (1, 1)
-
-        See
-        :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleIdentityTensor`
-        for further documentation.
-
-        """
-        from free_module_automorphism import FreeModuleIdentityTensor
-        return FreeModuleIdentityTensor(self, name=name, latex_name=latex_name)
-
+        if matrix:
+            if basis is None:
+                basis = self.default_basis()
+            resu.set_comp(basis)[:] = matrix
+        return resu
 
     def sym_bilinear_form(self, name=None, latex_name=None):
         r"""
@@ -1887,31 +1887,47 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
     def identity_map(self):
         r"""
-        Return the identity endomorphism of the free module ``self``.
+        Return the identity map of the free module ``self``.
 
         OUTPUT:
 
         - the identity map of ``self`` as an instance of
-          :class:`~sage.tensor.modules.free_module_morphism.FiniteRankFreeModuleMorphism`
+          :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
 
         EXAMPLES:
 
-        Identity endomorphism of a rank-3 `\ZZ`-module::
+        Identity map of a rank-3 `\ZZ`-module::
 
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
             sage: Id = M.identity_map() ; Id
-            Identity endomorphism of Rank-3 free module M over the Integer Ring
+            Identity map of the Rank-3 free module M over the Integer Ring
+            sage: Id.parent()
+            General linear group of the Rank-3 free module M over the Integer Ring
             sage: latex(Id)
             \mathrm{Id}
+            sage: Id.matrix(e)
+            [1 0 0]
+            [0 1 0]
+            [0 0 1]
 
-        The identity endomorphism is actually the unit of End(M)::
+        The identity map is actually the identity element of GL(M)::
 
-            sage: Id is End(M).one()
+            sage: Id is M.general_linear_group().one()
             True
 
+        It is also a tensor of type-(1,1) on M::
+
+            sage: Id.tensor_type()
+            (1, 1)
+            sage: Id.comp(e)
+            Kronecker delta of size 3x3
+            sage: Id[:]
+            [1 0 0]
+            [0 1 0]
+            [0 0 1]
+
         """ 
-        from sage.categories.homset import End
         if self._identity_map is None:
-            self._identity_map = End(self).one()
+            self._identity_map = self.general_linear_group().one()
         return self._identity_map

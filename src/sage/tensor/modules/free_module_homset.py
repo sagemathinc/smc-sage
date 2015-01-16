@@ -22,8 +22,8 @@ AUTHORS:
 
 from sage.categories.homset import Homset
 from sage.tensor.modules.free_module_morphism import FiniteRankFreeModuleMorphism
+from sage.tensor.modules.free_module_automorphism import FreeModuleAutomorphism
 from sage.tensor.modules.free_module_tensor import FreeModuleTensor
-from sage.tensor.modules.free_module_automorphism import FreeModuleIdentityTensor
 
 class FreeModuleHomset(Homset):
     r"""
@@ -344,9 +344,12 @@ class FreeModuleHomset(Homset):
                 fmodule = tensor.base_module()
                 mat = [[ tcomp[[i,j]] for j in fmodule.irange()] \
                                                      for i in fmodule.irange()]
+                is_identity = False
+                if isinstance(tensor, FreeModuleAutomorphism):
+                    is_identity = tensor._is_identity
                 resu = self.element_class(self, mat, bases=(basis,basis), 
                               name=tensor._name, latex_name=tensor._latex_name,
-                      is_identity=isinstance(tensor, FreeModuleIdentityTensor))
+                              is_identity=is_identity)
             else:
                 raise TypeError("cannot coerce the " + str(tensor) +
                                 " to an element of " + str(self))
