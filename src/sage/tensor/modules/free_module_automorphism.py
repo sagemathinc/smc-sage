@@ -1,9 +1,25 @@
-"""
+r"""
 Free module automorphisms
+
+Given a free module `M` of finite rank over a commutative ring `R`, an
+*automorphism* of `M` is a map
+
+.. MATH::
+
+    \phi:\ M \longrightarrow M
+
+that is linear (i.e. is a module homomorphism) and bijective. 
+
+Automorphisms of a free module of finite rank are implemented via the class :class:`FreeModuleAutomorphism`.
 
 AUTHORS:
 
 - Eric Gourgoulhon (2015): initial version
+
+REFERENCES:
+
+- Chaps. 15, 24 of R. Godement: "Algebra", Hermann (Paris) / Houghton Mifflin
+  (Boston) (1968)
 
 """
 #******************************************************************************
@@ -20,12 +36,21 @@ from sage.tensor.modules.free_module_tensor import FreeModuleTensor
 
 class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
     r"""
-    Automorphism (considered as a type-`(1,1)` tensor) on a free module.
+    Automorphism of a free module of finite rank over a commutative ring.
+
+    This is a Sage *element* class, the corresponding *parent* class being
+    :class:`~sage.tensor.modules.free_module_linear_group.FreeModuleLinearGroup`.
+
+    This class inherits from the classes
+    :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`
+    and
+    :class:`~sage.structure.element.MultiplicativeGroupElement`.
 
     INPUT:
 
-    - ``fmodule`` -- free module `M` over a commutative ring `R`
-      (must be an instance of :class:`FiniteRankFreeModule`)
+    - ``fmodule`` -- free module `M` of finite rank over a commutative ring
+      `R`, as an instance of
+      :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`
     - ``name`` -- (default: ``None``) name given to the automorphism
     - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
       automorphism; if none is provided, the LaTeX symbol is set to ``name``
@@ -36,16 +61,55 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
     EXAMPLES:
 
-    Automorphism of a rank-2 free module (vector space) on `\QQ`::
+    Automorphism of a rank-2 free module over `\ZZ`::
 
-        sage: M = FiniteRankFreeModule(QQ, 2, name='M')
-        sage: a = M.automorphism(name='A') ; a
-        Automorphism A of the Rank-2 free module M over the Rational Field
+        sage: M = FiniteRankFreeModule(ZZ, 2, name='M', start_index=1)
+        sage: a = M.automorphism(name='a', latex_name=r'\alpha') ; a
+        Automorphism a of the Rank-2 free module M over the Integer Ring
         sage: a.parent()
-        General linear group of the Rank-2 free module M over the Rational
-         Field
+        General linear group of the Rank-2 free module M over the Integer Ring
         sage: a.parent() is M.general_linear_group()
         True
+        sage: latex(a)
+        \alpha
+
+    Setting the components of ``a`` w.r.t. a basis of module ``M``::
+
+        sage: e = M.basis('e') ; e
+        Basis (e_1,e_2) on the Rank-2 free module M over the Integer Ring
+        sage: a[:] = [[1,2],[1,3]]
+        sage: a.matrix(e)
+        [1 2]
+        [1 3]
+        sage: a(e[1]).display()
+        a(e_1) = e_1 + e_2
+        sage: a(e[2]).display()
+        a(e_2) = 2 e_1 + 3 e_2
+
+    Actually, the components w.r.t. a given basis can be specified at the
+    construction of the object::
+
+        sage: a = M.automorphism(matrix=[[1,2],[1,3]], basis=e, name='a',
+        ....:                    latex_name=r'\alpha') ; a
+        Automorphism a of the Rank-2 free module M over the Integer Ring
+        sage: a.matrix(e)
+        [1 2]
+        [1 3]
+
+    Since e is the module's default basis, it can be omitted in the argument
+    list::
+
+        sage: a == M.automorphism(matrix=[[1,2],[1,3]], name='a',
+        ....:                     latex_name=r'\alpha')
+        True
+
+    The matrix of the automorphism can be obtained in any basis::
+
+        sage: f = M.basis('f', from_family=(3*e[1]+4*e[2], 5*e[1]+7*e[2])) ; f
+        Basis (f_1,f_2) on the Rank-2 free module M over the Integer Ring
+        sage: a.matrix(f)
+        [2 3]
+        [1 2]
 
     Automorphisms are tensors of type `(1,1)`::
 
@@ -54,47 +118,119 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
         sage: a.tensor_rank()
         2
 
-    Setting the components in a basis::
+    In particular, they can be displayed as such::
 
-        sage: e = M.basis('e') ; e
-        Basis (e_0,e_1) on the Rank-2 free module M over the Rational Field
-        sage: a[:] = [[1, 2], [-1, 3]]
-        sage: a[:]
-        [ 1  2]
-        [-1  3]
-        sage: a.display(basis=e)
-        A = e_0*e^0 + 2 e_0*e^1 - e_1*e^0 + 3 e_1*e^1
+        sage: a.display(e)
+        a = e_1*e^1 + 2 e_1*e^2 + e_2*e^1 + 3 e_2*e^2
+        sage: a.display(f)
+        a = 2 f_1*f^1 + 3 f_1*f^2 + f_2*f^1 + 2 f_2*f^2
 
-    The inverse automorphism is obtained via the method :meth:`inverse`,
-    or the operator ~, or the exponent -1::
+    The automorphism acting on a module element::
 
-        sage: b = a.inverse() ; b
-        Automorphism A^(-1) of the Rank-2 free module M over the Rational Field
-        sage: b is ~a
+        sage: v = M([-2,3], name='v') ; v
+        Element v of the Rank-2 free module M over the Integer Ring
+        sage: a(v)
+        Element a(v) of the Rank-2 free module M over the Integer Ring
+        sage: a(v).display()
+        a(v) = 4 e_1 + 7 e_2
+
+    A second automorphism of the module ``M``::
+
+        sage: b = M.automorphism([[0,1],[-1,0]], name='b') ; b
+        Automorphism b of the Rank-2 free module M over the Integer Ring
+        sage: b.matrix(e)
+        [ 0  1]
+        [-1  0]
+        sage: b(e[1]).display()
+        b(e_1) = -e_2
+        sage: b(e[2]).display()
+        b(e_2) = e_1
+
+    The composition of automorphisms is performed via the multiplication
+    operator::
+
+        sage: s = a*b ; s
+        Automorphism of the Rank-2 free module M over the Integer Ring
+        sage: s(v) == a(b(v))
         True
-        sage: b is a^(-1)
+        sage: s.matrix(f)
+        [ 11  19]
+        [ -7 -12]
+        sage: s.matrix(f) == a.matrix(f) * b.matrix(f)
         True
-        sage: b.display(basis=e)
-        A^(-1) = 3/5 e_0*e^0 - 2/5 e_0*e^1 + 1/5 e_1*e^0 + 1/5 e_1*e^1
-        sage: b[:]
-        [ 3/5 -2/5]
-        [ 1/5  1/5]
-        sage: a[:] * b[:]  # check that b is indeed the inverse of a
+
+    It is not commutative::
+
+        sage: a*b != b*a
+        True
+
+    In other words, the parent of ``a`` and ``b``, i.e. the group
+    `\mathrm{GL}(M)`, is not abelian::
+
+        sage: M.general_linear_group() in CommutativeAdditiveGroups()
+        False
+
+    The neutral element for the composition law is the module identity map::
+
+        sage: id = M.identity_map() ; id
+        Identity map of the Rank-2 free module M over the Integer Ring
+        sage: id.parent()
+        General linear group of the Rank-2 free module M over the Integer Ring
+        sage: id(v) == v
+        True
+        sage: id.matrix(f)
         [1 0]
         [0 1]
+        sage: id*a == a
+        True
+        sage: a*id == a
+        True
+
+    The inverse of an automorphism is obtained via the method :meth:`inverse`,
+    or the operator ~, or the exponent -1::
+
+        sage: a.inverse()
+        Automorphism a^(-1) of the Rank-2 free module M over the Integer Ring
+        sage: a.inverse() is ~a
+        True
+        sage: a.inverse() is a^(-1)
+        True
+        sage: (a^(-1)).matrix(e)
+        [ 3 -2]
+        [-1  1]
+        sage: a*a^(-1) == id
+        True
+        sage: a^(-1)*a == id
+        True
+        sage: a^(-1)*s == b
+        True
+        sage: (a^(-1))(a(v)) == v
+        True
+
+    The module's changes of basis are stored as automorphisms::
+
+        sage: M.change_of_basis(e,f)
+        Automorphism of the Rank-2 free module M over the Integer Ring
+        sage: M.change_of_basis(e,f).parent()
+        General linear group of the Rank-2 free module M over the Integer Ring
+        sage: M.change_of_basis(e,f).matrix(e)
+        [3 5]
+        [4 7]
+        sage: M.change_of_basis(f,e) == M.change_of_basis(e,f).inverse()
+        True
 
     """
     def __init__(self, fmodule, name=None, latex_name=None, is_identity=False):
         r"""
         TESTS::
-    
+
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
             sage: from sage.tensor.modules.free_module_automorphism import FreeModuleAutomorphism
             sage: a = FreeModuleAutomorphism(M, name='a')
             sage: a[e,:] = [[-1,0,0],[0,1,2],[0,1,3]]
             sage: TestSuite(a).run(skip="_test_category") # see below
-    
+
         In the above test suite, _test_category fails because a is not an
         instance of a.parent().category().element_class. Actually automorphism
         must be constructed via FreeModuleLinearGroup.element_class and
@@ -189,7 +325,8 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
             sage: a[e,:] = [[1,0,-1], [0,3,0], [0,0,2]]
             sage: b = a.inverse()
             sage: a._inverse
-            Automorphism a^(-1) of the Rank-3 free module M over the Rational Field
+            Automorphism a^(-1) of the Rank-3 free module M over the Rational
+             Field
             sage: a._del_derived()
             sage: a._inverse  # has been reset to None
 
@@ -400,7 +537,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
         .. WARNING::
 
-            If the tensor has already components in other bases, it
+            If the automorphism has already components in other bases, it
             is the user's responsability to make sure that the components
             to be added are consistent with them.
 
@@ -436,7 +573,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
         EXAMPLES:
 
-        Call with a single argument --> return a module element::
+        Call with a single argument: return a module element::
 
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M', start_index=1)
             sage: e = M.basis('e')
@@ -451,8 +588,8 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
             sage: s == a.contract(v)
             True
 
-        Call with two arguments (:class:`FreeModuleTensor` behaviour)
-        --> return a scalar::
+        Call with two arguments (:class:`FreeModuleTensor` behaviour): return a
+        scalar::
 
             sage: b = M.linear_form(name='b')
             sage: b[:] = 7, 0, 2
@@ -463,7 +600,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
             sage: a(b,v) == s(b)
             True
 
-        Identity map with a single argument --> return a module element::
+        Identity map with a single argument: return a module element::
 
             sage: id = M.identity_map()
             sage: s = id.__call__(v) ; s
@@ -475,8 +612,8 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
             sage: s == id.contract(v)
             True
 
-        Identity map with two arguments (:class:`FreeModuleTensor` behaviour)
-        --> return a scalar::
+        Identity map with two arguments (:class:`FreeModuleTensor` behaviour):
+        return a scalar::
 
             sage: id.__call__(b,v)
             22
@@ -749,21 +886,20 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
         """
         return self.__mul__(other)
 
-
     def matrix(self, basis1=None, basis2=None):
         r"""
         Return the matrix of ``self`` w.r.t to a pair of bases.
 
         If the matrix is not known already, it is computed from the matrix in
-        another pair of bases by means of the change-of-bases formula.
+        another pair of bases by means of the change-of-basis formula.
 
         INPUT:
 
         - ``basis1`` -- (default: ``None``) basis of the free module on which
-          ``self`` is defined ; if none is provided, the module's default basis
-            is assumed
+          ``self`` is defined; if none is provided, the module's default basis
+          is assumed
         - ``basis2`` -- (default: ``None``) basis of the free module on which
-          ``self`` is defined ; if none is provided, ``basis2`` is set to
+          ``self`` is defined; if none is provided, ``basis2`` is set to
           ``basis1``.
 
         OUTPUT:
@@ -806,8 +942,8 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
         Check of the change-of-basis formula::
 
-            sage: p = M.change_of_basis(e,f).matrix(e)
-            sage: a.matrix(f) == ~p * a.matrix(e) * p
+            sage: P = M.change_of_basis(e,f).matrix(e)
+            sage: a.matrix(f) == P^(-1) * a.matrix(e) * P
             True
 
         Check that the matrix of the product of two automorphisms is the
@@ -906,7 +1042,6 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
         return self._matrices.values()[0].det() # pick a random value in the
                                                 # dictionary self._matrices
                                                 # and compute the determinant
-
 
     def trace(self):
         r"""

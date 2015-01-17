@@ -9,6 +9,12 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
 
+REFERENCES:
+
+- Chaps. 13, 14 of R. Godement : "Algebra", Hermann (Paris) / Houghton Mifflin
+  (Boston) (1968)
+- Chap. 3 of S. Lang : "Algebra", 3rd ed., Springer (New York) (2002)
+
 """
 #******************************************************************************
 #       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
@@ -27,7 +33,8 @@ from sage.tensor.modules.free_module_tensor import FreeModuleTensor
 
 class FreeModuleHomset(Homset):
     r"""
-    Set of homomorphisms between free modules of finite rank.
+    Set of homomorphisms between free modules of finite rank over a
+    commutative ring.
 
     Given two free modules `M` and `N` of respective ranks `m` and `n` over a
     commutative ring `R`, the class :class:`FreeModuleHomset` implements the
@@ -40,11 +47,11 @@ class FreeModuleHomset(Homset):
 
     INPUT:
 
-    - ``fmodule1`` -- free module `M` (domain of the homomorphisms); must be
-      an instance of 
+    - ``fmodule1`` -- free module `M` (domain of the homomorphisms), as an
+      instance of 
       :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`
-    - ``fmodule2`` -- free module `N` (codomain of the homomorphisms); must be
-      an instance of
+    - ``fmodule2`` -- free module `N` (codomain of the homomorphisms), as an
+      instance of
       :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`
     - ``name`` -- (default: ``None``) string; name given to the hom-set; if
       none is provided, Hom(M,N) will be used

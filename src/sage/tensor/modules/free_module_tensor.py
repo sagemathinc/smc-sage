@@ -37,6 +37,15 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
 
+REFERENCES:
+
+- Chap. 21 of R. Godement: "Algebra", Hermann (Paris) / Houghton Mifflin
+  (Boston) (1968)
+- Chap. 12 of J. M. Lee: "Introduction to Smooth Manifolds", 2nd ed., Springer
+  (New York) (2013) *(only when the free module is a vector space)*
+- Chap. 2 of B. O'Neill: "Semi-Riemannian Geometry", Academic Press (San Diego)
+  (1983)
+
 EXAMPLES:
 
 A tensor of type `(1, 1)` on a rank-3 free module over `\ZZ`::
@@ -181,8 +190,9 @@ class FreeModuleTensor(ModuleElement):
 
     INPUT:
 
-    - ``fmodule`` -- free module `M` over a commutative ring `R` (must be an
-      instance of :class:`FiniteRankFreeModule`)
+    - ``fmodule`` -- free module `M` of finite rank over a commutative ring
+      `R`, as an instance of
+      :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`
     - ``tensor_type`` -- pair ``(k, l)`` with ``k`` being the contravariant
       rank and ``l`` the covariant rank
     - ``name`` -- (default: ``None``) name given to the tensor
@@ -2923,8 +2933,9 @@ class FiniteRankFreeModuleElement(FreeModuleTensor):
 
     INPUT:
 
-    - ``fmodule`` -- free module `M` over a commutative ring `R` (must be an
-      instance of :class:`FiniteRankFreeModule`)
+    - ``fmodule`` -- free module `M` of finite rank over a commutative ring
+      `R`, as an instance of
+      :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`
     - ``name`` -- (default: ``None``) name given to the element
     - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the element;
       if none is provided, the LaTeX symbol is set to ``name``

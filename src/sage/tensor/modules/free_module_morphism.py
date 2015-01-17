@@ -1,5 +1,5 @@
 r"""
-Morphisms between free modules
+Free module morphisms
 
 The class :class:`FiniteRankFreeModuleMorphism` implements homomorphisms
 between two free modules of finite rank over the same commutative ring. 
@@ -7,6 +7,12 @@ between two free modules of finite rank over the same commutative ring.
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
+
+REFERENCES:
+
+- Chaps. 13, 14 of R. Godement: "Algebra", Hermann (Paris) / Houghton Mifflin
+  (Boston) (1968)
+- Chap. 3 of S. Lang: "Algebra", 3rd ed., Springer (New York) (2002)
 
 """
 #******************************************************************************
@@ -26,7 +32,7 @@ from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule
 
 class FiniteRankFreeModuleMorphism(Morphism):
     r"""
-    Homomorphism between free modules of finite rank.
+    Homomorphism between free modules of finite rank over a commutative ring.
 
     This is an *element* class, whose *parent* class is
     :class:`~sage.tensor.modules.free_module_homset.FreeModuleHomset`.
@@ -1043,7 +1049,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
         Return the matrix of ``self`` w.r.t to a pair of bases.
 
         If the matrix is not known already, it is computed from the matrix in
-        another pair of bases by means of the change-of-bases formula.
+        another pair of bases by means of the change-of-basis formula.
 
         INPUT:
 
@@ -1098,7 +1104,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
             [-1 -2  5]
             [ 2  0  1]
 
-        Check of the change-of-bases formula::
+        Check of the change-of-basis formula::
 
             sage: phi.matrix(ep, fp) == matrix(b.inverse()[:]) * phi.matrix(e,f) * matrix(a[:])
             True
@@ -1182,7 +1188,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
                             break
                     else:
                         raise ValueError("no start basis could be found for " + 
-                                        "applying the change-of-bases formula")
+                                        "applying the change-of-basis formula")
                     change2 = fmodule2._basis_changes[(basis2, nb2)]
                     mat2 = matrix( [[change2[[i,j]] for j in fmodule2.irange()] 
                                                   for i in fmodule2.irange()] )
@@ -1195,7 +1201,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
                             break
                     else:
                         raise ValueError("no start basis could be found for " + 
-                                        "applying the change-of-bases formula")
+                                        "applying the change-of-basis formula")
                     change1 = fmodule1._basis_changes[(nb1, basis1)]
                     mat1 = matrix( [[change1[[i,j]] for j in fmodule1.irange()]
                                                   for i in fmodule1.irange()] )
@@ -1209,7 +1215,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
                             break
                     else:
                         raise ValueError("no start basis could be found for " + 
-                                        "applying the change-of-bases formula")
+                                        "applying the change-of-basis formula")
                     change1 = fmodule1._basis_changes[(nb1, basis1)]
                     change2 = fmodule2._basis_changes[(basis2, nb2)]
                     mat1 = matrix( [[change1[[i,j]] for j in fmodule1.irange()]

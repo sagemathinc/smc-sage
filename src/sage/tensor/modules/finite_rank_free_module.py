@@ -47,6 +47,12 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
 
+REFERENCES:
+
+- Chap. 10 of R. Godement : "Algebra", Hermann (Paris) / Houghton Mifflin
+  (Boston) (1968)
+- Chap. 3 of S. Lang : "Algebra", 3rd ed., Springer (New York) (2002)
+
 EXAMPLES:
 
 Let us define a free module of rank 2 over `\ZZ`::
@@ -186,7 +192,7 @@ from sage.tensor.modules.free_module_tensor import FiniteRankFreeModuleElement
 
 class FiniteRankFreeModule(UniqueRepresentation, Parent):
     r"""
-    Free module of finite rank over a commutative ring `R`.
+    Free module of finite rank over a commutative ring.
 
     .. NOTE::
 
@@ -1618,12 +1624,13 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
     def change_of_basis(self, basis1, basis2):
         r"""
-        Return a change of basis previously defined on the free module.
+        Return a module automorphism linking two bases defined on the free
+        module ``self``. 
 
         INPUT:
 
-        - ``basis1`` -- basis 1, denoted `(e_i)` below
-        - ``basis2`` -- basis 2, denoted `(f_i)` below
+        - ``basis1`` -- a basis of ``self``, denoted `(e_i)` below
+        - ``basis2`` -- a basis of ``self``, denoted `(f_i)` below
 
         OUTPUT:
 
@@ -1631,12 +1638,6 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
           :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
           describing the automorphism `P` that relates the basis `(e_i)` to the
           basis `(f_i)` according to `f_i = P(e_i)`
-
-        .. TODO::
-
-            Suppose there exists change of bases
-            `A \leftrightarrow B \leftrightarrow C`, then do we want to
-            compute the change of basis `A \leftrightarrow C`?
 
         EXAMPLES:
 
@@ -1657,15 +1658,31 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             [ 1/5  1/5]
 
         """
-        if (basis1, basis2) not in self._basis_changes:
-            if (basis2, basis1) not in self._basis_changes:
+        if basis1 == basis2:
+            return self.identity_map()
+        bc = self._basis_changes
+        if (basis1, basis2) not in bc:
+            # Is the inverse already registred ? 
+            if (basis2, basis1) in bc:
+                inv = bc[(basis2, basis1)].inverse()
+                bc[(basis1, basis2)] = inv
+                return inv
+            # Search for a third basis, basis say, such that the changes
+            # basis1 --> basis and basis --> basis2 are known:
+            for basis in self._known_bases:
+                if (basis1, basis) in bc and (basis, basis2) in bc:
+                    bc[(basis1, basis2)] = bc[(basis1, basis)] * \
+                                                            bc[(basis, basis2)]
+                    break
+                if (basis2, basis) in bc and (basis, basis1) in bc:
+                    bc[(basis2, basis1)] = bc[(basis2, basis)] * bc[(basis, basis1)]
+                    bc[(basis1, basis2)] = bc[(basis2, basis1)].inverse()
+                    break
+            else:
                 raise TypeError(("the change of basis from '{!r}' to '{!r}'"
-                                + "has not been defined on the {!r}"
-                                ).format(basis1, basis2, self))
-            inv = self._basis_changes[(basis2, basis1)].inverse()
-            self._basis_changes[(basis1, basis2)] = inv
-            return inv
-        return self._basis_changes[(basis1, basis2)]
+                                + " cannot be computed"
+                                ).format(basis1, basis2))
+        return bc[(basis1, basis2)]
 
     def set_change_of_basis(self, basis1, basis2, change_of_basis,
                             compute_inverse=True):

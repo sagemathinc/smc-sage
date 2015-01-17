@@ -22,6 +22,12 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
 
+REFERENCES:
+
+- Chap. 23 of R. Godement: "Algebra", Hermann (Paris) / Houghton Mifflin
+  (Boston) (1968)
+- Chap. 15 of S. Lang: "Algebra", 3rd ed., Springer (New York) (2002)
+
 """
 #******************************************************************************
 #       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
@@ -45,8 +51,9 @@ class FreeModuleAltForm(FreeModuleTensor):
 
     INPUT:
 
-    - ``fmodule`` -- free module `M` of finite rank over a commutative ring `R`
-      (must be an instance of :class:`FiniteRankFreeModule`)
+    - ``fmodule`` -- free module `M` of finite rank over a commutative ring
+      `R`, as an instance of
+      :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`
     - ``degree`` -- positive integer; the degree `p` of the
       alternating form (i.e. its tensor rank)
     - ``name`` -- (default: ``None``) string; name given to the alternating

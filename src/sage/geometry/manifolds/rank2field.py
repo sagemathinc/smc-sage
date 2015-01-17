@@ -31,11 +31,9 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from sage.tensor.modules.free_module_tensor_spec import \
-                  FreeModuleEndomorphismTensor, FreeModuleAutomorphismTensor, \
-                  FreeModuleIdentityTensor
+from sage.tensor.modules.free_module_tensor import FreeModuleTensor
+from sage.tensor.modules.free_module_automorphism import FreeModuleAutomorphism
 from tensorfield import TensorField, TensorFieldParal
-
 
 class EndomorphismField(TensorField):
     r"""
@@ -424,7 +422,8 @@ class TangentIdentityField(AutomorphismField):
 
 #******************************************************************************
 
-class EndomorphismFieldParal(FreeModuleEndomorphismTensor, TensorFieldParal):
+#!# class EndomorphismFieldParal(FreeModuleEndomorphismTensor, TensorFieldParal):
+class EndomorphismFieldParal(TensorFieldParal):
     r"""
     Field of tangent-space endomorphisms with values in a parallelizable open
     subset of a differentiable manifold.
@@ -499,7 +498,8 @@ class EndomorphismFieldParal(FreeModuleEndomorphismTensor, TensorFieldParal):
 
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
-        FreeModuleEndomorphismTensor.__init__(self, vector_field_module,
+#!#
+        FreeModuleTensor.__init__(self, vector_field_module, (1,1),
                                               name=name, latex_name=latex_name)
         # TensorFieldParal attributes:
         self._vmodule = vector_field_module
@@ -548,13 +548,15 @@ class EndomorphismFieldParal(FreeModuleEndomorphismTensor, TensorFieldParal):
         else:
             vector = arg[0]
             dom = self._domain.intersection(vector._domain)
-            return FreeModuleEndomorphismTensor.__call__(self.restrict(dom),
+ #!#           return FreeModuleEndomorphismTensor.__call__(self.restrict(dom),
+            return FreeModuleTensor.__call__(self.restrict(dom),
                                                          vector.restrict(dom))
 
 #******************************************************************************
 
-class AutomorphismFieldParal(FreeModuleAutomorphismTensor,
-                             EndomorphismFieldParal):
+#!# class AutomorphismFieldParal(FreeModuleAutomorphismTensor,
+#                             EndomorphismFieldParal):
+class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
     r"""
     Field of tangent-space automorphisms with values on a parallelizable open
     subset of a differentiable manifold.
@@ -607,7 +609,8 @@ class AutomorphismFieldParal(FreeModuleAutomorphismTensor,
 
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
-        FreeModuleAutomorphismTensor.__init__(self, vector_field_module,
+#!#        FreeModuleAutomorphismTensor.__init__(self, vector_field_module,
+        FreeModuleAutomorphism.__init__(self, vector_field_module,
                                               name=name, latex_name=latex_name)
         # TensorFieldParal attributes:
         self._vmodule = vector_field_module
@@ -685,8 +688,8 @@ class AutomorphismFieldParal(FreeModuleAutomorphismTensor,
 
 #******************************************************************************
 
-class TangentIdentityFieldParal(FreeModuleIdentityTensor,
-                                AutomorphismFieldParal):
+#!# class TangentIdentityFieldParal(FreeModuleIdentityTensor,
+class TangentIdentityFieldParal(AutomorphismFieldParal):
     r"""
     Field of tangent-space identity maps with values on a parallelizable open
     subset of a differentiable manifold.
@@ -779,7 +782,8 @@ class TangentIdentityFieldParal(FreeModuleIdentityTensor,
     def __init__(self, vector_field_module, name='Id', latex_name=None):
         if latex_name is None and name == 'Id':
             latex_name = r'\mathrm{Id}'
-        FreeModuleIdentityTensor.__init__(self, vector_field_module, name=name,
+ #!#       FreeModuleIdentityTensor.__init__(self, vector_field_module, name=name,
+        FreeModuleAutomorphism.__init__(self, vector_field_module, name=name,
                                           latex_name=latex_name)
         # TensorFieldParal attributes:
         self._vmodule = vector_field_module

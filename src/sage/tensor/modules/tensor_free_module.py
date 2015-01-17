@@ -41,6 +41,14 @@ AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
 
+REFERENCES:
+
+- K. Conrad: "Tensor products",
+  `http://www.math.uconn.edu/~kconrad/blurbs/ <http://www.math.uconn.edu/~kconrad/blurbs/>`_ 
+- Chap. 21 (Exer. 4) of R. Godement: "Algebra", Hermann (Paris) / Houghton
+  Mifflin (Boston) (1968)
+- Chap. 16 of S. Lang: "Algebra", 3rd ed., Springer (New York) (2002)
+
 """
 #******************************************************************************
 #       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
@@ -74,8 +82,9 @@ class TensorFreeModule(FiniteRankFreeModule):
 
     INPUT:
 
-    - ``fmodule`` -- free module `M` of finite rank (must be an instance of
-      :class:`FiniteRankFreeModule`)
+    - ``fmodule`` -- free module `M` of finite rank over a commutative ring
+      `R`, as an instance of
+      :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`
     - ``tensor_type`` -- pair ``(k, l)`` with ``k`` being the contravariant
       rank and ``l`` the covariant rank
     - ``name`` -- (default: ``None``) string; name given to the tensor module

@@ -1,9 +1,23 @@
-"""
+r"""
 General linear group of a free module
+
+The set `\mathrm{GL}(M)` of automorphisms (i.e. invertible endomorphims) of a
+free module of finite rank `M` is a group under composition of automorphisms,
+named the *general linear group* of `M`. In other words, `\mathrm{GL}(M)` is
+the group of units (i.e. invertible elements) of `\mathrm{End}(M)`, the
+endomorphism ring of `M`. 
+
+The group `\mathrm{GL}(M)` is implemented via the class
+:class:`FreeModuleLinearGroup`. 
 
 AUTHORS:
 
 - Eric Gourgoulhon (2015): initial version
+
+REFERENCES:
+
+- Chap. 15 of R. Godement: "Algebra", Hermann (Paris) / Houghton Mifflin
+  (Boston) (1968)
 
 """
 #******************************************************************************
@@ -24,12 +38,133 @@ from sage.tensor.modules.free_module_automorphism import FreeModuleAutomorphism
 
 class FreeModuleLinearGroup(UniqueRepresentation, Parent):
     r"""
-    General linear group of a free module.
+    General linear group of a free module of finite rank over a commutative
+    ring.
+
+    Given a free module of finite rank `M` over a commutative ring `R`, the
+    *general linear group* of `M` is the group `\mathrm{GL}(M)` of
+    automorphisms (i.e. invertible endomorphims) of `M`. It is the group of
+    units (i.e. invertible elements) of `\mathrm{End}(M)`, the endomorphism
+    ring of `M`. 
+
+    This is a Sage *parent* class, whose *element* class is
+    :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`.
 
     INPUT:
 
-    - ``fmodule`` -- free module `M` of finite rank (must be an instance of
-      :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`)
+    - ``fmodule`` -- free module `M` of finite rank over a commutative ring
+      `R`, as an instance of
+      :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`
+
+    EXAMPLES:
+
+    General linear group of a free `\ZZ`-module of rank 3::
+    
+        sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+        sage: e = M.basis('e')
+        sage: from sage.tensor.modules.free_module_linear_group import FreeModuleLinearGroup
+        sage: GL = FreeModuleLinearGroup(M) ; GL
+        General linear group of the Rank-3 free module M over the Integer Ring
+
+    Instead of importing FreeModuleLinearGroup in the global name space, it is
+    recommended to use the module's method
+    :meth:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule.general_linear_group`::
+
+        sage: GL = M.general_linear_group() ; GL
+        General linear group of the Rank-3 free module M over the Integer Ring
+        sage: latex(GL)
+        \mathrm{GL}\left( M \right)
+
+    As most parents, the general linear group has a unique instance::
+
+        sage: GL is M.general_linear_group()
+        True
+
+    `\mathrm{GL}(M)` is in the category of groups::
+
+        sage: GL.category()
+        Category of groups
+        sage: GL in Groups()
+        True
+
+    ``GL`` is a *parent* object, whose elements are automorphisms of `M`,
+    represented by instances of the class
+    :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`::
+
+        sage: GL.Element
+        <class 'sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism'>
+        sage: a = GL.an_element() ; a
+        Automorphism of the Rank-3 free module M over the Integer Ring
+        sage: a.matrix(e)
+        [ 1  0  0]
+        [ 0 -1  0]
+        [ 0  0  1]
+        sage: a in GL
+        True
+        sage: GL.is_parent_of(a)
+        True
+
+    As an endomorphism, ``a`` maps elements of `M` to elements of `M`::
+
+        sage: v = M.an_element() ; v
+        Element of the Rank-3 free module M over the Integer Ring
+        sage: v.display()
+        e_0 + e_1 + e_2
+        sage: a(v)
+        Element of the Rank-3 free module M over the Integer Ring
+        sage: a(v).display()
+        e_0 - e_1 + e_2
+
+    An automorphism can also be viewed as a tensor of type (1,1) on `M`::
+
+        sage: a.tensor_type()
+        (1, 1)
+        sage: a.display(e)
+        e_0*e^0 - e_1*e^1 + e_2*e^2
+        sage: type(a)
+        <class 'sage.tensor.modules.free_module_automorphism.FreeModuleLinearGroup_with_category.element_class'>
+
+    As for any group, the identity element is obtained by the method
+    :meth:`one`::
+
+        sage: id = GL.one() ; id
+        Identity map of the Rank-3 free module M over the Integer Ring
+        sage: id*a == a
+        True
+        sage: a*id == a
+        True
+        sage: a*a^(-1) == id
+        True
+        sage: a^(-1)*a == id
+        True
+
+    The identity element is of course the identity map of the module `M`::
+
+        sage: id(v) == v
+        True
+        sage: id.matrix(e)
+        [1 0 0]
+        [0 1 0]
+        [0 0 1]
+
+    The module's changes of basis are stored as elements of the general linear
+    group::
+
+        sage: f = M.basis('f', from_family=(-e[1], 4*e[0]+3*e[2], 7*e[0]+5*e[2]))
+        sage: f
+        Basis (f_0,f_1,f_2) on the Rank-3 free module M over the Integer Ring
+        sage: M.change_of_basis(e,f)
+        Automorphism of the Rank-3 free module M over the Integer Ring
+        sage: M.change_of_basis(e,f) in GL
+        True
+        sage: M.change_of_basis(e,f).parent()
+        General linear group of the Rank-3 free module M over the Integer Ring
+        sage: M.change_of_basis(e,f).matrix(e)
+        [ 0  4  7]
+        [-1  0  0]
+        [ 0  3  5]
+        sage: M.change_of_basis(e,f) == M.change_of_basis(f,e).inverse()
+        True
 
     """
     
@@ -65,6 +200,46 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
         r"""
         Construct a free module automorphism.
 
+        INPUT:
+
+        - ``comp`` -- (default: ``[]``) components representing the
+          automorphism with respect to ``basis``; this entry can actually be
+          any array of size rank(M)*rank(M) from which a matrix of elements
+          of ``self`` base ring can be constructed; the *columns* of ``comp``
+          must be the components w.r.t. ``basis`` of the images of the elements
+          of ``basis``. If ``comp`` is ``[]``, the automorphism has to be
+          initialized afterwards by method :meth:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor.set_comp`
+          or via the operator []. 
+        - ``basis`` -- (default: ``None``) basis of ``self`` defining the
+          matrix representation; if ``None`` the default basis of ``self`` is
+          assumed.
+        - ``name`` -- (default: ``None``) name given to the automorphism
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
+          automorphism; if none is provided, the LaTeX symbol is set to ``name``
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
+
+        EXAMPLES::
+
+            sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
+            sage: e = M.basis('e')
+            sage: GL = M.general_linear_group()
+            sage: a = GL._element_constructor_(comp=[[1,2],[1,3]], basis=e,
+            ....:                              name='a')
+            sage: a
+            Automorphism a of the Rank-2 free module M over the Integer Ring
+            sage: a.matrix(e)
+            [1 2]
+            [1 3]
+            sage: GL._element_constructor_(1)
+            Identity map of the Rank-2 free module M over the Integer Ring
+            sage: GL._element_constructor_(1).matrix(e)
+            [1 0]
+            [0 1]
+
         """
         if comp == 1:
             return self.one()
@@ -80,6 +255,22 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
         r"""
         Construct some specific free module automorphism.
 
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
+
+        EXAMPLES::
+
+            sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
+            sage: e = M.basis('e')
+            sage: GL = M.general_linear_group()
+            sage: a = GL._an_element_() ; a
+            Automorphism of the Rank-2 free module M over the Integer Ring
+            sage: a.matrix(e)
+            [ 1  0]
+            [ 0 -1]
+        
         """
         resu = self.element_class(self._fmodule)
         if self._fmodule._def_basis is not None:
@@ -97,7 +288,65 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
 
     def one(self):
         r"""
-        Return the group unit element.
+        Return the group identity element of ``self``.
+
+        The group identity element is nothing but the module identity map. 
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
+          representing the identity element. 
+
+        EXAMPLES:
+
+        Identity element of the general linear group of a rank-2 free module::
+
+            sage: M = FiniteRankFreeModule(ZZ, 2, name='M', start_index=1)
+            sage: GL = M.general_linear_group()
+            sage: GL.one()
+            Identity map of the Rank-2 free module M over the Integer Ring
+
+        The identity element is cached::
+
+            sage: GL.one() is GL.one()
+            True
+
+        Check that the element returned is indeed the neutral element for
+        the group law::
+
+            sage: e = M.basis('e')
+            sage: a = GL([[3,4],[5,7]], basis=e) ; a
+            Automorphism of the Rank-2 free module M over the Integer Ring
+            sage: a.matrix(e)
+            [3 4]
+            [5 7]
+            sage: GL.one() * a == a
+            True
+            sage: a * GL.one() == a
+            True
+            sage: a * a^(-1) == GL.one()
+            True
+            sage: a^(-1) * a == GL.one()
+            True
+
+        The unit element of `\mathrm{GL}(M)` is the identity map of `M`::
+
+            sage: GL.one()(e[1])
+            Element e_1 of the Rank-2 free module M over the Integer Ring
+            sage: GL.one()(e[2])
+            Element e_2 of the Rank-2 free module M over the Integer Ring
+
+        Its matrix is the identity matrix in any basis::
+
+            sage: GL.one().matrix(e)
+            [1 0]
+            [0 1]
+            sage: f = M.basis('f', from_family=(e[1]+2*e[2], e[1]+3*e[2]))
+            sage: GL.one().matrix(f)
+            [1 0]
+            [0 1]
+
         """
         if self._one is None:
             self._one = self.element_class(self._fmodule, is_identity=True)
@@ -112,6 +361,13 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
         r"""
         Return a string representation of ``self``.
 
+        EXAMPLE::
+
+            sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
+            sage: GL = M.general_linear_group()
+            sage: GL._repr_()
+            'General linear group of the Rank-2 free module M over the Integer Ring'
+
         """
         return "General linear group of the {}".format(self._fmodule)
 
@@ -119,19 +375,35 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
         r"""
         Return a string representation of ``self``.
 
+        EXAMPLE::
+
+            sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
+            sage: GL = M.general_linear_group()
+            sage: GL._latex_()
+            \mathrm{GL}\left( M \right)
+
         """
         from sage.misc.latex import latex
-        return r"\mathrm{GL}\left(" + latex(self._fmodule) + r"\right)"
+        return r"\mathrm{GL}\left("+ latex(self._fmodule)+ r"\right)"
 
 
     def base_module(self):
         r"""
-        Return the free module on which ``self`` is constructed.
+        Return the free module of which ``self`` is the general linear group. 
 
         OUTPUT:
 
         - instance of :class:`FiniteRankFreeModule` representing the free
           module of which ``self`` is the general linear group
+
+        EXAMPLE::
+
+            sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
+            sage: GL = M.general_linear_group()
+            sage: GL.base_module()
+            Rank-2 free module M over the Integer Ring
+            sage: GL.base_module() is M
+            True
 
         """
         return self._fmodule

@@ -24,6 +24,12 @@ AUTHORS:
 
 - Eric Gourgoulhon (2015): initial version
 
+REFERENCES:
+
+- K. Conrad: "Exterior powers",
+  `http://www.math.uconn.edu/~kconrad/blurbs/ <http://www.math.uconn.edu/~kconrad/blurbs/>`_ 
+- Chap. 19 of S. Lang: "Algebra", 3rd ed., Springer (New York) (2002)
+
 """
 #******************************************************************************
 #       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
@@ -66,8 +72,8 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
 
     INPUT:
 
-    - ``fmodule`` -- free module `M` of finite rank (must be an instance of
-      :class:`FiniteRankFreeModule`)
+    - ``fmodule`` -- free module `M` of finite rank, as an instance of
+      :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`
     - ``degree`` -- positive integer; the degree `p` of the alternating forms
     - ``name`` -- (default: ``None``) string; name given to `\Lambda^p(M^*)`
     - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to denote
