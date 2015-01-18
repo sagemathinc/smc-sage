@@ -905,7 +905,7 @@ class FreeModuleTensor(ModuleElement):
             if n_con > 0:
                 if (basis, from_basis) not in fmodule._basis_changes:
                     raise ValueError("the change-of-basis matrix from the " +
-                                     "{} to the {}".format(from_basis, basis) +
+                                     "{} to the {}".format(basis, from_basis) +
                                      " has not been set")
                 ppinv = \
                   fmodule._basis_changes[(basis, from_basis)].comp(from_basis)

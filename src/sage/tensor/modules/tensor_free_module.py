@@ -62,9 +62,11 @@ REFERENCES:
 
 from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule
 from sage.tensor.modules.free_module_tensor import (FreeModuleTensor,
-                                                    FiniteRankFreeModuleElement)
+                                                   FiniteRankFreeModuleElement)
 from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
-from sage.tensor.modules.free_module_morphism import FiniteRankFreeModuleMorphism
+from sage.tensor.modules.free_module_morphism import \
+                                                   FiniteRankFreeModuleMorphism
+from sage.tensor.modules.free_module_automorphism import FreeModuleAutomorphism
 
 class TensorFreeModule(FiniteRankFreeModule):
     r"""
@@ -433,6 +435,17 @@ class TensorFreeModule(FiniteRankFreeModule):
                                       antisym=asym)
             for basis, comp in form._components.iteritems():
                 resu._components[basis] = comp.copy()
+        elif isinstance(comp, FreeModuleAutomorphism):
+            # coercion of an automorphism to a type-(1,1) tensor:
+            autom = comp # for readability
+            if self._tensor_type != (1,1) or \
+                                          self._fmodule != autom.base_module():
+                raise TypeError("cannot coerce the {}".format(autom) +
+                                " to an element of {}".format(self))
+            resu = self.element_class(self._fmodule, (1,1), name=autom._name,
+                                      latex_name=autom._latex_name)
+            for basis, comp in autom._components.iteritems():
+                resu._components[basis] = comp.copy()
         else:
             # Standard construction:
             resu = self.element_class(self._fmodule, self._tensor_type,
@@ -512,14 +525,23 @@ class TensorFreeModule(FiniteRankFreeModule):
         """
         from free_module_homset import FreeModuleHomset
         from ext_pow_free_module import ExtPowerFreeModule
+        from free_module_linear_group import FreeModuleLinearGroup
         if isinstance(other, FreeModuleHomset):
             # Coercion of an endomorphism to a type-(1,1) tensor:
             if self._tensor_type == (1,1):
                 return other.is_endomorphism_set() and \
                                                 self._fmodule is other.domain()
+            else:
+                return False
         if isinstance(other, ExtPowerFreeModule):
-            return self._fmodule is other._fmodule and \
-                                       self._tensor_type == (0, other.degree())
+            # Coercion of an alternating form to a type-(0,p) tensor:
+            return self._tensor_type == (0, other.degree()) and \
+                                           self._fmodule is other.base_module()
+                                       
+        if isinstance(other, FreeModuleLinearGroup):
+            # Coercion of an automorphism to a type-(1,1) tensor:
+            return self._tensor_type == (1,1) and \
+                                           self._fmodule is other.base_module()
         return False
 
     #### End of parent methods

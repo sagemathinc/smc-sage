@@ -635,19 +635,26 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
     def basis(self, symbol, latex_symbol=None, from_family=None):
         r"""
-        Define or return a basis of the free module.
+        Define or return a basis of the free module ``self``.
 
         Let `M` denotes the free module ``self`` and `n` its rank.
         
         The basis can be defined from a set of `n` linearly independent
         elements of `M` by means of the argument ``from_family``.
-        If `from_family`` is not specified, the basis is created from
+        If ``from_family`` is not specified, the basis is created from
         scratch and, at this stage, is unrelated to bases that could have been
-        defined previously on `M`. 
+        defined previously on `M`. It can be related afterwards by means of
+        the method :meth:`set_change_of_basis`.
 
         If the basis specified by the given symbol already exists, it is
         simply returned, whatever the value of the arguments ``latex_symbol``
         or ``from_family``.
+
+        Note that another way to construct a basis of ``self`` is to use
+        the method
+        :meth:`~sage.tensor.modules.free_module_basis.FreeModuleBasis.new_basis`
+        on an existing basis, with the automorphism relating the two bases as
+        an argument.
 
         INPUT:
 
@@ -1627,6 +1634,10 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         Return a module automorphism linking two bases defined on the free
         module ``self``. 
 
+        If the automorphism has not been recorded yet (in the internal
+        dictionary ``self._basis_changes``), it is computed by transitivity,
+        i.e. by performing products of recorded changes of basis. 
+
         INPUT:
 
         - ``basis1`` -- a basis of ``self``, denoted `(e_i)` below
@@ -1643,43 +1654,117 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         Changes of basis on a rank-2 free module::
 
-            sage: M = FiniteRankFreeModule(QQ, 2, name='M', start_index=1)
+            sage: FiniteRankFreeModule._clear_cache_() # for doctests only
+            sage: M = FiniteRankFreeModule(ZZ, 2, name='M', start_index=1)
             sage: e = M.basis('e')
-            sage: a = M.automorphism()
-            sage: a[:] = [[1, 2], [-1, 3]]
-            sage: f = e.new_basis(a, 'f')
-            sage: M.change_of_basis(e,f)
-            Automorphism of the Rank-2 free module M over the Rational Field
-            sage: M.change_of_basis(e,f)[:]
-            [ 1  2]
-            [-1  3]
-            sage: M.change_of_basis(f,e)[:]
-            [ 3/5 -2/5]
-            [ 1/5  1/5]
+            sage: f = M.basis('f', from_family=(e[1]+2*e[2], e[1]+3*e[2]))
+            sage: P = M.change_of_basis(e,f) ; P
+            Automorphism of the Rank-2 free module M over the Integer Ring
+            sage: P.matrix(e)
+            [1 1]
+            [2 3]
+
+        Note that the columns of this matrix contain the components of the
+        elements of basis ``f`` w.r.t. to basis ``e``::
+
+            sage: f[1].display(e)
+            f_1 = e_1 + 2 e_2
+            sage: f[2].display(e)
+            f_2 = e_1 + 3 e_2
+
+        The change of basis is cached::
+
+            sage: P is M.change_of_basis(e,f)
+            True
+            
+        Check of the change-of-basis automorphism::
+        
+            sage: f[1] == P(e[1])
+            True
+            sage: f[2] == P(e[2])
+            True
+
+        Check of the reverse change of basis::
+        
+            sage: M.change_of_basis(f,e) == P^(-1)
+            True
+
+        We have of course::
+
+            sage: M.change_of_basis(e,e)
+            Identity map of the Rank-2 free module M over the Integer Ring
+            sage: M.change_of_basis(e,e) is M.identity_map()
+            True
+        
+        Let us introduce a third basis on ``M``::
+
+            sage: h = M.basis('h', from_family=(3*e[1]+4*e[2], 5*e[1]+7*e[2]))
+
+        The change of basis ``e`` --> ``h`` has been recorded directly from the
+        definition of ``h``::
+        
+            sage: Q = M.change_of_basis(e,h) ; Q.matrix(e)
+            [3 5]
+            [4 7]
+
+        The change of basis ``f`` --> ``h`` is computed by transitivity, i.e.
+        from the changes of basis ``f`` --> ``e`` and ``e`` --> ``h``::
+
+            sage: R = M.change_of_basis(f,h) ; R
+            Automorphism of the Rank-2 free module M over the Integer Ring
+            sage: R.matrix(e)
+            [-1  2]
+            [-2  3]
+            sage: R.matrix(f)
+            [ 5  8]
+            [-2 -3]
+
+        Let us check that ``R`` is indeed the change of basis ``f`` --> ``h``::
+
+            sage: h[1] == R(f[1])
+            True
+            sage: h[2] == R(f[2])
+            True
+        
+        A related check is::
+
+            sage: R == Q*P^(-1)
+            True
 
         """
         if basis1 == basis2:
             return self.identity_map()
         bc = self._basis_changes
         if (basis1, basis2) not in bc:
+            if basis1 not in self._known_bases:
+                raise TypeError("{} is not a basis of the {}".format(basis1,
+                                                                     self))
+            if basis2 not in self._known_bases:
+                raise TypeError("{} is not a basis of the {}".format(basis2,
+                                                                     self))
             # Is the inverse already registred ? 
             if (basis2, basis1) in bc:
                 inv = bc[(basis2, basis1)].inverse()
                 bc[(basis1, basis2)] = inv
                 return inv
-            # Search for a third basis, basis say, such that the changes
-            # basis1 --> basis and basis --> basis2 are known:
+            # Search for a third basis, basis say, such that either the changes
+            # basis1 --> basis and basis --> basis2
+            # or
+            # basis2 --> basis and basis --> basis1
+            # are known:
             for basis in self._known_bases:
                 if (basis1, basis) in bc and (basis, basis2) in bc:
-                    bc[(basis1, basis2)] = bc[(basis1, basis)] * \
-                                                            bc[(basis, basis2)]
+                    transf = bc[(basis, basis2)] * bc[(basis1, basis)]
+                    bc[(basis1, basis2)] = transf
+                    bc[(basis2, basis1)] = transf.inverse()
                     break
                 if (basis2, basis) in bc and (basis, basis1) in bc:
-                    bc[(basis2, basis1)] = bc[(basis2, basis)] * bc[(basis, basis1)]
-                    bc[(basis1, basis2)] = bc[(basis2, basis1)].inverse()
+                    inv = bc[(basis, basis1)] * bc[(basis2, basis)]
+                    bc[(basis2, basis1)] = inv
+                    bc[(basis1, basis2)] = inv.inverse()
                     break
             else:
-                raise TypeError(("the change of basis from '{!r}' to '{!r}'"
+                raise ValueError(("the change of basis from '{!r}' to '{!r}'"
                                 + " cannot be computed"
                                 ).format(basis1, basis2))
         return bc[(basis1, basis2)]
@@ -1687,7 +1772,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
     def set_change_of_basis(self, basis1, basis2, change_of_basis,
                             compute_inverse=True):
         r"""
-        Relates two bases by an automorphism.
+        Relates two bases by an automorphism of ``self``.
 
         This updates the internal dictionary ``self._basis_changes``.
 
@@ -1717,10 +1802,10 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         The change of basis and its inverse have been recorded::
 
-            sage: M.change_of_basis(e,f)[:]
+            sage: M.change_of_basis(e,f).matrix(e)
             [ 1  2]
             [-1  3]
-            sage: M.change_of_basis(f,e)[:]
+            sage: M.change_of_basis(f,e).matrix(e)
             [ 3/5 -2/5]
             [ 1/5  1/5]
 
@@ -1732,10 +1817,15 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             e_0 = 3/5 f_0 + 1/5 f_1
 
         """
-        from free_module_automorphism import FreeModuleAutomorphism
-        if not isinstance(change_of_basis, FreeModuleAutomorphism):
-            raise TypeError("the argument change_of_basis must be some " +
-                            "instance of FreeModuleAutomorphism")
+        if basis1 not in self._known_bases:
+            raise TypeError("{} is not a basis of the {}".format(basis1,
+                                                                 self))
+        if basis2 not in self._known_bases:
+            raise TypeError("{} is not a basis of the {}".format(basis2,
+                                                                 self))
+        if change_of_basis not in self.general_linear_group():
+            raise TypeError("{} is not an automorphism of the {}".format(
+                                                        change_of_basis, self))
         self._basis_changes[(basis1, basis2)] = change_of_basis
         if compute_inverse:
             self._basis_changes[(basis2, basis1)] = change_of_basis.inverse()
