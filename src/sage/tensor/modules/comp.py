@@ -1439,9 +1439,17 @@ class Components(SageObject):
                                  antisym)
         elif self._nid == 1 and other._nid == 1:
             if self is other:  # == would be dangerous here
-                # the result is symmetric:
+                # The result is symmetric:
                 result = CompFullySym(self._ring, self._frame, 2, self._sindex,
                                       self._output_formatter)
+                # The loop below on self._comp.iteritems() and
+                # other._comp.iteritems() cannot be used in the present case
+                # (it would not deal correctly with redundant indices)
+                # So we use a loop specific to the current case and return the
+                # result:
+                for ind in result.non_redundant_index_generator():
+                    result[[ind]] = self[[ind[0]]] * self[[ind[1]]]
+                return result
             else:
                 result = Components(self._ring, self._frame, 2, self._sindex,
                                     self._output_formatter)

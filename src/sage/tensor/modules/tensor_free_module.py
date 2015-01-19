@@ -328,6 +328,35 @@ class TensorFreeModule(FiniteRankFreeModule):
         [ 1 -1  1]
         [ 1  1 -2]
 
+    There is a coercion `\mathrm{GL}(M)\rightarrow T^{(1,1)}(M)`, i.e. from
+    automorphisms of `M` to type-(1,1) tensors on `M`::
+
+        sage: GL = M.general_linear_group() ; GL
+        General linear group of the Rank-3 free module M over the Integer Ring
+        sage: T11.has_coerce_map_from(GL)
+        True
+
+    The coercion map `\mathrm{GL}(M)\rightarrow T^{(1,1)}(M)` in action::
+
+        sage: a = GL.an_element() ; a
+        Automorphism of the Rank-3 free module M over the Integer Ring
+        sage: a.matrix(e)
+        [ 1  0  0]
+        [ 0 -1  0]
+        [ 0  0  1]
+        sage: ta = T11(a) ; ta
+        Type-(1,1) tensor on the Rank-3 free module M over the Integer Ring
+        sage: ta.display(e)
+        e_0*e^0 - e_1*e^1 + e_2*e^2
+        sage: a.display(e)
+        e_0*e^0 - e_1*e^1 + e_2*e^2
+
+    Of course, there is no coercion in the reverse direction, since not
+    every type-(1,1) tensor is invertible::
+
+        sage: GL.has_coerce_map_from(T11)
+        False
+
     """
 
     Element = FreeModuleTensor

@@ -166,6 +166,21 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
         sage: M.change_of_basis(e,f) == M.change_of_basis(f,e).inverse()
         True
 
+    There is a coercion `\mathrm{GL}(M)\rightarrow T^{(1,1)}(M)` (module of
+    type-(1,1) tensors)::
+
+        sage: M.tensor_module(1,1).has_coerce_map_from(GL)
+        True
+
+    (see :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule` for
+    details)
+
+    There is no coercion of type-(1,1) tensors to automorphisms::
+
+        sage: GL.has_coerce_map_from(M.tensor_module(1,1))
+        False
+
+    Invertible type-(1,1) tensors can be 
     """
     
     Element = FreeModuleAutomorphism
@@ -241,8 +256,26 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
             [0 1]
 
         """
+        from sage.tensor.modules.free_module_tensor import FreeModuleTensor
         if comp == 1:
             return self.one()
+        if isinstance(comp, FreeModuleTensor):
+            tens = comp # for clarity
+            # Conversion of a type-(1,1) tensor to an automorphism
+            if tens.tensor_type() == (1,1):
+                resu = self.element_class(self._fmodule, name=tens._name,
+                                          latex_name=tens._latex_name)
+                for basis, comp in tens._components.iteritems():
+                    resu._components[basis] = comp.copy()
+                # Check whether the tensor if invertible:
+                try:
+                    resu.inverse()
+                except (ZeroDivisionError, TypeError):
+                    raise TypeError("the {} is not invertible ".format(tens))
+                return resu
+            else:
+                    raise TypeError("the {} cannot be converted ".format(tens)
+                                    + "to an automorphism.")
         # standard construction
         resu = self.element_class(self._fmodule, name=name,
                                   latex_name=latex_name)
