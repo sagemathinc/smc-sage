@@ -162,6 +162,35 @@ class FreeModuleHomset(Homset):
     See :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule` for
     examples of the above coercions.
 
+    There is a coercion `\mathrm{GL}(M) \rightarrow \mathrm{End}(M)`, since
+    every automorphism is an endomorphism::
+    
+        sage: GL = M.general_linear_group() ; GL
+        General linear group of the Rank-3 free module M over the Integer Ring
+        sage: End(M).has_coerce_map_from(GL)
+        True
+
+    Of course, there is no coercion in the reverse direction, since only
+    bijective endomorphisms are automorphisms::
+    
+        sage: GL.has_coerce_map_from(End(M))
+        False
+
+    The coercion `\mathrm{GL}(M) \rightarrow \mathrm{End}(M)` in action::
+    
+        sage: a = GL.an_element() ; a
+        Automorphism of the Rank-3 free module M over the Integer Ring
+        sage: a.matrix(e)
+        [ 1  0  0]
+        [ 0 -1  0]
+        [ 0  0  1]
+        sage: ea = End(M)(a) ; ea
+        Generic endomorphism of Rank-3 free module M over the Integer Ring
+        sage: ea.matrix(e)
+        [ 1  0  0]
+        [ 0 -1  0]
+        [ 0  0  1]
+
     """
 
     Element = FiniteRankFreeModuleMorphism
@@ -342,6 +371,8 @@ class FreeModuleHomset(Homset):
         """
         if isinstance(matrix_rep, FreeModuleTensor):
             # coercion of a type-(1,1) tensor to an endomorphism
+            # (this includes automorphisms, since the class
+            #  FreeModuleAutomorphism inherits from FreeModuleTensor)
             tensor = matrix_rep # for readability
             if tensor.tensor_type() == (1,1) and \
                                          self.is_endomorphism_set() and \
@@ -351,15 +382,16 @@ class FreeModuleHomset(Homset):
                 fmodule = tensor.base_module()
                 mat = [[ tcomp[[i,j]] for j in fmodule.irange()] \
                                                      for i in fmodule.irange()]
-                is_identity = False
                 if isinstance(tensor, FreeModuleAutomorphism):
                     is_identity = tensor._is_identity
+                else:
+                    is_identity = False
                 resu = self.element_class(self, mat, bases=(basis,basis), 
                               name=tensor._name, latex_name=tensor._latex_name,
                               is_identity=is_identity)
             else:
-                raise TypeError("cannot coerce the " + str(tensor) +
-                                " to an element of " + str(self))
+                raise TypeError("cannot coerce the {}".format(tensor) + 
+                                " to an element of {}".format(self))
         else:
             # Standard construction:
             resu = self.element_class(self, matrix_rep, bases=bases, name=name,
@@ -399,10 +431,11 @@ class FreeModuleHomset(Homset):
 
         EXAMPLES:
 
-        Only the module of type-(1,1) tensors coerce to self, if the latter
+        The module of type-(1,1) tensors coerces to ``self``, if the latter
         is some endomorphism set::
 
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: e = M.basis('e')
             sage: End(M)._coerce_map_from_(M.tensor_module(1,1))
             True
             sage: End(M).has_coerce_map_from(M.tensor_module(1,1))
@@ -410,14 +443,24 @@ class FreeModuleHomset(Homset):
             sage: End(M)._coerce_map_from_(M.tensor_module(1,2))
             False
 
+        The general linear group coerces to the endomorphism ring::
+
+            sage: End(M)._coerce_map_from_(M.general_linear_group())
+            True
+
         """
-        from tensor_free_module import TensorFreeModule
+        from sage.tensor.modules.tensor_free_module import TensorFreeModule
+        from sage.tensor.modules.free_module_linear_group import \
+                                                          FreeModuleLinearGroup
         if isinstance(other, TensorFreeModule):
             # Coercion of a type-(1,1) tensor to an endomorphism:
             if other.tensor_type() == (1,1):
-                if self.is_endomorphism_set() and \
-                                          other.base_module() is self.domain():
-                    return True
+                return self.is_endomorphism_set() and \
+                                           other.base_module() is self.domain()
+        if isinstance(other, FreeModuleLinearGroup):
+            # Coercion of an automorphism to an endomorphism:
+            return self.is_endomorphism_set() and \
+                                           other.base_module() is self.domain()
         return False
 
     #### End of methods required for any Parent 

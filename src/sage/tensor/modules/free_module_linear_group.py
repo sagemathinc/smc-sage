@@ -173,14 +173,49 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
         True
 
     (see :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule` for
-    details)
-
-    There is no coercion of type-(1,1) tensors to automorphisms::
+    details), but not in the reverse direction, since not every type-(1,1)
+    tensor can be considered as an automorphism::
 
         sage: GL.has_coerce_map_from(M.tensor_module(1,1))
         False
 
-    Invertible type-(1,1) tensors can be 
+    Invertible type-(1,1) tensors can be converted to automorphisms::
+
+        sage: t = M.tensor((1,1), name='t')
+        sage: t[e,:] = [[-1,0,0], [0,1,2], [0,1,3]]
+        sage: at = GL(t) ; at
+        Automorphism t of the Rank-3 free module M over the Integer Ring
+        sage: at.matrix(e)
+        [-1  0  0]
+        [ 0  1  2]
+        [ 0  1  3]
+        sage: at.matrix(e) == t[e,:]
+        True
+
+    Non-invertible ones cannot::
+
+        sage: t0 = M.tensor((1,1), name='t_0')
+        sage: t0[e,0,0] = 1
+        sage: t0[e,:]  # the matrix is clearly not invertible
+        [1 0 0]
+        [0 0 0]
+        [0 0 0]
+        sage: GL(t0)
+        Traceback (most recent call last):
+        ...
+        TypeError: the Type-(1,1) tensor t_0 on the Rank-3 free module M over
+         the Integer Ring is not invertible
+        sage: t0[e,1,1], t0[e,2,2] = 2, 3
+        sage: t0[e,:]  # the matrix is not invertible in Mat_3(ZZ)
+        [1 0 0]
+        [0 2 0]
+        [0 0 3]
+        sage: GL(t0)
+        Traceback (most recent call last):
+        ...
+        TypeError: the Type-(1,1) tensor t_0 on the Rank-3 free module M over
+         the Integer Ring is not invertible
+    
     """
     
     Element = FreeModuleAutomorphism
@@ -237,8 +272,10 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
         - instance of
           :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
 
-        EXAMPLES::
+        EXAMPLES:
 
+        Generic construction::
+        
             sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
             sage: e = M.basis('e')
             sage: GL = M.general_linear_group()
@@ -249,25 +286,50 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
             sage: a.matrix(e)
             [1 2]
             [1 3]
+
+        Identity map constructed from integer 1::
+        
             sage: GL._element_constructor_(1)
             Identity map of the Rank-2 free module M over the Integer Ring
             sage: GL._element_constructor_(1).matrix(e)
             [1 0]
             [0 1]
 
+        Construction from an invertible endomorphism::
+
+            sage: phi = M.endomorphism([[1,1], [2,3]])
+            sage: a = GL._element_constructor_(phi) ; a
+            Automorphism of the Rank-2 free module M over the Integer Ring
+            sage: a.matrix(e)
+            [1 1]
+            [2 3]
+            sage: a.matrix(e) == phi.matrix(e)
+            True
+
+        Construction from an invertible tensor of type (1,1)::
+
+            sage: t = M.tensor((1,1), name='t')
+            sage: t[e,:] = [[1,1], [2,3]]
+            sage: a = GL._element_constructor_(t) ; a
+            Automorphism t of the Rank-2 free module M over the Integer Ring
+            sage: a.matrix(e) == t[e,:]
+            True
+
         """
         from sage.tensor.modules.free_module_tensor import FreeModuleTensor
+        from sage.tensor.modules.free_module_morphism import \
+                                                   FiniteRankFreeModuleMorphism
         if comp == 1:
             return self.one()
         if isinstance(comp, FreeModuleTensor):
-            tens = comp # for clarity
+            tens = comp # for readability
             # Conversion of a type-(1,1) tensor to an automorphism
             if tens.tensor_type() == (1,1):
                 resu = self.element_class(self._fmodule, name=tens._name,
                                           latex_name=tens._latex_name)
                 for basis, comp in tens._components.iteritems():
                     resu._components[basis] = comp.copy()
-                # Check whether the tensor if invertible:
+                # Check whether the tensor is invertible:
                 try:
                     resu.inverse()
                 except (ZeroDivisionError, TypeError):
@@ -276,6 +338,24 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
             else:
                     raise TypeError("the {} cannot be converted ".format(tens)
                                     + "to an automorphism.")
+        if isinstance(comp, FiniteRankFreeModuleMorphism):
+            # Conversion of an endomorphism to an automorphism
+            endo = comp  # for readability
+            if endo.is_endomorphism() and self._fmodule is endo.domain():
+                resu = self.element_class(self._fmodule, name=endo._name,
+                                          latex_name=endo._latex_name)
+                for basis, mat in endo._matrices.iteritems():
+                    resu.add_comp(basis[0])[:] = mat
+                # Check whether the endomorphism is invertible:
+                try:
+                    resu.inverse()
+                except (ZeroDivisionError, TypeError):
+                    raise TypeError("the {} is not invertible ".format(endo))
+                return resu
+            else:
+                raise TypeError("cannot coerce the {}".format(endo) +
+                                " to an element of {}".format(self))
+
         # standard construction
         resu = self.element_class(self._fmodule, name=name,
                                   latex_name=latex_name)
