@@ -2265,7 +2265,7 @@ class FreeModuleTensor(ModuleElement):
 
         Contraction of a tensor of type `(1,1)` with a tensor of type `(1,0)`::
 
-            sage: a = M.endomorphism_tensor()  # tensor of type (1,1)
+            sage: a = M.tensor((1,1))
             sage: a[:] = [[-1,2,3],[4,-5,6],[7,8,9]]
             sage: s = a.contract(b) ; s
             Element of the Rank-3 free module M over the Integer Ring

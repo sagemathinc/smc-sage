@@ -625,7 +625,53 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         If ``self`` is the free module `M`, the *general linear group* is the
         group `\mathrm{GL}(M)` of automorphisms of `M`.
+
+        OUTPUT:
+
+        - instance of class
+          :class:`~sage.tensor.modules.free_module_linear_group.FreeModuleLinearGroup`
+          representing `\mathrm{GL}(M)`
+
+        EXAMPLES:
+
+        The general linear group of a rank-3 free module::
+
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
+            sage: e = M.basis('e')
+            sage: GL = M.general_linear_group() ; GL
+            General linear group of the Rank-3 free module M over the Integer Ring
+            sage: GL.category()
+            Category of groups
+            sage: type(GL)
+            <class 'sage.tensor.modules.free_module_linear_group.FreeModuleLinearGroup_with_category'>
+
+        There is a unique instance of the general linear group::
+
+            sage: M.general_linear_group() is GL
+            True
+
+        The group identity element::
         
+            sage: GL.one()
+            Identity map of the Rank-3 free module M over the Integer Ring
+            sage: GL.one().matrix(e)
+            [1 0 0]
+            [0 1 0]
+            [0 0 1]
+
+        An element::
+        
+            sage: GL.an_element()
+            Automorphism of the Rank-3 free module M over the Integer Ring
+            sage: GL.an_element().matrix(e)
+            [ 1  0  0]
+            [ 0 -1  0]
+            [ 0  0  1]
+
+        See
+        :class:`~sage.tensor.modules.free_module_linear_group.FreeModuleLinearGroup`
+        for more documentation.
+              
         """
         from sage.tensor.modules.free_module_linear_group import \
                                                           FreeModuleLinearGroup
@@ -1058,56 +1104,6 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         """
         return self.dual_exterior_power(1).element_class(self, 1, name=name,
                                                          latex_name=latex_name)
-
-    def endomorphism_tensor(self, name=None, latex_name=None):
-        r"""
-        Construct a tensor of type-(1,1) on the free module ``self``.
-
-        .. NOTE::
-
-            This method differs from :meth:`endomorphism` for it returns a
-            tensor, while :meth:`endomorphism` returns an instance of Sage's :class:`~sage.categories.map.Map` (actually an instance of the subclass
-            :class:`~sage.tensor.modules.free_module_morphism.FiniteRankFreeModuleMorphism`).
-
-        INPUT:
-
-        - ``name`` -- (default: ``None``) string; name given to the
-          tensor
-        - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to
-          denote the tensor; if none is provided, the LaTeX symbol
-          is set to ``name``
-
-        OUTPUT:
-
-        - instance of
-          :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`
-
-        EXAMPLES:
-
-        Endomorphism as a type-(1,1) tensor on a rank-3 module::
-
-            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-            sage: t = M.endomorphism_tensor('T') ; t
-            Type-(1,1) tensor T on the Rank-3 free module M over the Integer Ring
-            sage: t.parent()
-            Free module of type-(1,1) tensors on the
-             Rank-3 free module M over the Integer Ring
-            sage: t.tensor_type()
-            (1, 1)
-
-        The method :meth:`tensor` with the argument ``(1,1)`` can be used as
-        well::
-
-            sage: t = M.tensor((1,1), name='T') ; t
-            Type-(1,1) tensor T on the Rank-3 free module M over the Integer Ring
-
-        See
-        :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleTensor`
-        for further documentation.
-
-        """
-        return self.tensor_module(1,1).element_class(self, (1,1), name=name,
-                                                     latex_name=latex_name)
 
     def automorphism(self, matrix=None, basis=None, name=None,
                      latex_name=None):
@@ -1924,15 +1920,6 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         The returned object is a module morphism `\phi: M \rightarrow M`,
         where `M` is ``self``.
-
-        .. NOTE::
-
-            This method differs from :meth:`endomorphism_tensor` for it
-            returns an instance of Sage's :class:`~sage.categories.map.Map`
-            (actually an instance of the subclass
-            :class:`~sage.tensor.modules.free_module_morphism.FiniteRankFreeModuleMorphism`),
-            while :meth:`endomorphism_tensor` returns a tensor of type (1,1).
-            Note that there are coercions between these two types.
 
         INPUT:
 

@@ -219,6 +219,40 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
         sage: M.change_of_basis(f,e) == M.change_of_basis(e,f).inverse()
         True
 
+    The opposite of an automorphism is still an automorphism::
+
+        sage: -a
+        Automorphism -a of the Rank-2 free module M over the Integer Ring
+        sage: (-a).parent()
+        General linear group of the Rank-2 free module M over the Integer Ring
+        sage: (-a).matrix(e) == - (a.matrix(e))
+        True
+
+    Adding two automorphisms results in a generic type-(1,1) tensor::
+
+        sage: s = a + b ; s
+        Type-(1,1) tensor a+b on the Rank-2 free module M over the Integer Ring
+        sage: s.parent()
+        Free module of type-(1,1) tensors on the Rank-2 free module M over the
+         Integer Ring
+        sage: a[:], b[:], s[:]
+        (
+        [1 2]  [ 0  1]  [1 3]
+        [1 3], [-1  0], [0 3]
+        )
+
+    To get the result as an endomorphism, one has to explicitely convert it via
+    the parent of endormophisms, `\mathrm{End}(M)`::
+     
+        sage: s = End(M)(a+b) ; s
+        Generic endomorphism of Rank-2 free module M over the Integer Ring
+        sage: s(v) == a(v) + b(v)
+        True
+        sage: s.matrix(e) == a.matrix(e) + b.matrix(e)
+        True
+        sage: s.matrix(f) == a.matrix(f) + b.matrix(f)
+        True
+
     """
     def __init__(self, fmodule, name=None, latex_name=None, is_identity=False):
         r"""
@@ -320,8 +354,8 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
         EXAMPLE::
 
             sage: M = FiniteRankFreeModule(QQ, 3, name='M')
-            sage: a = M.automorphism(name='a')
             sage: e = M.basis('e')
+            sage: a = M.automorphism(name='a')
             sage: a[e,:] = [[1,0,-1], [0,3,0], [0,0,2]]
             sage: b = a.inverse()
             sage: a._inverse
@@ -437,7 +471,8 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
             sage: f3 = 7*e[1] + 5*e[3]
             sage: f = M.basis('f', from_family=(f1,f2,f3))
             sage: a.components(f)
-            2-indices components w.r.t. Basis (f_1,f_2,f_3) on the Rank-3 free module M over the Integer Ring
+            2-indices components w.r.t. Basis (f_1,f_2,f_3) on the Rank-3 free
+             module M over the Integer Ring
             sage: a.components(f)[:]
             [  1  -6 -10]
             [ -7  83 140]
@@ -498,20 +533,97 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
         OUTPUT:
 
         - components in the given basis, as an instance of the
-          class :class:`~sage.tensor.modules.comp.Components`; if such components did not exist
-          previously, they are created.
+          class :class:`~sage.tensor.modules.comp.Components`; if such
+          components did not exist previously, they are created.
 
         EXAMPLE:
 
-        For the identity map, it is not permitted to set components::
+        Setting the components of an automorphism of a rank-3 free
+        `\ZZ`-module::
 
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
-            sage: a = M.identity_map()
+            sage: a = M.automorphism(name='a')
             sage: a.set_comp(e)
+            2-indices components w.r.t. Basis (e_0,e_1,e_2) on the Rank-3 free
+             module M over the Integer Ring
+            sage: a.set_comp(e)[:] = [[1,0,0],[0,1,2],[0,1,3]]
+            sage: a.matrix(e)
+            [1 0 0]
+            [0 1 2]
+            [0 1 3]
+
+        Since ``e`` is the module's default basis, one has::
+
+            sage: a.set_comp() is a.set_comp(e)
+            True
+
+        The method :meth:`set_comp` can be used to modify a single component::
+
+            sage: a.set_comp(e)[0,0] = -1
+            sage: a.matrix(e)
+            [-1  0  0]
+            [ 0  1  2]
+            [ 0  1  3]
+
+        A short cut to :meth:`set_comp` is the bracket operator, with the basis
+        as first argument::
+
+            sage: a[e,:] = [[1,0,0],[0,-1,2],[0,1,-3]]
+            sage: a.matrix(e)
+            [ 1  0  0]
+            [ 0 -1  2]
+            [ 0  1 -3]
+            sage: a[e,0,0] = -1
+            sage: a.matrix(e)
+            [-1  0  0]
+            [ 0 -1  2]
+            [ 0  1 -3]
+
+        The call to :meth:`set_comp` erases the components previously defined
+        in other bases; to keep them, use the method :meth:`add_comp` instead::
+
+            sage: f = M.basis('f', from_family=(-e[0], 3*e[1]+4*e[2],
+            ....:                               5*e[1]+7*e[2])) ; f
+            Basis (f_0,f_1,f_2) on the Rank-3 free module M over the Integer
+             Ring
+            sage: a._components
+            {Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer
+             Ring: 2-indices components w.r.t. Basis (e_0,e_1,e_2) on the
+             Rank-3 free module M over the Integer Ring}
+            sage: a.set_comp(f)[:] = [[-1,0,0], [0,1,0], [0,0,-1]]
+
+        The components w.r.t. basis ``e`` have been erased::
+
+            sage: a._components
+            {Basis (f_0,f_1,f_2) on the Rank-3 free module M over the Integer
+             Ring: 2-indices components w.r.t. Basis (f_0,f_1,f_2) on the
+             Rank-3 free module M over the Integer Ring}
+
+        Of course, they can be computed from those in basis ``f`` by means of
+        a change-of-basis formula, via the method :meth:`comp` or
+        :meth:`matrix`::
+
+            sage: a.matrix(e)
+            [ -1   0   0]
+            [  0  41 -30]
+            [  0  56 -41]
+
+        For the identity map, it is not permitted to set components::
+
+            sage: id = M.identity_map()
+            sage: id.set_comp(e)
             Traceback (most recent call last):
             ...
             TypeError: the components of the identity map cannot be changed
+
+        Indeed, the components are automatically set by a call to
+        :meth:`comp`::
+
+            sage: id.comp(e)
+            Kronecker delta of size 3x3
+            sage: id.comp(f)
+            Kronecker delta of size 3x3
 
         """
         if self._is_identity:
@@ -549,15 +661,44 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
         EXAMPLE:
 
-        For the identity map, it is not permitted to set components::
-
+        Adding components to an automorphism of a rank-3 free
+        `\ZZ`-module::
+        
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
-            sage: a = M.identity_map()
-            sage: a.add_comp(e)
+            sage: a = M.automorphism(name='a')
+            sage: a[e,:] = [[1,0,0],[0,-1,2],[0,1,-3]]
+            sage: f = M.basis('f', from_family=(-e[0], 3*e[1]+4*e[2],
+            ....:                               5*e[1]+7*e[2])) ; f
+            Basis (f_0,f_1,f_2) on the Rank-3 free module M over the Integer
+             Ring
+            sage: a.add_comp(f)[:] = [[1,0,0], [0, 80, 143], [0, -47, -84]]
+
+        The components in basis ``e`` have been kept::
+        
+            sage: a._components # random (dictionary output)
+            {Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer
+             Ring: 2-indices components w.r.t. Basis (e_0,e_1,e_2) on the
+             Rank-3 free module M over the Integer Ring,
+             Basis (f_0,f_1,f_2) on the Rank-3 free module M over the Integer
+             Ring: 2-indices components w.r.t. Basis (f_0,f_1,f_2) on the
+             Rank-3 free module M over the Integer Ring}
+
+        For the identity map, it is not permitted to invoke :meth:`add_comp`::
+
+            sage: id = M.identity_map()
+            sage: id.add_comp(e)
             Traceback (most recent call last):
             ...
             TypeError: the components of the identity map cannot be changed
+
+        Indeed, the components are automatically set by a call to
+        :meth:`comp`::
+
+            sage: id.comp(e)
+            Kronecker delta of size 3x3
+            sage: id.comp(f)
+            Kronecker delta of size 3x3
 
         """
         if self._is_identity:
@@ -683,36 +824,73 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
         EXAMPLES:
 
-        Inverse of an automorphism on a rank-3 free module::
+        Inverse of an automorphism of a rank-3 free module::
 
-            sage: M = FiniteRankFreeModule(QQ, 3, name='M')
-            sage: a = M.automorphism(name='A')
+            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
-            sage: a[:] = [[1,0,-1], [0,3,0], [0,0,2]]
-            sage: b = a.__invert__() ; b
-            Automorphism A^(-1) of the Rank-3 free module M over the Rational Field
-            sage: b[:]
-            [  1   0 1/2]
-            [  0 1/3   0]
-            [  0   0 1/2]
+            sage: a = M.automorphism(name='a')
+            sage: a[e,:] = [[1,0,0],[0,-1,2],[0,1,-3]]
+            sage: a.inverse()
+            Automorphism a^(-1) of the Rank-3 free module M over the Integer
+             Ring
+            sage: a.inverse().parent()
+            General linear group of the Rank-3 free module M over the Integer
+             Ring
 
-        We may check that ``b`` is the inverse of ``a`` by performing the
-        matrix product of the components in the basis ``e``::
+        Check that ``a.inverse()`` is indeed the inverse automorphism::
 
-            sage: a[:] * b[:]
-            [1 0 0]
-            [0 1 0]
-            [0 0 1]
+            sage: a.inverse() * a
+            Identity map of the Rank-3 free module M over the Integer Ring
+            sage: a * a.inverse()
+            Identity map of the Rank-3 free module M over the Integer Ring
+            sage: a.inverse().inverse() == a
+            True
+        
+        Another check is::
+        
+            sage: a.inverse().matrix(e)
+            [ 1  0  0]
+            [ 0 -3 -2]
+            [ 0 -1 -1]
+            sage: a.inverse().matrix(e) == (a.matrix(e))^(-1)
+            True
 
-        Another check is of course::
+        The inverse is cached (as long as ``a`` is not modified)::
 
-            sage: b.__invert__() == a
+            sage: a.inverse() is a.inverse()
+            True
+
+        If ``a`` is modified, the inverse is automatically recomputed::
+
+            sage: a[0,0] = -1
+            sage: a.matrix(e)
+            [-1  0  0]
+            [ 0 -1  2]
+            [ 0  1 -3]
+            sage: a.inverse().matrix(e)  # compare with above
+            [-1  0  0]
+            [ 0 -3 -2]
+            [ 0 -1 -1]
+        
+        Shortcuts for :meth:`inverse` are the operator ``~`` and the exponent
+        ``-1``::
+
+            sage: ~a is a.inverse()
+            True
+            sage: a^(-1) is a.inverse()
             True
 
         The inverse of the identity map is of course itself::
 
             sage: id = M.identity_map()
-            sage: id.__invert__() is id
+            sage: id.inverse() is id
+            True
+
+        and we have::
+
+            sage: a*a^(-1) == id
+            True
+            sage: a^(-1)*a == id
             True
 
         """
@@ -882,6 +1060,19 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
         r"""
         Redefinition of
         :meth:`sage.structure.element.ModuleElement.__imul__`
+
+        TESTS::
+
+            sage: M = FiniteRankFreeModule(ZZ, 2, name='M', start_index=1)
+            sage: e = M.basis('e')
+            sage: a = M.automorphism([[1,2],[1,3]], name='a')
+            sage: b = M.automorphism([[0,1],[-1,0]], name='b')
+            sage: mat_a0 = a.matrix(e)
+            sage: a.__imul__(b)
+            Automorphism of the Rank-2 free module M over the Integer Ring
+            sage: a *= b
+            sage: a.matrix(e) == mat_a0 * b.matrix(e)
+            True
 
         """
         return self.__mul__(other)

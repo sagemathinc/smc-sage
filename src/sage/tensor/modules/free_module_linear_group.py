@@ -166,8 +166,52 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
         sage: M.change_of_basis(e,f) == M.change_of_basis(f,e).inverse()
         True
 
-    There is a coercion `\mathrm{GL}(M)\rightarrow T^{(1,1)}(M)` (module of
-    type-(1,1) tensors)::
+    Since every automorphism is an endomorphism, there is a coercion
+    `\mathrm{GL}(M) \rightarrow \mathrm{End}(M)` (the endomorphism ring of
+    module `M`)::
+
+        sage: End(M).has_coerce_map_from(GL)
+        True
+
+    (see :class:`~sage.tensor.modules.free_module_homset.FreeModuleHomset` for
+    details), but not in the reverse direction, since only bijective
+    endomorphisms are automorphisms::
+
+        sage: GL.has_coerce_map_from(End(M))
+        False
+
+    A bijective endomorphism can be converted to an element of
+    `\mathrm{GL}(M)`::
+
+        sage: h = M.endomorphism([[1,0,0], [0,-1,2], [0,1,-3]]) ; h
+        Generic endomorphism of Rank-3 free module M over the Integer Ring
+        sage: h.parent() is End(M)
+        True
+        sage: ah = GL(h) ; ah
+        Automorphism of the Rank-3 free module M over the Integer Ring
+        sage: ah.parent() is GL
+        True
+
+    As maps `M\rightarrow M`, ``ah`` and ``h`` are identical::
+
+        sage: v  # recall
+        Element of the Rank-3 free module M over the Integer Ring
+        sage: ah(v) == h(v)
+        True
+        sage: ah.matrix(e) == h.matrix(e)
+        True
+
+    Of course, non-invertible endomorphisms cannot be converted to elements of
+    `\mathrm{GL}(M)`::
+
+        sage: GL(M.endomorphism([[0,0,0], [0,-1,2], [0,1,-3]]))
+        Traceback (most recent call last):
+        ...
+        TypeError: the Generic endomorphism of Rank-3 free module M over the
+         Integer Ring is not invertible 
+    
+    Similarly, there is a coercion `\mathrm{GL}(M)\rightarrow T^{(1,1)}(M)`
+    (module of type-(1,1) tensors)::
 
         sage: M.tensor_module(1,1).has_coerce_map_from(GL)
         True
