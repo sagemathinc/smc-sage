@@ -216,7 +216,7 @@ class TangentSpace(FiniteRankFreeModule):
             if fr1 is not None and fr2 is not None:
                 basis1 = point._frame_bases[fr1]
                 basis2 = point._frame_bases[fr2]
-                auto = self.automorphism_tensor()
+                auto = self.automorphism()
                 for frame, comp in automorph._components.iteritems():
                     basis = None
                     if frame is frame1:

@@ -175,7 +175,7 @@ class AffConnection(SageObject):
         sage: v = M.vector_field('v')
         sage: v[:] = (y*z, x*z, x*y)
         sage: Dv = nab(v) ; Dv
-        field of endomorphisms 'nabla v' on the 3-dimensional manifold 'M'
+        tensor field 'nabla v' of type (1,1) on the 3-dimensional manifold 'M'
         sage: Dv[:]
         [            0 (x^2*y + 1)*z             y]
         [            z             0             x]
@@ -230,7 +230,7 @@ class AffConnection(SageObject):
         sage: a.display(eV)
         a = v d/du - u d/dv
         sage: da = nab(a) ; da
-        field of endomorphisms 'nabla a' on the 2-dimensional manifold 'M'
+        tensor field 'nabla a' of type (1,1) on the 2-dimensional manifold 'M'
         sage: da.display(eU)
         nabla a = -x*y d/dx*dx - d/dx*dy + d/dy*dx - x*y^2 d/dy*dy
         sage: da.display(eV)

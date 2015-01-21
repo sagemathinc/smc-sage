@@ -637,11 +637,11 @@ class VectorFrame(FreeModuleBasis):
         aut defined above)::
 
             sage: Tp.change_of_basis(ep, fp)
-            Automorphism tensor on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            Automorphism of the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: Tp.change_of_basis(ep, fp).display()
             5 d/dx*dx + 2 d/dy*dy
             sage: Tp.change_of_basis(fp, ep)
-            Automorphism tensor on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            Automorphism of the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: Tp.change_of_basis(fp, ep).display()
             1/5 d/dx*dx + 1/2 d/dy*dy
 
@@ -710,7 +710,7 @@ class VectorFrame(FreeModuleBasis):
                 if fr2 is not None:
                     basis1 = basis
                     basis2 = point._frame_bases[fr2]
-                    auto = ts.automorphism_tensor()
+                    auto = ts.automorphism()
                     for frame, comp in automorph._components.iteritems():
                         bas = None
                         if frame is frame1:
@@ -730,7 +730,7 @@ class VectorFrame(FreeModuleBasis):
                 if fr1 is not None:
                     basis1 = point._frame_bases[fr1]
                     basis2 = basis
-                    auto = ts.automorphism_tensor()
+                    auto = ts.automorphism()
                     for frame, comp in automorph._components.iteritems():
                         bas = None
                         if frame is frame1:

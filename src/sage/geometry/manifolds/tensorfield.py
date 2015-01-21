@@ -12,14 +12,8 @@ fields:
 * :class:`~sage.geometry.manifolds.vectorfield.VectorField` for vector fields
   (rank-1 contravariant tensor fields)
 
-* :class:`~sage.geometry.manifolds.rank2field.EndomorphismField` for fields of
-  endomorphisms (type (1,1) tensor fields)
-
-  * :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` for fields
-    of invertible endomorphisms
-
-    * :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField` for
-      fields of identity maps on tangent spaces
+* :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` for fields
+  of invertible endomorphisms
 
 * :class:`~sage.geometry.manifolds.diffform.DiffForm` for differential forms
   (fully antisymmetric covariant tensor fields)
@@ -44,7 +38,7 @@ A tensor field of type (1,1) on a 2-dimensional manifold::
     sage: M = Manifold(2, 'M', start_index=1)
     sage: c_xy.<x,y> = M.chart()
     sage: t = M.tensor_field(1, 1, 'T') ; t
-    field of endomorphisms 'T' on the 2-dimensional manifold 'M'
+    tensor field 'T' of type (1,1) on the 2-dimensional manifold 'M'
     sage: t.tensor_type()
     (1, 1)
     sage: t.tensor_rank()
@@ -1619,7 +1613,7 @@ class TensorField(ModuleElement):
             sage: t = M.tensor_field(0, 2)
             sage: t[:] = [[1,2], [3,4]]
             sage: tu0 = t.up(g, 0) ; tu0  # raising the first index
-            field of endomorphisms on the 2-dimensional manifold 'M'
+            tensor field of type (1,1) on the 2-dimensional manifold 'M'
             sage: tu0[:]
             [  ((3*x + 1)*y - 1)/(x^2*y^2 + (x + 1)*y - x - 1) 2*((2*x + 1)*y - 1)/(x^2*y^2 + (x + 1)*y - x - 1)]
             [    (x*y - 3*x - 3)/(x^2*y^2 + (x + 1)*y - x - 1)   2*(x*y - 2*x - 2)/(x^2*y^2 + (x + 1)*y - x - 1)]
@@ -1630,7 +1624,7 @@ class TensorField(ModuleElement):
             sage: tuu0 == tu0['^a_c']*ig['^cb'] # the same operation in index notation
             True
             sage: tu1 = t.up(g, 1) ; tu1 # raising the second index
-            field of endomorphisms on the 2-dimensional manifold 'M'
+            tensor field of type (1,1) on the 2-dimensional manifold 'M'
             sage: tu1 == ig['^ac']*t['_bc'] # the same operation in index notation
             True
             sage: tu1[:]
@@ -1649,11 +1643,11 @@ class TensorField(ModuleElement):
             sage: tuu1 == tuu # to get tuu1, indices have been raised from the last one, contrary to tuu
             False
             sage: d0tuu = tuu.down(g, 0) ; d0tuu # the first index is lowered again
-            field of endomorphisms on the 2-dimensional manifold 'M'
+            tensor field of type (1,1) on the 2-dimensional manifold 'M'
             sage: dd0tuu = d0tuu.down(g) ; dd0tuu  # the second index is then lowered
             tensor field of type (0,2) on the 2-dimensional manifold 'M'
             sage: d1tuu = tuu.down(g, 1) ; d1tuu # lowering operation, starting from the last index
-            field of endomorphisms on the 2-dimensional manifold 'M'
+            tensor field of type (1,1) on the 2-dimensional manifold 'M'
             sage: dd1tuu = d1tuu.down(g) ; dd1tuu
             tensor field of type (0,2) on the 2-dimensional manifold 'M'
             sage: ddtuu = tuu.down(g) ; ddtuu # both indices are lowered, starting from the last one
@@ -1745,7 +1739,7 @@ class TensorField(ModuleElement):
             sage: t = M.tensor_field(2, 0)
             sage: t[:] = [[1,2], [3,4]]
             sage: td0 = t.down(g, 0) ; td0  # lowering the first index
-            field of endomorphisms on the 2-dimensional manifold 'M'
+            tensor field of type (1,1) on the 2-dimensional manifold 'M'
             sage: td0 == g['_ac']*t['^cb'] # the same operation in index notation
             True
             sage: td0[:]
@@ -1759,7 +1753,7 @@ class TensorField(ModuleElement):
             [      4*x^2*y^2 + x^2 + 5*(x^2 + x)*y + 2*x + 1 2*(x^2 - 2*x)*y^2 + (x^2 + 2*x - 3)*y + 3*x + 3]
             [(3*x^2 - 4*x)*y^2 + (x^2 + 3*x - 2)*y + 2*x + 2           (x^2 - 5*x + 4)*y^2 + (5*x - 8)*y + 4]
             sage: td1 = t.down(g, 1) ; td1  # lowering the second index
-            field of endomorphisms on the 2-dimensional manifold 'M'
+            tensor field of type (1,1) on the 2-dimensional manifold 'M'
             sage: td1 == g['_ac']*t['^bc'] # the same operation in index notation
             True
             sage: td1[:]
@@ -1784,11 +1778,11 @@ class TensorField(ModuleElement):
             sage: tdd1 == tdd  # the same order for index lowering has been applied
             True
             sage: u0tdd = tdd.up(g, 0) ; u0tdd # the first index is raised again
-            field of endomorphisms on the 2-dimensional manifold 'M'
+            tensor field of type (1,1) on the 2-dimensional manifold 'M'
             sage: uu0tdd = u0tdd.up(g) ; uu0tdd # the second index is then raised
             tensor field of type (2,0) on the 2-dimensional manifold 'M'
             sage: u1tdd = tdd.up(g, 1) ; u1tdd  # raising operation, starting from the last index
-            field of endomorphisms on the 2-dimensional manifold 'M'
+            tensor field of type (1,1) on the 2-dimensional manifold 'M'
             sage: uu1tdd = u1tdd.up(g) ; uu1tdd
             tensor field of type (2,0) on the 2-dimensional manifold 'M'
             sage: uutdd = tdd.up(g) ; uutdd  # both indices are raised, starting from the first one
@@ -1829,6 +1823,35 @@ class TensorField(ModuleElement):
 
         """
         p = len(args)
+        if p == 1 and self._tensor_type == (1,1):
+            # type-(1,1) tensor acting as an endomorphism:
+            vector = arg[0]
+            if vector._tensor_type != (1,0):
+                raise TypeError("The argument must be a vector field.")
+            dom_resu = self._domain.intersection(vector._domain)
+            if dom_resu.is_manifestly_parallelizable():
+                # call of the TensorFieldParal version:
+                return self.restrict(dom_resu)(vector.restrict(dom_resu))
+            if self._name is not None and vector._name is not None:
+                name_resu = self._name + "(" + vector._name + ")"
+            else:
+                name_resu = None
+            if self._latex_name is not None and vector._latex_name is not None:
+                latex_name_resu = self._latex_name + r"\left(" + \
+                                  vector._latex_name + r"\right)"
+            else:
+                latex_name_resu = None
+            dest_map = vector._vmodule._dest_map
+            dest_map_resu = dest_map.restrict(dom_resu)
+            resu = dom_resu.vector_field(name=name_resu,
+                                         latex_name=latex_name_resu,
+                                         dest_map=dest_map_resu)
+            for dom in self._common_subdomains(vector):
+                if dom.is_subset(dom_resu):
+                    resu._restrictions[dom] = \
+                        self._restrictions[dom](vector._restrictions[dom])
+            return resu
+        # Generic case
         if p != self._tensor_rank:
             raise TypeError(str(self._tensor_rank) +
                             " arguments must be provided.")
@@ -2479,7 +2502,7 @@ class TensorField(ModuleElement):
             a = (u + 1/2) d/du*du + (-1/2*u - 1/2*v + 1/2) d/du*dv + 1/2 d/dv*du + (1/2*u - 1/2*v + 1/2) d/dv*dv
             sage: p = M.point((2,3), chart=c_xy, name='p')
             sage: ap = a.at(p) ; ap
-            Endomorphism tensor a on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            Type-(1,1) tensor a on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: ap.parent()
             Free module of type-(1,1) tensors on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: ap.display()
@@ -3234,6 +3257,15 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
         """
         p = len(args)
+        if p == 1 and self._tensor_type == (1,1):
+            # type-(1,1) tensor acting as an endomorphism:
+            vector = arg[0]
+            if vector._tensor_type != (1,0):
+                raise TypeError("The argument must be a vector field.")
+            dom = self._domain.intersection(vector._domain)
+            return FreeModuleTensor.__call__(self.restrict(dom),
+                                                          vector.restrict(dom))
+        # Generic case
         if p != self._tensor_rank:
             raise TypeError(str(self._tensor_rank) +
                             " arguments must be provided.")
@@ -3338,14 +3370,15 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: wp.display()
             w = 2 dx + 4 dy
 
-        A field of endomorphisms yields an endomorphism in the tangent space::
+        A tensor field of type (1,1) yields a tensor of type(1,1) in the
+        tangent space::
 
-            sage: t = M.endomorphism_field('t')
+            sage: t = M.tensor_field(1, 1, name='t')
             sage: t[0,0], t[0,1], t[1,1] = 1+x, x*y, 1-y
             sage: t.display()
             t = (x + 1) d/dx*dx + x*y d/dx*dy + (-y + 1) d/dy*dy
             sage: tp = t.at(p) ; tp
-            Endomorphism tensor t on the tangent space at point 'p' on 2-dimensional manifold 'M'
+            Type-(1,1) tensor t on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: tp.parent()
             Free module of type-(1,1) tensors on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: tp.display()

@@ -507,9 +507,9 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
         """
         if self._one is None:
             self._one = self.element_class(self._fmodule, is_identity=True)
+            # Initialization of the components (Kronecker delta) in some basis:
             if self._fmodule.bases():
-                self._one.components(self._fmodule.bases()[0]) # initializes
-                                                # the components in some basis
+                self._one.components(self._fmodule.bases()[0])
         return self._one
 
     #### End of monoid methods ####

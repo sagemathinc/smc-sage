@@ -2053,56 +2053,6 @@ class ManifoldOpenSubset(ManifoldSubset):
         return self.tensor_field(0, 2, name=name, latex_name=latex_name,
                                  sym=(0,1))
 
-
-    def endomorphism_field(self, name=None, latex_name=None,
-                           dest_map=None):
-        r"""
-        Define a field of endomorphisms (i.e. linear operators in the tangent
-        spaces = tensors of type (1,1)) on ``self``.
-
-        See :class:`~sage.geometry.manifolds.rank2field.EndomorphismField` for
-        a complete documentation.
-
-        INPUT:
-
-        - ``name`` -- (default: None) name given to the field
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
-          if none is provided, the LaTeX symbol is set to ``name``
-        - ``dest_map`` -- (default: None) instance of
-          class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
-          representing the destination map `\Phi:\ U \rightarrow V`, where `U`
-          is ``self``; if none is provided, the identity map is assumed (case
-          of an endomorphism field *on* ``self``)
-
-        OUTPUT:
-
-        - instance of
-          :class:`~sage.geometry.manifolds.rank2field.EndomorphismField`
-          (or of
-          :class:`~sage.geometry.manifolds.rank2field.EndomorphismFieldParal`
-          if the codomain is parallelizable) representing the defined field of
-          endomorphisms.
-
-        EXAMPLE:
-
-        A field of endomorphisms on a 3-dimensional manifold::
-
-            sage: Manifold._clear_cache_() # for doctests only
-            sage: M = Manifold(3, 'M', start_index=1)
-            sage: c_xyz.<x,y,z> = M.chart()
-            sage: t = M.endomorphism_field('T'); t
-            field of endomorphisms 'T' on the 3-dimensional manifold 'M'
-            sage: t.parent()
-            free module T^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
-
-        See the documentation of class
-        :class:`~sage.geometry.manifolds.rank2field.EndomorphismField` for more
-        examples.
-
-        """
-        vmodule = self.vector_field_module(dest_map)
-        return vmodule.endomorphism(name=name, latex_name=latex_name)
-
     def automorphism_field(self, name=None, latex_name=None,
                            dest_map=None):
         r"""
@@ -2140,9 +2090,11 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: M = Manifold(3,'M')
             sage: c_xyz.<x,y,z> = M.chart()
             sage: a = M.automorphism_field('A') ; a
-            field of tangent-space automorphisms 'A' on the 3-dimensional manifold 'M'
+            field of tangent-space automorphisms 'A' on the 3-dimensional
+             manifold 'M'
             sage: a.parent()
-            free module T^(1,1)(M) of type-(1,1) tensors fields on the 3-dimensional manifold 'M'
+            General linear group of the free module X(M) of vector fields on
+             the 3-dimensional manifold 'M'
 
         See the documentation of class
         :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` for more
@@ -2156,9 +2108,6 @@ class ManifoldOpenSubset(ManifoldSubset):
                                dest_map=None):
         r"""
         Return the field of identity maps in the tangent spaces on ``self``.
-
-        See :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField`
-        for a complete documentation.
 
         INPUT:
 
@@ -2176,9 +2125,9 @@ class ManifoldOpenSubset(ManifoldSubset):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField`
+          :class:`~sage.geometry.manifolds.rank2field.AutomorphismField`
           (or of
-          :class:`~sage.geometry.manifolds.rank2field.TangentIdentityFieldParal`
+          :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal`
           if the codomain is parallelizable) representing the field of identity
           maps.
 
@@ -2190,13 +2139,14 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: M = Manifold(3, 'M', start_index=1)
             sage: c_xyz.<x,y,z> = M.chart()
             sage: a = M.tangent_identity_field(); a
-            field of tangent-space identity maps 'Id' on the 3-dimensional manifold 'M'
+            field of tangent-space identity maps on the 3-dimensional
+             manifold 'M'
             sage: a.comp()
             Kronecker delta of size 3x3
 
         See the documentation of class
-        :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField` for more
-        examples.
+        :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldField`
+        for more examples.
 
         """
         vmodule = self.vector_field_module(dest_map)

@@ -383,10 +383,8 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         EXAMPLES:
 
-
         """
-        from rank2field import EndomorphismField, AutomorphismField, \
-                                                           TangentIdentityField
+        from rank2field import AutomorphismField
         from metric import Metric, RiemannMetric, LorentzMetric
         if tensor_type==(1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
@@ -395,11 +393,6 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         elif tensor_type==(1,1):
             if specific_type == AutomorphismField:
                 return AutomorphismField(self, name=name, latex_name=latex_name)
-            elif specific_type == TangentIdentityField:
-                return TangentIdentityField(self, name=name,
-                                            latex_name=latex_name)
-            else:
-                return EndomorphismField(self, name=name, latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None \
                                                               and antisym !=[]:
             if isinstance(antisym, list):
@@ -426,10 +419,10 @@ class VectorFieldModule(UniqueRepresentation, Parent):
                 return self.tensor_module(0,2).element_class(self, (0,2),
                                               name=name, latex_name=latex_name,
                                               sym=sym, antisym=antisym)
-        else:
-            return self.tensor_module(*tensor_type).element_class(self,
-                                 tensor_type, name=name, latex_name=latex_name,
-                                 sym=sym, antisym=antisym)
+        # Generic case
+        return self.tensor_module(*tensor_type).element_class(self,
+         tensor_type, name=name, latex_name=latex_name, sym=sym,
+         antisym=antisym)
 
     def alternating_form(self, degree, name=None, latex_name=None):
         r"""
@@ -487,34 +480,6 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         return self.dual_exterior_power(1).element_class(self, 1, name=name,
                                                          latex_name=latex_name)
 
-    def endomorphism(self, name=None, latex_name=None):
-        r"""
-        Construct an endomorphism of the module ``self``.
-
-        An endomorphism of the module ``self`` is actually a field
-        of tangent-space endomorphisms along the open subset `U` on which
-        ``self`` is defined.
-
-        INPUT:
-
-        - ``name`` -- (string; default: None) name given to the endomorphism
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
-          endomorphism; if none is provided, the LaTeX symbol is set to
-          ``name``
-
-        OUTPUT:
-
-        - instance of
-          :class:`~sage.geometry.manifolds.rank2field.EndomorphismField`
-
-        See
-        :class:`~sage.geometry.manifolds.rank2field.EndomorphismField`
-        for further documentation.
-
-        """
-        from rank2field import EndomorphismField
-        return EndomorphismField(self, name=name, latex_name=latex_name)
-
     def automorphism(self, name=None, latex_name=None):
         r"""
         Construct an automorphism of the module ``self``.
@@ -541,6 +506,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         """
         from rank2field import AutomorphismField
+        #!# the construction should be performed by the parent instead
         return AutomorphismField(self, name=name, latex_name=latex_name)
 
     def identity_map(self, name='Id', latex_name=None):
@@ -561,15 +527,14 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField`
-
-        See
-        :class:`~sage.geometry.manifolds.rank2field.TangentIdentityField`
-        for further documentation.
+          :class:`~sage.geometry.manifolds.rank2field.AutomorphismField`
 
         """
-        from rank2field import TangentIdentityField
-        return TangentIdentityField(self, name=name, latex_name=latex_name)
+        from rank2field import AutomorphismField
+        #!# the construction should be performed by the parent instead,
+        # via one()
+        return AutomorphismField(self, name=name, latex_name=latex_name,
+                                 is_identity=True)
 
     def metric(self, name, signature=None, latex_name=None):
         r"""
@@ -1062,9 +1027,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
 
         """
-        from rank2field import EndomorphismFieldParal, AutomorphismField, \
-                               AutomorphismFieldParal, TangentIdentityField, \
-                               TangentIdentityFieldParal
+        from rank2field import AutomorphismField, AutomorphismFieldParal
         from metric import Metric, RiemannMetric, LorentzMetric, MetricParal, \
                            RiemannMetricParal, LorentzMetricParal
         if tensor_type==(1,0):
@@ -1075,13 +1038,6 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
             if specific_type == AutomorphismFieldParal or \
                                            specific_type == AutomorphismField:
                 return AutomorphismFieldParal(self, name=name,
-                                                         latex_name=latex_name)
-            elif specific_type == TangentIdentityFieldParal or \
-                                         specific_type == TangentIdentityField:
-                return TangentIdentityFieldParal(self, name=name,
-                                                         latex_name=latex_name)
-            else:
-                return EndomorphismFieldParal(self, name=name,
                                                          latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None \
                                                               and antisym !=[]:
@@ -1111,10 +1067,10 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                 return self.tensor_module(0,2).element_class(self, (0,2),
                                               name=name, latex_name=latex_name,
                                               sym=sym, antisym=antisym)
-        else:
-            return self.tensor_module(*tensor_type).element_class(self,
-                                 tensor_type, name=name, latex_name=latex_name,
-                                 sym=sym, antisym=antisym)
+        # Generic case
+        return self.tensor_module(*tensor_type).element_class(self,
+         tensor_type, name=name, latex_name=latex_name, sym=sym,
+         antisym=antisym)
 
     def tensor_from_comp(self, tensor_type, comp, name=None, latex_name=None):
         r"""
@@ -1143,7 +1099,6 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         EXAMPLES:
 
         """
-        from rank2field import EndomorphismFieldParal
         from sage.tensor.modules.comp import CompWithSym, CompFullySym, \
                                                                CompFullyAntiSym
         #
@@ -1163,9 +1118,6 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
             resu = self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type == (0,1):
             resu = self.linear_form(name=name, latex_name=latex_name)
-        elif tensor_type == (1,1):
-            resu = EndomorphismFieldParal(self, name=name,
-                                          latex_name=latex_name)
         elif tensor_type[0] == 0 and tensor_type[1] > 1 and \
                                         isinstance(comp, CompFullyAntiSym):
             resu = self.alternating_form(tensor_type[1], name=name,
@@ -1182,34 +1134,6 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         resu._components[comp._frame] = comp
         #
         return resu
-
-    def endomorphism(self, name=None, latex_name=None):
-        r"""
-        Construct an endomorphism of the free module ``self``.
-
-        An endomorphism of the vector free module ``self`` is actually a field
-        of tangent-space endomorphisms along the open subset `U` on which
-        ``self`` is defined.
-
-        INPUT:
-
-        - ``name`` -- (string; default: None) name given to the endomorphism
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
-          endomorphism; if none is provided, the LaTeX symbol is set to
-          ``name``
-
-        OUTPUT:
-
-        - instance of
-          :class:`~sage.geometry.manifolds.rank2field.EndomorphismFieldParal`
-
-        See
-        :class:`~sage.geometry.manifolds.rank2field.EndomorphismFieldParal`
-        for further documentation.
-
-        """
-        from rank2field import EndomorphismFieldParal
-        return EndomorphismFieldParal(self, name=name, latex_name=latex_name)
 
     def automorphism(self, name=None, latex_name=None):
         r"""
@@ -1237,6 +1161,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
         """
         from rank2field import AutomorphismFieldParal
+        #!# the construction should be performed by the parent instead
         return AutomorphismFieldParal(self, name=name, latex_name=latex_name)
 
     def identity_map(self, name='Id', latex_name=None):
@@ -1257,15 +1182,18 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.manifolds.rank2field.TangentIdentityFieldParal`
-
-        See
-        :class:`~sage.geometry.manifolds.rank2field.TangentIdentityFieldParal`
-        for further documentation.
+          :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal`
 
         """
-        from rank2field import TangentIdentityFieldParal
-        return TangentIdentityFieldParal(self, name=name, latex_name=latex_name)
+        from rank2field import AutomorphismFieldParal
+        #!# the construction should be performed by the parent instead, via
+        # one()
+        resu = AutomorphismFieldParal(self, name=name, latex_name=latex_name,
+                                      is_identity=True)
+        # Initialization of the components (Kronecker delta) in some basis:
+        if self.bases():
+            resu.components(self.bases()[0])
+        return resu
 
     def sym_bilinear_form(self, name=None, latex_name=None):
         r"""
