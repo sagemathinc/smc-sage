@@ -20,18 +20,18 @@ which is a subclass of the generic tensor class
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2014): initial version
+- Eric Gourgoulhon, Michal Bejger (2014-2015): initial version
 
 REFERENCES:
 
-- Chap. 23 of R. Godement: "Algebra", Hermann (Paris) / Houghton Mifflin
+- Chap. 23 of R. Godement: *Algebra*, Hermann (Paris) / Houghton Mifflin
   (Boston) (1968)
-- Chap. 15 of S. Lang: "Algebra", 3rd ed., Springer (New York) (2002)
+- Chap. 15 of S. Lang: *Algebra*, 3rd ed., Springer (New York) (2002)
 
 """
 #******************************************************************************
-#       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -408,6 +408,11 @@ class FreeModuleAltForm(FreeModuleTensor):
             sage: latex(a.display())  # display in the notebook
             \alpha = e^0 -3 e^1 + 4 e^2
 
+        A shortcut is ``disp()``::
+
+            sage: a.disp()
+            a = e^0 - 3 e^1 + 4 e^2
+           
         Display of an alternating form of degree 2 on a rank-3 free module::
 
             sage: b = M.alternating_form(2, 'b', latex_name=r'\beta')
@@ -439,10 +444,12 @@ class FreeModuleAltForm(FreeModuleTensor):
 
         Display in a basis which is not the default one::
 
-            sage: aut = M.automorphism()
-            sage: aut[:] = [[0,1,0], [0,0,-1], [1,0,0]]
+            sage: aut = M.automorphism(matrix=[[0,1,0], [0,0,-1], [1,0,0]],
+            ....:                      basis=e)
             sage: f = e.new_basis(aut, 'f')
             sage: a.display(f)
+            a = 4 f^0 + f^1 + 3 f^2
+            sage: a.disp(f)     # shortcut notation
             a = 4 f^0 + f^1 + 3 f^2
             sage: b.display(f)
             b = -2 f^0/\f^1 - f^0/\f^2 - 3 f^1/\f^2
@@ -532,6 +539,8 @@ class FreeModuleAltForm(FreeModuleTensor):
         else:
             result.latex = latex(self) + " = " + expansion_latex
         return result
+
+    disp = display
 
 
     def wedge(self, other):

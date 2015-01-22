@@ -1,11 +1,9 @@
 r"""
 Tensors on free modules
 
-The class :class:`FreeModuleTensor` implements tensors over a free module `M`,
-i.e. elements of the free module `T^{(k,l)}(M)` of tensors of type `(k,l)`
-acting as multilinear forms on `M`.
-
-A *tensor of type* `(k,l)` is a multilinear map:
+The class :class:`FreeModuleTensor` implements tensors on a free module `M`
+of finite rank over a commutative ring. A *tensor of type* `(k,l)` on `M`
+is a multilinear map:
 
 .. MATH::
 
@@ -15,35 +13,37 @@ A *tensor of type* `(k,l)` is a multilinear map:
 
 where `R` is the commutative ring over which the free module `M` is defined
 and `M^* = \mathrm{Hom}_R(M,R)` is the dual of `M`. The integer `k + l` is
-called the *tensor rank*.
+called the *tensor rank*. The set `T^{(k,l)}(M)` of tensors of type `(k,l)`
+on `M` is a free module of finite rank over `R`, described by the
+class :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule`.
 
 Various derived classes of :class:`FreeModuleTensor` are devoted to specific
 tensors:
 
 * :class:`FiniteRankFreeModuleElement` for elements of `M`, considered as
-  type-(1,0) tensors thanks to the canonical identification `M^{**}=M`, which
-  holds since `M` is a free module of finite rank
+  type-(1,0) tensors thanks to the canonical identification `M^{**}=M` (which
+  holds since `M` is a free module of finite rank);
 
 * :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm` for
-  fully antisymmetric type-`(0, l)` tensors (alternating forms)
+  fully antisymmetric type-`(0, l)` tensors (alternating forms);
 
 * :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
-  for type-(1,1) tensors representing invertible endomorphisms
+  for type-(1,1) tensors representing invertible endomorphisms.
 
 :class:`FreeModuleTensor` is a Sage *element* class, the corresponding *parent*
 class being :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule`.
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2014): initial version
+- Eric Gourgoulhon, Michal Bejger (2014-2015): initial version
 
 REFERENCES:
 
-- Chap. 21 of R. Godement: "Algebra", Hermann (Paris) / Houghton Mifflin
+- Chap. 21 of R. Godement: *Algebra*, Hermann (Paris) / Houghton Mifflin
   (Boston) (1968)
-- Chap. 12 of J. M. Lee: "Introduction to Smooth Manifolds", 2nd ed., Springer
-  (New York) (2013) *(only when the free module is a vector space)*
-- Chap. 2 of B. O'Neill: "Semi-Riemannian Geometry", Academic Press (San Diego)
+- Chap. 12 of J. M. Lee: *Introduction to Smooth Manifolds*, 2nd ed., Springer
+  (New York) (2013) (only when the free module is a vector space)
+- Chap. 2 of B. O'Neill: *Semi-Riemannian Geometry*, Academic Press (San Diego)
   (1983)
 
 EXAMPLES:
@@ -166,8 +166,8 @@ tensor ``t`` acts on pairs formed by a linear form and a module element::
 
 """
 #******************************************************************************
-#       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -533,7 +533,7 @@ class FreeModuleTensor(ModuleElement):
 
     def display(self, basis=None, format_spec=None):
         r"""
-        Display the tensor in terms of its expansion onto a given basis.
+        Display ``self`` in terms of its expansion onto a given basis.
 
         The output is either text-formatted (console mode) or LaTeX-formatted
         (notebook mode).
@@ -558,11 +558,17 @@ class FreeModuleTensor(ModuleElement):
             sage: latex(v.display())  # display in the notebook
             v = \frac{1}{3} e_1 -2 e_2
 
+        A shortcut is ``disp()``::
+
+            sage: v.disp()
+            v = 1/3 e_1 - 2 e_2
+        
         Display of a linear form (type-`(0,1)` tensor)::
 
             sage: de = e.dual_basis()
             sage: w = - 3/4 * de[1] + de[2] ; w
-            Linear form on the Rank-2 free module M over the Rational Field
+            Linear form on the 2-dimensional vector space M over the Rational
+             Field
             sage: w.set_name('w', latex_name='\omega')
             sage: w.display()
             w = -3/4 e^1 + e^2
@@ -572,16 +578,18 @@ class FreeModuleTensor(ModuleElement):
         Display of a type-`(1,1)` tensor::
 
             sage: t = v*w ; t  # the type-(1,1) is formed as the tensor product of v by w
-            Type-(1,1) tensor v*w on the Rank-2 free module M over the Rational Field
+            Type-(1,1) tensor v*w on the 2-dimensional vector space M over the
+             Rational Field
             sage: t.display()
             v*w = -1/4 e_1*e^1 + 1/3 e_1*e^2 + 3/2 e_2*e^1 - 2 e_2*e^2
             sage: latex(t.display())  # display in the notebook
-            v\otimes \omega = -\frac{1}{4} e_1\otimes e^1 + \frac{1}{3} e_1\otimes e^2 + \frac{3}{2} e_2\otimes e^1 -2 e_2\otimes e^2
+            v\otimes \omega = -\frac{1}{4} e_1\otimes e^1 +
+             \frac{1}{3} e_1\otimes e^2 + \frac{3}{2} e_2\otimes e^1
+             -2 e_2\otimes e^2
 
         Display in a basis which is not the default one::
 
-            sage: a = M.automorphism()
-            sage: a[:] = [[1,2],[3,4]]
+            sage: a = M.automorphism(matrix=[[1,2],[3,4]], basis=e)
             sage: f = e.new_basis(a, 'f')
             sage: v.display(f) # the components w.r.t basis f are first computed via the change-of-basis formula defined by a
             v = -8/3 f_1 + 3/2 f_2
@@ -678,6 +686,9 @@ class FreeModuleTensor(ModuleElement):
         else:
             result.latex = latex(self) + " = " + expansion_latex
         return result
+
+    disp = display
+
 
     def view(self, basis=None, format_spec=None):
         r"""
@@ -1855,7 +1866,8 @@ class FreeModuleTensor(ModuleElement):
             sage: a = M.tensor((2,0), name='a')
             sage: a[:] = [[4,0], [-2,5]]
             sage: s = a.__div__(4) ; s
-            Type-(2,0) tensor on the Rank-2 free module M over the Rational Field
+            Type-(2,0) tensor on the 2-dimensional vector space M over the
+             Rational Field
             sage: s[:]
             [   1    0]
             [-1/2  5/4]
@@ -2476,7 +2488,8 @@ class FreeModuleTensor(ModuleElement):
             sage: t = M.tensor((2,0))
             sage: t[:] = [[2,1,-3],[0,-4,5],[-1,4,2]]
             sage: s = t.symmetrize() ; s
-            Type-(2,0) tensor on the Rank-3 free module M over the Rational Field
+            Type-(2,0) tensor on the 3-dimensional vector space M over the
+             Rational Field
             sage: t[:], s[:]
             (
             [ 2  1 -3]  [  2 1/2  -2]
@@ -2494,7 +2507,8 @@ class FreeModuleTensor(ModuleElement):
         suffices to pass the indices as a string inside square brackets::
 
             sage: t['(ij)']
-            Type-(2,0) tensor on the Rank-3 free module M over the Rational Field
+            Type-(2,0) tensor on the 3-dimensional vector space M over the
+             Rational Field
             sage: t['(ij)'].symmetries()
             symmetry: (0, 1);  no antisymmetry
             sage: t['(ij)'] == t.symmetrize()
@@ -2516,7 +2530,8 @@ class FreeModuleTensor(ModuleElement):
             sage: t = M.tensor((0,3))
             sage: t[:] = [[[1,2,3], [-4,5,6], [7,8,-9]], [[10,-11,12], [13,14,-15], [16,17,18]], [[19,-20,-21], [-22,23,24], [25,26,-27]]]
             sage: s = t.symmetrize(0,1) ; s  # (0,1) = the first two arguments
-            Type-(0,3) tensor on the Rank-3 free module M over the Rational Field
+            Type-(0,3) tensor on the 3-dimensional vector space M over the
+             Rational Field
             sage: s.symmetries()
             symmetry: (0, 1);  no antisymmetry
             sage: s[:]
@@ -2544,7 +2559,8 @@ class FreeModuleTensor(ModuleElement):
         last arguments::
 
             sage: s = t.symmetrize(0,2) ; s  # (0,2) = first and last arguments
-            Type-(0,3) tensor on the Rank-3 free module M over the Rational Field
+            Type-(0,3) tensor on the 3-dimensional vector space M over the
+             Rational Field
             sage: s.symmetries()
             symmetry: (0, 2);  no antisymmetry
             sage: s[:]
@@ -2560,7 +2576,8 @@ class FreeModuleTensor(ModuleElement):
         Symmetrization of a tensor of type `(0,3)` on the last two arguments::
 
             sage: s = t.symmetrize(1,2) ; s  # (1,2) = the last two arguments
-            Type-(0,3) tensor on the Rank-3 free module M over the Rational Field
+            Type-(0,3) tensor on the 3-dimensional vector space M over the
+             Rational Field
             sage: s.symmetries()
             symmetry: (1, 2);  no antisymmetry
             sage: s[:]
@@ -2585,7 +2602,8 @@ class FreeModuleTensor(ModuleElement):
         Full symmetrization of a tensor of type `(0,3)`::
 
             sage: s = t.symmetrize() ; s
-            Type-(0,3) tensor on the Rank-3 free module M over the Rational Field
+            Type-(0,3) tensor on the 3-dimensional vector space M over the
+             Rational Field
             sage: s.symmetries()
             symmetry: (0, 1, 2);  no antisymmetry
             sage: s[:]
@@ -2698,7 +2716,8 @@ class FreeModuleTensor(ModuleElement):
             sage: t = M.tensor((2,0))
             sage: t[:] = [[1,-2,3], [4,5,6], [7,8,-9]]
             sage: s = t.antisymmetrize() ; s
-            Type-(2,0) tensor on the Rank-3 free module M over the Rational Field
+            Type-(2,0) tensor on the 3-dimensional vector space M over the
+             Rational Field
             sage: s.symmetries()
             no symmetry;  antisymmetry: (0, 1)
             sage: t[:], s[:]
@@ -2721,7 +2740,8 @@ class FreeModuleTensor(ModuleElement):
             sage: t = M.tensor((0,3))
             sage: t[:] = [[[1,2,3], [-4,5,6], [7,8,-9]], [[10,-11,12], [13,14,-15], [16,17,18]], [[19,-20,-21], [-22,23,24], [25,26,-27]]]
             sage: s = t.antisymmetrize(0,1) ; s  # (0,1) = the first two arguments
-            Type-(0,3) tensor on the Rank-3 free module M over the Rational Field
+            Type-(0,3) tensor on the 3-dimensional vector space M over the
+             Rational Field
             sage: s.symmetries()
             no symmetry;  antisymmetry: (0, 1)
             sage: s[:]
@@ -2742,7 +2762,8 @@ class FreeModuleTensor(ModuleElement):
         inside square brackets::
 
             sage: s1 = t['_[ij]k'] ; s1
-            Type-(0,3) tensor on the Rank-3 free module M over the Rational Field
+            Type-(0,3) tensor on the 3-dimensional vector space M over the
+             Rational Field
             sage: s1.symmetries()
             no symmetry;  antisymmetry: (0, 1)
             sage: s1 == s
@@ -2763,7 +2784,8 @@ class FreeModuleTensor(ModuleElement):
         arguments::
 
             sage: s = t.antisymmetrize(0,2) ; s  # (0,2) = first and last arguments
-            Type-(0,3) tensor on the Rank-3 free module M over the Rational Field
+            Type-(0,3) tensor on the 3-dimensional vector space M over the
+             Rational Field
             sage: s.symmetries()
             no symmetry;  antisymmetry: (0, 2)
             sage: s[:]
@@ -2784,7 +2806,8 @@ class FreeModuleTensor(ModuleElement):
         arguments::
 
             sage: s = t.antisymmetrize(1,2) ; s  # (1,2) = the last two arguments
-            Type-(0,3) tensor on the Rank-3 free module M over the Rational Field
+            Type-(0,3) tensor on the 3-dimensional vector space M over the
+             Rational Field
             sage: s.symmetries()
             no symmetry;  antisymmetry: (1, 2)
             sage: s[:]
@@ -2808,8 +2831,8 @@ class FreeModuleTensor(ModuleElement):
         Full antisymmetrization of a tensor of type (0,3)::
 
             sage: s = t.antisymmetrize() ; s
-            Alternating form of degree 3 on the
-             Rank-3 free module M over the Rational Field
+            Alternating form of degree 3 on the 3-dimensional vector space M
+             over the Rational Field
             sage: s.symmetries()
             no symmetry;  antisymmetry: (0, 1, 2)
             sage: s[:]

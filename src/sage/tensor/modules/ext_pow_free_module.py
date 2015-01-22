@@ -26,9 +26,9 @@ AUTHORS:
 
 REFERENCES:
 
-- K. Conrad: "Exterior powers",
+- K. Conrad: *Exterior powers*,
   `http://www.math.uconn.edu/~kconrad/blurbs/ <http://www.math.uconn.edu/~kconrad/blurbs/>`_ 
-- Chap. 19 of S. Lang: "Algebra", 3rd ed., Springer (New York) (2002)
+- Chap. 19 of S. Lang: *Algebra*, 3rd ed., Springer (New York) (2002)
 
 """
 #******************************************************************************
@@ -87,14 +87,16 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
         sage: e = M.basis('e')
         sage: from sage.tensor.modules.ext_pow_free_module import ExtPowerFreeModule
         sage: A = ExtPowerFreeModule(M, 2) ; A
-        2nd exterior power of the dual of the Rank-3 free module M over the Integer Ring
+        2nd exterior power of the dual of the Rank-3 free module M over the
+         Integer Ring
     
     Instead of importing ExtPowerFreeModule in the global name space, it is
     recommended to use the module's method
     :meth:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule.dual_exterior_power`::
 
         sage: A = M.dual_exterior_power(2) ; A
-        2nd exterior power of the dual of the Rank-3 free module M over the Integer Ring
+        2nd exterior power of the dual of the Rank-3 free module M over the
+         Integer Ring
         sage: latex(A)
         \Lambda^{2}\left(M^*\right)
 
@@ -116,7 +118,8 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
     :class:`~sage.tensor.modules.free_module_alt_form.FreeModuleAltForm`::
 
         sage: a = A.an_element() ; a
-        Alternating form of degree 2 on the Rank-3 free module M over the Integer Ring
+        Alternating form of degree 2 on the Rank-3 free module M over the
+         Integer Ring
         sage: a.display() # expansion with respect to M's default basis (e)
         e^0/\e^1
         sage: from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
@@ -131,7 +134,8 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
     the zero element of ``A``::
 
         sage: A(0)
-        Alternating form zero of degree 2 on the Rank-3 free module M over the Integer Ring
+        Alternating form zero of degree 2 on the Rank-3 free module M over the
+         Integer Ring
         sage: A(0) is A.zero()
         True
 
@@ -142,7 +146,8 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
         Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer Ring
         sage: comp = [[0,3,-1],[-3,0,4],[1,-4,0]]
         sage: a = A(comp, basis=e, name='a') ; a
-        Alternating form a of degree 2 on the Rank-3 free module M over the Integer Ring
+        Alternating form a of degree 2 on the Rank-3 free module M over the
+         Integer Ring
         sage: a.display(e)
         a = 3 e^0/\e^1 - e^0/\e^2 + 4 e^1/\e^2
 
@@ -235,7 +240,8 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
             sage: from sage.tensor.modules.ext_pow_free_module import ExtPowerFreeModule
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: A = ExtPowerFreeModule(M, 2) ; A
-            2nd exterior power of the dual of the Rank-3 free module M over the Integer Ring
+            2nd exterior power of the dual of the Rank-3 free module M over
+             the Integer Ring
             sage: TestSuite(A).run()
 
         """
@@ -295,9 +301,11 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
             a = 2 e^0 - e^2
             sage: A = M.dual_exterior_power(2)
             sage: a = A._element_constructor_(0) ; a
-            Alternating form zero of degree 2 on the Rank-3 free module M over the Integer Ring
+            Alternating form zero of degree 2 on the Rank-3 free module M over
+             the Integer Ring
             sage: a = A._element_constructor_([], name='a') ; a
-            Alternating form a of degree 2 on the Rank-3 free module M over the Integer Ring
+            Alternating form a of degree 2 on the Rank-3 free module M over
+             the Integer Ring
             sage: a[e,0,2], a[e,1,2] = 3, -1 
             sage: a.display()
             a = 3 e^0/\e^2 - e^1/\e^2
@@ -334,19 +342,23 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
             sage: M = FiniteRankFreeModule(QQ, 4, name='M')
             sage: e = M.basis('e')
             sage: a = M.dual_exterior_power(1)._an_element_() ; a
-            Linear form on the Rank-4 free module M over the Rational Field
+            Linear form on the 4-dimensional vector space M over the Rational
+             Field
             sage: a.display()
             1/2 e^0
             sage: a = M.dual_exterior_power(2)._an_element_() ; a
-            Alternating form of degree 2 on the Rank-4 free module M over the Rational Field
+            Alternating form of degree 2 on the 4-dimensional vector space M
+             over the Rational Field
             sage: a.display()
             1/2 e^0/\e^1
             sage: a = M.dual_exterior_power(3)._an_element_() ; a
-            Alternating form of degree 3 on the Rank-4 free module M over the Rational Field
+            Alternating form of degree 3 on the 4-dimensional vector space M
+             over the Rational Field
             sage: a.display()
             1/2 e^0/\e^1/\e^2
             sage: a = M.dual_exterior_power(4)._an_element_() ; a
-            Alternating form of degree 4 on the Rank-4 free module M over the Rational Field
+            Alternating form of degree 4 on the 4-dimensional vector space M
+             over the Rational Field
             sage: a.display()
             1/2 e^0/\e^1/\e^2/\e^3
 
@@ -462,7 +474,7 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
 
         - integer `p` such that ``self`` is the exterior power `\Lambda^p(M^*)`
 
-        EXAMPLE::
+        EXAMPLES::
         
             sage: M = FiniteRankFreeModule(ZZ, 5, name='M')
             sage: A = M.dual_exterior_power(2)

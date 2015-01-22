@@ -310,11 +310,11 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
             sage: M = FiniteRankFreeModule(QQ, 3, name='M')
             sage: M.automorphism()
-            Automorphism of the Rank-3 free module M over the Rational Field
+            Automorphism of the 3-dimensional vector space M over the Rational Field
             sage: M.automorphism(name='a')
-            Automorphism a of the Rank-3 free module M over the Rational Field
+            Automorphism a of the 3-dimensional vector space M over the Rational Field
             sage: M.identity_map()
-            Identity map of the Rank-3 free module M over the Rational Field
+            Identity map of the 3-dimensional vector space M over the Rational Field
 
         """
         if self._is_identity:
@@ -359,8 +359,8 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
             sage: a[e,:] = [[1,0,-1], [0,3,0], [0,0,2]]
             sage: b = a.inverse()
             sage: a._inverse
-            Automorphism a^(-1) of the Rank-3 free module M over the Rational
-             Field
+            Automorphism a^(-1) of the 3-dimensional vector space M over the
+             Rational Field
             sage: a._del_derived()
             sage: a._inverse  # has been reset to None
 

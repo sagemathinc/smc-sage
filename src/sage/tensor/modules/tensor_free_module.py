@@ -421,13 +421,15 @@ class TensorFreeModule(FiniteRankFreeModule):
             sage: T._element_constructor_(0) is T.zero()
             True
             sage: e = M.basis('e')
-            sage: t = T._element_constructor_(comp=[[2,0],[1/2,-3]], basis=e, name='t') ; t
-            Type-(1,1) tensor t on the Rank-2 free module M over the Rational Field
+            sage: t = T._element_constructor_(comp=[[2,0],[1/2,-3]], basis=e,
+            ....:                             name='t') ; t
+            Type-(1,1) tensor t on the 2-dimensional vector space M over the
+             Rational Field
             sage: t.display()
             t = 2 e_0*e^0 + 1/2 e_1*e^0 - 3 e_1*e^1
             sage: t.parent()
-            Free module of type-(1,1) tensors on the
-             Rank-2 free module M over the Rational Field
+            Free module of type-(1,1) tensors on the 2-dimensional vector
+             space M over the Rational Field
             sage: t.parent() is T
             True
 
@@ -494,7 +496,8 @@ class TensorFreeModule(FiniteRankFreeModule):
             sage: T = M.tensor_module(1,1)
             sage: e = M.basis('e')
             sage: t = T._an_element_() ; t
-            Type-(1,1) tensor on the Rank-2 free module M over the Rational Field
+            Type-(1,1) tensor on the 2-dimensional vector space M over the
+             Rational Field
             sage: t.display()
             1/2 e_0*e^0
             sage: t.parent() is T
@@ -583,11 +586,11 @@ class TensorFreeModule(FiniteRankFreeModule):
 
             sage: M = FiniteRankFreeModule(QQ, 2, name='M')
             sage: M.tensor_module(1,1)
-            Free module of type-(1,1) tensors on the Rank-2 free module M
-             over the Rational Field
+            Free module of type-(1,1) tensors on the 2-dimensional vector space
+             M over the Rational Field
             sage: M.tensor_module(0,1)
-            Free module of type-(0,1) tensors on the Rank-2 free module M
-             over the Rational Field
+            Free module of type-(0,1) tensors on the 2-dimensional vector space
+             M over the Rational Field
 
         """
         description = "Free module of type-({},{}) tensors on the {}".format(

@@ -371,14 +371,15 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
 
         EXAMPLES:
 
-        Change of basis on a rank-2 free module::
+        Change of basis on a vector space of dimension 2::
 
             sage: M = FiniteRankFreeModule(QQ, 2, name='M', start_index=1)
             sage: e = M.basis('e')
             sage: a = M.automorphism()
             sage: a[:] = [[1, 2], [-1, 3]]
             sage: f = e.new_basis(a, 'f') ; f
-            Basis (f_1,f_2) on the Rank-2 free module M over the Rational Field
+            Basis (f_1,f_2) on the 2-dimensional vector space M over the
+             Rational Field
             sage: f[1].display()
             f_1 = e_1 - e_2
             sage: f[2].display()
