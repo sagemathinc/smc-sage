@@ -6,16 +6,20 @@ finite rank over a commutative ring,
 while the class :class:`FreeModuleCoBasis` implements the dual bases (i.e.
 bases of the dual module `M^*`).
 
-
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2014): initial version
+- Eric Gourgoulhon, Michal Bejger (2014-2015): initial version
 
+REFERENCES:
+
+- Chap. 10 of R. Godement : *Algebra*, Hermann (Paris) / Houghton Mifflin
+  (Boston) (1968)
+- Chap. 3 of S. Lang : *Algebra*, 3rd ed., Springer (New York) (2002)
 
 """
 #******************************************************************************
-#       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -32,7 +36,7 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
 
     INPUT:
 
-    - ``fmodule`` -- free module `M` (must be an instance of
+    - ``fmodule`` -- free module `M` (as an instance of
       :class:`FiniteRankFreeModule`)
     - ``symbol`` -- string; a letter (of a few letters) to denote a generic
       element of the basis
@@ -49,8 +53,9 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         sage: e = FreeModuleBasis(M0, 'e') ; e
         Basis (e_0,e_1,e_2) on the Rank-3 free module M_0 over the Integer Ring
 
-    Instead of importing FreeModuleBasis in the global name space, one can
-    use the module's method :meth:`basis`::
+    Instead of importing FreeModuleBasis in the global name space, it is
+    recommended to use the module's method
+    :meth:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule.basis`::
 
         sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
         sage: e = M.basis('e') ; e
@@ -65,12 +70,13 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         True
 
     The LaTeX symbol can be set explicitely, as the second argument of
-    :meth:`basis`::
+    :meth:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule.basis`::
 
         sage: latex(e)
         \left(e_0,e_1,e_2\right)
         sage: eps = M.basis('eps', r'\epsilon') ; eps
-        Basis (eps_0,eps_1,eps_2) on the Rank-3 free module M over the Integer Ring
+        Basis (eps_0,eps_1,eps_2) on the Rank-3 free module M over the Integer
+         Ring
         sage: latex(eps)
         \left(\epsilon_0,\epsilon_1,\epsilon_2\right)
 

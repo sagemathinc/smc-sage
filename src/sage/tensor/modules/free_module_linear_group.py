@@ -16,7 +16,7 @@ AUTHORS:
 
 REFERENCES:
 
-- Chap. 15 of R. Godement: "Algebra", Hermann (Paris) / Houghton Mifflin
+- Chap. 15 of R. Godement: *Algebra*, Hermann (Paris) / Houghton Mifflin
   (Boston) (1968)
 
 """
@@ -302,7 +302,8 @@ class FreeModuleLinearGroup(UniqueRepresentation, Parent):
           of ``self`` base ring can be constructed; the *columns* of ``comp``
           must be the components w.r.t. ``basis`` of the images of the elements
           of ``basis``. If ``comp`` is ``[]``, the automorphism has to be
-          initialized afterwards by method :meth:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor.set_comp`
+          initialized afterwards by method
+          :meth:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor.set_comp`
           or via the operator []. 
         - ``basis`` -- (default: ``None``) basis of ``self`` defining the
           matrix representation; if ``None`` the default basis of ``self`` is

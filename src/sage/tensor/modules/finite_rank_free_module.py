@@ -863,7 +863,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             description = "Rank-{} free module ".format(self._rank)
         if self._name is not None:
             description += self._name + " "
-        description += "over the " + str(self._ring)
+        description += "over the {}".format(self._ring)
         return description
 
     def _Hom_(self, other, category=None):
@@ -1912,7 +1912,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         """
         if self._def_basis is None:
-            print("No default basis has been defined on the " + str(self))
+            print("No default basis has been defined on the {}".format(self))
         return self._def_basis
 
     def set_default_basis(self, basis):
@@ -1983,9 +1983,9 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         """
         if not self._known_bases:
-            print("No basis has been defined on the " + str(self))
+            print("No basis has been defined on the {}".format(self))
         else:
-            print("Bases defined on the " + str(self) + ":")
+            print("Bases defined on the {}:".format(self))
             for basis in self._known_bases:
                 item = " - " + basis._name
                 if basis is self._def_basis:

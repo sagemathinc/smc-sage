@@ -380,11 +380,13 @@ class FreeModuleAltForm(FreeModuleTensor):
 
     def display(self, basis=None, format_spec=None):
         r"""
-        Display the alternating form ``self`` in terms of its expansion
-        onto a given cobasis.
+        Display the alternating form ``self`` in terms of its expansion w.r.t.
+        a given module basis.
 
-        The output is either text-formatted (console mode) or LaTeX-formatted
-        (notebook mode).
+        The expansion is actually performed onto exterior products of elements
+        of the cobasis (dual basis) associated with ``basis`` (see examples
+        below). The output is either text-formatted (console mode) or
+        LaTeX-formatted (notebook mode).
 
         INPUT:
 
@@ -401,9 +403,13 @@ class FreeModuleAltForm(FreeModuleTensor):
 
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
+            sage: e.dual_basis()
+            Dual basis (e^0,e^1,e^2) on the Rank-3 free module M over the Integer Ring
             sage: a = M.linear_form('a', latex_name=r'\alpha')
             sage: a[:] = [1,-3,4]
-            sage: a.display()
+            sage: a.display(e)
+            a = e^0 - 3 e^1 + 4 e^2
+            sage: a.display()  # a shortcut since e is M's default basis
             a = e^0 - 3 e^1 + 4 e^2
             sage: latex(a.display())  # display in the notebook
             \alpha = e^0 -3 e^1 + 4 e^2
@@ -459,12 +465,14 @@ class FreeModuleAltForm(FreeModuleTensor):
         The output format can be set via the argument ``output_formatter``
         passed at the module construction::
 
-            sage: N = FiniteRankFreeModule(QQ, 3, name='N', start_index=1, output_formatter=Rational.numerical_approx)
+            sage: N = FiniteRankFreeModule(QQ, 3, name='N', start_index=1,
+            ....:                   output_formatter=Rational.numerical_approx)
             sage: e = N.basis('e')
             sage: b = N.alternating_form(2, 'b')
             sage: b[1,2], b[1,3], b[2,3] = 1/3, 5/2, 4
             sage: b.display()  # default format (53 bits of precision)
-            b = 0.333333333333333 e^1/\e^2 + 2.50000000000000 e^1/\e^3 + 4.00000000000000 e^2/\e^3
+            b = 0.333333333333333 e^1/\e^2 + 2.50000000000000 e^1/\e^3
+             + 4.00000000000000 e^2/\e^3
 
         The output format is then controled by the argument ``format_spec`` of
         the method :meth:`display`::
@@ -509,8 +517,8 @@ class FreeModuleAltForm(FreeModuleTensor):
                     if is_atomic(coef_latex):
                         terms_latex.append(coef_latex + basis_term_latex)
                     else:
-                        terms_latex.append(r"\left(" + coef_latex + r"\right)" +
-                                           basis_term_latex)
+                        terms_latex.append(r"\left(" + coef_latex + \
+                                           r"\right)" + basis_term_latex)
         if not terms_txt:
             expansion_txt = "0"
         else:

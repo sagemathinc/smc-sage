@@ -268,8 +268,8 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
                                     output_formatter=fmodule._output_formatter)
         # Unique representation:
         if self._degree in self._fmodule._dual_exterior_powers:
-            raise ValueError("the " + str(degree) + "th exterior power of " +
-                             "the dual of " + str(self._fmodule) +
+            raise ValueError("the {}th exterior power of ".format(degree) +
+                             "the dual of {}".format(self._fmodule) +
                              " has already been created")
         else:
             self._fmodule._dual_exterior_powers[self._degree] = self

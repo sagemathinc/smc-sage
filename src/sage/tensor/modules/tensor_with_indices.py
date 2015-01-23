@@ -3,12 +3,12 @@ Index notation for tensors
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2014): initial version
+- Eric Gourgoulhon, Michal Bejger (2014-2015): initial version
 
 """
 #******************************************************************************
-#       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -256,8 +256,8 @@ class TensorWithIndices(SageObject):
                                      # tensor
                 cov = cov.replace('[','').replace(']','')
             if len(cov) != tensor._tensor_type[1]:
-                raise IndexError("number of covariant indices not compatible " +
-                                 "with the tensor type")
+                raise IndexError("number of covariant indices not " +
+                                 "compatible with the tensor type")
             self._cov = cov
         else:
             raise IndexError("too many '_' in the list of indices")

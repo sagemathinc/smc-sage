@@ -1,5 +1,5 @@
 r"""
-Tensor free modules
+Tensor products of free modules
 
 The class :class:`TensorFreeModule` implements tensor products of the type
 
@@ -39,20 +39,20 @@ inherits from the class
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2014): initial version
+- Eric Gourgoulhon, Michal Bejger (2014-2015): initial version
 
 REFERENCES:
 
-- K. Conrad: "Tensor products",
+- K. Conrad: *Tensor products*,
   `http://www.math.uconn.edu/~kconrad/blurbs/ <http://www.math.uconn.edu/~kconrad/blurbs/>`_ 
-- Chap. 21 (Exer. 4) of R. Godement: "Algebra", Hermann (Paris) / Houghton
+- Chap. 21 (Exer. 4) of R. Godement: *Algebra*, Hermann (Paris) / Houghton
   Mifflin (Boston) (1968)
-- Chap. 16 of S. Lang: "Algebra", 3rd ed., Springer (New York) (2002)
+- Chap. 16 of S. Lang: *Algebra*, 3rd ed., Springer (New York) (2002)
 
 """
 #******************************************************************************
-#       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -61,8 +61,7 @@ REFERENCES:
 #******************************************************************************
 
 from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule
-from sage.tensor.modules.free_module_tensor import (FreeModuleTensor,
-                                                   FiniteRankFreeModuleElement)
+from sage.tensor.modules.free_module_tensor import FreeModuleTensor
 from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
 from sage.tensor.modules.free_module_morphism import \
                                                    FiniteRankFreeModuleMorphism
@@ -81,6 +80,9 @@ class TensorFreeModule(FiniteRankFreeModule):
 
     As recalled above, `T^{(k,l)}(M)` can be canonically identified with the
     set of tensors of type `(k,l)` on `M`.
+
+    This is a Sage *parent* class, whose *element* class is
+    :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`.
 
     INPUT:
 
@@ -394,8 +396,8 @@ class TensorFreeModule(FiniteRankFreeModule):
                                     output_formatter=fmodule._output_formatter)
         # Unique representation:
         if self._tensor_type in self._fmodule._tensor_modules:
-            raise ValueError("the module of tensors of type" +
-                             str(self._tensor_type) +
+            raise ValueError("the module of tensors of type {}".format(
+                                                          self._tensor_type) +
                              " has already been created")
         else:
             self._fmodule._tensor_modules[self._tensor_type] = self
@@ -488,7 +490,7 @@ class TensorFreeModule(FiniteRankFreeModule):
 
     def _an_element_(self):
         r"""
-        Construct some (unamed) tensor.
+        Construct some (unamed) element of ``self``. 
 
         EXAMPLES::
 
@@ -603,8 +605,8 @@ class TensorFreeModule(FiniteRankFreeModule):
 
         OUTPUT:
 
-        - instance of :class:`FiniteRankFreeModule` representing the free module
-          on which the tensor module is defined.
+        - instance of :class:`FiniteRankFreeModule` representing the free
+          module on which the tensor module is defined.
 
         EXAMPLE:
 

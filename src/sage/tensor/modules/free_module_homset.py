@@ -1,24 +1,23 @@
 r"""
 Sets of morphisms between free modules
 
-The class :class:`FreeModuleHomset` implements sets (actually free modules) of
-homomorphisms between two free modules of finite rank over the same 
-commutative ring. 
+The class :class:`FreeModuleHomset` implements sets of homomorphisms between
+two free modules of finite rank over the same commutative ring. 
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2014): initial version
+- Eric Gourgoulhon, Michal Bejger (2014-2015): initial version
 
 REFERENCES:
 
-- Chaps. 13, 14 of R. Godement : "Algebra", Hermann (Paris) / Houghton Mifflin
+- Chaps. 13, 14 of R. Godement : *Algebra*, Hermann (Paris) / Houghton Mifflin
   (Boston) (1968)
-- Chap. 3 of S. Lang : "Algebra", 3rd ed., Springer (New York) (2002)
+- Chap. 3 of S. Lang : *Algebra*, 3rd ed., Springer (New York) (2002)
 
 """
 #******************************************************************************
-#       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -38,12 +37,12 @@ class FreeModuleHomset(Homset):
 
     Given two free modules `M` and `N` of respective ranks `m` and `n` over a
     commutative ring `R`, the class :class:`FreeModuleHomset` implements the
-    set `\mathrm{Hom}(M,N)` of homomorphisms `M\rightarrow N`. This is a
-    *parent* class, whose *elements* are instances of
-    :class:`~sage.tensor.modules.free_module_morphism.FiniteRankFreeModuleMorphism`
-
+    set `\mathrm{Hom}(M,N)` of homomorphisms `M\rightarrow N`. 
     The set `\mathrm{Hom}(M,N)` is actually a free module of rank `mn` over
     `R`, but this aspect is not taken into account here.
+
+    This is a Sage *parent* class, whose *element* class is
+    :class:`~sage.tensor.modules.free_module_morphism.FiniteRankFreeModuleMorphism`.
 
     INPUT:
 
@@ -214,10 +213,10 @@ class FreeModuleHomset(Homset):
         """
         from finite_rank_free_module import FiniteRankFreeModule
         if not isinstance(fmodule1, FiniteRankFreeModule):
-            raise TypeError("fmodule1 = " + str(fmodule1) + " is not an " + 
+            raise TypeError("fmodule1 = {} is not an ".format(fmodule1) + 
                             "instance of FiniteRankFreeModule")
         if not isinstance(fmodule2, FiniteRankFreeModule):
-            raise TypeError("fmodule1 = " + str(fmodule2) + " is not an " + 
+            raise TypeError("fmodule2 = {} is not an ".format(fmodule2) + 
                             "instance of FiniteRankFreeModule")
         if fmodule1.base_ring() != fmodule2.base_ring():
             raise TypeError("the domain and codomain are not defined over " + 
@@ -341,8 +340,8 @@ class FreeModuleHomset(Homset):
         Construction of an endomorphism::
 
             sage: EM = End(M)
-            sage: phi = EM._element_constructor_([[1,2,3],[4,5,6],[7,8,9]], name='phi',
-            ....:                                latex_name=r'\phi')
+            sage: phi = EM._element_constructor_([[1,2,3],[4,5,6],[7,8,9]],
+            ....:                                name='phi', latex_name=r'\phi')
             sage: phi
             Generic endomorphism of Rank-3 free module M over the Integer Ring
             sage: phi.matrix(e,e)

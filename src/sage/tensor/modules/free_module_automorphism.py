@@ -10,7 +10,8 @@ Given a free module `M` of finite rank over a commutative ring `R`, an
 
 that is linear (i.e. is a module homomorphism) and bijective. 
 
-Automorphisms of a free module of finite rank are implemented via the class :class:`FreeModuleAutomorphism`.
+Automorphisms of a free module of finite rank are implemented via the class
+:class:`FreeModuleAutomorphism`.
 
 AUTHORS:
 
@@ -18,7 +19,7 @@ AUTHORS:
 
 REFERENCES:
 
-- Chaps. 15, 24 of R. Godement: "Algebra", Hermann (Paris) / Houghton Mifflin
+- Chaps. 15, 24 of R. Godement: *Algebra*, Hermann (Paris) / Houghton Mifflin
   (Boston) (1968)
 
 """
@@ -414,7 +415,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
     def components(self, basis=None, from_basis=None):
         r"""
-        Return the components in a given basis.
+        Return the components of ``self`` w.r.t to a given module basis.
 
         If the components are not known already, they are computed by the
         tensor change-of-basis formula from components in another basis.
@@ -518,7 +519,8 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
     def set_comp(self, basis=None):
         r"""
-        Return the components in a given basis for assignment.
+        Return the components of ``self`` w.r.t. a given module basis for
+        assignment.
 
         The components with respect to other bases are deleted, in order to
         avoid any inconsistency. To keep them, use the method :meth:`add_comp`
@@ -635,10 +637,10 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
     def add_comp(self, basis=None):
         r"""
 
-        Return the components in a given basis for assignment, keeping the
-        components in other bases.
+        Return the components of ``self`` w.r.t. a given module basis for
+        assignment, keeping the components w.r.t. other bases.
 
-        To delete the components in other bases, use the method
+        To delete the components w.r.t. other bases, use the method
         :meth:`set_comp` instead.
 
         INPUT:
@@ -937,6 +939,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
         INPUT:
 
         - ``other`` -- an automorphism of the same module as ``self``
+
         OUPUT:
 
         - the automorphism resulting from the composition of ``other`` and
@@ -1008,8 +1011,8 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
         r"""
         Redefinition of
         :meth:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor.__mul__`
-        so that * dispatch either to automorphism composition or to the tensor
-        product.
+        so that * dispatches either to automorphism composition or to the
+        tensor product.
 
         EXAMPLES:
 
@@ -1091,7 +1094,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
           is assumed
         - ``basis2`` -- (default: ``None``) basis of the free module on which
           ``self`` is defined; if none is provided, ``basis2`` is set to
-          ``basis1``.
+          ``basis1``
 
         OUTPUT:
 
