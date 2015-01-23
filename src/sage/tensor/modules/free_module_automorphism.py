@@ -8,7 +8,7 @@ Given a free module `M` of finite rank over a commutative ring `R`, an
 
     \phi:\ M \longrightarrow M
 
-that is linear (i.e. is a module homomorphism) and bijective. 
+that is linear (i.e. is a module homomorphism) and bijective.
 
 Automorphisms of a free module of finite rank are implemented via the class
 :class:`FreeModuleAutomorphism`.
@@ -244,7 +244,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
     To get the result as an endomorphism, one has to explicitely convert it via
     the parent of endormophisms, `\mathrm{End}(M)`::
-     
+
         sage: s = End(M)(a+b) ; s
         Generic endomorphism of Rank-2 free module M over the Integer Ring
         sage: s(v) == a(v) + b(v)
@@ -271,13 +271,13 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
         must be constructed via FreeModuleLinearGroup.element_class and
         not by a direct call to FreeModuleAutomorphism::
 
-            sage: a = M.general_linear_group().element_class(M, name='a') 
+            sage: a = M.general_linear_group().element_class(M, name='a')
             sage: a[e,:] = [[-1,0,0],[0,1,2],[0,1,3]]
             sage: TestSuite(a).run()
 
         Test suite on the identity map::
 
-            sage: id = M.general_linear_group().one() 
+            sage: id = M.general_linear_group().one()
             sage: TestSuite(id).run()
 
         Test suite on the automorphism obtained as GL.an_element()::
@@ -665,7 +665,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
         Adding components to an automorphism of a rank-3 free
         `\ZZ`-module::
-        
+
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = M.basis('e')
             sage: a = M.automorphism(name='a')
@@ -677,7 +677,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
             sage: a.add_comp(f)[:] = [[1,0,0], [0, 80, 143], [0, -47, -84]]
 
         The components in basis ``e`` have been kept::
-        
+
             sage: a._components # random (dictionary output)
             {Basis (e_0,e_1,e_2) on the Rank-3 free module M over the Integer
              Ring: 2-indices components w.r.t. Basis (e_0,e_1,e_2) on the
@@ -775,7 +775,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
                     raise TypeError("wrong number of arguments")
                 linform = arg[0]
                 if linform._tensor_type != (0,1):
-                    raise TypeError("the first argument must be a linear form")                
+                    raise TypeError("the first argument must be a linear form")
                 vector = arg[1]
                 if not isinstance(vector, FiniteRankFreeModuleElement):
                     raise TypeError("the second argument must be a module" +
@@ -847,9 +847,9 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
             Identity map of the Rank-3 free module M over the Integer Ring
             sage: a.inverse().inverse() == a
             True
-        
+
         Another check is::
-        
+
             sage: a.inverse().matrix(e)
             [ 1  0  0]
             [ 0 -3 -2]
@@ -873,7 +873,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
             [-1  0  0]
             [ 0 -3 -2]
             [ 0 -1 -1]
-        
+
         Shortcuts for :meth:`inverse` are the operator ``~`` and the exponent
         ``-1``::
 
@@ -934,7 +934,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
         r"""
         Automorphism composition.
 
-        This implements the group law of GL(M), M being the module of ``self``. 
+        This implements the group law of GL(M), M being the module of ``self``.
 
         INPUT:
 
@@ -949,7 +949,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
             sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
             sage: e = M.basis('e')
-            sage: a = M.automorphism([[1,2],[1,3]]) 
+            sage: a = M.automorphism([[1,2],[1,3]])
             sage: b = M.automorphism([[3,4],[5,7]])
             sage: c = a._mul_(b) ; c
             Automorphism of the Rank-2 free module M over the Integer Ring
@@ -958,7 +958,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
             [18 25]
 
         TESTS::
-        
+
             sage: c.parent() is a.parent()
             True
             sage: c.matrix() == a.matrix() * b.matrix()
@@ -1100,7 +1100,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
         - the matrix representing representing the automorphism ``self`` w.r.t
           to bases ``basis1`` and ``basis2``; more precisely, the columns of
-          this matrix are formed by the components w.r.t. ``basis2`` of 
+          this matrix are formed by the components w.r.t. ``basis2`` of
           the images of the elements of ``basis1``.
 
         EXAMPLES:
@@ -1190,7 +1190,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
         if (basis1, basis2) not in self._matrices:
             if basis2 == basis1:
                 comp = self.components(basis1)
-                mat = [[comp[[i,j]] for j in fmodule.irange()] 
+                mat = [[comp[[i,j]] for j in fmodule.irange()]
                                                      for i in fmodule.irange()]
                 self._matrices[(basis1, basis1)] = matrix(mat)
             else:
@@ -1208,7 +1208,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
         - element of the base ring of the module on which ``self`` is defined,
           equal to the determinant of ``self``.
-          
+
         EXAMPLES:
 
         Determinant of an automorphism on a `\ZZ`-module of rank 2::
@@ -1245,7 +1245,7 @@ class FreeModuleAutomorphism(FreeModuleTensor, MultiplicativeGroupElement):
 
         - element of the base ring of the module on which ``self`` is defined,
           equal to the trace of ``self``.
-          
+
         EXAMPLES:
 
         Trace of an automorphism on a `\ZZ`-module of rank 2::

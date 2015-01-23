@@ -12,10 +12,10 @@ all multilinear maps
     \longrightarrow R
 
 that vanish whenever any of two of their arguments are equal.
-Note that `\Lambda^1(M^*) = M^*` (the dual of `M`). 
+Note that `\Lambda^1(M^*) = M^*` (the dual of `M`).
 
 `\Lambda^p(M^*)` is a free module of rank `\left({n\atop p}\right)` over `R`,
-where `n` is the rank of `M`. 
+where `n` is the rank of `M`.
 Accordingly, exterior powers of free modules are implemented by a class,
 :class:`ExtPowerFreeModule`, which inherits from the class
 :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`.
@@ -27,7 +27,7 @@ AUTHORS:
 REFERENCES:
 
 - K. Conrad: *Exterior powers*,
-  `http://www.math.uconn.edu/~kconrad/blurbs/ <http://www.math.uconn.edu/~kconrad/blurbs/>`_ 
+  `http://www.math.uconn.edu/~kconrad/blurbs/ <http://www.math.uconn.edu/~kconrad/blurbs/>`_
 - Chap. 19 of S. Lang: *Algebra*, 3rd ed., Springer (New York) (2002)
 
 """
@@ -60,10 +60,10 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
         \longrightarrow R
 
     that vanish whenever any of two of their arguments are equal.
-    Note that `\Lambda^1(M^*) = M^*` (the dual of `M`). 
+    Note that `\Lambda^1(M^*) = M^*` (the dual of `M`).
 
     `\Lambda^p(M^*)` is a free module of rank `\left({n\atop p}\right)` over
-    `R`, where `n` is the rank of `M`. 
+    `R`, where `n` is the rank of `M`.
     Accordingly, the class :class:`ExtPowerFreeModule` inherits from the class
     :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`.
 
@@ -89,7 +89,7 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
         sage: A = ExtPowerFreeModule(M, 2) ; A
         2nd exterior power of the dual of the Rank-3 free module M over the
          Integer Ring
-    
+
     Instead of importing ExtPowerFreeModule in the global name space, it is
     recommended to use the module's method
     :meth:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule.dual_exterior_power`::
@@ -173,7 +173,7 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
         sage: M.dual()
         Dual of the Rank-3 free module M over the Integer Ring
         sage: latex(M.dual())
-        M^*    
+        M^*
 
     Since any tensor of type (0,1) is a linear form, there is a coercion map
     from the set `T^{(0,1)}(M)` of such tensors to `M^*`::
@@ -184,7 +184,7 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
         sage: M.dual().has_coerce_map_from(T01)
         True
 
-    There is also a coercion map in the reverse direction:: 
+    There is also a coercion map in the reverse direction::
 
         sage: T01.has_coerce_map_from(M.dual())
         True
@@ -306,10 +306,10 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
             sage: a = A._element_constructor_([], name='a') ; a
             Alternating form a of degree 2 on the Rank-3 free module M over
              the Integer Ring
-            sage: a[e,0,2], a[e,1,2] = 3, -1 
+            sage: a[e,0,2], a[e,1,2] = 3, -1
             sage: a.display()
             a = 3 e^0/\e^2 - e^1/\e^2
-        
+
         """
         if comp == 0:
             return self._zero_element
@@ -388,7 +388,7 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
             True
 
         Of course, coercions from other tensor types are meaningless::
-        
+
             sage: L1._coerce_map_from_(M.tensor_module(1,0))
             False
             sage: L1._coerce_map_from_(M.tensor_module(0,2))
@@ -410,7 +410,7 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
                other.tensor_type() == (0,1):
                 return True
         return False
-        
+
     #### End of parent methods
 
     def _repr_(self):
@@ -418,7 +418,7 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
         Return a string representation of ``self``.
 
         EXAMPLES::
-        
+
             sage: M = FiniteRankFreeModule(ZZ, 5, name='M')
             sage: M.dual_exterior_power(1)._repr_()
             'Dual of the Rank-5 free module M over the Integer Ring'
@@ -455,7 +455,7 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
           module on which the exterior power is defined.
 
         EXAMPLE::
-        
+
             sage: M = FiniteRankFreeModule(ZZ, 5, name='M')
             sage: A = M.dual_exterior_power(2)
             sage: A.base_module()
@@ -475,7 +475,7 @@ class ExtPowerFreeModule(FiniteRankFreeModule):
         - integer `p` such that ``self`` is the exterior power `\Lambda^p(M^*)`
 
         EXAMPLES::
-        
+
             sage: M = FiniteRankFreeModule(ZZ, 5, name='M')
             sage: A = M.dual_exterior_power(2)
             sage: A.degree()

@@ -10,7 +10,7 @@ The class :class:`TensorFreeModule` implements tensor products of the type
 
 where `M` is a free module of finite rank over a commutative ring `R` and
 `M^*=\mathrm{Hom}_R(M,R)` is the dual of `M`.
-Note that `T^{(1,0)}(M) = M` and  `T^{(0,1)}(M) = M^*`. 
+Note that `T^{(1,0)}(M) = M` and  `T^{(0,1)}(M) = M^*`.
 
 Thanks to the canonical isomorphism `M^{**} \simeq M` (which holds since `M`
 is a free module of finite rank), `T^{(k,l)}(M)` can be identified with the
@@ -44,7 +44,7 @@ AUTHORS:
 REFERENCES:
 
 - K. Conrad: *Tensor products*,
-  `http://www.math.uconn.edu/~kconrad/blurbs/ <http://www.math.uconn.edu/~kconrad/blurbs/>`_ 
+  `http://www.math.uconn.edu/~kconrad/blurbs/ <http://www.math.uconn.edu/~kconrad/blurbs/>`_
 - Chap. 21 (Exer. 4) of R. Godement: *Algebra*, Hermann (Paris) / Houghton
   Mifflin (Boston) (1968)
 - Chap. 16 of S. Lang: *Algebra*, 3rd ed., Springer (New York) (2002)
@@ -216,7 +216,7 @@ class TensorFreeModule(FiniteRankFreeModule):
 
     Of course, for `p\geq 2`, there is no coercion in the reverse direction,
     since not every tensor of type (0,p) is alternating::
-    
+
         sage: L2.has_coerce_map_from(T02)
         False
 
@@ -279,7 +279,7 @@ class TensorFreeModule(FiniteRankFreeModule):
     :class:`~sage.tensor.modules.free_module_homset.FreeModuleHomset`)::
 
         sage: T11 = M.tensor_module(1,1) ; T11
-        Free module of type-(1,1) tensors on the Rank-3 free module M over the 
+        Free module of type-(1,1) tensors on the Rank-3 free module M over the
          Integer Ring
         sage: End(M)
         Set of Morphisms from Rank-3 free module M over the Integer Ring to
@@ -439,7 +439,7 @@ class TensorFreeModule(FiniteRankFreeModule):
         if comp == 0:
             return self._zero_element
         if isinstance(comp, FiniteRankFreeModuleMorphism):
-            # coercion of an endomorphism to a type-(1,1) tensor: 
+            # coercion of an endomorphism to a type-(1,1) tensor:
             endo = comp  # for readability
             if self._tensor_type == (1,1) and endo.is_endomorphism() and \
                                                 self._fmodule is endo.domain():
@@ -490,7 +490,7 @@ class TensorFreeModule(FiniteRankFreeModule):
 
     def _an_element_(self):
         r"""
-        Construct some (unamed) element of ``self``. 
+        Construct some (unamed) element of ``self``.
 
         EXAMPLES::
 
@@ -571,7 +571,7 @@ class TensorFreeModule(FiniteRankFreeModule):
             # Coercion of an alternating form to a type-(0,p) tensor:
             return self._tensor_type == (0, other.degree()) and \
                                            self._fmodule is other.base_module()
-                                       
+
         if isinstance(other, FreeModuleLinearGroup):
             # Coercion of an automorphism to a type-(1,1) tensor:
             return self._tensor_type == (1,1) and \

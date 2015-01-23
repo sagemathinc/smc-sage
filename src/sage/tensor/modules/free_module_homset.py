@@ -2,7 +2,7 @@ r"""
 Sets of morphisms between free modules
 
 The class :class:`FreeModuleHomset` implements sets of homomorphisms between
-two free modules of finite rank over the same commutative ring. 
+two free modules of finite rank over the same commutative ring.
 
 AUTHORS:
 
@@ -37,7 +37,7 @@ class FreeModuleHomset(Homset):
 
     Given two free modules `M` and `N` of respective ranks `m` and `n` over a
     commutative ring `R`, the class :class:`FreeModuleHomset` implements the
-    set `\mathrm{Hom}(M,N)` of homomorphisms `M\rightarrow N`. 
+    set `\mathrm{Hom}(M,N)` of homomorphisms `M\rightarrow N`.
     The set `\mathrm{Hom}(M,N)` is actually a free module of rank `mn` over
     `R`, but this aspect is not taken into account here.
 
@@ -47,7 +47,7 @@ class FreeModuleHomset(Homset):
     INPUT:
 
     - ``fmodule1`` -- free module `M` (domain of the homomorphisms), as an
-      instance of 
+      instance of
       :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`
     - ``fmodule2`` -- free module `N` (codomain of the homomorphisms), as an
       instance of
@@ -78,7 +78,7 @@ class FreeModuleHomset(Homset):
         True
 
     The LaTeX formatting is::
-    
+
         sage: latex(H)
         \mathrm{Hom}\left(M,N\right)
 
@@ -163,7 +163,7 @@ class FreeModuleHomset(Homset):
 
     There is a coercion `\mathrm{GL}(M) \rightarrow \mathrm{End}(M)`, since
     every automorphism is an endomorphism::
-    
+
         sage: GL = M.general_linear_group() ; GL
         General linear group of the Rank-3 free module M over the Integer Ring
         sage: End(M).has_coerce_map_from(GL)
@@ -171,12 +171,12 @@ class FreeModuleHomset(Homset):
 
     Of course, there is no coercion in the reverse direction, since only
     bijective endomorphisms are automorphisms::
-    
+
         sage: GL.has_coerce_map_from(End(M))
         False
 
     The coercion `\mathrm{GL}(M) \rightarrow \mathrm{End}(M)` in action::
-    
+
         sage: a = GL.an_element() ; a
         Automorphism of the Rank-3 free module M over the Integer Ring
         sage: a.matrix(e)
@@ -197,7 +197,7 @@ class FreeModuleHomset(Homset):
     def __init__(self, fmodule1, fmodule2, name=None, latex_name=None):
         r"""
         TESTS::
-        
+
             sage: from sage.tensor.modules.free_module_homset import FreeModuleHomset
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
@@ -213,13 +213,13 @@ class FreeModuleHomset(Homset):
         """
         from finite_rank_free_module import FiniteRankFreeModule
         if not isinstance(fmodule1, FiniteRankFreeModule):
-            raise TypeError("fmodule1 = {} is not an ".format(fmodule1) + 
+            raise TypeError("fmodule1 = {} is not an ".format(fmodule1) +
                             "instance of FiniteRankFreeModule")
         if not isinstance(fmodule2, FiniteRankFreeModule):
-            raise TypeError("fmodule2 = {} is not an ".format(fmodule2) + 
+            raise TypeError("fmodule2 = {} is not an ".format(fmodule2) +
                             "instance of FiniteRankFreeModule")
         if fmodule1.base_ring() != fmodule2.base_ring():
-            raise TypeError("the domain and codomain are not defined over " + 
+            raise TypeError("the domain and codomain are not defined over " +
                             "the same ring")
         Homset.__init__(self, fmodule1, fmodule2)
         if name is None:
@@ -290,7 +290,7 @@ class FreeModuleHomset(Homset):
         from sage.structure.parent import Parent
         return Parent.__call__(self, *args, **kwds)
 
-    #### Methods required for any Parent 
+    #### Methods required for any Parent
 
     def _element_constructor_(self, matrix_rep, bases=None, name=None,
                               latex_name=None, is_identity=False):
@@ -324,7 +324,7 @@ class FreeModuleHomset(Homset):
             sage: N = FiniteRankFreeModule(ZZ, 2, name='N')
             sage: e = M.basis('e') ; f = N.basis('f')
             sage: H = Hom(M,N)
-            sage: phi = H._element_constructor_([[2,-1,3], [1,0,-4]], bases=(e,f), 
+            sage: phi = H._element_constructor_([[2,-1,3], [1,0,-4]], bases=(e,f),
             ....:                               name='phi', latex_name=r'\phi')
             sage: phi
             Generic morphism:
@@ -353,7 +353,7 @@ class FreeModuleHomset(Homset):
 
             sage: a = M.tensor((1,1))
             sage: a[:] = [[1,2,3],[4,5,6],[7,8,9]]
-            sage: EM = End(M)             
+            sage: EM = End(M)
             sage: phi_a = EM._element_constructor_(a) ; phi_a
             Generic endomorphism of Rank-3 free module M over the Integer Ring
             sage: phi_a.matrix(e,e)
@@ -385,11 +385,11 @@ class FreeModuleHomset(Homset):
                     is_identity = tensor._is_identity
                 else:
                     is_identity = False
-                resu = self.element_class(self, mat, bases=(basis,basis), 
+                resu = self.element_class(self, mat, bases=(basis,basis),
                               name=tensor._name, latex_name=tensor._latex_name,
                               is_identity=is_identity)
             else:
-                raise TypeError("cannot coerce the {}".format(tensor) + 
+                raise TypeError("cannot coerce the {}".format(tensor) +
                                 " to an element of {}".format(self))
         else:
             # Standard construction:
@@ -462,4 +462,4 @@ class FreeModuleHomset(Homset):
                                            other.base_module() is self.domain()
         return False
 
-    #### End of methods required for any Parent 
+    #### End of methods required for any Parent

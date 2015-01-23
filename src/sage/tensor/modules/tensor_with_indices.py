@@ -521,4 +521,3 @@ class TensorWithIndices(SageObject):
         """
         return TensorWithIndices(-self._tensor,
                                  self._con + '_' + self._cov)
-

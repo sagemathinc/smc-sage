@@ -2,7 +2,7 @@ r"""
 Free module morphisms
 
 The class :class:`FiniteRankFreeModuleMorphism` implements homomorphisms
-between two free modules of finite rank over the same commutative ring. 
+between two free modules of finite rank over the same commutative ring.
 
 AUTHORS:
 
@@ -38,10 +38,10 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
     .. MATH::
 
-        \phi:\ M \longrightarrow N, 
+        \phi:\ M \longrightarrow N,
 
-    where `M` and `N` are two free modules of finite rank over the same 
-    commutative ring `R`. 
+    where `M` and `N` are two free modules of finite rank over the same
+    commutative ring `R`.
 
     This is a Sage *element* class, the corresponding *parent* class being
     :class:`~sage.tensor.modules.free_module_homset.FreeModuleHomset`.
@@ -49,9 +49,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
     INPUT:
 
     - ``parent`` -- hom-set Hom(M,N) to which the homomorphism belongs
-    - ``matrix_rep`` -- matrix representation of the homomorphism with 
+    - ``matrix_rep`` -- matrix representation of the homomorphism with
       respect to the bases ``bases``; this entry can actually
-      be any material from which a matrix of size rank(N)*rank(M) of 
+      be any material from which a matrix of size rank(N)*rank(M) of
       elements of `R` can be constructed; the *columns* of the matrix give
       the images of the basis of `M` (see the convention in the example below)
     - ``bases`` -- (default: ``None``) pair (basis_M, basis_N) defining the
@@ -188,7 +188,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
         True
 
     """
-    def __init__(self, parent, matrix_rep, bases=None, name=None, 
+    def __init__(self, parent, matrix_rep, bases=None, name=None,
                  latex_name=None, is_identity=False):
         r"""
         TESTS:
@@ -239,11 +239,11 @@ class FiniteRankFreeModuleMorphism(Morphism):
         if bases is None:
             def_basis1 = fmodule1.default_basis()
             if def_basis1 is None:
-                raise ValueError("the {} has no default ".format(fmodule1) + 
+                raise ValueError("the {} has no default ".format(fmodule1) +
                                  "basis")
             def_basis2 = fmodule2.default_basis()
             if def_basis2 is None:
-                raise ValueError("the {} has no default ".format(fmodule2) + 
+                raise ValueError("the {} has no default ".format(fmodule2) +
                                  "basis")
             bases = (def_basis1, def_basis2)
         else:
@@ -341,7 +341,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
     def __eq__(self, other):
         r"""
-        Comparison (equality) operator. 
+        Comparison (equality) operator.
 
         INPUT:
 
@@ -391,11 +391,11 @@ class FiniteRankFreeModuleMorphism(Morphism):
             sage: phi1 = M.hom(N1, [[-1,2,0], [5,1,2]])
             sage: phi.matrix() == phi1.matrix() # same matrix in the default bases
             True
-            sage: phi.__eq__(phi1)  
+            sage: phi.__eq__(phi1)
             False
 
         Comparison to zero::
-        
+
             sage: phi.__eq__(0)
             False
             sage: phi = M.hom(N, 0)
@@ -425,7 +425,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
     def __ne__(self, other):
         r"""
-        Inequality operator. 
+        Inequality operator.
 
         INPUT:
 
@@ -492,7 +492,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
     #
     # Required module methods
-    # 
+    #
 
     def __nonzero__(self):
         r"""
@@ -521,7 +521,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
         """
         # Some matrix representation is picked at random:
         matrix_rep = self._matrices.values()[0]
-        return not matrix_rep.is_zero()         
+        return not matrix_rep.is_zero()
 
     def _add_(self, other):
         r"""
@@ -578,7 +578,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
             sage: phi._add_(Hom(M,N).zero()) == phi
             True
- 
+
         """
         # No need for consistency checks since self and other are guaranteed
         # to have the same parents
@@ -686,7 +686,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         INPUT:
 
-        - ``scalar`` -- element of the ring over which the parent of ``self`` 
+        - ``scalar`` -- element of the ring over which the parent of ``self``
           is a module.
 
         OUPUT:
@@ -718,9 +718,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
         return resu
 
 
-    # 
+    #
     #  Other module methods
-    # 
+    #
 
     def __pos__(self):
         r"""
@@ -749,12 +749,12 @@ class FiniteRankFreeModuleMorphism(Morphism):
             False
 
         """
-        resu = self.__class__(self.parent(), 0, is_identity=self._is_identity)  
+        resu = self.__class__(self.parent(), 0, is_identity=self._is_identity)
                                            # 0 = provisory value
         for bases, mat in self._matrices.iteritems():
             resu._matrices[bases] = +mat
         if self._name is not None:
-            resu._name = '+' + self._name 
+            resu._name = '+' + self._name
         if self._latex_name is not None:
             resu._latex_name = '+' + self._latex_name
         return resu
@@ -791,7 +791,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
         for bases, mat in self._matrices.iteritems():
             resu._matrices[bases] = -mat
         if self._name is not None:
-            resu._name = '-' + self._name 
+            resu._name = '-' + self._name
         if self._latex_name is not None:
             resu._latex_name = '-' + self._latex_name
         return resu
@@ -830,7 +830,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
             sage: for i in range(2):
             ....:     print w[i] == sum( phi.matrix()[i,j]*v[j] for j in range(3) ),
-            ....:     
+            ....:
             True True
             sage: phi.matrix(e,f)
             [-1  2  0]
@@ -854,7 +854,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
             phi(v) = -5 f_0 + 10 f_1
             sage: for i in range(2):
             ....:     print w[i] == sum( phi.matrix(ep,f)[i,j]*v[ep,j] for j in range(3) ),
-            ....:     
+            ....:
             True True
 
         Check of homomorphism properties::
@@ -878,7 +878,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
             except ValueError:
                 continue
         else:
-            raise ValueError("no common basis found to evaluate the image " + 
+            raise ValueError("no common basis found to evaluate the image " +
                              "of {} by {}".format(element,self))
         # Components of the result obtained by matrix multiplication
         mat = self.matrix(basis_dom, basis_codom)
@@ -900,9 +900,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
         else:
             resu_latex_name = None
         # Creation of the result
-        return codom(tresu, basis=basis_codom, name=resu_name, 
+        return codom(tresu, basis=basis_codom, name=resu_name,
                      latex_name=resu_latex_name)
-    
+
     def is_injective(self):
         r"""
         Determine whether ``self`` is injective.
@@ -987,7 +987,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
         if self._is_identity:
             return True
         raise NotImplementedError(
-                              "FiniteRankFreeModuleMorphism.is_surjective() " + 
+                              "FiniteRankFreeModuleMorphism.is_surjective() " +
                               "has not been implemented yet")
     #
     # Morphism methods
@@ -1038,9 +1038,9 @@ class FiniteRankFreeModuleMorphism(Morphism):
         # The identity must be an endomorphism:
         fmodule = self.domain()
         if fmodule != self.codomain():
-            return False  
-        # Some basis in which ``self`` has a representation is picked at 
-        # random and the test is performed on the images of the basis 
+            return False
+        # Some basis in which ``self`` has a representation is picked at
+        # random and the test is performed on the images of the basis
         # elements:
         basis = self._matrices.keys()[0][0]
         for i in fmodule.irange():
@@ -1073,7 +1073,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
 
         - the matrix representing representing the homomorphism ``self`` w.r.t
           to bases ``basis1`` and ``basis2``; more precisely, the columns of
-          this matrix are formed by the components w.r.t. ``basis2`` of 
+          this matrix are formed by the components w.r.t. ``basis2`` of
           the images of the elements of ``basis1``.
 
         EXAMPLES:
@@ -1105,7 +1105,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
             [-19   1   8]
 
         Check of the change-of-basis formula::
-        
+
             sage: phi.matrix(ep, fp) == (b^(-1)).matrix(f) * phi.matrix(e,f) * a.matrix(e)
             True
 
@@ -1159,7 +1159,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
             if self._is_identity:
                 # The identity endomorphism
                 # -------------------------
-                if basis1 == basis2: 
+                if basis1 == basis2:
                     # the matrix is the identity matrix:
                     ring = fmodule1.base_ring()
                     zero = ring.zero()
@@ -1173,8 +1173,8 @@ class FiniteRankFreeModuleMorphism(Morphism):
                 else:
                     # the matrix is the change-of-basis matrix:
                     change = fmodule1.change_of_basis(basis1, basis2)
-                    mat = [[change[[i,j]] for j in fmodule1.irange()] 
-                                                    for i in fmodule1.irange()] 
+                    mat = [[change[[i,j]] for j in fmodule1.irange()]
+                                                    for i in fmodule1.irange()]
                 self._matrices[(basis1, basis2)] = matrix(mat)
             else:
                 # Generic homomorphism
@@ -1187,10 +1187,10 @@ class FiniteRankFreeModuleMorphism(Morphism):
                             nb2 = b2
                             break
                     else:
-                        raise ValueError("no start basis could be found for " + 
+                        raise ValueError("no start basis could be found for " +
                                         "applying the change-of-basis formula")
                     change2 = fmodule2._basis_changes[(basis2, nb2)]
-                    mat2 = matrix( [[change2[[i,j]] for j in fmodule2.irange()] 
+                    mat2 = matrix( [[change2[[i,j]] for j in fmodule2.irange()]
                                                   for i in fmodule2.irange()] )
                     self._matrices[(basis1, basis2)] = \
                                             mat2 * self._matrices[(basis1,nb2)]
@@ -1200,7 +1200,7 @@ class FiniteRankFreeModuleMorphism(Morphism):
                             nb1 = b1
                             break
                     else:
-                        raise ValueError("no start basis could be found for " + 
+                        raise ValueError("no start basis could be found for " +
                                         "applying the change-of-basis formula")
                     change1 = fmodule1._basis_changes[(nb1, basis1)]
                     mat1 = matrix( [[change1[[i,j]] for j in fmodule1.irange()]
@@ -1214,13 +1214,13 @@ class FiniteRankFreeModuleMorphism(Morphism):
                             nb1, nb2 = b1, b2
                             break
                     else:
-                        raise ValueError("no start basis could be found for " + 
+                        raise ValueError("no start basis could be found for " +
                                         "applying the change-of-basis formula")
                     change1 = fmodule1._basis_changes[(nb1, basis1)]
                     change2 = fmodule2._basis_changes[(basis2, nb2)]
                     mat1 = matrix( [[change1[[i,j]] for j in fmodule1.irange()]
                                                   for i in fmodule1.irange()] )
-                    mat2 = matrix( [[change2[[i,j]] for j in fmodule2.irange()] 
+                    mat2 = matrix( [[change2[[i,j]] for j in fmodule2.irange()]
                                                   for i in fmodule2.irange()] )
                     self._matrices[(basis1, basis2)] = \
                                         mat2 * self._matrices[(nb1,nb2)] * mat1

@@ -95,7 +95,7 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
         Normalize input to ensure a unique representation.
 
         TESTS::
-    
+
             sage: from sage.tensor.modules.free_module_basis import FreeModuleBasis
             sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
             sage: e = FreeModuleBasis(M, 'e', latex_symbol='e')
@@ -155,7 +155,7 @@ class FreeModuleBasis(UniqueRepresentation, SageObject):
             t._zero_element._components[self] = t._zero_element._new_comp(self)
                                # (since new components are initialized to zero)
         # Initialization of the components w.r.t the current basis of the zero
-        # elements of all exterior powers constructed up to now 
+        # elements of all exterior powers constructed up to now
         for t in fmodule._dual_exterior_powers.itervalues():
             t._zero_element._components[self] = t._zero_element._new_comp(self)
                                # (since new components are initialized to zero)
@@ -586,5 +586,3 @@ class FreeModuleCoBasis(UniqueRepresentation, SageObject):
             raise IndexError("out of range: {} not in [{},{}]".format(i+si,
                                                                    si, n-1+si))
         return self._form[i]
-
-

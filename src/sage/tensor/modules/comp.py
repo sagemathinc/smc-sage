@@ -4649,4 +4649,3 @@ class KroneckerDelta(CompFullySym):
 
         """
         raise TypeError("the components of a Kronecker delta cannot be changed")
-

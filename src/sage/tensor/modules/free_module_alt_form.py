@@ -3,7 +3,7 @@ Alternating forms on free modules
 
 Given a free module `M` of finite rank over a commutative ring `R`
 and a positive integer `p`, an *alternating form of degree* `p` on `M` is
-a map 
+a map
 
 .. MATH::
 
@@ -12,7 +12,7 @@ a map
 
 that (i) is multilinear and (ii) vanishes whenever any of two of its
 arguments are equal.
-An alternating form of degree `p` is a tensor on `M` of type `(0,p)`. 
+An alternating form of degree `p` is a tensor on `M` of type `(0,p)`.
 
 Alternating forms are implemented via the class :class:`FreeModuleAltForm`,
 which is a subclass of the generic tensor class
@@ -206,7 +206,7 @@ class FreeModuleAltForm(FreeModuleTensor):
         True
 
     The exterior product is nilpotent on linear forms::
-    
+
         sage: s = b.wedge(b) ; s
         Alternating form b/\b of degree 2 on the Rank-3 free module M over the
          Integer Ring
@@ -233,7 +233,7 @@ class FreeModuleAltForm(FreeModuleTensor):
         not by a direct call to FreeModuleAltForm::
 
             sage: a1 = M.dual_exterior_power(2).element_class(M, 2, name='a')
-            sage: a1[e,0,1] = 2 
+            sage: a1[e,0,1] = 2
             sage: TestSuite(a1).run()
 
         """
@@ -418,7 +418,7 @@ class FreeModuleAltForm(FreeModuleTensor):
 
             sage: a.disp()
             a = e^0 - 3 e^1 + 4 e^2
-           
+
         Display of an alternating form of degree 2 on a rank-3 free module::
 
             sage: b = M.alternating_form(2, 'b', latex_name=r'\beta')

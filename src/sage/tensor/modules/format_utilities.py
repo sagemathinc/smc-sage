@@ -326,5 +326,3 @@ class FormattedExpansion(SageObject):
 
         """
         return self.latex
-
-

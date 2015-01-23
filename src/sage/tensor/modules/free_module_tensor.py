@@ -31,7 +31,7 @@ tensors:
   for type-(1,1) tensors representing invertible endomorphisms.
 
 Each of these classes is a Sage *element* class, the corresponding *parent*
-classes being: 
+classes being:
 
 * for :class:`FreeModuleTensor`:
   :class:`~sage.tensor.modules.tensor_free_module.TensorFreeModule`
@@ -505,7 +505,7 @@ class FreeModuleTensor(ModuleElement):
 
     def symmetries(self):
         r"""
-        Print the list of symmetries and antisymmetries of ``self``. 
+        Print the list of symmetries and antisymmetries of ``self``.
 
         EXAMPLES:
 
@@ -548,7 +548,7 @@ class FreeModuleTensor(ModuleElement):
 
         The expansion is actually performed onto tensor products of elements
         of the given basis and of elements of its dual basis (see examples
-        below). 
+        below).
         The output is either text-formatted (console mode) or LaTeX-formatted
         (notebook mode).
 
@@ -580,7 +580,7 @@ class FreeModuleTensor(ModuleElement):
 
             sage: v.disp()
             v = 1/3 e_1 - 2 e_2
-        
+
         Display of a linear form (type-`(0,1)` tensor)::
 
             sage: de = e.dual_basis() ; de
@@ -660,7 +660,7 @@ class FreeModuleTensor(ModuleElement):
                     bases_latex.append(latex(cobasis[ind[k]]))
                 basis_term_txt = "*".join(bases_txt)
                 basis_term_latex = r"\otimes ".join(bases_latex)
-                coef_txt = repr(coef)    
+                coef_txt = repr(coef)
                 if coef_txt == "1":
                     terms_txt.append(basis_term_txt)
                     terms_latex.append(basis_term_latex)
@@ -3204,4 +3204,3 @@ class FiniteRankFreeModuleElement(FreeModuleTensor):
 
         """
         return self.__class__(self._fmodule)
-
