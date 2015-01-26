@@ -361,7 +361,7 @@ class VectorFrame(FreeModuleBasis):
         INPUT:
 
         - ``change_of_frame`` -- instance of
-          :class:`~sage.geometry.manifolds.rank2field.AutomorphismField`
+          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField`
           describing the automorphism `P` that relates the current frame
           `(e_i)` (described by ``self``) to the new frame `(n_i)` according
           to `n_i = P(e_i)`

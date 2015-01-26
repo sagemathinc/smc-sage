@@ -1091,7 +1091,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.manifolds.rank2field.AutomorphismField`
+          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField`
           representing, at each point, the vector space automorphism `P`
           that relates frame 1, `(e_i)` say, to frame 2, `(n_i)` say,
           according to `n_i = P(e_i)`
@@ -2059,7 +2059,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         Define a field of automorphisms (invertible endomorphisms in each
         tangent space) on ``self``.
 
-        See :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` for
+        See :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField` for
         a complete documentation.
 
         INPUT:
@@ -2076,9 +2076,9 @@ class ManifoldOpenSubset(ManifoldSubset):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.manifolds.rank2field.AutomorphismField`
+          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField`
           (or of
-          :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal`
+          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismFieldParal`
           if the codomain is parallelizable) representing the defined field of
           automorphisms.
 
@@ -2097,7 +2097,7 @@ class ManifoldOpenSubset(ManifoldSubset):
              the 3-dimensional manifold 'M'
 
         See the documentation of class
-        :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` for more
+        :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField` for more
         examples.
 
         """
@@ -2125,9 +2125,9 @@ class ManifoldOpenSubset(ManifoldSubset):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.manifolds.rank2field.AutomorphismField`
+          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField`
           (or of
-          :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal`
+          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismFieldParal`
           if the codomain is parallelizable) representing the field of identity
           maps.
 
@@ -2145,7 +2145,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             Kronecker delta of size 3x3
 
         See the documentation of class
-        :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldField`
+        :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismFieldField`
         for more examples.
 
         """
@@ -2569,7 +2569,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         - ``frame1`` -- frame 1, denoted `(e_i)`  below
         - ``frame2`` -- frame 2, denoted `(f_i)`  below
         - ``change_of_frame`` -- instance of class
-          :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal`
+          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismFieldParal`
           describing the automorphism `P` that relates the basis `(e_i)` to
           the basis `(f_i)` according to `f_i = P(e_i)`
         - ``compute_inverse`` (default: True) -- if set to True, the inverse
@@ -2600,7 +2600,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             [0 3]
 
         """
-        from rank2field import AutomorphismFieldParal
+        from automorphismfield import AutomorphismFieldParal
         fmodule = frame1._fmodule
         if frame2._fmodule != fmodule:
             raise ValueError("The two frames are not defined on the same " +

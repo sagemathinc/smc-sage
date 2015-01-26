@@ -8,4 +8,4 @@ Tensor fields
 
    sage/geometry/manifolds/tensorfield
 
-   sage/geometry/manifolds/rank2field
+   sage/geometry/manifolds/automorphismfield

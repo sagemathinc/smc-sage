@@ -12,7 +12,7 @@ fields:
 * :class:`~sage.geometry.manifolds.vectorfield.VectorField` for vector fields
   (rank-1 contravariant tensor fields)
 
-* :class:`~sage.geometry.manifolds.rank2field.AutomorphismField` for fields
+* :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField` for fields
   of invertible endomorphisms
 
 * :class:`~sage.geometry.manifolds.diffform.DiffForm` for differential forms

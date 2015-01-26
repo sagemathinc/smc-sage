@@ -384,7 +384,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         EXAMPLES:
 
         """
-        from rank2field import AutomorphismField
+        from automorphismfield import AutomorphismField
         from metric import Metric, RiemannMetric, LorentzMetric
         if tensor_type==(1,0):
             return self.element_class(self, name=name, latex_name=latex_name)
@@ -498,14 +498,14 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.manifolds.rank2field.AutomorphismField`
+          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField`
 
         See
-        :class:`~sage.geometry.manifolds.rank2field.AutomorphismField`
+        :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField`
         for further documentation.
 
         """
-        from rank2field import AutomorphismField
+        from automorphismfield import AutomorphismField
         #!# the construction should be performed by the parent instead
         return AutomorphismField(self, name=name, latex_name=latex_name)
 
@@ -527,10 +527,10 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.manifolds.rank2field.AutomorphismField`
+          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField`
 
         """
-        from rank2field import AutomorphismField
+        from automorphismfield import AutomorphismField
         #!# the construction should be performed by the parent instead,
         # via one()
         return AutomorphismField(self, name=name, latex_name=latex_name,
@@ -1027,7 +1027,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
 
         """
-        from rank2field import AutomorphismField, AutomorphismFieldParal
+        from automorphismfield import AutomorphismField, AutomorphismFieldParal
         from metric import Metric, RiemannMetric, LorentzMetric, MetricParal, \
                            RiemannMetricParal, LorentzMetricParal
         if tensor_type==(1,0):
@@ -1153,14 +1153,14 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal`
+          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismFieldParal`
 
         See
-        :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal`
+        :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismFieldParal`
         for further documentation.
 
         """
-        from rank2field import AutomorphismFieldParal
+        from automorphismfield import AutomorphismFieldParal
         #!# the construction should be performed by the parent instead
         return AutomorphismFieldParal(self, name=name, latex_name=latex_name)
 
@@ -1182,10 +1182,10 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.manifolds.rank2field.AutomorphismFieldParal`
+          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismFieldParal`
 
         """
-        from rank2field import AutomorphismFieldParal
+        from automorphismfield import AutomorphismFieldParal
         #!# the construction should be performed by the parent instead, via
         # one()
         resu = AutomorphismFieldParal(self, name=name, latex_name=latex_name,

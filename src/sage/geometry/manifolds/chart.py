@@ -3043,7 +3043,7 @@ class CoordChange(SageObject):
     def __init__(self, chart1, chart2, *transformations):
         from sage.matrix.constructor import matrix
         from sage.calculus.functional import diff
-        from rank2field import AutomorphismFieldParal
+        from automorphismfield import AutomorphismFieldParal
         n1 = len(chart1._xx)
         n2 = len(chart2._xx)
         if len(transformations) != n2:
