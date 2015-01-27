@@ -2112,10 +2112,10 @@ class ManifoldOpenSubset(ManifoldSubset):
         INPUT:
 
         - ``name`` -- (string; default: 'Id') name given to the field of
-          identity maps.
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
-          identity map; if none is provided and ``name`` is 'Id', the LaTeX
-          symbol is set to '\mathrm{Id}'
+          identity maps
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote
+          the field of identity map; if none is provided, the LaTeX symbol is
+          set to '\mathrm{Id}' if ``name`` is 'Id' and to ``name`` otherwise 
         - ``dest_map`` -- (default: None) instance of
           class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
           representing the destination map `\Phi:\ U \rightarrow V`, where `U`

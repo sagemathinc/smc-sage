@@ -3043,7 +3043,6 @@ class CoordChange(SageObject):
     def __init__(self, chart1, chart2, *transformations):
         from sage.matrix.constructor import matrix
         from sage.calculus.functional import diff
-        from automorphismfield import AutomorphismFieldParal
         n1 = len(chart1._xx)
         n2 = len(chart2._xx)
         if len(transformations) != n2:
@@ -3068,7 +3067,7 @@ class CoordChange(SageObject):
             frame1 = chart1._frame
             frame2 = chart2._frame
             vf_module = domain.vector_field_module()
-            ch_basis = AutomorphismFieldParal(vf_module)
+            ch_basis = vf_module.automorphism()
             ch_basis.add_comp(frame1)[:, chart1] = self._jacobian
             ch_basis.add_comp(frame2)[:, chart1] = self._jacobian
             vf_module._basis_changes[(frame2, frame1)] = ch_basis

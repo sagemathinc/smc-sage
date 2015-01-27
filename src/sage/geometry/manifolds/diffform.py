@@ -392,8 +392,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     differentiable manifold. 
 
     Given an open subset `U` of a manifold `S` and a differentiable mapping
-    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a manifold,
-    such that `V` is parallelizable, an instance of this class is a field of
+    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a manifold and
+    `V` is parallelizable, an instance of this class is a field of
     alternating multilinear forms along `U` with values in `V`. 
     The standard case of a differential form *on* a manifold corresponds 
     to `\Phi=\mathrm{Id}`, `U=V` and `S=M`. 

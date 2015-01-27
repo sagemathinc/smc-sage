@@ -946,6 +946,31 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
             self._dual_exterior_powers[p] = DiffFormFreeModule(self, p)
         return self._dual_exterior_powers[p]
 
+    def general_linear_group(self):
+        r"""
+        Return the general linear group of ``self``.
+
+        If ``self`` is the free module `\mathcal{X}(U,\Phi)`, the *general
+        linear group* is the group `\mathrm{GL}(\mathcal{X}(U,\Phi))` of
+        automorphisms of `\mathcal{X}(U,\Phi)`. Note that an automorphism of
+        `\mathcal{X}(U,\Phi)` can also be viewed as a *field* along `U` of
+        automorphisms of the tangent spaces of `V=\Phi(U)`. 
+
+        OUTPUT:
+
+        - instance of class
+          :class:`~sage.geometry.manifolds.automorphismfield_group.AutomorphismFieldParalGroup`
+          representing `\mathrm{GL}(\mathcal{X}(U,\Phi))`
+
+        EXAMPLES:
+
+        """
+        from sage.geometry.manifolds.automorphismfield_group import \
+                                                    AutomorphismFieldParalGroup
+        if self._general_linear_group is None:
+            self._general_linear_group = AutomorphismFieldParalGroup(self)
+        return self._general_linear_group
+
     def basis(self, symbol=None, latex_symbol=None, from_frame=None):
         r"""
         Define a basis (vector frame) of the free module.
@@ -1034,11 +1059,10 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
             return self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type==(0,1):
             return self.linear_form(name=name, latex_name=latex_name)
-        elif tensor_type==(1,1):
-            if specific_type == AutomorphismFieldParal or \
-                                           specific_type == AutomorphismField:
-                return AutomorphismFieldParal(self, name=name,
-                                                         latex_name=latex_name)
+        elif tensor_type==(1,1) and specific_type is not None:
+            if issubclass(specific_type,
+                          (AutomorphismField, AutomorphismFieldParal)):
+                return self.automorphism(name=name, latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None \
                                                               and antisym !=[]:
             if isinstance(antisym, list):
@@ -1133,66 +1157,6 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         # 2/ Tensor components set to comp:
         resu._components[comp._frame] = comp
         #
-        return resu
-
-    def automorphism(self, name=None, latex_name=None):
-        r"""
-        Construct an automorphism of the free module ``self``.
-
-        An automorphism of the vector free module ``self`` is actually a field
-        of tangent-space automorphisms along the open subset `U` on which
-        ``self`` is defined.
-
-        INPUT:
-
-        - ``name`` -- (string; default: None) name given to the automorphism
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
-          automorphism; if none is provided, the LaTeX symbol is set to
-          ``name``
-
-        OUTPUT:
-
-        - instance of
-          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismFieldParal`
-
-        See
-        :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismFieldParal`
-        for further documentation.
-
-        """
-        from automorphismfield import AutomorphismFieldParal
-        #!# the construction should be performed by the parent instead
-        return AutomorphismFieldParal(self, name=name, latex_name=latex_name)
-
-    def identity_map(self, name='Id', latex_name=None):
-        r"""
-        Construct the identity map on the free module ``self``.
-
-        The identity map on the vector free module ``self`` is actually a field
-        of tangent-space identity maps along the open subset `U` on which
-        ``self`` is defined.
-
-        INPUT:
-
-        - ``name`` -- (string; default: 'Id') name given to the identity map
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
-          identity map; if none is provided, the LaTeX symbol is set to
-          ``name``
-
-        OUTPUT:
-
-        - instance of
-          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismFieldParal`
-
-        """
-        from automorphismfield import AutomorphismFieldParal
-        #!# the construction should be performed by the parent instead, via
-        # one()
-        resu = AutomorphismFieldParal(self, name=name, latex_name=latex_name,
-                                      is_identity=True)
-        # Initialization of the components (Kronecker delta) in some basis:
-        if self.bases():
-            resu.components(self.bases()[0])
         return resu
 
     def sym_bilinear_form(self, name=None, latex_name=None):

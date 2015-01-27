@@ -1,21 +1,15 @@
 r"""
-Tensor fields of type (1,1)
+Fields of tangent-space automorphisms
 
-A derived class of
-:class:`~sage.geometry.manifolds.tensorfield.TensorField`
-devoted to type-(1,1) tensor fields is implemented:
-
-* :class:`AutomorphismField` for fields of invertible endomorphisms
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
+- Eric Gourgoulhon (2015): initial version
 
 """
 
 #******************************************************************************
-#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -34,20 +28,23 @@ class AutomorphismField(TensorField):
     Field of tangent-space automorphisms with values on a open
     subset of a differentiable manifold.
 
-    An instance of this class is a field of linear automorphisms (i.e.
-    invertible linear operators in each tangent space) along an open subset
-    `U` of some immersed submanifold `S` of a manifold `M` with values in an
-    open subset `V` of `M`.
-    The standard case of a field of automorphisms *on* a manifold corresponds
-    to `U=V` (and hence `S=M`).
+    Given an open subset `U` of a manifold `S` and a differentiable mapping
+    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a manifold,
+    an instance of this class is a field of tangent-space automorphisms 
+    along `U` with values in `V`. 
+    The standard case of a field of tangent-space automorphisms *on* a
+    manifold corresponds to `\Phi=\mathrm{Id}`, `U=V` and `S=M`. 
 
-    If `V` is parallelizable, the class :class:`AutomorphismFieldParal` must be
-    used instead.
+    If `V=\Phi(U)` is parallelizable, the class :class:`AutomorphismFieldParal`
+    must be used instead.
+
+    This is a Sage *element* class, the corresponding *parent* class being
+    :class:`~sage.geometry.manifolds.automorphismfield_group.AutomorphismFieldGroup`.
 
     INPUT:
 
-    - ``vector_field_module`` -- module `\mathcal{X}(U,V)` of vector
-      fields along `U` with values on `V`
+    - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
+      fields along `U` with values on `V=\Phi(U)`
     - ``name`` -- (default: None) name given to the field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
       if none is provided, the LaTeX symbol is set to ``name``
@@ -174,7 +171,7 @@ class AutomorphismField(TensorField):
         # Generic case
         return TensorField.__call__(self, *arg)
 
-    def inverse(self):
+    def __invert__(self):
         r"""
         Return the inverse automorphism.
 
@@ -241,6 +238,8 @@ class AutomorphismField(TensorField):
             for dom, rst in self._restrictions.iteritems():
                 self._inverse._restrictions[dom] = rst.inverse()
         return self._inverse
+
+    inverse = __invert__
 
     def restrict(self, subdomain, dest_map=None):
         r"""
@@ -352,17 +351,23 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
     Field of tangent-space automorphisms with values on a parallelizable open
     subset of a differentiable manifold.
 
-    An instance of this class is a field of linear automorphisms (i.e.
-    invertible linear operators in each tangent space) along an open subset `U`
-    of some immersed submanifold `S` of a manifold `M` with values in a
-    parallelizable open subset `V` of `M`.
-    The standard case of a field of automorphisms *on* a manifold corresponds
-    to `U=V` (and hence `S=M`).
+    Given an open subset `U` of a manifold `S` and a differentiable mapping
+    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a manifold
+    and `V` is parallelizable, an instance of this class is a field of
+    tangent-space automorphisms along `U` with values in `V`. 
+    The standard case of a field of tangent-space automorphisms *on* a
+    manifold corresponds to `\Phi=\mathrm{Id}`, `U=V` and `S=M`. 
+
+    If `V=\Phi(U)` is not parallelizable, the class :class:`AutomorphismField`
+    must be used instead.
+
+    This is a Sage *element* class, the corresponding *parent* class being
+    :class:`~sage.geometry.manifolds.automorphismfield_group.AutomorphismFieldParalGroup`.
 
     INPUT:
 
-    - ``vector_field_module`` -- free module `\mathcal{X}(U,V)` of vector
-      fields along `U` with values on `V`
+    - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector
+      fields along `U` with values on `V=\Phi(U)`
     - ``name`` -- (default: None) name given to the field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
       if none is provided, the LaTeX symbol is set to ``name``
@@ -465,7 +470,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
         else:
             raise TypeError("wrong number of arguments")
 
-    def inverse(self):
+    def __invert__(self):
         r"""
         Return the inverse automorphism.
         """
@@ -486,8 +491,8 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
                 inv_latex_name = self._latex_name + r'^{-1}'
             fmodule = self._fmodule
             si = fmodule._sindex ; nsi = fmodule._rank + si
-            self._inverse = AutomorphismFieldParal(fmodule, name=inv_name,
-                                                   latex_name=inv_latex_name)
+            self._inverse = fmodule.automorphism(name=inv_name,
+                                                 latex_name=inv_latex_name)
             for frame in self._components:
                 if isinstance(frame, CoordFrame):
                     chart = frame._chart
@@ -507,6 +512,8 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
                         cinv[i, j] = {chart: simplify_chain(mat_inv[i-si,j-si])}
                 self._inverse._components[frame] = cinv
         return self._inverse
+
+    inverse = __invert__
 
     def restrict(self, subdomain, dest_map=None):
         r"""
