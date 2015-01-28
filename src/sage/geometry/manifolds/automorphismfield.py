@@ -1,5 +1,5 @@
 r"""
-Fields of tangent-space automorphisms
+Tangent-space automorphism fields
 
 
 AUTHORS:

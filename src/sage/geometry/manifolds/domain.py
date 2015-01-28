@@ -1578,7 +1578,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         - ``dest_map`` -- (default: None) destination map
           `\Phi:\ U \rightarrow V`, where `U` is ``self``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`);
-          if none is provided, the identity is assumed (case of vector
+          if none is provided, the identity map is assumed (case of vector
           fields *on* `U`)
         - ``force_free`` -- (default: False) if set to True, force the
           construction of a *free* module (this implies that `V` is
@@ -1679,7 +1679,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         - ``dest_map`` -- (default: None) destination map
           `\Phi:\ U \rightarrow V`, where `U` is ``self``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`);
-          if none is provided, the identity is assumed (case of tensor
+          if none is provided, the identity map is assumed (case of tensor
           fields *on* `U`)
 
         OUTPUT:
@@ -1730,8 +1730,8 @@ class ManifoldOpenSubset(ManifoldSubset):
         - ``dest_map`` -- (default: None) destination map
           `\Phi:\ U \rightarrow V`, where `U` is ``self``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`);
-          if none is provided, the identity is assumed (case of differential
-          forms *on* `U`)
+          if none is provided, the identity map is assumed (case of
+          differential forms *on* `U`)
 
         OUTPUT:
 
@@ -1745,6 +1745,41 @@ class ManifoldOpenSubset(ManifoldSubset):
         """
         return self.vector_field_module(dest_map=dest_map).dual_exterior_power(
                                                                         degree)
+
+    def automorphism_field_group(self, dest_map=None):
+        r"""
+        Return the group of tangent-space automorphism fields defined on
+        ``self``, possibly within some ambient manifold.
+
+        If `U` stands for the open subset ``self`` and `\Phi` is a
+        differentiable mapping `\Phi: U \rightarrow V = \Phi(U) \subset M`,
+        where `M` is a manifold, this method called with ``dest_map``
+        being `\Phi` returns the general linear group
+        `\mathrm{GL}(\mathcal{X}(U,\Phi))` of the module
+        `\mathcal{X}(U,\Phi)` of vector fields along `U` with values in
+        `V=\Phi(U)`. 
+
+        INPUT:
+
+        - ``dest_map`` -- (default: None) destination map
+          `\Phi:\ U \rightarrow V`, where `U` is ``self``
+          (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`);
+          if none is provided, the identity map is assumed
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.geometry.manifolds.automorphismfield_group.AutomorphismFieldParalGroup`
+          (if ``self`` is parallelizable) or of
+          :class:`~sage.geometry.manifolds.automorphismfield_group.AutomorphismFieldGroup`
+          (if ``self`` is not parallelizable) representing
+          `\mathrm{GL}(\mathcal{X}(U,\Phi))`
+
+        EXAMPLE:
+
+        """
+        return self.vector_field_module(dest_map=dest_map).general_linear_group()
+
 
     def scalar_field(self, coord_expression=None, chart=None, name=None,
                      latex_name=None):

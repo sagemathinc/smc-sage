@@ -9,3 +9,7 @@ Vector fields
    sage/geometry/manifolds/vectorfield
 
    sage/geometry/manifolds/vectorframe
+
+   sage/geometry/manifolds/automorphismfield_group
+
+   sage/geometry/manifolds/automorphismfield

@@ -7,5 +7,3 @@ Tensor fields
    sage/geometry/manifolds/tensorfield_module
 
    sage/geometry/manifolds/tensorfield
-
-   sage/geometry/manifolds/automorphismfield
