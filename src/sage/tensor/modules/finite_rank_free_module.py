@@ -782,7 +782,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         if not hasattr(self, '_zero_element'):
             self._zero_element = self._element_constructor_(name='zero',
                                                             latex_name='0')
-        # Identity endomorphism:
+        # Identity automorphism:
         self._identity_map = None # to be set by self.identity_map()
         # General linear group:
         self._general_linear_group = None # to be set by

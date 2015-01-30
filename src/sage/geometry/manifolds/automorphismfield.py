@@ -104,7 +104,8 @@ class AutomorphismField(TensorField):
             if latex_name is None and name == 'Id':
                 latex_name = r'\mathrm{Id}'
         TensorField.__init__(self, vector_field_module, (1,1), name=name,
-                             latex_name=latex_name)
+                             latex_name=latex_name,
+                             parent=vector_field_module.general_linear_group())
         self._is_identity = is_identity
         self._init_derived() # initialization of derived quantities
         # Specific initializations for the field of identity maps: 
@@ -147,8 +148,10 @@ class AutomorphismField(TensorField):
 
     def __call__(self, *arg):
         r"""
-        Redefinition of :meth:`TensorField.__call__` to allow for a proper
-        treatment of the identity map. 
+        Redefinition of
+        :meth:`~sage.geometry.manifolds.tensorfield.TensorField.__call__`
+        to allow for a proper
+        treatment of the identity map and of the call with a single argument
         """
         if self._is_identity:
             if len(arg) == 1:
@@ -169,7 +172,12 @@ class AutomorphismField(TensorField):
             else:
                 raise TypeError("wrong number of arguments")
         # Generic case
+        if len(arg) == 1:
+            raise NotImplementedError("__call__  with 1 arg not implemented yet")
         return TensorField.__call__(self, *arg)
+
+
+    #### MultiplicativeGroupElement methods ####
 
     def __invert__(self):
         r"""
@@ -240,6 +248,69 @@ class AutomorphismField(TensorField):
         return self._inverse
 
     inverse = __invert__
+
+    def _mul_(self, other):
+        r"""
+        Automorphism composition.
+
+        This implements the group law of GL(X(U,Phi)), X(U,Phi) being the
+        module of ``self``.
+
+        INPUT:
+
+        - ``other`` -- an automorphism of the same module as ``self``
+
+        OUPUT:
+
+        - the automorphism resulting from the composition of ``other`` and
+        ``self.``
+
+        """
+        # No need for consistency check since self and other are guaranted
+        # to have the same parent. In particular, they are defined on the same
+        # module.
+        #
+        # Special cases:
+        if self._is_identity:
+            return other
+        if other._is_identity:
+            return self
+        if other is self._inverse or self is other._inverse:
+            return self.parent().one()
+        # General case:
+        resu = self.__class__(self._vmodule)
+        for dom in self._common_subdomains(other):
+            resu._restrictions[dom] = self._restrictions[dom] * \
+                                      other._restrictions[dom]
+        return resu
+
+    #### End of MultiplicativeGroupElement methods ####
+
+    def __mul__(self, other):
+        r"""
+        Redefinition of
+        :meth:`~sage.geometry.manifolds.tensorfield.TensorField.__mul__`
+        so that * dispatches either to automorphism composition or to the
+        tensor product.
+
+        EXAMPLES:
+
+ 
+        """
+        if isinstance(other, AutomorphismField):
+            return self._mul_(other)  # general linear group law
+        else:
+            return TensorField.__mul__(self, other)  # tensor product
+
+    def __imul__(self, other):
+        r"""
+        Redefinition of
+        :meth:`~sage.geometry.manifolds.tensorfield.TensorField.__imul__`
+
+        TESTS::
+
+        """
+        return self.__mul__(other)
 
     def restrict(self, subdomain, dest_map=None):
         r"""
@@ -589,3 +660,79 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
             smodule = subdomain.vector_field_module(dest_map=dest_map)
             self._restrictions[subdomain] = smodule.identity_map()
         return self._restrictions[subdomain]
+
+    def at(self, point):
+        r"""
+        Value of ``self`` at a given point on the manifold.
+
+        The returned object is an automorphism of the tangent space at the
+        given point.
+
+        INPUT:
+
+        - ``point`` -- (instance of
+          :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in
+          the domain of ``self`` (denoted `a` hereafter)
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
+          representing the automorphism `a(p)` of the tangent vector space
+          `T_p M` (`M` being the manifold on which ``self`` is defined)
+
+        EXAMPLES:
+
+        Automorphism at some point of a tangent space of a 2-dimensional
+        manifold::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: c_xy.<x,y> = M.chart()
+            sage: a = M.automorphism_field(name='a')
+            sage: a[:] = [[1+exp(y), x*y], [0, 1+x^2]]
+            sage: a.display()
+            a = (e^y + 1) d/dx*dx + x*y d/dx*dy + (x^2 + 1) d/dy*dy
+            sage: p = M.point((-2,3), name='p') ; p
+            point 'p' on 2-dimensional manifold 'M'
+            sage: ap = a.at(p) ; ap
+            Automorphism a of the tangent space at point 'p' on 2-dimensional
+             manifold 'M'
+            sage: ap.display()
+            a = (e^3 + 1) d/dx*dx - 6 d/dx*dy + 5 d/dy*dy
+            sage: ap.parent()
+            General linear group of the tangent space at point 'p' on
+             2-dimensional manifold 'M'
+
+        The identity map of the tangent space at point ``p``::
+
+            sage: id = M.tangent_identity_field() ; id
+            field of tangent-space identity maps on the 2-dimensional manifold 'M'
+            sage: idp = id.at(p) ; idp
+            Identity map of the tangent space at point 'p' on
+             2-dimensional manifold 'M'
+            sage: idp is p.tangent_space().identity_map()
+            True
+            sage: idp.display()
+            Id = d/dx*dx + d/dy*dy
+            sage: idp.parent()
+            General linear group of the tangent space at point 'p' on
+             2-dimensional manifold 'M'
+            sage: idp * ap == ap
+            True
+
+        """
+        if point not in self._domain:
+            raise TypeError("the {} is not a point in the domain of {}".format(
+                                                                  point, self))
+        ts = point.tangent_space()
+        if self._is_identity:
+            return ts.identity_map()
+        resu = ts.automorphism(name=self._name, latex_name=self._latex_name)
+        for frame, comp in self._components.iteritems():
+            comp_resu = resu.add_comp(frame.at(point))
+            for ind, val in comp._comp.iteritems():
+                comp_resu._comp[ind] = val(point)
+        return resu
+
+

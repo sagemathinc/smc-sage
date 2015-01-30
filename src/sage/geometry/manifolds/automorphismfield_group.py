@@ -17,11 +17,175 @@ AUTHORS:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-#from sage.structure.unique_representation import UniqueRepresentation
-#from sage.structure.parent import Parent
+from sage.structure.unique_representation import UniqueRepresentation
+from sage.structure.parent import Parent
+from sage.categories.groups import Groups
 from sage.tensor.modules.free_module_linear_group import FreeModuleLinearGroup
-from sage.geometry.manifolds.vectorfield_module import VectorFieldFreeModule
-from sage.geometry.manifolds.automorphismfield import AutomorphismFieldParal
+from sage.geometry.manifolds.vectorfield_module import VectorFieldModule, \
+                                                       VectorFieldFreeModule
+from sage.geometry.manifolds.automorphismfield import AutomorphismField, \
+                                                      AutomorphismFieldParal
+
+class AutomorphismFieldGroup(UniqueRepresentation, Parent):
+    r"""
+    General linear group of the module of vector fields along an open subset
+    `U` of some manifold `S` with values in an open subset `V` of a
+    manifold `M`.
+
+    Given an open subset `U` of a manifold `S` and a differentiable mapping
+    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a manifold,
+    this class implements the general linear group
+    `\mathrm{GL}(\mathcal{X}(U,\Phi))` of the module
+    `\mathcal{X}(U,\Phi)` of vector fields along `U` with values in
+    `V=\Phi(U)`. Note that `\mathcal{X}(U,\Phi)` is a module over
+    `C^\infty(U)`, the ring (algebra) of smooth scalar fields on `U`.
+    Elements of this group are fields along `U` of automorphisms of the tangent
+    spaces of `V=\Phi(U)`. 
+
+    If `V=\Phi(U)` is parallelizable, the class
+    :class:`AutomorphismFieldParalGroup` must be used instead.
+
+    This is a Sage *parent* class, the corresponding *element* class being
+    :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField`.
+
+    INPUT:
+
+    - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector fields
+      along `U` with values on `V`, as an instance of
+      :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`
+
+    EXAMPLES:
+
+    """
+
+    Element = AutomorphismField
+
+    def __init__(self, vector_field_module):
+        r"""
+        See :class:`AutomorphismfieldGroup` for documentation and examples.
+
+        TESTS::
+
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V') 
+            sage: M.declare_union(U,V)   # M is the union of U and V
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+            sage: transf = c_xy.transition_map(c_uv, (x+y, x-y),
+            ....:  intersection_name='W', restrictions1= x>0,
+            ....:  restrictions2= u+v>0)
+            sage: inv = transf.inverse()        
+            sage: from sage.geometry.manifolds.automorphismfield_group import \
+            ....:                                        AutomorphismFieldGroup
+            sage: G = AutomorphismFieldGroup(M.vector_field_module()) ; G
+            General linear group of the module X(M) of vector fields on the
+             2-dimensional manifold 'M'
+
+        """
+        if not isinstance(vector_field_module, VectorFieldModule):
+            raise TypeError("{} is not a module of vector fields".format(
+                            vector_field_module))
+        Parent.__init__(self, category=Groups())
+        self._vmodule = vector_field_module
+        self._one = None # to be set by self.one()
+
+
+    #### Parent methods ####
+
+    def _element_constructor_(self, comp=[], frame=None, name=None,
+                              latex_name=None):
+        r"""
+        Construct a field of tangent-space automorphisms. 
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.tensor.modules.free_module_automorphism.FreeModuleAutomorphism`
+
+        """
+        if comp == 1:
+            return self.one()
+        # standard construction
+        resu = self.element_class(self._vmodule, name=name,
+                                  latex_name=latex_name)
+        if comp != []:
+            resu.set_comp(frame)[:] = comp
+        return resu
+
+    def _an_element_(self):
+        r"""
+        Construct some specific field of tangent-space automorphisms. 
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField`
+
+        EXAMPLES:
+
+        """
+        return self.one() #!# not terrible...
+
+    #### End of parent methods ####
+
+
+    #### Monoid methods ####
+
+    def one(self):
+        r"""
+        Return the group identity element of ``self``.
+
+        The group identity element is the field of tangent-space identity maps. 
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField`
+          representing the identity element.
+
+        """
+        if self._one is None:
+            self._one = self.element_class(self._vmodule, is_identity=True)
+        return self._one
+
+    #### End of monoid methods ####
+
+    def _repr_(self):
+        r"""
+        Return a string representation of ``self``.
+
+        EXAMPLE:
+        """
+        return "General linear group of the {}".format(self._vmodule)
+
+    def _latex_(self):
+        r"""
+        Return a string representation of ``self``.
+
+        EXAMPLE:
+
+        """
+        from sage.misc.latex import latex
+        return r"\mathrm{GL}\left("+ latex(self._vmodule)+ r"\right)"
+
+
+    def base_module(self):
+        r"""
+        Return the vector-field module of which ``self`` is the general linear
+        group.
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`
+
+        EXAMPLE:
+
+
+        """
+        return self._vmodule
+
+
+#******************************************************************************
 
 class AutomorphismFieldParalGroup(FreeModuleLinearGroup):
     r"""
@@ -48,8 +212,8 @@ class AutomorphismFieldParalGroup(FreeModuleLinearGroup):
     INPUT:
 
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector
-      fields along `U` with values on `V`
-
+      fields along `U` with values on `V`, as an instance of
+      :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldFreeModule`
 
     EXAMPLES:
 
@@ -153,7 +317,77 @@ class AutomorphismFieldParalGroup(FreeModuleLinearGroup):
         True
         sage: a^(-1)*a == id
         True
-    
+
+    Construction of an element by providing its components w.r.t. to the
+    manifold's default frame (frame associated to the coordinates `(x,y)`)::
+
+        sage: b = G([[1+x^2,0], [0,1+y^2]]) ; b
+        field of tangent-space automorphisms on the 2-dimensional manifold 'M'
+        sage: b.display()
+        (x^2 + 1) d/dx*dx + (y^2 + 1) d/dy*dy
+        sage: (~b).display()  # the inverse automorphism
+        1/(x^2 + 1) d/dx*dx + 1/(y^2 + 1) d/dy*dy
+
+    Check of some group law::
+
+        sage: (a*b)^(-1) == b^(-1) * a^(-1)
+        True
+
+    More generally, the full test suite of ``G`` is passed::
+
+        sage: TestSuite(G).run()
+
+    Invertible tensor fields of type (1,1) can be converted to elements of
+    ``G``::
+
+        sage: t = M.tensor_field(1, 1, name='t')
+        sage: t[:] = [[1+exp(y), x*y], [0, 1+x^2]]
+        sage: t1 = G(t) ; t1
+        field of tangent-space automorphisms 't' on the 2-dimensional manifold 'M'
+        sage: t1 in G
+        True
+        sage: t1.display()
+        t = (e^y + 1) d/dx*dx + x*y d/dx*dy + (x^2 + 1) d/dy*dy
+        sage: t1^(-1)
+        field of tangent-space automorphisms 't^(-1)' on the 2-dimensional
+         manifold 'M'
+        sage: (t1^(-1)).display()
+        t^(-1) = 1/(e^y + 1) d/dx*dx - x*y/(x^2 + (x^2 + 1)*e^y + 1) d/dx*dy
+         + 1/(x^2 + 1) d/dy*dy
+
+    Since any automorphism field can be considered as a tensor field of type
+    (1,1) on ``M``, there is a coercion map from ``G`` to the module
+    `T^{(1,1)}(M)` of type-(1,1) tensor fields::
+
+        sage: T11 = M.tensor_field_module((1,1)) ; T11
+        free module T^(1,1)(M) of type-(1,1) tensors fields on the 2-dimensional manifold 'M'
+        sage: T11.has_coerce_map_from(G)
+        True
+
+    An explicit call of this coercion map is::
+
+        sage: tt = T11(t1) ; tt
+        tensor field 't' of type (1,1) on the 2-dimensional manifold 'M'
+        sage: tt == t
+        True
+
+    An implicit call of the coercion map is performed to subtract an element of
+    ``G`` from an element of `T^{(1,1)}(M)`::
+
+        sage: s = t - t1 ; s
+        tensor field 't-t' of type (1,1) on the 2-dimensional manifold 'M'
+        sage: s.parent() is T11
+        True
+        sage: s.display()
+        t-t = 0
+
+    as well as for the reverse operation::
+
+        sage: s = t1 - t ; s
+        tensor field 't-t' of type (1,1) on the 2-dimensional manifold 'M'
+        sage: s.display()
+        t-t = 0
+
     """
 
     Element = AutomorphismFieldParal

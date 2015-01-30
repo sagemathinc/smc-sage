@@ -214,6 +214,11 @@ class VectorFieldModule(UniqueRepresentation, Parent):
                 if self._dest_map.restrict(frame._domain) == frame._dest_map:
                     self._zero_element.add_comp(frame)
                     # (since new components are initialized to zero)
+        # Identity automorphism:
+        self._identity_map = None # to be set by self.identity_map()
+        # General linear group:
+        self._general_linear_group = None # to be set by
+                                          # self.general_linear_group()
 
     #### Parent methods
 
@@ -344,6 +349,31 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         """
         return self.dual_exterior_power(1)
+
+    def general_linear_group(self):
+        r"""
+        Return the general linear group of ``self``.
+
+        If ``self`` is the module `\mathcal{X}(U,\Phi)`, the *general
+        linear group* is the group `\mathrm{GL}(\mathcal{X}(U,\Phi))` of
+        automorphisms of `\mathcal{X}(U,\Phi)`. Note that an automorphism of
+        `\mathcal{X}(U,\Phi)` can also be viewed as a *field* along `U` of
+        automorphisms of the tangent spaces of `V=\Phi(U)`. 
+
+        OUTPUT:
+
+        - instance of class
+          :class:`~sage.geometry.manifolds.automorphismfield_group.AutomorphismFieldGroup`
+          representing `\mathrm{GL}(\mathcal{X}(U,\Phi))`
+
+        EXAMPLES:
+
+        """
+        from sage.geometry.manifolds.automorphismfield_group import \
+                                                         AutomorphismFieldGroup
+        if self._general_linear_group is None:
+            self._general_linear_group = AutomorphismFieldGroup(self)
+        return self._general_linear_group
 
     def tensor(self, tensor_type, name=None, latex_name=None, sym=None,
                antisym=None, specific_type=None):
@@ -502,12 +532,11 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         See
         :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField`
-        for further documentation.
+        for more documentation.
 
         """
-        from automorphismfield import AutomorphismField
-        #!# the construction should be performed by the parent instead
-        return AutomorphismField(self, name=name, latex_name=latex_name)
+        return self.general_linear_group().element_class(self, name=name,
+                                                         latex_name=latex_name)
 
     def identity_map(self, name='Id', latex_name=None):
         r"""
@@ -521,8 +550,8 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         - ``name`` -- (string; default: 'Id') name given to the identity map
         - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
-          identity map; if none is provided, the LaTeX symbol is set to
-          ``name``
+          identity map;  if none is provided, the LaTeX symbol is set to
+          '\mathrm{Id}' if ``name`` is 'Id' and to ``name`` otherwise 
 
         OUTPUT:
 
@@ -530,11 +559,13 @@ class VectorFieldModule(UniqueRepresentation, Parent):
           :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField`
 
         """
-        from automorphismfield import AutomorphismField
-        #!# the construction should be performed by the parent instead,
-        # via one()
-        return AutomorphismField(self, name=name, latex_name=latex_name,
-                                 is_identity=True)
+        if self._identity_map is None:
+            self._identity_map = self.general_linear_group().one()
+            if name != 'Id':
+                if latex_name is None:
+                    latex_name = name
+                self._identity_map.set_name(name=name, latex_name=latex_name)
+        return self._identity_map
 
     def metric(self, name, signature=None, latex_name=None):
         r"""

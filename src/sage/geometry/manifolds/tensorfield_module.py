@@ -42,6 +42,7 @@ from sage.categories.modules import Modules
 from sage.tensor.modules.tensor_free_module import TensorFreeModule
 from tensorfield import TensorField, TensorFieldParal
 from diffform import DiffForm, DiffFormParal
+from automorphismfield import AutomorphismField, AutomorphismFieldParal
 
 class TensorFieldModule(UniqueRepresentation, Parent):
     r"""
@@ -390,6 +391,29 @@ class TensorFieldFreeModule(TensorFreeModule):
     The conversion map is actually the *restriction* of tensor fields defined
     on `\RR^3` to `U`.
 
+    There is also a coercion map from fields of tangent-space automorphisms to
+    tensor fields of type (1,1)::
+
+        sage: T11 = M.tensor_field_module((1,1)) ; T11
+        free module T^(1,1)(R^3) of type-(1,1) tensors fields on the
+         3-dimensional manifold 'R^3'
+        sage: Aut = M.automorphism_field_group() ; Aut
+        General linear group of the free module X(R^3) of vector fields on the
+         3-dimensional manifold 'R^3'
+        sage: T11.has_coerce_map_from(Aut)
+        True
+
+    An explicit call to this coercion map is::
+
+        sage: id = Aut.one() ; id
+        field of tangent-space identity maps on the 3-dimensional manifold 'R^3'
+        sage: tid = T11(id) ; tid
+        tensor field 'Id' of type (1,1) on the 3-dimensional manifold 'R^3'
+        sage: tid[:]
+        [1 0 0]
+        [0 1 0]
+        [0 0 1]
+
     """
 
     Element = TensorFieldParal
@@ -424,16 +448,6 @@ class TensorFieldFreeModule(TensorFreeModule):
         """
         if comp == 0:
             return self._zero_element
-        if isinstance(comp, TensorField) and \
-           not isinstance(comp, DiffFormParal):
-            # coercion by domain restriction
-            if self._tensor_type == comp._tensor_type and \
-               self._domain.is_subset(comp._domain) and \
-               self._ambient_domain.is_subset(comp._ambient_domain):
-                return comp.restrict(self._domain)
-            else:
-                raise TypeError("cannot coerce the {}".format(comp) +
-                                " to an element of {}".format(self))
         if isinstance(comp, DiffFormParal):
             # coercion of a p-form to a type-(0,p) tensor field:
             form = comp # for readability
@@ -452,6 +466,27 @@ class TensorFieldFreeModule(TensorFreeModule):
             for frame, cp in form._components.iteritems():
                 resu._components[frame] = cp.copy()
             return resu
+        if isinstance(comp, AutomorphismFieldParal):
+            # coercion of an automorphism to a type-(1,1) tensor:
+            autom = comp # for readability
+            if self._tensor_type != (1,1) or \
+                                          self._fmodule != autom.base_module():
+                raise TypeError("cannot coerce the {}".format(autom) +
+                                " to an element of {}".format(self))
+            resu = self.element_class(self._fmodule, (1,1), name=autom._name,
+                                      latex_name=autom._latex_name)
+            for basis, comp in autom._components.iteritems():
+                resu._components[basis] = comp.copy()
+            return resu
+        if isinstance(comp, TensorField):
+            # coercion by domain restriction
+            if self._tensor_type == comp._tensor_type and \
+               self._domain.is_subset(comp._domain) and \
+               self._ambient_domain.is_subset(comp._ambient_domain):
+                return comp.restrict(self._domain)
+            else:
+                raise TypeError("cannot coerce the {}".format(comp) +
+                                " to an element of {}".format(self))
         # Standard construction
         resu = self.element_class(self._fmodule, self._tensor_type, name=name,
                                   latex_name=latex_name, sym=sym,
@@ -467,7 +502,9 @@ class TensorFieldFreeModule(TensorFreeModule):
         Determine whether coercion to ``self`` exists from other parent.
         
         """
-        from diffform_module import DiffFormFreeModule
+        from sage.geometry.manifolds.diffform_module import DiffFormFreeModule
+        from sage.geometry.manifolds.automorphismfield_group import \
+                                                    AutomorphismFieldParalGroup
         if isinstance(other, (TensorFieldModule, TensorFieldFreeModule)):
             # coercion by domain restriction
             return self._tensor_type == other._tensor_type and \
@@ -477,6 +514,10 @@ class TensorFieldFreeModule(TensorFreeModule):
             # coercion of p-forms to type-(0,p) tensor fields
             return self._fmodule is other.base_module() and \
                                        self._tensor_type == (0, other.degree())
+        if isinstance(other, AutomorphismFieldParalGroup):
+            # coercion of automorphism fields to type-(1,1) tensor fields
+            return self._fmodule is other.base_module() and \
+                                                     self._tensor_type == (1,1)
         return False
 
     #### End of parent methods

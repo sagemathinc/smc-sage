@@ -3343,8 +3343,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         Vector in a tangent space of a 2-dimensional manifold::
 
             sage: Manifold._clear_cache_() # for doctests only
-            sage: from sage.geometry.manifolds.tangentspace import TangentSpace # for doctests only
-            sage: TangentSpace._clear_cache_() ; Manifold._clear_cache_() # for doctests only
+            sage: sage.geometry.manifolds.tangentspace.TangentSpace._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart()
             sage: p = M.point((-2,3), name='p')

@@ -267,8 +267,6 @@ class DiffFormModule(UniqueRepresentation, Parent):
             ....:  intersection_name='W', restrictions1= x>0,
             ....:  restrictions2= u+v>0)
             sage: inv = transf.inverse()
-            sage: W = U.intersection(V)
-            sage: eU = c_xy.frame() ; eV = c_uv.frame()
             sage: from sage.geometry.manifolds.diffform_module import DiffFormModule
             sage: A = DiffFormModule(M.vector_field_module(), 2) ; A
             Module /\^2(M) of 2-forms on the 2-dimensional manifold 'M'
