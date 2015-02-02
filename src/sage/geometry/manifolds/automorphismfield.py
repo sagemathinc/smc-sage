@@ -65,7 +65,8 @@ class AutomorphismField(TensorField):
         sage: a = M.automorphism_field('a') ; a
         field of tangent-space automorphisms 'a' on the 2-dimensional manifold 'M'
         sage: a.parent()
-        module T^(1,1)(M) of type-(1,1) tensors fields on the 2-dimensional manifold 'M'
+        General linear group of the module X(M) of vector fields on the
+         2-dimensional manifold 'M'
 
     We first define the components of `a` w.r.t the coordinate frame on `U`::
 
@@ -241,8 +242,8 @@ class AutomorphismField(TensorField):
                 inv_latex_name = None
             else:
                 inv_latex_name = self._latex_name + r'^{-1}'
-            self._inverse = AutomorphismField(self._vmodule, name=inv_name,
-                                              latex_name=inv_latex_name)
+            self._inverse = self._vmodule.automorphism(name=inv_name,
+                                                     latex_name=inv_latex_name)
             for dom, rst in self._restrictions.iteritems():
                 self._inverse._restrictions[dom] = rst.inverse()
         return self._inverse
@@ -478,6 +479,25 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
     """
     def __init__(self, vector_field_module, name=None, latex_name=None,
                  is_identity=False):
+        r"""
+        Construct a field of tangent-space automorphisms.
+
+        TESTS::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: a = M.automorphism_field(name='a') ; a
+            field of tangent-space automorphisms 'a' on the 2-dimensional manifold 'M'
+            sage: a[:] = [[1+x^2, x*y], [0, 1+y^2]]
+            sage: a.parent()
+            General linear group of the free module X(M) of vector fields on
+             the 2-dimensional manifold 'M'
+            sage: a.parent() is M.automorphism_field_group()
+            True
+            sage: TestSuite(a).run()
+            
+        """
         FreeModuleAutomorphism.__init__(self, vector_field_module,
                                         name=name, latex_name=latex_name,
                                         is_identity=is_identity)

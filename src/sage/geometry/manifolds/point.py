@@ -65,12 +65,12 @@ class ManifoldPoint(Element):
 
     INPUT:
 
-    - ``domain`` -- the manifold domain to which the point belongs (can be
+    - ``subset`` -- the manifold subset to which the point belongs (can be
       the entire manifold)
     - ``coords`` -- (default: None) the point coordinates (as a tuple or a list)
     - ``chart`` -- (default: None) chart in which the coordinates are given;
       if none is provided, the coordinates are assumed
-      to refer to the domain's default chart
+      to refer to the subset's default chart
     - ``name`` -- (default: None) name given to the point
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the point; if
       none is provided, the LaTeX symbol is set to ``name``
@@ -84,16 +84,16 @@ class ManifoldPoint(Element):
         sage: (a, b) = var('a b') # generic coordinates for the point
         sage: p = M.point((a, b), name='P') ; p
         point 'P' on 2-dimensional manifold 'M'
-        sage: p.coord()  # coordinates of P in the domain's default chart
+        sage: p.coord()  # coordinates of P in the subset's default chart
         (a, b)
 
-    Since points are Sage 'Element', the 'Parent' of which being the domain
+    Since points are Sage 'Element', the 'Parent' of which being the subset
     on which they are defined, it is equivalent to write::
 
         sage: p = M((a, b), name='P') ; p
         point 'P' on 2-dimensional manifold 'M'
 
-    A point is an element of the manifold domain on which it has been defined::
+    A point is an element of the manifold subset on which it has been defined::
 
         sage: p in M
         True
@@ -114,22 +114,22 @@ class ManifoldPoint(Element):
     Points can be drawn in 2D or 3D graphics thanks to the method :meth:`plot`.
 
     """
-    def __init__(self, domain, coords=None, chart=None, name=None,
+    def __init__(self, subset, coords=None, chart=None, name=None,
                  latex_name=None):
-        Element.__init__(self, domain)
-        self._manifold = domain._manifold
-        self._domain = domain
+        Element.__init__(self, subset._manifold)
+        self._manifold = subset._manifold
+        self._subset = subset
         self._coordinates = {}
         if coords is not None:
             if len(coords) != self._manifold._dim:
                 raise ValueError("The number of coordinates must be equal" +
                                  " to the manifold dimension.")
             if chart is None:
-                chart = self._domain._def_chart
+                chart = self._subset._def_chart
             else:
-                if chart not in self._domain._atlas:
+                if chart not in self._subset._atlas:
                     raise ValueError("The " + str(chart) +
-                            " has not been defined on the " + str(self._domain))
+                            " has not been defined on the " + str(self._subset))
             #!# The following check is not performed for it would fail with
             # symbolic coordinates:
             # if not chart.valid_coordinates(*coords):
@@ -182,11 +182,11 @@ class ManifoldPoint(Element):
 
         - ``chart`` -- (default: None) chart in which the coordinates are
           given; if none is provided, the coordinates are assumed to refer to
-          the domain's default chart
+          the subset's default chart
         - ``old_chart`` -- (default: None) chart from which the coordinates in
           ``chart`` are to be computed. If None, a chart in which the point's
           coordinates are already known will be picked, priveleging the
-          domain's default chart.
+          subset's default chart.
 
         EXAMPLES:
 
@@ -246,7 +246,7 @@ class ManifoldPoint(Element):
 
         """
         if chart is None:
-            dom = self._domain
+            dom = self._subset
             chart = dom._def_chart
             def_chart = chart
         else:
@@ -323,7 +323,7 @@ class ManifoldPoint(Element):
         - ``coords`` -- the point coordinates (as a tuple or a list)
         - ``chart`` -- (default: None) chart in which the coordinates are
           given; if none is provided, the coordinates are assumed to refer to
-          the domain's default chart
+          the subset's default chart
 
         EXAMPLES:
 
@@ -369,7 +369,7 @@ class ManifoldPoint(Element):
         - ``coords`` -- the point coordinates (as a tuple or a list)
         - ``chart`` -- (default: None) chart in which the coordinates are
           given; if none is provided, the coordinates are assumed to refer to
-          the domain's default chart
+          the subset's default chart
 
         .. WARNING::
 
@@ -421,11 +421,11 @@ class ManifoldPoint(Element):
             raise ValueError("The number of coordinates must be equal " +
                              "to the manifold dimension.")
         if chart is None:
-            chart = self._domain._def_chart
+            chart = self._subset._def_chart
         else:
-            if chart not in self._domain._atlas:
+            if chart not in self._subset._atlas:
                 raise ValueError("The " + str(chart) +
-                    " has not been defined on the " + str(self._domain))
+                    " has not been defined on the " + str(self._subset))
         self._coordinates[chart] = coords
 
     def __eq__(self, other):
@@ -436,8 +436,8 @@ class ManifoldPoint(Element):
             return False
         # Search for a common chart to compare the coordinates
         common_chart = None
-        # the domain's default chart is privileged:
-        def_chart = self._domain._def_chart
+        # the subset's default chart is privileged:
+        def_chart = self._subset._def_chart
         if def_chart in self._coordinates and def_chart in other._coordinates:
             common_chart = def_chart
         else:

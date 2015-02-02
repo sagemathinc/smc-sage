@@ -170,7 +170,7 @@ class TangentSpace(FiniteRankFreeModule):
                                       start_index=manif._sindex)
         # Initialization of bases of the tangent space from existing vector
         # frames around the point:
-        for frame in point._domain._top_frames:
+        for frame in point._subset._top_frames:
             if point in frame._domain:
                 basis = self.basis(symbol=frame._symbol,
                                    latex_symbol=frame._latex_symbol)
@@ -202,7 +202,7 @@ class TangentSpace(FiniteRankFreeModule):
                 point._frame_bases[frame] = basis
         # Initialization of the changes of bases from the existing changes of
         # frames around the point:
-        for frame_pair, automorph in point._domain._frame_changes.iteritems():
+        for frame_pair, automorph in point._subset._frame_changes.iteritems():
             frame1 = frame_pair[0] ; frame2 = frame_pair[1]
             fr1, fr2 = None, None
             for frame in point._frame_bases:

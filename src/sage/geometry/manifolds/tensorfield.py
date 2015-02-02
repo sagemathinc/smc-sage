@@ -487,6 +487,32 @@ class TensorField(ModuleElement):
     """
     def __init__(self, vector_field_module, tensor_type, name=None,
                  latex_name=None, sym=None, antisym=None, parent=None):
+        r"""
+        Construct a tensor field.
+
+        TESTS::
+        
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_subset('U') ; V = M.open_subset('V') 
+            sage: M.declare_union(U,V)   # M is the union of U and V
+            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
+            sage: transf = c_xy.transition_map(c_uv, (x+y, x-y),
+            ....:  intersection_name='W', restrictions1= x>0, restrictions2= u+v>0)
+            sage: inv = transf.inverse()
+            sage: W = U.intersection(V)
+            sage: eU = c_xy.frame() ; eV = c_uv.frame()
+            sage: t = M.tensor_field(0,2, name='t') ; t
+            tensor field 't' of type (0,2) on the 2-dimensional manifold 'M'
+            sage: t[eU,:] = [[1+x^2, x*y], [0, 1+y^2]]
+            sage: t.add_comp_by_continuation(eV, W, c_uv)
+            sage: t.display(eU)
+            t = (x^2 + 1) dx*dx + x*y dx*dy + (y^2 + 1) dy*dy
+            sage: t.display(eV)
+            t = (3/16*u^2 + 1/16*v^2 + 1/2) du*du + (-1/16*u^2 + 1/4*u*v +
+             1/16*v^2) du*dv + (1/16*u^2 + 1/4*u*v - 1/16*v^2) dv*du +
+             (1/16*u^2 + 3/16*v^2 + 1/2) dv*dv
+
+        """
         if parent is None:
             parent = vector_field_module.tensor_module(*tensor_type)
         ModuleElement.__init__(self, parent)
@@ -2760,6 +2786,27 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
     """
     def __init__(self, vector_field_module, tensor_type, name=None,
                  latex_name=None, sym=None, antisym=None):
+        r"""
+        Construct a tensor field.
+
+        TESTS::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: t = M.tensor_field(0,2, name='t') ; t
+            tensor field 't' of type (0,2) on the 2-dimensional manifold 'M'
+            sage: t[:] = [[1+x^2, x*y], [0, 1+y^2]]
+            sage: t.display()
+            t = (x^2 + 1) dx*dx + x*y dx*dy + (y^2 + 1) dy*dy
+            sage: t.parent()
+            free module T^(0,2)(M) of type-(0,2) tensors fields on the
+             2-dimensional manifold 'M'
+            sage: t.parent() is M.tensor_field_module((0,2))
+            True
+            sage: TestSuite(t).run()
+    
+        """
         FreeModuleTensor.__init__(self, vector_field_module, tensor_type,
                                   name=name, latex_name=latex_name,
                                   sym=sym, antisym=antisym)

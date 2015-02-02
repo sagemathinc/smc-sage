@@ -420,9 +420,9 @@ class VectorFieldModule(UniqueRepresentation, Parent):
             return self.element_class(self, name=name, latex_name=latex_name)
         elif tensor_type==(0,1):
             return self.linear_form(name=name, latex_name=latex_name)
-        elif tensor_type==(1,1):
-            if specific_type == AutomorphismField:
-                return AutomorphismField(self, name=name, latex_name=latex_name)
+        elif tensor_type==(1,1) and specific_type is not None:
+            if issubclass(specific_type, AutomorphismField):
+                return self.automorphism(name=name, latex_name=latex_name)
         elif tensor_type[0]==0 and tensor_type[1]>1 and antisym is not None \
                                                               and antisym !=[]:
             if isinstance(antisym, list):

@@ -763,10 +763,10 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
             fmodule = self._fmodule # shortcut
             rname = format_unop_txt('d', self._name)
             rlname = format_unop_latex(r'\mathrm{d}', self._latex_name)
-            self._exterior_derivative = DiffFormParal(fmodule, 
-                                                      self._tensor_rank+1, 
-                                                      name=rname, 
-                                                      latex_name=rlname)
+            self._exterior_derivative = fmodule.alternating_form(
+                                                           self._tensor_rank+1, 
+                                                           name=rname, 
+                                                           latex_name=rlname)
             # 1/ List of all coordinate frames in which the components of self
             # are known
             coord_frames = []

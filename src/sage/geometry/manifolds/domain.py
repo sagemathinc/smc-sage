@@ -169,28 +169,30 @@ class ManifoldSubset(UniqueRepresentation, Parent):
     Element = ManifoldPoint
 
     def __init__(self, manifold, name, latex_name=None):
-        Parent.__init__(self, category=Sets())
-        self._manifold = manifold
-        if self != manifold:
+        r"""
+        Construct a manifold subset.
+        """
+        # Except for the manifold itself, the subsets are facade sets:
+        if self is manifold:
+            Parent.__init__(self, category=Sets())
+        else:
+            Parent.__init__(self, category=Sets(), facade=manifold)
             for dom in manifold._subsets:
                 if name == dom._name:
                     raise ValueError("The name '" + name +
-                                     "' is already used for " +
-                                     "another subset of the " + str(manifold))
-            self._name = name
+                                     "' is already used for another " +
+                                     "subset of the {}".format(manifold))
             manifold._subsets.add(self)
-            # set of subsets containing self:
-            self._supersets = set([manifold, self])
-        else: # case where the subset is the full manifold
-            self._name = name
-            self._supersets = set([self])
+        self._manifold = manifold
+        self._name = name
         if latex_name is None:
             self._latex_name = self._name
         else:
             self._latex_name = latex_name
+        self._supersets = set([manifold, self]) # subsets containing self
         self._subsets = set([self]) # subsets of self
         self._top_subsets = set([self]) # subsets contained in self but not
-            # in another strict subset of self
+                                        # in another strict subset of self
         self._intersections = {} # dict. of intersections with other subsets
                                  # (key: subset name)
         self._unions = {} # dict. of unions with other subsets (key: subset
@@ -844,7 +846,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         r"""
         Check whether a point is contained in ``self``.
         """
-        if point.parent().is_subset(self):
+        if point._subset.is_subset(self):
             return True
         for chart in self._atlas:
             if chart in point._coordinates:

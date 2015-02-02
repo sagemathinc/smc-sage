@@ -220,6 +220,7 @@ class AutomorphismFieldParalGroup(FreeModuleLinearGroup):
     Group of tangent-space automorphism fields of a 2-dimensional
     parallelizable manifold::
 
+        sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(2, 'M')
         sage: X.<x,y> = M.chart()
         sage: XM = M.vector_field_module() ; XM
