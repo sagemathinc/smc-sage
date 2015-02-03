@@ -8,7 +8,7 @@ have the same coordinates in the same chart.
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013) : initial version
+- Eric Gourgoulhon, Michal Bejger (2013-2015) : initial version
 
 EXAMPLES:
 
@@ -48,8 +48,8 @@ Listing all the coordinates of a point in different charts::
 """
 
 #*****************************************************************************
-#       Copyright (C) 2013 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -74,6 +74,9 @@ class ManifoldPoint(Element):
     - ``name`` -- (default: None) name given to the point
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the point; if
       none is provided, the LaTeX symbol is set to ``name``
+    - ``check_coords`` -- (default: True) determines whether ``coords`` are
+      valid coordinates for the chart ``chart``; for symbolic coordinates, it
+      is recommended to set ``check_coords`` to ``False``.
 
     EXAMPLES:
 
@@ -87,18 +90,33 @@ class ManifoldPoint(Element):
         sage: p.coord()  # coordinates of P in the subset's default chart
         (a, b)
 
-    Since points are Sage 'Element', the 'Parent' of which being the subset
-    on which they are defined, it is equivalent to write::
+    Since points are Sage *elements*, the (facade) *parent* of which being the
+    subset on which they are defined, it is equivalent to write::
 
         sage: p = M((a, b), name='P') ; p
         point 'P' on 2-dimensional manifold 'M'
 
-    A point is an element of the manifold subset on which it has been defined::
+    A point is an element of the manifold subset in which it has been defined::
 
         sage: p in M
         True
         sage: p.parent()
         2-dimensional manifold 'M'
+        sage: U = M.open_subset('U', coord_def={c_xy: x>0})
+        sage: q = U.point((2,1), name='q')
+        sage: q in U
+        True
+        sage: q in M
+        True
+
+    Note that the parent of a point is always the manifold, not the subset
+    in which it has been defined (the latter being returned by the method
+    :meth:`containing_set`)::
+    
+        sage: q.parent()
+        2-dimensional manifold 'M'
+        sage: q.containing_set()
+        open subset 'U' of the 2-dimensional manifold 'M'
 
     By default, the LaTeX symbol of the point is deduced from its name::
 
@@ -115,7 +133,24 @@ class ManifoldPoint(Element):
 
     """
     def __init__(self, subset, coords=None, chart=None, name=None,
-                 latex_name=None):
+                 latex_name=None, check_coords=True):
+        r"""
+        Construct a manifold point.
+
+        TESTS::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M((2,3), name='p') ; p
+            point 'p' on 2-dimensional manifold 'M'
+            sage: TestSuite(p).run()
+            sage: U = M.open_subset('U', coord_def={X: x<0})
+            sage: q = U((-1,2), name='q') ; q
+            point 'q' on 2-dimensional manifold 'M'
+            sage: TestSuite(q).run()
+        
+        """
         Element.__init__(self, subset._manifold)
         self._manifold = subset._manifold
         self._subset = subset
@@ -129,12 +164,11 @@ class ManifoldPoint(Element):
             else:
                 if chart not in self._subset._atlas:
                     raise ValueError("The " + str(chart) +
-                            " has not been defined on the " + str(self._subset))
-            #!# The following check is not performed for it would fail with
-            # symbolic coordinates:
-            # if not chart.valid_coordinates(*coords):
-            #    raise ValueError("The coordinates " + str(coords) +
-            #                     " are not valid on the " + str(chart))
+                           " has not been defined on the " + str(self._subset))
+            if check_coords:
+                if not chart.valid_coordinates(*coords):
+                    raise ValueError("The coordinates " + str(coords) +
+                                     " are not valid on the " + str(chart))
             for schart in chart._supercharts:
                 self._coordinates[schart] = tuple(coords)
             for schart in chart._subcharts:
@@ -154,7 +188,7 @@ class ManifoldPoint(Element):
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        Return a string representation of the object.
         """
         description = "point"
         if self._name is not None:
@@ -164,12 +198,54 @@ class ManifoldPoint(Element):
 
     def _latex_(self):
         r"""
-        Special Sage function for the LaTeX representation of the object.
+        Return a LaTeX representation of the object.
         """
         if self._latex_name is None:
             return r'\mbox{' + str(self) + r'}'
         else:
            return self._latex_name
+
+    def containing_set(self):
+        r"""
+        Return a manifold subset that contains ``self``.
+
+        A priori, this method returns the manifold subset (possibly the
+        manifold itself) in which the point ``self`` has been defined.
+
+        OUTPUT:
+
+        - an instance of
+          :class:`~sage.geometry.manifolds.domain.ManifoldSubset`
+
+        EXAMPLES:
+
+        Points on a 2-dimensional manifold::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M.point((1,3), name='p') ; p
+            point 'p' on 2-dimensional manifold 'M'
+            sage: p.containing_set()
+            2-dimensional manifold 'M'
+            sage: U = M.open_subset('U', coord_def={X: x>0})
+            sage: q = U.point((2,1), name='q') ; q
+            point 'q' on 2-dimensional manifold 'M'
+            sage: q.containing_set()
+            open subset 'U' of the 2-dimensional manifold 'M'
+
+        Note that in the present case, the containing set is tighter than the
+        parent, which is always the manifold::
+        
+            sage: q.parent()
+            2-dimensional manifold 'M'
+            sage: q.containing_set().is_subset(q.parent())
+            True
+            sage: q.containing_set() != q.parent()
+            True
+
+        """
+        return self._subset
 
     def coord(self, chart=None, old_chart=None):
         r"""
@@ -453,7 +529,7 @@ class ManifoldPoint(Element):
             sage: q = U((2,-3), chart=XU)
             sage: p == q and q == p
             True
-            sage: q = U((-2,-3), chart=XU)
+            sage: q = U((1,-3), chart=XU)
             sage: p == q or q == p
             False
 

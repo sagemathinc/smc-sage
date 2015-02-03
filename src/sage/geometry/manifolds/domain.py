@@ -7,7 +7,7 @@ to open subsets, with respect to the manifold topology.
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
+- Eric Gourgoulhon, Michal Bejger (2013-2015): initial version
 
 REFERENCES:
 
@@ -173,6 +173,15 @@ class ManifoldSubset(UniqueRepresentation, Parent):
     def __init__(self, manifold, name, latex_name=None):
         r"""
         Construct a manifold subset.
+
+        TESTS::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: A = M.subset('A') ; A
+            subset 'A' of the 2-dimensional manifold 'M'
+
         """
         # Except for the manifold itself, the subsets are facade sets:
         if self is manifold:
@@ -214,11 +223,26 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     #### Methods required for any Parent in the category of sets:
     def _element_constructor_(self, coords=None, chart=None, name=None,
-                 latex_name=None):
+                              latex_name=None, check_coords=True):
         r"""
         Construct a point on ``self`` from its coordinates in some chart.
         """
-        return self.element_class(self, coords, chart, name, latex_name)
+        if isinstance(coords, ManifoldPoint):
+            point = coords # for readability
+            if point in self:
+                resu = self.element_class(self, name=point._name,
+                                          latex_name=point._latex_name)
+                for chart, coords in point._coordinates.iteritems():
+                    resu._coordinates[chart] = coords
+                return resu
+                # NB: contrary to a mere "return point", the above operation
+                # ensures that the returned point has the attribute _subset set
+                # to self
+            else:
+                raise ValueError("the {}".format(point) +
+                                 " is not in {}".format(self))
+        return self.element_class(self, coords=coords, chart=chart, name=name,
+                              latex_name=latex_name, check_coords=check_coords)
 
     def _an_element_(self):
         r"""
@@ -243,7 +267,8 @@ class ManifoldSubset(UniqueRepresentation, Parent):
                 else:
                     x = (xmin + xmax)/2
             coords.append(x)
-        return self.element_class(self, coords, chart)
+        return self.element_class(self, coords=coords, chart=chart,
+                                  check_coords=False)
 
     #### End of methods required for any Parent in the category of sets
 
@@ -1239,7 +1264,7 @@ class ManifoldOpenSubset(ManifoldSubset):
     Points can be created by providing their coordinates in some
     chart via the operator () applied to the subset::
 
-        sage: chart1.<x,y> = A.chart()
+        sage: X.<x,y> = A.chart()
         sage: p = A((-2,3)) ; p
         point on 2-dimensional manifold 'M'
         sage: p.coord()
@@ -1247,16 +1272,57 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     Other arguments can be specified::
 
-        sage: p = A((-2,3), chart=chart1, name='p') ; p
+        sage: p = A((-2,3), chart=X, name='p') ; p
         point 'p' on 2-dimensional manifold 'M'
 
-    It is equivalent to use the method :meth:`point`::
+    It is equivalent to use the method
+    :meth:`~sage.geometry.manifolds.domain.ManifoldSubset.point`::
 
         sage: A((-2,3)) == A.point((-2,3))
         True
 
+    An open subset can be defined by some coordinate conditions::
+    
+        sage: U = A.open_subset('U', coord_def={X: x<0}) ; U
+        open subset 'U' of the 2-dimensional manifold 'M'
+        sage: U.is_subset(A)
+        True
+        sage: p in U  # since p's coordinates in chart X are (x,y)=(-2,3)
+        True
+
+    An open subset can be called to construct a point from another one,
+    provided that the latter belongs to the open subset::
+    
+        sage: p1 = U(p) ; p1
+        point 'p' on 2-dimensional manifold 'M'
+
+    The two points simply differ by the returned value of
+    :meth:`~sage.geometry.manifolds.point.ManifoldPoint.containing_set`::
+    
+        sage: p1 == p
+        True
+        sage: p.containing_set()
+        open subset 'A' of the 2-dimensional manifold 'M'
+        sage: p1.containing_set()
+        open subset 'U' of the 2-dimensional manifold 'M'
+
     """
     def __init__(self, manifold, name, latex_name=None):
+        r"""
+        Construct an open subset of a manifold.
+
+        TESTS::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: U = M.open_subset('U', coord_def={X: x^2+y^2<1}) ; U
+            open subset 'U' of the 2-dimensional manifold 'M'
+            sage: U.category()
+            Category of facade sets
+            sage: TestSuite(U).run()
+
+        """
         from scalarfield import ZeroScalarField
         from diffmapping import IdentityMap
         ManifoldSubset.__init__(self, manifold, name, latex_name)
