@@ -431,6 +431,45 @@ class ManifoldPoint(Element):
     def __eq__(self, other):
         r"""
         Compares the current point with another one.
+
+        EXAMPLES:
+
+        Comparison with coordinates in the same chart::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M((2,-3), chart=X)
+            sage: q = M((2,-3), chart=X)
+            sage: p == q
+            True
+            sage: q = M((-2,-3), chart=X)
+            sage: p == q
+            False
+
+        Comparison with coordinates of other in a subchart::
+        
+            sage: U = M.open_subset('U', coord_def={X: x>0})
+            sage: XU = X.restrict(U)
+            sage: q = U((2,-3), chart=XU)
+            sage: p == q and q == p
+            True
+            sage: q = U((-2,-3), chart=XU)
+            sage: p == q or q == p
+            False
+
+        Comparison requiring a change of chart::
+
+            sage: Y.<u,v> = U.chart()
+            sage: XU_to_Y = XU.transition_map(Y, (ln(x), x+y))
+            sage: XU_to_Y.inverse()(u,v)
+            (e^u, v - e^u)
+            sage: q = U((ln(2),-1), chart=Y)
+            sage: p == q and q == p
+            True
+            sage: q = U((ln(3),1), chart=Y)
+            sage: p == q or q == p
+            False
+
         """
         if not isinstance(other, ManifoldPoint):
             return False
@@ -445,6 +484,25 @@ class ManifoldPoint(Element):
                 if chart in other._coordinates:
                     common_chart = chart
                     break
+        if common_chart is None:
+            # At this stage, a commont chart is searched via a coordinate
+            # transformation:
+            for chart in self._coordinates:
+                try:
+                    other.coord(chart)
+                    common_chart = chart
+                    break
+                except ValueError:
+                    pass
+            else:
+                # Attempt a coordinate transformation in the reverse way:
+                for chart in other._coordinates:
+                    try:
+                        self.coord(chart)
+                        common_chart = chart
+                        break
+                    except ValueError:
+                        pass
         if common_chart is None:
             raise ValueError("No common chart has been found to compare " +
                              str(self) + " and " + str(other))

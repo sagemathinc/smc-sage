@@ -5,10 +5,9 @@ The class :class:`Manifold` implements differentiable manifolds over `\RR`.
 
 Ideally this class should inherit from a class describing topological
 manifolds or at least topological spaces. Since such classes do not
-exist in Sage yet, the class :class:`Manifold` inherits from the
-class :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`.
-Via the latter, the class :class:`Manifold` inherits
-from the generic Sage class :class:`~sage.structure.parent.Parent`
+exist in Sage yet, the class :class:`Manifold` inherits from the generic Sage
+class :class:`~sage.structure.parent.Parent` (via the
+class :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
 and is declared to belong to the category of sets (Sage category
 :class:`~sage.categories.sets_cat.Sets`).
 The corresponding Sage :class:`~sage.structure.element.Element`'s are
@@ -19,7 +18,7 @@ The derived class :class:`RealLine` implements the field of real numbers
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
+- Eric Gourgoulhon, Michal Bejger (2013-2015): initial version
 
 REFERENCES:
 
@@ -155,10 +154,16 @@ EXAMPLES:
         sage: p.coord(stereoS_W) # the coordinates in the chart stereoS_W are computed by means of the transition map:
         (1/5, 2/5)
 
-    Manifolds are 'Parent' Sage objects, whose elements are the points::
+    Manifolds are Sage *parent* objects, whose *elements* are points::
 
+        sage: isinstance(M, Parent)
+        True
+        sage: M.category()
+        Category of sets
         sage: p.parent()
         2-dimensional manifold 'S^2'
+        sage: M.is_parent_of(p)
+        True
         sage: p in M
         True
         sage: p == M((1,2))
@@ -260,8 +265,8 @@ EXAMPLES:
 """
 
 #*****************************************************************************
-#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -278,7 +283,14 @@ class Manifold(ManifoldOpenSubset):
 
     This class implements differentiable manifolds over `\RR`. Ideally it
     should inherit from a class describing topological manifolds, or at
-    least, topological spaces (not existing yet in Sage!).
+    least, topological spaces. Since such classes do not exist in Sage yet,
+    the class :class:`Manifold` inherits from the generic Sage
+    class :class:`~sage.structure.parent.Parent` (via the
+    class :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
+    and is declared to belong to the category of sets (Sage category
+    :class:`~sage.categories.sets_cat.Sets`). Accordingly, the class
+    :class:`Manifold` is a Sage *parent* class, the corresponding *element*
+    class being :class:`~sage.geometry.manifolds.point.ManifoldPoint`.
 
     INPUT:
 
@@ -309,20 +321,24 @@ class Manifold(ManifoldOpenSubset):
         sage: list(M.irange())
         [2, 3, 4, 5]
 
-    A manifold is a Sage *Parent* object, in the category of sets::
+    A manifold is a Sage *parent* object, in the category of sets::
 
+        sage: isinstance(M, Parent)
+        True
         sage: M.category()
         Category of sets
         sage: M in Sets()
         True
 
-    The corresponding Sage *Elements* are points::
+    The corresponding Sage *elements* are points::
 
         sage: X.<t, x, y, z> = M.chart()
         sage: p = M.an_element(); p
         point on 4-dimensional manifold 'M'
         sage: p.parent()
         4-dimensional manifold 'M'
+        sage: M.is_parent_of(p)
+        True
         sage: p in M
         True
 

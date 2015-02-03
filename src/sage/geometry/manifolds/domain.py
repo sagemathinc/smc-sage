@@ -1,18 +1,9 @@
 r"""
 Manifold subsets
 
-The classes :class:`ManifoldSubset` and :class:`ManifoldOpenSubset` implement
-subsets on a differentiable manifold over `\RR`.
-
-The class :class:`ManifoldSubset` inherits from the generic Sage class
-:class:`~sage.structure.parent.Parent`
-and is declared to belong to the category of sets (Sage category
-:class:`~sage.categories.sets_cat.Sets`).
-The corresponding Sage :class:`~sage.structure.element.Element`'s are
-implemented via the class :class:`~sage.geometry.manifolds.point.ManifoldPoint`.
-
-The subclass :class:`ManifoldOpenSubset` is devoted to open subsets, with
-respect to the manifold topology.
+The class :class:`ManifoldSubset` implements subsets of a differentiable
+manifold over `\RR`. The subclass :class:`ManifoldOpenSubset` is devoted
+to open subsets, with respect to the manifold topology.
 
 AUTHORS:
 
@@ -24,7 +15,6 @@ REFERENCES:
   York, 2011)
 - J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
   2013)
-
 
 EXAMPLES:
 
@@ -83,8 +73,8 @@ State of various data members after the above operations::
 
 """
 #*****************************************************************************
-#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -97,10 +87,18 @@ from sage.structure.unique_representation import UniqueRepresentation
 from sage.categories.sets_cat import Sets
 from point import ManifoldPoint
 
-
 class ManifoldSubset(UniqueRepresentation, Parent):
     r"""
     Subset of a differentiable manifold over `\RR`.
+
+    The class :class:`ManifoldSubset` inherits from the generic Sage class
+    :class:`~sage.structure.parent.Parent` and is declared to belong to
+    the category of facade sets
+    (see :meth:`~sage.categories.sets_cat.Sets.SubcategoryMethods.Facade`).
+    The corresponding element class is
+    :class:`~sage.geometry.manifolds.point.ManifoldPoint`. A subset acts
+    as a facade for the true parent of its points, which is the whole manifold
+    (see example below).
 
     For an open subset, use the class :class:`ManifoldOpenSubset` instead.
 
@@ -113,7 +111,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     EXAMPLES:
 
-    A subset on a manifold::
+    A subset of a manifold::
 
         sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(2, 'M')
@@ -147,18 +145,22 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         sage: isinstance(M, sage.geometry.manifolds.domain.ManifoldOpenSubset)
         True
 
-    Instances of :class:`ManifoldSubset` are Sage parents (in the category of sets),
-    the elements of which are points on the manifold
-    (class :class:`~sage.geometry.manifolds.point.ManifoldPoint`)::
+    Instances of :class:`ManifoldSubset` are Sage's facade sets
+    (see :meth:`~sage.categories.sets_cat.Sets.SubcategoryMethods.Facade`):
+    their elements are manifold points
+    (class :class:`~sage.geometry.manifolds.point.ManifoldPoint`), 
+    which have the manifold (and not the subset) as parent::
 
         sage: isinstance(A, Parent)
         True
         sage: A.category()
-        Category of sets
+        Category of facade sets
+        sage: A.facade_for()
+        (2-dimensional manifold 'M',)
         sage: p = A.an_element() ; p
         point on 2-dimensional manifold 'M'
         sage: p.parent()
-        subset 'A' of the 2-dimensional manifold 'M'
+        2-dimensional manifold 'M'
         sage: p in A
         True
         sage: p in M
@@ -463,7 +465,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
         EXAMPLES:
 
-        Creating a subset on a manifold::
+        Creating a subset of a manifold::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
@@ -863,8 +865,8 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         r"""
         Define a point in ``self``.
 
-        See :class:`~sage.geometry.manifolds.point.ManifoldPoint` for a complete
-        documentation.
+        See :class:`~sage.geometry.manifolds.point.ManifoldPoint` for a
+        complete documentation.
 
         INPUT:
 
@@ -1174,13 +1176,15 @@ class ManifoldOpenSubset(ManifoldSubset):
     This class is devoted to open subsets of a differentiable manifold
     over `\RR`.
 
-    The class :class:`ManifoldOpenSubset` inherits from the class
-    :class:`ManifoldSubset`. Via the latter, it inherits also from the generic
+    The class :class:`ManifoldOpenSubset` inherits naturally from the class
+    :class:`ManifoldSubset`. Via the latter, it inherits from the generic
     Sage class :class:`~sage.structure.parent.Parent` and is declared to belong
-    to the category of sets (category :class:`~sage.categories.sets_cat.Sets`).
-    The corresponding Sage :class:`~sage.structure.element.Element`'s are
-    implemented via the class
-    :class:`~sage.geometry.manifolds.point.ManifoldPoint`.
+    to the category of facade sets
+    (see :meth:`~sage.categories.sets_cat.Sets.SubcategoryMethods.Facade`).
+    The corresponding element class is
+    :class:`~sage.geometry.manifolds.point.ManifoldPoint`. An open subset acts
+    as a facade for the true parent of its points, which is the whole manifold
+    (see example below).
 
     INPUT:
 
@@ -1217,18 +1221,22 @@ class ManifoldOpenSubset(ManifoldSubset):
         sage: isinstance(M, ManifoldOpenSubset)
         True
 
-    Open subsets are Sage :class:`~sage.structure.parent.Parent`, the
-    :class:`~sage.structure.element.Element` of which are the manifold points
-    (class :class:`~sage.geometry.manifolds.point.ManifoldPoint`)::
+    Instances of :class:`ManifoldOpenSubset` are Sage's facade sets
+    (see :meth:`~sage.categories.sets_cat.Sets.SubcategoryMethods.Facade`):
+    their elements are manifold points
+    (class :class:`~sage.geometry.manifolds.point.ManifoldPoint`), 
+    which have the manifold (and not the open subset) as parent::
 
+        sage: A.category()
+        Category of facade sets
+        sage: A.facade_for()
+        (2-dimensional manifold 'M',)
         sage: p = A.an_element() ; p
         point on 2-dimensional manifold 'M'
         sage: p.parent()
-        open subset 'A' of the 2-dimensional manifold 'M'
-        sage: A.category()
-        Category of sets
+        2-dimensional manifold 'M'
 
-    Consequently, points can be created by providing their coordinates in some
+    Points can be created by providing their coordinates in some
     chart via the operator () applied to the subset::
 
         sage: chart1.<x,y> = A.chart()
@@ -1298,7 +1306,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         EXAMPLES:
 
-        Creating an open subset on a manifold::
+        Creating an open subset of a manifold::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
