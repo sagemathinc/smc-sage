@@ -41,11 +41,9 @@ REFERENCES:
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 
-#from sage.structure.sage_object import SageObject
 from sage.categories.map import Map
-from domain import ManifoldSubset
-from chart import Chart, FunctionChart, MultiFunctionChart, CoordChange
-from point import ManifoldPoint
+from sage.geometry.manifolds.domain import ManifoldSubset
+from sage.geometry.manifolds.chart import FunctionChart, MultiFunctionChart
 
 class DiffMapping(Map):
     r"""
@@ -55,23 +53,25 @@ class DiffMapping(Map):
 
     .. MATH::
 
-        \Phi: U\subset M \longrightarrow N
+        \Phi: U\subset M \longrightarrow V\subset N
 
-    where `M` and `N` are differentiable manifolds
-    and `U` is some open subset of `M`.
+    where `M` and `N` are differentiable manifolds, `U` is an open subset
+    of `M` and `V` is an open subset of `N`.
+    
     In what follows, `M` is called the *start manifold* and
     `N` the *arrival manifold*.
 
     INPUT:
 
-    - ``parent`` -- hom-set Hom(U,N) to which the differential mapping belongs
-    - ``coord_functions`` -- (default: None) if not None, must be either
+    - ``parent`` -- homset Hom(U,V) to which the differential mapping belongs
+    - ``coord_functions`` -- (default: ``None``) if not ``None``, must be
+      either
 
       - (i) a dictionary of
         the coordinate expressions (as lists (or tuples) of the
         coordinates of the image expressed in terms of the coordinates of
         the considered point) with the pairs of charts (chart1, chart2)
-        as keys (chart1 being a chart on `U` and chart2 a chart on `N`)
+        as keys (chart1 being a chart on `U` and chart2 a chart on `V`)
       - (ii) a single coordinate expression in a given pair of charts, the
         latter being provided by the arguments ``chart1`` and ``chart2``
 
@@ -83,17 +83,13 @@ class DiffMapping(Map):
       for case (ii); if none is provided, the coordinates are assumed to
       refer to `U`'s default chart
     - ``chart2`` -- (default: None; used only in case (ii) above) chart on the
-      codomain defining the arrival coordinates involved in ``coord_functions``
-      for case (ii); if none is provided, the coordinates are assumed to
-      refer to the codomain's default chart
+      codomain `V` defining the arrival coordinates involved in
+      ``coord_functions`` for case (ii); if none is provided, the coordinates
+      are assumed to refer to the codomain's default chart
     - ``name`` -- (default: None) name given to the differentiable mapping
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the
       differentiable mapping; if none is provided, the LaTeX symbol is set to
       ``name``
-    - ``is_identity`` -- (default: ``False``) determines whether the
-      constructed object is the identity map; if set to ``True``,
-      then N must be U and the entries ``coord_functions``, ``chart1``
-      and ``chart2`` are not used.
 
     .. NOTE::
 
@@ -203,53 +199,41 @@ class DiffMapping(Map):
 
     """
     def __init__(self, parent, coord_functions=None, chart1=None, chart2=None,
-                 name=None, latex_name=None, is_identity=False):
+                 name=None, latex_name=None):
+        Map.__init__(self, parent)
         domain = parent.domain()
         codomain = parent.codomain()
-        Map.__init__(self, domain, codomain)
         self._domain = domain
         self._codomain = codomain
         self._coord_expression = {}
-        if is_identity:
-            # Construction of the identity map
-            if domain != codomain:
-                raise TypeError("the domain and codomain must coincide " + \
-                                "for the identity map.")
-            self._is_identity = True
-            #!# to be continued
-        else:
-            # Construction of a generic differentiable mapping
-            self._is_identity = False
-            if coord_functions is not None:
-                if not isinstance(coord_functions, dict):
-                    # Turn coord_functions into a dictionary:
-                    if chart1 is None: chart1 = domain._def_chart
-                    if chart2 is None: chart2 = codomain._def_chart
-                    if chart1 not in self._domain._atlas:
-                        raise ValueError("the {} has not been".format(chart1) +
-                                         " defined on the {}".format(
-                                                                 self._domain))
-                    if chart2 not in self._codomain._atlas:
-                        raise ValueError("the {} has not been".format(chart2) +
-                                         " defined on the {}".format(
-                                                               self._codomain))
-                    coord_functions = {(chart1, chart2): coord_functions}
-                for chart_pair, expression in coord_functions.iteritems():
-                    n2 = self._codomain._manifold._dim
-                    if n2 > 1:
-                        if len(expression) != n2:
-                            raise ValueError("{} coordinate ".format(n2) +
-                                             "functions must be provided")
-                        self._coord_expression[chart_pair] = \
+        if coord_functions is not None:
+            if not isinstance(coord_functions, dict):
+                # Turn coord_functions into a dictionary:
+                if chart1 is None: chart1 = domain._def_chart
+                if chart2 is None: chart2 = codomain._def_chart
+                if chart1 not in self._domain._atlas:
+                    raise ValueError("the {} has not been".format(chart1) +
+                                     " defined on the {}".format(self._domain))
+                if chart2 not in self._codomain._atlas:
+                    raise ValueError("the {} has not been".format(chart2) +
+                                   " defined on the {}".format(self._codomain))
+                coord_functions = {(chart1, chart2): coord_functions}
+            for chart_pair, expression in coord_functions.iteritems():
+                n2 = self._codomain._manifold._dim
+                if n2 > 1:
+                    if len(expression) != n2:
+                        raise ValueError("{} coordinate ".format(n2) +
+                                         "functions must be provided")
+                    self._coord_expression[chart_pair] = \
                                  MultiFunctionChart(chart_pair[0], *expression)
-                    else:
-                        self._coord_expression[chart_pair] = \
+                else:
+                    self._coord_expression[chart_pair] = \
                                   MultiFunctionChart(chart_pair[0], expression)
-            self._name = name
-            if latex_name is None:
-                self._latex_name = self._name
-            else:
-                self._latex_name = latex_name
+        self._name = name
+        if latex_name is None:
+            self._latex_name = self._name
+        else:
+            self._latex_name = latex_name
         # Initialization of derived quantities:
         DiffMapping._init_derived(self)
 
@@ -382,13 +366,15 @@ class DiffMapping(Map):
 
         """
         from manifold import RealLine
-        if p not in self._domain._manifold:
+        dom = self._domain
+        codom = self._codomain
+        if p not in dom._manifold:
             raise ValueError("The point " + str(p) +
-                  " does not belong to the " + str(self._domain._manifold))
+                  " does not belong to the " + str(dom._manifold))
         if chart2 is None:
-            chart2 = self._codomain._def_chart
+            chart2 = codom._def_chart
         if chart1 is None:
-            def_chart1 = self._domain._def_chart
+            def_chart1 = dom._def_chart
             if def_chart1 in p._coordinates and \
                         (def_chart1, chart2) in self._coord_expression:
                 chart1 = def_chart1
@@ -404,7 +390,7 @@ class DiffMapping(Map):
         coord_map = self._coord_expression[(chart1, chart2)]
         y = coord_map(*(p._coordinates[chart1]))
 
-        if isinstance(self._codomain._manifold, RealLine):
+        if isinstance(codom._manifold, RealLine):
             # special case of a mapping to R
             return y[0]
         else:
@@ -415,11 +401,11 @@ class DiffMapping(Map):
             if p._latex_name is None or self._latex_name is None:
                 res_latex_name = None
             else:
-                res_latex_name = self._latex_name + r'\left(' + p._latex_name + \
-                                 r'\right)'
-
-            return ManifoldPoint(self._codomain._manifold, y, chart2, name=res_name,
-                         latex_name=res_latex_name)  #!# check
+                res_latex_name = self._latex_name + r'\left(' + \
+                                 p._latex_name + r'\right)'
+            # The image point is created as an element of the codomain:
+            return codom.element_class(codom, coords=y, chart=chart2,
+                                      name=res_name, latex_name=res_latex_name)
 
     #
     # Other methods
@@ -436,43 +422,6 @@ class DiffMapping(Map):
         Delete the derived quantities
         """
         self._restrictions.clear()
-
-
-    #def domain(self):
-        #r"""
-        #Return the domain of definition of the mapping.
-
-        #EXAMPLE::
-
-            #sage: M = Manifold(2, 'M')
-            #sage: U = M.open_subset('U')
-            #sage: c_xy.<x,y> = U.chart()
-            #sage: N = Manifold(3, 'N')
-            #sage: c_uvw.<u,v,w> = N.chart()
-            #sage: Phi = U.diff_mapping(N, [x+y, x*y, x-y])
-            #sage: Phi.domain()
-            #open domain 'U' on the 2-dimensional manifold 'M'
-
-        #"""
-        #return self._domain
-
-    #def codomain(self):
-        #r"""
-        #Return the codomain of the mapping.
-
-        #EXAMPLE::
-
-            #sage: M = Manifold(2, 'M')
-            #sage: U = M.open_subset('U')
-            #sage: c_xy.<x,y> = U.chart()
-            #sage: N = Manifold(3, 'N')
-            #sage: c_uvw.<u,v,w> = N.chart()
-            #sage: Phi = U.diff_mapping(N, [x+y, x*y, x-y])
-            #sage: Phi.codomain()
-            #3-dimensional manifold 'N'
-
-        #"""
-        #return self._codomain
 
     def _display_expression(self, chart1, chart2, result):
         r"""
@@ -1236,8 +1185,8 @@ class DiffMapping(Map):
             Phi_*(A) = 0
 
         """
-        from tensorfield import TensorFieldParal
-        from chart import FunctionChart
+        from sage.geometry.manifolds.tensorfield import TensorFieldParal
+        from sage.geometry.manifolds.chart import FunctionChart
         dom1 = self._domain
         dom2 = self._codomain
         tdom = tensor._domain
@@ -1386,10 +1335,7 @@ class Diffeomorphism(DiffMapping):
 
     INPUT:
 
-    - ``domain`` -- domain `U` of the diffeomorphism (open subset of the start
-      manifold)
-    - ``codomain`` -- codomain of the diffeomorphism (the arrival manifold or
-      some subset of it)
+    - ``parent`` -- set Diff(U,V) of diffeomorphism `U \rightarrow V`
     - ``coord_functions`` -- (default: None) if not None, must be either
 
       - (i) a dictionary of
@@ -1415,6 +1361,10 @@ class Diffeomorphism(DiffMapping):
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the
       diffeomorphism; if none is provided, the LaTeX symbol is set to
       ``name``
+    - ``is_identity`` -- (default: ``False``) determines whether the
+      constructed object is the identity map; if set to ``True``,
+      then V must be U and the entries ``coord_functions``, ``chart1``
+      and ``chart2`` are not used.
 
     .. NOTE::
 
@@ -1457,19 +1407,41 @@ class Diffeomorphism(DiffMapping):
         True
 
     """
-    def __init__(self, domain, codomain, coord_functions=None,
-                 chart1=None, chart2=None, name=None, latex_name=None):
-        from sage.categories.homset import Hom
-        parent = Hom(domain, codomain)
-        DiffMapping.__init__(self, parent,
-                             coord_functions=coord_functions, chart1=chart1,
-                             chart2=chart2, name=name, latex_name=latex_name)
-        if self._domain._manifold._dim != self._codomain._manifold._dim:
-            raise ValueError("The manifolds " + str(self._domain._manifold) +
-                             " and " + str(self._codomain._manifold) +
-                             " do not have the same dimension.")
-        # Initialization of derived quantities:
-        Diffeomorphism._init_derived(self)
+    def __init__(self, parent, coord_functions=None, chart1=None, chart2=None,
+                 name=None, latex_name=None, is_identity=False):
+        domain = parent.domain()
+        codomain = parent.codomain()
+        if is_identity:
+            # Construction of the identity map
+            self._is_identity = True
+            if domain != codomain:
+                raise ValueError("the domain and codomain must coincide " + \
+                                "for the identity map")
+            if name is None:
+                name = 'Id_' + domain._name
+            if latex_name is None:
+                latex_name = r'\mathrm{Id}_{' + domain._latex_name + r'}'
+            DiffMapping.__init__(self, parent, name=name,
+                                 latex_name=latex_name)
+            for chart in domain.atlas():
+                coord_funct = chart[:]
+                self._coord_expression[(chart, chart)] = \
+                                        MultiFunctionChart(chart, *coord_funct)
+            # Initialization of derived quantities:
+            Diffeomorphism._init_derived(self)
+            self._inverse = self
+        else:
+            # Construction of a generic differentiable mapping
+            self._is_identity = False
+            if domain._manifold.dim() != codomain._manifold.dim():
+                raise ValueError("the {} ".format(domain._manifold) +
+                                 "and {} ".format(codomain._manifold) +
+                                 "do not have the same dimension")
+            DiffMapping.__init__(self, parent, coord_functions=coord_functions,
+                                 chart1=chart1, chart2=chart2, name=name,
+                                 latex_name=latex_name)
+            # Initialization of derived quantities:
+            Diffeomorphism._init_derived(self)
 
     def _repr_(self):
         r"""
@@ -1498,7 +1470,6 @@ class Diffeomorphism(DiffMapping):
         """
         DiffMapping._del_derived(self) # derived quantities of the mother class
         self._inverse = None
-
 
     def inverse(self, chart1=None, chart2=None):
         r"""
@@ -1589,9 +1560,9 @@ class Diffeomorphism(DiffMapping):
             latex_name = None
         else:
             latex_name = self._latex_name + r'^{-1}'
-        self._inverse = Diffeomorphism(self._codomain, self._domain,
-                                       inv_functions, chart2, chart1,
-                                       name=name, latex_name=latex_name)
+        self._inverse = self._codomain.diffeomorphism(self._domain,
+                               coord_functions=inv_functions, chart1=chart2,
+                               chart2=chart1, name=name, latex_name=latex_name)
         return self._inverse
 
 
@@ -1645,13 +1616,9 @@ class IdentityMap(Diffeomorphism):
             name = 'Id_' + domain._name
         if latex_name is None:
             latex_name = r'\mathrm{Id}_{' + domain._latex_name + r'}'
-        Diffeomorphism.__init__(self, domain, domain, name=name,
-                                latex_name=latex_name)
-        for chart in domain._atlas:
-            coord_functions = chart[:]
-            self._coord_expression[(chart, chart)] = \
-                                    MultiFunctionChart(chart, *coord_functions)
-        self._inverse = self
+        parent = domain.diffeo_set(domain)
+        Diffeomorphism.__init__(self, parent, name=name,
+                                latex_name=latex_name, is_identity=True)
 
     def _repr_(self):
         r"""

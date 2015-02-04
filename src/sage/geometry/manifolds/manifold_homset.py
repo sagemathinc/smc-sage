@@ -110,8 +110,7 @@ class ManifoldHomset(Homset):
     #### Methods required for any Parent
 
     def _element_constructor_(self, coord_functions, chart1=None,
-                              chart2=None, name=None, latex_name=None,
-                              is_identity=False):
+                              chart2=None, name=None, latex_name=None):
         r"""
         Construct an element of ``self``, i.e. a differentiable mapping
         U --> V, where U is the domain of ``self`` and V its codomain.
@@ -143,10 +142,6 @@ class ManifoldHomset(Homset):
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the
           differentiable mapping; if none is provided, the LaTeX symbol is set to
           ``name``
-        - ``is_identity`` -- (default: ``False``) determines whether the
-          constructed object is the identity map; if set to ``True``,
-          then V must be U and the entries ``coord_functions``, ``chart1``
-          and ``chart2`` are not used.
     
         .. NOTE::
     
@@ -161,8 +156,7 @@ class ManifoldHomset(Homset):
         # Standard construction
         return self.element_class(self, coord_functions=coord_functions,
                                   chart1=chart1, chart2=chart2, name=name,
-                                  latex_name=latex_name,
-                                  is_identity=is_identity)
+                                  latex_name=latex_name)
 
     def _an_element_(self):
         r"""
@@ -253,7 +247,6 @@ class DiffeoSet(UniqueRepresentation, Parent):
 
     Element = Diffeomorphism
 
-
     def __init__(self, domain, codomain, name=None, latex_name=None):
         r"""
         TESTS
@@ -327,6 +320,10 @@ class DiffeoSet(UniqueRepresentation, Parent):
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the
           diffeomorphism; if none is provided, the LaTeX symbol is set to
           ``name``
+        - ``is_identity`` -- (default: ``False``) determines whether the
+          constructed diffeomorphism is the identity map; if set to ``True``,
+          then V must be U and the entries ``coord_functions``, ``chart1``
+          and ``chart2`` are not used.
     
         .. NOTE::
     
@@ -343,6 +340,40 @@ class DiffeoSet(UniqueRepresentation, Parent):
                                   chart1=chart1, chart2=chart2, name=name,
                                   latex_name=latex_name,
                                   is_identity=is_identity)
+
+    def _an_element_(self):
+        r"""
+        Construct some element.
+
+        EXAMPLE:
+
+        """
+        if self.domain() == self.codomain():
+            # return the identity map
+            return self.element_class(self, is_identity=True)
+        else:
+            raise NotImplementedError("generation of a generic element is " +
+                "not implemented when the domain and codomain do not coincide")
+
+    def _coerce_map_from_(self, other):
+        r"""
+        Determine whether coercion to self exists from other parent.
+
+        EXAMPLES:
+
+
+        """
+        #!# for the time being:
+        return False
+
+
+    #### End of methods required for any Parent
+
+    def domain(self):
+        return self._domain
+
+    def codomain(self):
+        return self._codomain
 
 
 

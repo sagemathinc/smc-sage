@@ -1869,11 +1869,35 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         OUTPUT:
 
-        - the hom-set Hom(U,V), where U is ``self`` and V is ``other``
+        - the homset Hom(U,V), where U is ``self`` and V is ``other``
 
+        See class
+        :class:`~sage.geometry.manifolds.manifold_homset.ManifoldHomset`
+        for more documentation.
+        
         """
         from sage.geometry.manifolds.manifold_homset import ManifoldHomset
         return ManifoldHomset(self, other)
+
+    def diffeo_set(self, other):
+        r"""
+        Construct the set of diffeomorphisms ``self`` --> ``other``.
+
+        INPUT:
+
+        - ``other`` -- an open subset of some manifold
+
+        OUTPUT:
+
+        - the set Diff(U,V), where U is ``self`` and V is ``other``
+
+        See class
+        :class:`~sage.geometry.manifolds.manifold_homset.DiffeoSet`
+        for more documentation.
+        
+        """
+        from sage.geometry.manifolds.manifold_homset import DiffeoSet
+        return DiffeoSet(self, other)
 
     def scalar_field(self, coord_expression=None, chart=None, name=None,
                      latex_name=None):
@@ -2631,10 +2655,11 @@ class ManifoldOpenSubset(ManifoldSubset):
         examples.
 
         """
-        from diffmapping import Diffeomorphism
-        return Diffeomorphism(self, codomain, coord_functions=coord_functions,
-                              chart1=chart1, chart2=chart2, name=name,
-                              latex_name=latex_name)
+        diffeo_set = self.diffeo_set(codomain)
+        if coord_functions is None:
+            coord_functions = {}
+        return diffeo_set(coord_functions, chart1=chart1, chart2=chart2,
+                          name=name, latex_name=latex_name)
 
     def identity_map(self):
         r"""
