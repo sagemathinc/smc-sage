@@ -19,7 +19,7 @@ Subclasses of :class:`DiffMapping` are devoted to specific cases:
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
+- Eric Gourgoulhon, Michal Bejger (2013-2015): initial version
 
 REFERENCES:
 
@@ -32,8 +32,8 @@ REFERENCES:
 """
 
 #*****************************************************************************
-#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -64,10 +64,7 @@ class DiffMapping(Map):
 
     INPUT:
 
-    - ``domain`` -- mapping's domain `U` (open subset of the start
-      manifold)
-    - ``codomain`` -- mapping's codomain (the arrival manifold or some subset
-      of it)
+    - ``parent`` -- hom-set Hom(U,N) to which the differential mapping belongs
     - ``coord_functions`` -- (default: None) if not None, must be either
 
       - (i) a dictionary of
@@ -93,6 +90,10 @@ class DiffMapping(Map):
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the
       differentiable mapping; if none is provided, the LaTeX symbol is set to
       ``name``
+    - ``is_identity`` -- (default: ``False``) determines whether the
+      constructed object is the identity map; if set to ``True``,
+      then N must be U and the entries ``coord_functions``, ``chart1``
+      and ``chart2`` are not used.
 
     .. NOTE::
 
@@ -123,7 +124,7 @@ class DiffMapping(Map):
         ....:  (c_uv, c_cart): [2*u/(1+u^2+v^2), 2*v/(1+u^2+v^2), (1-u^2-v^2)/(1+u^2+v^2)]}, \
         ....: name='Phi', latex_name=r'\Phi')
         sage: type(Phi)
-        <class 'sage.geometry.manifolds.diffmapping.DiffMapping'>
+        <class 'sage.geometry.manifolds.diffmapping.ManifoldHomset_with_category_with_equality_by_id.element_class'>
         sage: Phi.display()
         Phi: S^2 --> R^3
         on U: (x, y) |--> (X, Y, Z) = (2*x/(x^2 + y^2 + 1), 2*y/(x^2 + y^2 + 1), (x^2 + y^2 - 1)/(x^2 + y^2 + 1))
@@ -201,46 +202,54 @@ class DiffMapping(Map):
            t |--> (x, y) = (cos(t), sin(t))
 
     """
-    def __init__(self, domain, codomain, coord_functions=None, chart1=None,
-                 chart2=None, name=None, latex_name=None):
-        if not isinstance(domain, ManifoldSubset):
-            raise TypeError("The argument domain must be a manifold subset.")
-        if not isinstance(codomain, ManifoldSubset):
-            raise TypeError("The argument codomain must be a manifold subset.")
+    def __init__(self, parent, coord_functions=None, chart1=None, chart2=None,
+                 name=None, latex_name=None, is_identity=False):
+        domain = parent.domain()
+        codomain = parent.codomain()
         Map.__init__(self, domain, codomain)
         self._domain = domain
         self._codomain = codomain
         self._coord_expression = {}
-        if coord_functions is not None:
-            if not isinstance(coord_functions, dict):
-                # Turn coord_functions into a dictionary:
-                if chart1 is None: chart1 = domain._def_chart
-                if chart2 is None: chart2 = codomain._def_chart
-                if chart1 not in self._domain._atlas:
-                    raise ValueError("The " + str(chart1) +
-                                     " has not been defined on the " +
-                                      str(self._domain))
-                if chart2 not in self._codomain._atlas:
-                    raise ValueError("The " + str(chart2) +
-                                     " has not been defined on the " +
-                                     str(self._codomain))
-                coord_functions = {(chart1, chart2): coord_functions}
-            for chart_pair, expression in coord_functions.iteritems():
-                n2 = self._codomain._manifold._dim
-                if n2 > 1:
-                    if len(expression) != n2:
-                        raise ValueError(str(n2) +
-                                         " coordinate function must be provided.")
-                    self._coord_expression[chart_pair] = \
-                                 MultiFunctionChart(chart_pair[0], *expression)
-                else:
-                    self._coord_expression[chart_pair] = \
-                                  MultiFunctionChart(chart_pair[0], expression)
-        self._name = name
-        if latex_name is None:
-            self._latex_name = self._name
+        if is_identity:
+            # Construction of the identity map
+            if domain != codomain:
+                raise TypeError("the domain and codomain must coincide " + \
+                                "for the identity map.")
+            self._is_identity = True
+            #!# to be continued
         else:
-            self._latex_name = latex_name
+            # Construction of a generic differentiable mapping
+            self._is_identity = False
+            if coord_functions is not None:
+                if not isinstance(coord_functions, dict):
+                    # Turn coord_functions into a dictionary:
+                    if chart1 is None: chart1 = domain._def_chart
+                    if chart2 is None: chart2 = codomain._def_chart
+                    if chart1 not in self._domain._atlas:
+                        raise ValueError("the {} has not been".format(chart1) +
+                                         " defined on the {}".format(
+                                                                 self._domain))
+                    if chart2 not in self._codomain._atlas:
+                        raise ValueError("the {} has not been".format(chart2) +
+                                         " defined on the {}".format(
+                                                               self._codomain))
+                    coord_functions = {(chart1, chart2): coord_functions}
+                for chart_pair, expression in coord_functions.iteritems():
+                    n2 = self._codomain._manifold._dim
+                    if n2 > 1:
+                        if len(expression) != n2:
+                            raise ValueError("{} coordinate ".format(n2) +
+                                             "functions must be provided")
+                        self._coord_expression[chart_pair] = \
+                                 MultiFunctionChart(chart_pair[0], *expression)
+                    else:
+                        self._coord_expression[chart_pair] = \
+                                  MultiFunctionChart(chart_pair[0], expression)
+            self._name = name
+            if latex_name is None:
+                self._latex_name = self._name
+            else:
+                self._latex_name = latex_name
         # Initialization of derived quantities:
         DiffMapping._init_derived(self)
 
@@ -1128,6 +1137,7 @@ class DiffMapping(Map):
                (x, y) |--> (x, y) = (x/sqrt(-x^2 - y^2 + 1), y/sqrt(-x^2 - y^2 + 1))
 
         """
+        from sage.categories.homset import Hom
         if subdomain == self._domain:
             return self
         if subcodomain is None:
@@ -1140,8 +1150,9 @@ class DiffMapping(Map):
             if not subcodomain.is_subset(self._codomain):
                 raise ValueError("The specified codomain is not a subset " +
                                  "of the codomain of the diff. mapping.")
-            resu = DiffMapping(subdomain, subcodomain, name=self._name,
-                               latex_name=self._latex_name)
+            homset = Hom(subdomain, subcodomain)
+            resu = homset.element_class(homset, name=self._name,
+                                        latex_name=self._latex_name)
             for charts in self._coord_expression:
                 for ch1 in charts[0]._subcharts:
                     if ch1._domain.is_subset(subdomain):
@@ -1448,7 +1459,9 @@ class Diffeomorphism(DiffMapping):
     """
     def __init__(self, domain, codomain, coord_functions=None,
                  chart1=None, chart2=None, name=None, latex_name=None):
-        DiffMapping.__init__(self, domain, codomain,
+        from sage.categories.homset import Hom
+        parent = Hom(domain, codomain)
+        DiffMapping.__init__(self, parent,
                              coord_functions=coord_functions, chart1=chart1,
                              chart2=chart2, name=name, latex_name=latex_name)
         if self._domain._manifold._dim != self._codomain._manifold._dim:

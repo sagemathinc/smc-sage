@@ -1856,6 +1856,24 @@ class ManifoldOpenSubset(ManifoldSubset):
         """
         return self.vector_field_module(dest_map=dest_map).general_linear_group()
 
+    def _Hom_(self, other, category=None):
+        r"""
+        Construct the set of morphisms (i.e. differentiable maps)
+        ``self`` --> ``other``.
+
+        INPUT:
+
+        - ``other`` -- an open subset of some manifold
+        - ``category`` -- (default: ``None``) not used here (to ensure
+          compatibility with generic hook ``_Hom_``)
+
+        OUTPUT:
+
+        - the hom-set Hom(U,V), where U is ``self`` and V is ``other``
+
+        """
+        from sage.geometry.manifolds.manifold_homset import ManifoldHomset
+        return ManifoldHomset(self, other)
 
     def scalar_field(self, coord_expression=None, chart=None, name=None,
                      latex_name=None):
@@ -2556,11 +2574,12 @@ class ManifoldOpenSubset(ManifoldSubset):
         examples.
 
         """
-        from diffmapping import DiffMapping
-        return DiffMapping(self, codomain, coord_functions=coord_functions,
-                           chart1=chart1, chart2=chart2, name=name,
-                           latex_name=latex_name)
-
+        from sage.categories.homset import Hom
+        homset = Hom(self, codomain)
+        if coord_functions is None:
+            coord_functions = {}
+        return homset(coord_functions, chart1=chart1, chart2=chart2,
+                      name=name, latex_name=latex_name)
 
     def diffeomorphism(self, codomain, coord_functions=None, chart1=None,
                        chart2=None, name=None, latex_name=None):
