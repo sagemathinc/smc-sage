@@ -85,7 +85,8 @@ State of various data members after the above operations::
 from sage.structure.parent import Parent
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.categories.sets_cat import Sets
-from point import ManifoldPoint
+from sage.categories.homset import Hom
+from sage.geometry.manifolds.point import ManifoldPoint
 
 class ManifoldSubset(UniqueRepresentation, Parent):
     r"""
@@ -229,15 +230,14 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         """
         if isinstance(coords, ManifoldPoint):
             point = coords # for readability
+            if point._subset is self:
+                return point
             if point in self:
                 resu = self.element_class(self, name=point._name,
                                           latex_name=point._latex_name)
                 for chart, coords in point._coordinates.iteritems():
                     resu._coordinates[chart] = coords
                 return resu
-                # NB: contrary to a mere "return point", the above operation
-                # ensures that the returned point has the attribute _subset set
-                # to self
             else:
                 raise ValueError("the {}".format(point) +
                                  " is not in {}".format(self))
@@ -873,6 +873,9 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         r"""
         Check whether a point is contained in ``self``.
         """
+        # for efficiency, a quick test first:
+        if point._subset is self:
+            return True
         if point._subset.is_subset(self):
             return True
         for chart in self._atlas:
@@ -1339,7 +1342,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         # dict. of vector field modules along self:
         self._vector_field_modules = {}
         # the identity map on self
-        self._identity_map = IdentityMap(self)
+        self._identity_map = Hom(self, self)({}, is_identity=True)
         # dict. of tangent spaces at points on self:
         self._tangent_spaces = {}
 
@@ -1878,26 +1881,6 @@ class ManifoldOpenSubset(ManifoldSubset):
         """
         from sage.geometry.manifolds.manifold_homset import ManifoldHomset
         return ManifoldHomset(self, other)
-
-    def diffeo_set(self, other):
-        r"""
-        Construct the set of diffeomorphisms ``self`` --> ``other``.
-
-        INPUT:
-
-        - ``other`` -- an open subset of some manifold
-
-        OUTPUT:
-
-        - the set Diff(U,V), where U is ``self`` and V is ``other``
-
-        See class
-        :class:`~sage.geometry.manifolds.manifold_homset.DiffeoSet`
-        for more documentation.
-        
-        """
-        from sage.geometry.manifolds.manifold_homset import DiffeoSet
-        return DiffeoSet(self, other)
 
     def scalar_field(self, coord_expression=None, chart=None, name=None,
                      latex_name=None):
@@ -2598,7 +2581,6 @@ class ManifoldOpenSubset(ManifoldSubset):
         examples.
 
         """
-        from sage.categories.homset import Hom
         homset = Hom(self, codomain)
         if coord_functions is None:
             coord_functions = {}
@@ -2655,11 +2637,12 @@ class ManifoldOpenSubset(ManifoldSubset):
         examples.
 
         """
-        diffeo_set = self.diffeo_set(codomain)
+        homset = Hom(self, codomain)
         if coord_functions is None:
             coord_functions = {}
-        return diffeo_set(coord_functions, chart1=chart1, chart2=chart2,
-                          name=name, latex_name=latex_name)
+        return homset(coord_functions, chart1=chart1, chart2=chart2,
+                      name=name, latex_name=latex_name,
+                      is_diffeomorphism=True)
 
     def identity_map(self):
         r"""

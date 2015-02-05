@@ -98,6 +98,7 @@ class ManifoldHomset(Homset):
         else:
            return self._latex_name
 
+    #!# check 
     def __call__(self, *args, **kwds):
         r"""
         To bypass Homset.__call__, enforcing Parent.__call__ instead.
@@ -106,11 +107,11 @@ class ManifoldHomset(Homset):
         """
         return Parent.__call__(self, *args, **kwds)
 
-
     #### Methods required for any Parent
 
-    def _element_constructor_(self, coord_functions, chart1=None,
-                              chart2=None, name=None, latex_name=None):
+    def _element_constructor_(self, coord_functions, chart1=None, chart2=None,
+                              name=None, latex_name=None,
+                              is_diffeomorphism=False, is_identity=False):
         r"""
         Construct an element of ``self``, i.e. a differentiable mapping
         U --> V, where U is the domain of ``self`` and V its codomain.
@@ -142,7 +143,14 @@ class ManifoldHomset(Homset):
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the
           differentiable mapping; if none is provided, the LaTeX symbol is set to
           ``name``
-    
+        - ``is_diffeomorphism`` -- (default: ``False``) determines whether the
+          constructed object is a diffeomorphism; if set to ``True``,
+          then the manifolds `M` and `N` must have the same dimension. 
+        - ``is_identity`` -- (default: ``False``) determines whether the
+          constructed object is the identity map; if set to ``True``,
+          then `V` must be `U` and the entries ``coord_functions``, ``chart1``
+          and ``chart2`` are not used.
+
         .. NOTE::
     
             If the information passed by means of the argument
@@ -156,7 +164,9 @@ class ManifoldHomset(Homset):
         # Standard construction
         return self.element_class(self, coord_functions=coord_functions,
                                   chart1=chart1, chart2=chart2, name=name,
-                                  latex_name=latex_name)
+                                  latex_name=latex_name,
+                                  is_diffeomorphism=is_diffeomorphism,
+                                  is_identity=is_identity)
 
     def _an_element_(self):
         r"""
@@ -170,7 +180,7 @@ class ManifoldHomset(Homset):
             sage: Y.<u,v,w> = N.chart()
             sage: H = Hom(M,N) 
             sage: f = H._an_element_() ; f
-            differentiable mapping from 2-dimensional manifold 'M' to
+            differentiable mapping from the 2-dimensional manifold 'M' to the
              3-dimensional manifold 'N'
             sage: f.display()
             M --> N
@@ -208,177 +218,4 @@ class ManifoldHomset(Homset):
 
 
     #### End of methods required for any Parent
-
-
-#******************************************************************************
-
-class DiffeoSet(UniqueRepresentation, Parent):
-    r"""
-    Set of diffeomorphisms between two differentiable manifolds. 
-
-    Given two differentiable manifolds `M` and `N` over `\RR`, the class
-    :class:`DiffeoSet` implements the set `\mathrm{Diff}(U,V)` of
-    diffeomorphisms `U\rightarrow V`, where `U` is an open
-    subset of `M` and `V` an open subset of `N`,  a *diffeomorphism* being a
-    differentiable mapping `U\rightarrow V` that is bijective and whose inverse
-    is differentiable. 
-
-    This is a Sage *parent* class, whose *element* class is
-    :class:`~sage.geometry.manifolds.diffmapping.Diffeomorphism`.
-
-    INPUT:
-
-    - ``domain`` -- open subset `U\subset M` (domain of the diffeomorphisms),
-      as an instance of
-      :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`
-    - ``codomain`` -- open subset `V\subset N` (codomain of the
-      diffeommorphisms),
-      as an instance of
-      :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`
-    - ``name`` -- (default: ``None``) string; name given to the set of
-      diffeomorphism; if none is provided, Diff(U,V) will be used
-    - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to denote the
-      set of diffeomorphism; if none is provided, `\mathrm{Diff}(U,V)` will be
-      used
-
-    EXAMPLES:
-
-    """
-
-    Element = Diffeomorphism
-
-    def __init__(self, domain, codomain, name=None, latex_name=None):
-        r"""
-        TESTS
-
-        """
-        from sage.geometry.manifolds.domain import ManifoldOpenSubset
-        if not isinstance(domain, ManifoldOpenSubset):
-            raise TypeError("domain = {} is not an ".format(domain) +
-                            "instance of ManifoldOpenSubset")
-        if not isinstance(codomain, ManifoldOpenSubset):
-            raise TypeError("codomain = {} is not an ".format(codomain) +
-                            "instance of ManifoldOpenSubset")
-        Parent.__init__(self, category=Sets())
-        self._domain = domain
-        self._codomain = codomain
-        if name is None:
-            self._name = "Diff(" + domain._name + "," + codomain._name + ")"
-        else:
-            self._name = name
-        if latex_name is None:
-            self._latex_name = \
-                    r"\mathrm{Diff}\left(" + domain._latex_name + "," + \
-                    codomain._latex_name + r"\right)"
-        else:
-            self._latex_name = latex_name
-
-    def _latex_(self):
-        r"""
-        LaTeX representation of the object.
-
-        """
-        if self._latex_name is None:
-            return r'\mbox{' + str(self) + r'}'
-        else:
-           return self._latex_name
-
-
-    #### Methods required for any Parent
-
-    def _element_constructor_(self, coord_functions, chart1=None,
-                              chart2=None, name=None, latex_name=None,
-                              is_identity=False):
-        r"""
-        Construct an element of ``self``, i.e. a diffeomorphism
-        U --> V, where U is the domain of ``self`` and V its codomain.
-
-        INPUT:
-    
-          - ``coord_functions`` -- (default: None) if not None, must be either
-    
-          - (i) a dictionary of
-            the coordinate expressions (as lists (or tuples) of the
-            coordinates of the image expressed in terms of the coordinates of
-            the considered point) with the pairs of charts (chart1, chart2)
-            as keys (chart1 being a chart on `U` and chart2 a chart on `N`)
-          - (ii) a single coordinate expression in a given pair of charts, the
-            latter being provided by the arguments ``chart1`` and ``chart2``
-    
-          In both cases, if the dimension of the manifolds is 1,
-          a single coordinate expression is expected (not a list or tuple with
-          a single element)
-        - ``chart1`` -- (default: None; used only in case (ii) above) chart on
-          domain `U` defining the start coordinates involved in
-          ``coord_functions`` for case (ii); if none is provided, the
-          coordinates are assumed to refer to `U`'s default chart
-        - ``chart2`` -- (default: None; used only in case (ii) above) chart on
-          the codomain defining the arrival coordinates involved in
-          ``coord_functions`` for case (ii); if none is provided, the
-          coordinates are assumed to refer to the codomain's default chart
-        - ``name`` -- (default: None) name given to the diffeomorphism
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
-          diffeomorphism; if none is provided, the LaTeX symbol is set to
-          ``name``
-        - ``is_identity`` -- (default: ``False``) determines whether the
-          constructed diffeomorphism is the identity map; if set to ``True``,
-          then V must be U and the entries ``coord_functions``, ``chart1``
-          and ``chart2`` are not used.
-    
-        .. NOTE::
-    
-            If the information passed by means of the argument
-            ``coord_functions`` is not sufficient to fully specify the
-            diffeomorphism (for instance case (ii) with ``chart1`` not
-            covering the entire domain `U`), further coordinate expressions,
-            in other charts, can be subsequently added by means of the method
-            :meth:`~sage.geometry.manifolds.diffmapping.DiffMapping.add_expr`
-
-        """
-        # Standard construction
-        return self.element_class(self, coord_functions=coord_functions,
-                                  chart1=chart1, chart2=chart2, name=name,
-                                  latex_name=latex_name,
-                                  is_identity=is_identity)
-
-    def _an_element_(self):
-        r"""
-        Construct some element.
-
-        EXAMPLE:
-
-        """
-        if self.domain() == self.codomain():
-            # return the identity map
-            return self.element_class(self, is_identity=True)
-        else:
-            raise NotImplementedError("generation of a generic element is " +
-                "not implemented when the domain and codomain do not coincide")
-
-    def _coerce_map_from_(self, other):
-        r"""
-        Determine whether coercion to self exists from other parent.
-
-        EXAMPLES:
-
-
-        """
-        #!# for the time being:
-        return False
-
-
-    #### End of methods required for any Parent
-
-    def domain(self):
-        return self._domain
-
-    def codomain(self):
-        return self._codomain
-
-
-
-
-
-
-
 
