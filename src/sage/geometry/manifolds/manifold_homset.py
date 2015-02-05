@@ -3,7 +3,7 @@ Sets of morphisms between manifolds
 
 The class :class:`ManifoldHomset` implements sets of morphisms between
 two differentiable manifolds over `\RR`, a morphism being a *differentiable
-mapping* in the present context. 
+mapping* for the category of differentiable manifolds. 
 
 AUTHORS:
 
@@ -26,11 +26,8 @@ REFERENCES:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
-from sage.structure.parent import Parent
-from sage.structure.unique_representation import UniqueRepresentation
 from sage.categories.homset import Homset
-from sage.categories.sets_cat import Sets
-from sage.geometry.manifolds.diffmapping import DiffMapping, Diffeomorphism
+from sage.geometry.manifolds.diffmapping import DiffMapping
 
 class ManifoldHomset(Homset):
     r"""
@@ -66,8 +63,17 @@ class ManifoldHomset(Homset):
 
     def __init__(self, domain, codomain, name=None, latex_name=None):
         r"""
-        TESTS
-
+        TESTS::
+        
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: N = Manifold(3, 'N')
+            sage: Y.<u,v,w> = N.chart()
+            sage: H = Hom(M, N) ; H
+            Set of Morphisms from 2-dimensional manifold 'M' to 3-dimensional
+             manifold 'N' in Category of sets
+            sage: TestSuite(H).run()
+        
         """
         from sage.geometry.manifolds.domain import ManifoldOpenSubset
         if not isinstance(domain, ManifoldOpenSubset):

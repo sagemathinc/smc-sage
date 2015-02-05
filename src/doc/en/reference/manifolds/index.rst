@@ -13,7 +13,7 @@ More documentation (in particular example worksheets) can be found
 
    sage/geometry/manifolds/tangentspace
 
-   sage/geometry/manifolds/diffmapping
+   diffmapping
 
    sage/geometry/manifolds/submanifold
 

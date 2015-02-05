@@ -11,10 +11,10 @@ AUTHORS:
 
 REFERENCES:
 
-- J.M. Lee : "Introduction to Topological Manifolds", 2nd ed., Springer (New
-  York, 2011)
-- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
-  2013)
+- J.M. Lee : *Introduction to Topological Manifolds*, 2nd ed., Springer (New
+  York) (2011)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
 
 EXAMPLES:
 
@@ -1327,7 +1327,6 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         """
         from scalarfield import ZeroScalarField
-        from diffmapping import IdentityMap
         ManifoldSubset.__init__(self, manifold, name, latex_name)
         # list of charts that individually cover self, i.e. whose
         # domains are self (if non-empty, self is a coordinate domain):
@@ -2593,7 +2592,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         Define a diffeomorphism between ``self`` and another open subset
         (possibly on another manifold).
 
-        See :class:`~sage.geometry.manifolds.diffmapping.Diffeomorphism` for a
+        See :class:`~sage.geometry.manifolds.diffmapping.DiffMapping` for a
         complete documentation.
 
         INPUT:
@@ -2617,7 +2616,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         OUTPUT:
 
         - the diffeomorphism, as an instance of
-          :class:`~sage.geometry.manifolds.diffmapping.Diffeomorphism`
+          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
 
         EXAMPLE:
 
@@ -2630,10 +2629,11 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: N = Manifold(2, 'N', r'{\cal N}')
             sage: V = N.open_subset('V')
             sage: c_zt.<z,t> = V.chart(r'z t')
-            sage: Phi = U.diffeomorphism(V, (arctan(x), arctan(y)), name='Phi', latex_name=r'\Phi')
+            sage: Phi = U.diffeomorphism(V, (arctan(x), arctan(y)), name='Phi',
+            ....:                        latex_name=r'\Phi')
 
         See the documentation of class
-        :class:`~sage.geometry.manifolds.diffmapping.Diffeomorphism` for more
+        :class:`~sage.geometry.manifolds.diffmapping.DiffMapping` for more
         examples.
 
         """
@@ -2648,13 +2648,13 @@ class ManifoldOpenSubset(ManifoldSubset):
         r"""
         Identity map on ``self``.
 
-        See :class:`~sage.geometry.manifolds.diffmapping.IdentityMap` for a
+        See :class:`~sage.geometry.manifolds.diffmapping.DiffMapping` for a
         complete documentation.
 
         OUTPUT:
 
         - the identity map, as an instance of
-          :class:`~sage.geometry.manifolds.diffmapping.IdentityMap`
+          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
 
         """
         return self._identity_map
