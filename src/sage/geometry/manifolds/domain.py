@@ -1341,7 +1341,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         # dict. of vector field modules along self:
         self._vector_field_modules = {}
         # the identity map on self
-        self._identity_map = Hom(self, self)({}, is_identity=True)
+        self._identity_map = Hom(self, self).one()
         # dict. of tangent spaces at points on self:
         self._tangent_spaces = {}
 

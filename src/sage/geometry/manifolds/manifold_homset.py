@@ -27,6 +27,7 @@ REFERENCES:
 #******************************************************************************
 
 from sage.categories.homset import Homset
+from sage.structure.parent import Parent
 from sage.geometry.manifolds.diffmapping import DiffMapping
 
 class ManifoldHomset(Homset):
@@ -57,6 +58,121 @@ class ManifoldHomset(Homset):
 
     EXAMPLES:
 
+    Set of differentiable mappings between a 2-dimensional manifold and a
+    3-dimensional one::
+
+        sage: M = Manifold(2, 'M')
+        sage: X.<x,y> = M.chart()
+        sage: N = Manifold(3, 'N')
+        sage: Y.<u,v,w> = N.chart()
+        sage: H = Hom(M, N) ; H
+        Set of Morphisms from 2-dimensional manifold 'M' to 3-dimensional
+         manifold 'N' in Category of sets
+        sage: type(H)
+        <class 'sage.geometry.manifolds.manifold_homset.ManifoldHomset_with_category_with_equality_by_id'>
+        sage: H.category()
+        Category of homsets of sets
+        sage: latex(H)
+        \mathrm{Hom}\left(M,N\right)
+        sage: H.domain()
+        2-dimensional manifold 'M'
+        sage: H.codomain()
+        3-dimensional manifold 'N'
+
+    An element of ``H`` is a differential mapping from ``M`` to ``N``::
+
+        sage: H.Element
+        <class 'sage.geometry.manifolds.diffmapping.DiffMapping'>
+        sage: f = H.an_element() ; f
+        differentiable mapping from the 2-dimensional manifold 'M' to the 3-dimensional manifold 'N'
+        sage: f.display()
+        M --> N
+           (x, y) |--> (u, v, w) = (0, 0, 0)
+
+    The test suite is passed::
+
+        sage: TestSuite(H).run()
+
+    When the codomain coincides with the domain, the homset is a set of
+    *endomorphisms* in the category of differentiable manifolds::
+
+        sage: E = Hom(M, M) ; E
+        Set of Morphisms from 2-dimensional manifold 'M' to 2-dimensional manifold 'M' in Category of sets
+        sage: E.category()
+        Category of endsets of sets
+        sage: E.is_endomorphism_set()
+        True
+
+    In this case, the homset is a monoid for the law of morphism composition::
+
+        sage: E in Monoids()
+        True
+
+    This was of course not the case of ``H = Hom(M, N)``::
+
+        sage: H in Monoids()
+        False
+
+    The identity element of the monoid is of course the identity map of ``M``::
+
+        sage: E.one()
+        identity map 'Id_M' of the 2-dimensional manifold 'M'
+        sage: E.one() is M.identity_map()
+        True
+        sage: E.one().display()
+        Id_M: M --> M
+           (x, y) |--> (x, y)
+
+    The test suite is passed by ``E``::
+
+        sage: TestSuite(E).run()
+
+    This test suite includes more tests than in the case of ``H``, since ``E``
+    has some extra structure (monoid)::
+
+        sage: TestSuite(H).run(verbose=True)
+        running ._test_an_element() . . . pass
+        running ._test_category() . . . pass
+        running ._test_elements() . . .
+          Running the test suite of self.an_element()
+          running ._test_category() . . . pass
+          running ._test_eq() . . . pass
+          running ._test_not_implemented_methods() . . . pass
+          running ._test_pickling() . . . pass
+          pass
+        running ._test_elements_eq_reflexive() . . . pass
+        running ._test_elements_eq_symmetric() . . . pass
+        running ._test_elements_eq_transitive() . . . pass
+        running ._test_elements_neq() . . . pass
+        running ._test_eq() . . . pass
+        running ._test_not_implemented_methods() . . . pass
+        running ._test_pickling() . . . pass
+        running ._test_some_elements() . . . pass
+
+    ::
+
+        sage: TestSuite(E).run(verbose=True)
+        running ._test_an_element() . . . pass
+        running ._test_associativity() . . . pass
+        running ._test_category() . . . pass
+        running ._test_elements() . . .
+          Running the test suite of self.an_element()
+          running ._test_category() . . . pass
+          running ._test_eq() . . . pass
+          running ._test_not_implemented_methods() . . . pass
+          running ._test_pickling() . . . pass
+          pass
+        running ._test_elements_eq_reflexive() . . . pass
+        running ._test_elements_eq_symmetric() . . . pass
+        running ._test_elements_eq_transitive() . . . pass
+        running ._test_elements_neq() . . . pass
+        running ._test_eq() . . . pass
+        running ._test_not_implemented_methods() . . . pass
+        running ._test_one() . . . pass
+        running ._test_pickling() . . . pass
+        running ._test_prod() . . . pass
+        running ._test_some_elements() . . . pass
+
     """
 
     Element = DiffMapping
@@ -73,7 +189,14 @@ class ManifoldHomset(Homset):
             Set of Morphisms from 2-dimensional manifold 'M' to 3-dimensional
              manifold 'N' in Category of sets
             sage: TestSuite(H).run()
+
+        Test for an endomorphism set::
         
+            sage: E = Hom(M, M) ; E
+            Set of Morphisms from 2-dimensional manifold 'M' to 2-dimensional
+             manifold 'M' in Category of sets
+            sage: TestSuite(E).run()
+
         """
         from sage.geometry.manifolds.domain import ManifoldOpenSubset
         if not isinstance(domain, ManifoldOpenSubset):
@@ -93,6 +216,8 @@ class ManifoldHomset(Homset):
                     codomain._latex_name + r"\right)"
         else:
             self._latex_name = latex_name
+        self._one = None # to be set by self.one() if self is an endomorphism
+                         # set (codomain = domain)
 
     def _latex_(self):
         r"""
@@ -104,17 +229,9 @@ class ManifoldHomset(Homset):
         else:
            return self._latex_name
 
-    #!# check 
-    def __call__(self, *args, **kwds):
-        r"""
-        To bypass Homset.__call__, enforcing Parent.__call__ instead.
 
-        EXAMPLES:
-        """
-        return Parent.__call__(self, *args, **kwds)
-
-    #### Methods required for any Parent
-
+    #### Parent methods ####
+    
     def _element_constructor_(self, coord_functions, chart1=None, chart2=None,
                               name=None, latex_name=None,
                               is_diffeomorphism=False, is_identity=False):
@@ -166,6 +283,11 @@ class ManifoldHomset(Homset):
             in other charts, can be subsequently added by means of the method
             :meth:`~sage.geometry.manifolds.diffmapping.DiffMapping.add_expr`
 
+        OUTPUT:
+
+        - instance of 
+          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+
         """
         # Standard construction
         return self.element_class(self, coord_functions=coord_functions,
@@ -177,6 +299,11 @@ class ManifoldHomset(Homset):
     def _an_element_(self):
         r"""
         Construct some element.
+
+        OUTPUT:
+
+        - instance of 
+          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
 
         EXAMPLE::
 
@@ -222,6 +349,75 @@ class ManifoldHomset(Homset):
         #!# for the time being:
         return False
 
+    #!# check 
+    def __call__(self, *args, **kwds):
+        r"""
+        To bypass Homset.__call__, enforcing Parent.__call__ instead.
 
-    #### End of methods required for any Parent
+        EXAMPLES:
+        """
+        return Parent.__call__(self, *args, **kwds)
 
+    #### End of parent methods ####
+
+    #### Monoid methods (case of an endomorphism set) ####
+
+    def one(self):
+        r"""
+        Return the identity element of ``self`` considered as a monoid (case of
+        an endomorphism set).
+
+        This applies only when the codomain of ``self`` is equal to its domain,
+        i.e. when ``self`` is of the type `\mathrm{Hom}(U,U)` where `U` is
+        an open subset of some manifold. `\mathrm{Hom}(U,U)` equiped with the
+        law of morphisms composition is then a monoid, whose identity element
+        is nothing but the identity map of `U`.
+
+        OUTPUT:
+
+        - the identity map of `U`, as an instance of 
+          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+
+        EXAMPLE:
+
+        The identity map of a 2-dimensional manifold::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: H = Hom(M, M) ; H
+            Set of Morphisms from 2-dimensional manifold 'M' to 2-dimensional
+             manifold 'M' in Category of sets
+            sage: H in Monoids()
+            True
+            sage: H.one()
+            identity map 'Id_M' of the 2-dimensional manifold 'M'
+            sage: H.one().parent() is H
+            True
+            sage: H.one().display()
+            Id_M: M --> M
+               (x, y) |--> (x, y)
+
+        The identity map is cached::
+
+            sage: H.one() is H.one()
+            True
+
+        If ``self`` is not a set of endomorphisms, the identity element is
+        meaningless::
+
+            sage: N = Manifold(3, 'N')
+            sage: Y.<u,v,w> = N.chart()
+            sage: Hom(M, N).one()
+            Traceback (most recent call last):
+            ...
+            TypeError: the Set of Morphisms from 2-dimensional manifold 'M' to
+             3-dimensional manifold 'N' in Category of sets is not a monoid
+
+        """
+        if self._one is None:
+            if self.codomain() != self.domain():
+                raise TypeError("the {} is not a monoid".format(self))
+            self._one = self.element_class(self, is_identity=True)
+        return self._one
+
+    #### End of monoid methods ####

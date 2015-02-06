@@ -34,11 +34,11 @@ REFERENCES:
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 
-from sage.categories.map import Map
+from sage.categories.morphism import Morphism
 from sage.geometry.manifolds.domain import ManifoldSubset
 from sage.geometry.manifolds.chart import FunctionChart, MultiFunctionChart
 
-class DiffMapping(Map):
+class DiffMapping(Morphism):
     r"""
     Class for differentiable mappings between manifolds.
 
@@ -191,9 +191,46 @@ class DiffMapping(Map):
         sage: Phi(sp).coord() # Cartesian coordinates
         (0, 0, -1)
 
-    If the arrival manifold is 1-dimensional, the mapping must be defined by a
-    single symbolic expression for each pair of charts, and not by a list/tuple
-    with a single element::
+    Differential mappings can be composed by means of the operator ``*``: let
+    us introduce the mapping `\RR^3\rightarrow \RR^2` corresponding to
+    the projection from the point `(X,Y,Z)=(0,0,1)` onto the equatorial plane
+    `Z=0`::
+
+        sage: P = Manifold(2, 'R^2', r'\RR^2') # R^2 (equatorial plane)
+        sage: cP.<xP, yP> = P.chart()
+        sage: Psi = N.diff_mapping(P, (X/(1-Z), Y/(1-Z)), name='Psi',
+        ....:                      latex_name=r'\Psi')
+        sage: Psi
+        differentiable mapping 'Psi' from the 3-dimensional manifold 'R^3' to
+         the 2-dimensional manifold 'R^2'
+        sage: Psi.display()
+        Psi: R^3 --> R^2
+           (X, Y, Z) |--> (xP, yP) = (-X/(Z - 1), -Y/(Z - 1))
+
+    Then we compose ``Psi`` with ``Phi``, thereby getting a mapping
+    `S^2\rightarrow \RR^2`::
+    
+        sage: ster = Psi*Phi ; ster
+        differentiable mapping from the 2-dimensional manifold 'S^2' to the
+         2-dimensional manifold 'R^2'
+
+    Let us test on the South pole (``sp``) that ``ster`` is indeed the
+    composite of ``Psi`` and ``Phi``::
+
+        sage: ster(sp) == Psi(Phi(sp))
+        True
+
+    Actually ``ster`` is the stereographic projection from the North pole, as
+    its coordinate expression reveals::
+    
+        sage: ster.display()
+        S^2 --> R^2
+        on U: (x, y) |--> (xP, yP) = (x, y)
+        on V: (u, v) |--> (xP, yP) = (u/(u^2 + v^2), v/(u^2 + v^2))
+
+    If the arrival manifold is 1-dimensional, a differentiable mapping must be
+    defined by a single symbolic expression for each pair of charts, and not
+    by a list/tuple with a single element::
 
         sage: N = Manifold(1, 'N')
         sage: c_N = N.chart('X')
@@ -340,7 +377,7 @@ class DiffMapping(Map):
             sage: TestSuite(f).run()
             
         """
-        Map.__init__(self, parent)
+        Morphism.__init__(self, parent)
         domain = parent.domain()
         codomain = parent.codomain()
         self._domain = domain
@@ -532,8 +569,6 @@ class DiffMapping(Map):
     # Map methods
     #
 
-    #!# define _call_ instead ?? (check efficiency)
-
     def _call_(self, point):
         r"""
         Compute the image of a point by ``self``. 
@@ -630,6 +665,128 @@ class DiffMapping(Map):
             dom2 = chart2.domain()
             return dom2.element_class(dom2, coords=y, chart=chart2,
                                       name=res_name, latex_name=res_latex_name)
+    #
+    # Morphism methods
+    #
+
+    def is_identity(self):
+        r"""
+        Check whether ``self`` is an identity map.
+
+        EXAMPLES:
+
+        Tests on differentiable mappings of a 2-dimensional manifold::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: M.identity_map().is_identity()  # obviously...
+            True
+            sage: Hom(M, M).one().is_identity()  # a variant of the obvious
+            True
+            sage: a = M.diff_mapping(M, coord_functions={(X,X): (x, y)})
+            sage: a.is_identity()
+            True
+            sage: a = M.diff_mapping(M, coord_functions={(X,X): (x, y+1)})
+            sage: a.is_identity()
+            False
+
+        Of course, if the codomain of ``self`` does not coincide with its
+        domain, the outcome is ``False``::
+        
+            sage: N = Manifold(2, 'N')
+            sage: Y.<u,v> = N.chart()
+            sage: a = M.diff_mapping(N, {(X,Y): (x, y)})
+            sage: a.display()
+            M --> N
+               (x, y) |--> (u, v) = (x, y)
+            sage: a.is_identity()
+            False
+
+        """
+        if self._is_identity:
+            return True
+        if self._codomain != self._domain:
+            return False
+        for chart in self._domain._top_charts:
+            try:
+                if chart[:] != self.expr(chart, chart):
+                    return False
+            except ValueError:
+                return False
+        # If this point is reached, ``self`` must be the identity:
+        self._is_identity = True
+        return True
+
+    def _composition_(self, other, homset):
+        r"""
+        Composition of ``self`` with another morphism.
+
+        The composition is performed on the right, i.e. the returned
+        morphism is ``self*other``.
+
+        INPUT:
+
+        - ``other`` -- a differential mapping, whose codomain is the domain
+          of ``self``
+        - ``homset`` -- the homset of the differential mapping ``self*other``;
+          this argument is required to follow the prototype of
+          :meth:`~sage.categories.map.Map._composition_` and is determined by
+          :meth:`~sage.categories.map.Map._composition` (single underscore),
+          that is supposed to call the current method
+
+        OUTPUT:
+
+        - the composite mapping ``self*other``, as an instance of
+          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+
+        """
+        # This method is invoked by Map._composition (single underscore), 
+        # which is itself invoked by Map.__mul__ . The latter performs the
+        # check other._codomain == self._domain. There is therefore no need
+        # to perform it here. 
+        if self._is_identity:
+            return other
+        if other._is_identity:
+            return self
+        resu_funct = {}
+        for chart1 in other._domain._top_charts:
+            for chart2 in self._domain._top_charts:
+                for chart3 in self._codomain._top_charts:
+                    try:
+                        self23 = self.multi_function_chart(chart2, chart3)
+                        resu_funct[(chart1, chart3)] = \
+                                          self23(*(other.expr(chart1, chart2)))
+                    except ValueError:
+                        pass
+        return homset(resu_funct)
+
+    #
+    # Monoid methods
+    #
+
+    def _mul_(self, other):
+        r"""
+        Composition of ``self`` with another morphism (endomorphism case).
+
+        This applies only when the parent of ``self`` is a monoid, i.e. when
+        ``self`` is an endomorphism of the category of differential manifolds,
+        i.e. a differentiable mapping U --> U, where U is some open subset of
+        a differentiable manifold.
+
+        INPUT:
+
+        - ``other`` -- a differential mapping, whose codomain is the domain
+          of ``self``
+
+        OUTPUT:
+
+        - the composite mapping ``self*other``, as an instance of
+          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
+
+        """
+        from sage.categories.homset import Hom
+        dom = self._domain
+        return self._composition_(other, Hom(dom, dom))
 
     #
     # Other methods
