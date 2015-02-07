@@ -28,9 +28,10 @@ REFERENCES:
 
 from sage.categories.homset import Homset
 from sage.structure.parent import Parent
+from sage.structure.unique_representation import UniqueRepresentation
 from sage.geometry.manifolds.diffmapping import DiffMapping
 
-class ManifoldHomset(Homset):
+class ManifoldHomset(Homset, UniqueRepresentation):
     r"""
     Set of differentiable mappings between two differentiable manifolds. 
 
@@ -69,7 +70,7 @@ class ManifoldHomset(Homset):
         Set of Morphisms from 2-dimensional manifold 'M' to 3-dimensional
          manifold 'N' in Category of sets
         sage: type(H)
-        <class 'sage.geometry.manifolds.manifold_homset.ManifoldHomset_with_category_with_equality_by_id'>
+        <class 'sage.geometry.manifolds.manifold_homset.ManifoldHomset_with_category'>
         sage: H.category()
         Category of homsets of sets
         sage: latex(H)

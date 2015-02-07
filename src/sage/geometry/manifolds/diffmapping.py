@@ -134,7 +134,7 @@ class DiffMapping(Morphism):
         sage: Phi.parent() is Hom(M, N)
         True
         sage: type(Phi)
-        <class 'sage.geometry.manifolds.diffmapping.ManifoldHomset_with_category_with_equality_by_id.element_class'>
+        <class 'sage.geometry.manifolds.diffmapping.ManifoldHomset_with_category.element_class'>
         sage: Phi.display()
         Phi: S^2 --> R^3
         on U: (x, y) |--> (X, Y, Z) = (2*x/(x^2 + y^2 + 1), 2*y/(x^2 + y^2 + 1), (x^2 + y^2 - 1)/(x^2 + y^2 + 1))
@@ -307,7 +307,11 @@ class DiffMapping(Morphism):
 
         sage: (~Phi)(q) == p
         True
-
+        sage: Phi * ~Phi == R2.identity_map()
+        True
+        sage: ~Phi * Phi == D.identity_map()
+        True
+    
     The coordinate expression of the inverse diffeomorphism::
     
         sage: (~Phi).display()
@@ -527,14 +531,17 @@ class DiffMapping(Morphism):
         """
         if not isinstance(other, DiffMapping):
             return False
-        if self._is_identity and other._is_identity:
-            return self._domain is other._domain
         if self.parent() != other.parent():
             return False
+        if self._is_identity:
+            return other.is_identity()
+        if other._is_identity:
+            return self.is_identity()
         for charts, coord_functions in self._coord_expression.iteritems():
-            if charts not in other._coord_expression:
-                return False
-            if coord_functions != other._coord_expression[charts]:
+            try:
+                if coord_functions.expr() != other.expr(*charts):
+                    return False
+            except ValueError:
                 return False
         return True
 
@@ -755,7 +762,8 @@ class DiffMapping(Morphism):
                     try:
                         self23 = self.multi_function_chart(chart2, chart3)
                         resu_funct[(chart1, chart3)] = \
-                                          self23(*(other.expr(chart1, chart2)))
+                                self23(*(other.expr(chart1, chart2)),
+                                       simplify=True)
                     except ValueError:
                         pass
         return homset(resu_funct)

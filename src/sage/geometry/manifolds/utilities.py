@@ -313,6 +313,7 @@ def simplify_sqrt_real(expr):
     """
     from sage.symbolic.ring import SR
     from sage.calculus.calculus import maxima
+    from sage.functions.other import sqrt
     # 1/ Search for the sqrt's in expr
     sexpr = str(expr)
     if 'sqrt(' not in sexpr:  # no sqrt to simplify
@@ -339,6 +340,12 @@ def simplify_sqrt_real(expr):
     for i, pos in enumerate(pos_sqrts):
         # radcan is called on each sqrt:
         x = SR(the_sqrts[i])
+        argum = x.operands()[0] # the argument of sqrt 
+        den = argum.denominator()
+        if den != 1:  # the argument of sqrt is a fraction
+            num = argum.numerator()
+            if num < 0 or den < 0:
+                x = sqrt(-num) / sqrt(-den)  # new equivalent expression for x
         simpl = SR(x._maxima_().radcan())
         # the absolute value of radcan's output is taken, the call to simplify()
         # taking into account possible assumptions regarding the sign of simpl:
