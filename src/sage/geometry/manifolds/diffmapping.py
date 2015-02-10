@@ -18,8 +18,8 @@ REFERENCES:
 
 - S. Kobayashi & K. Nomizu : *Foundations of Differential Geometry*, vol. 1,
   Interscience Publishers (New York) (1963)
-- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
-  (2013)
+- Chaps. 2 and 3 of J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed.,
+  Springer (New York) (2013)
 
 
 """
@@ -40,7 +40,7 @@ from sage.geometry.manifolds.chart import FunctionChart, MultiFunctionChart
 
 class DiffMapping(Morphism):
     r"""
-    Class for differentiable mappings between manifolds.
+    Differentiable mappings between manifolds.
 
     This class implements differentiable mappings of the type
 
@@ -61,7 +61,7 @@ class DiffMapping(Morphism):
     
     INPUT:
 
-    - ``parent`` -- homset `\mathrm{Hom}(U,V)` to which the differential
+    - ``parent`` -- homset `\mathrm{Hom}(U,V)` to which the differentiable
       mapping belongs
     - ``coord_functions`` -- (default: ``None``) if not ``None``, must be
       either
@@ -100,7 +100,7 @@ class DiffMapping(Morphism):
     .. NOTE::
 
         If the information passed by means of the argument ``coord_functions``
-        is not sufficient to fully specify the differential mapping (for
+        is not sufficient to fully specify the differentiable mapping (for
         instance case (ii) with ``chart1`` not covering the entire domain `U`),
         further coordinate expressions, in other charts, can be subsequently
         added by means of the method :meth:`add_expr`
@@ -155,7 +155,7 @@ class DiffMapping(Morphism):
         sage: Phi1 = M.diff_mapping(N, [2*x/(1+x^2+y^2), 2*y/(1+x^2+y^2), (x^2+y^2-1)/(1+x^2+y^2)], \
         ....: name='Phi', latex_name=r'\Phi')
 
-    With such a declaration, the differential mapping is only partially defined
+    With such a declaration, the differentiable mapping is only partially defined
     on the manifold `S^2`, being known in only one chart::
 
         sage: Phi1.display()
@@ -246,7 +246,7 @@ class DiffMapping(Morphism):
         sage: Phi(M.point((1,2)))
         5
 
-    An example of differential mapping `\RR \rightarrow \RR^2`::
+    An example of differentiable mapping `\RR \rightarrow \RR^2`::
 
         sage: R.<t> = RealLine()   # field R with canonical coordinate t
         sage: R2 = Manifold(2, 'R^2') # R^2
@@ -733,9 +733,9 @@ class DiffMapping(Morphism):
 
         INPUT:
 
-        - ``other`` -- a differential mapping, whose codomain is the domain
+        - ``other`` -- a differentiable mapping, whose codomain is the domain
           of ``self``
-        - ``homset`` -- the homset of the differential mapping ``self*other``;
+        - ``homset`` -- the homset of the differentiable mapping ``self*other``;
           this argument is required to follow the prototype of
           :meth:`~sage.categories.map.Map._composition_` and is determined by
           :meth:`~sage.categories.map.Map._composition` (single underscore),
@@ -777,13 +777,13 @@ class DiffMapping(Morphism):
         Composition of ``self`` with another morphism (endomorphism case).
 
         This applies only when the parent of ``self`` is a monoid, i.e. when
-        ``self`` is an endomorphism of the category of differential manifolds,
+        ``self`` is an endomorphism of the category of differentiable manifolds,
         i.e. a differentiable mapping U --> U, where U is some open subset of
         a differentiable manifold.
 
         INPUT:
 
-        - ``other`` -- a differential mapping, whose codomain is the domain
+        - ``other`` -- a differentiable mapping, whose codomain is the domain
           of ``self``
 
         OUTPUT:
@@ -1734,7 +1734,8 @@ class DiffMapping(Morphism):
                                                 output_formatter=of1)
                         phi = self._coord_expression[(chart1, chart2)]
                         jacob = phi.jacobian()
-                        # X2 coordinates expressed in terms of X1 ones via the mapping:
+                        # X2 coordinates expressed in terms of X1 ones via the
+                        # mapping:
                         coord2_1 = phi(*(chart1._xx))
                         for ind_new in ptcomp.non_redundant_index_generator():
                             res = 0
@@ -1842,3 +1843,48 @@ class DiffMapping(Morphism):
         return self._inverse
 
     inverse = __invert__
+
+    def differential(self, point):
+        r"""
+        Return the differential of ``self`` at a given point.
+    
+        If ``self`` is the differentiable mapping
+        
+        .. MATH::
+    
+            \Phi: U\subset M \longrightarrow N
+    
+        where `M` and `N` are differentiable manifolds and `U` is an open
+        subset of `M`, the *differential* of `\Phi` at a point `p\in U` is the
+        tangent space linear map:
+        
+        .. MATH::
+    
+            \mathrm{d}\Phi_p: T_p M \longrightarrow T_{\Phi(p)} N
+    
+        defined by
+        
+        .. MATH::
+    
+            \begin{array}{rccc}
+            \forall v\in T_p M,\quad \mathrm{d}\Phi_p(v) : & C^\infty(N) &
+                                                \longrightarrow & \mathbb{R} \\
+                                & f & \longmapsto & v(f\circ \Phi)
+            \end{array}
+
+        INPUT:
+
+        - ``point`` -- point `p` in the domain of ``self``
+
+        OUTPUT:
+
+        - `\mathrm{d}\Phi_p`, the differential of ``self`` at `p`, as an
+          instance of
+          :class:`~sage.tensor.modules.free_module_morphism.FiniteRankFreeModuleMorphism`
+        
+        """
+        tsp_target = self(point).tangent_space()
+        tsp_source = point.tangent_space()
+        resu = tsp_source.hom(tsp_target, matrix)
+    
+    
