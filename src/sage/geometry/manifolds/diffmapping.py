@@ -810,6 +810,8 @@ class DiffMapping(Morphism):
             self._inverse = self
         else:
             self._inverse = None
+        self._diff = {} # dict. of the coord. expressions of the differential
+                        # keys: pair of charts
 
     def _del_derived(self):
         r"""
@@ -818,6 +820,7 @@ class DiffMapping(Morphism):
         self._restrictions.clear()
         if not self._is_identity:
             self._inverse = None
+        self._diff.clear()
 
     def _display_expression(self, chart1, chart2, result):
         r"""
@@ -1887,4 +1890,86 @@ class DiffMapping(Morphism):
         tsp_source = point.tangent_space()
         resu = tsp_source.hom(tsp_target, matrix)
     
+    def differential_functions(self, chart1=None, chart2=None):
+        r"""
+        Return the coordinate expression of the differential of ``self``
+        w.r.t. a pair of charts. 
+
+        If ``self`` is the differentiable mapping
+        
+        .. MATH::
+    
+            \Phi: U\subset M \longrightarrow V\subset N
+    
+        where `U` and `V` are two open subsets of the differentiable manifolds
+        `M` and `N`, the *differential* of `\Phi` at a point `p\in U` is the
+        tangent space linear map:
+        
+        .. MATH::
+    
+            \mathrm{d}\Phi_p: T_p M \longrightarrow T_{\Phi(p)} N
+    
+        defined by
+        
+        .. MATH::
+    
+            \begin{array}{rccc}
+            \forall v\in T_p M,\quad \mathrm{d}\Phi_p(v) : & C^\infty(N) &
+                                                \longrightarrow & \mathbb{R} \\
+                                & f & \longmapsto & v(f\circ \Phi)
+            \end{array}
+
+        If the coordinate expression of `\Phi` is 
+
+        .. MATH::
+
+            y^i = Y^i(x^1,\ldots,x^n)  \quad 1\leq i \leq m
+
+        where $(x^1,\ldots,x^n)$ are coordinates of a chart on `U` and
+        $(y^1,\ldots,y^m)$ are coordinates of a chart on `V`, the expression
+        of the differential of `\Phi` w.r.t to these coordinates is
+        
+        .. MATH::
+
+            J_{ij} = \frac{\partial Y^i}{\partial x^j} \quad 1\leq i \leq m,
+                            \quad 1\leq j \leq n
+
+        `\left. J_{ij} \right|_p` is then the matrix of the linear map
+        `\mathrm{d}\Phi_p` with respect to the bases of `T_p M` and
+        `T_{\Phi(p)} N` associated to the above charts:
+        
+        .. MATH::
+
+            \mathrm{d}\Phi_p\left(  \left. \frac{\partial}{\partial x^j} \right| _p
+                    \right) = \left. J_{ij} \right|_p \; 
+             \left. \frac{\partial}{\partial y^i} \right| _{\Phi(p)}
+ 
+        INPUT:
+
+        - ``chart1`` -- (default: ``None``) chart on the domain of ``self``
+          (coordinates denoted by `(x^j)` above); if none is provided, the
+          domain's default chart is assumed
+        - ``chart2`` -- (default: ``None``) chart on the codomain of ``self``
+          (coordinates denoted by `(y^i)` above); if none is provided, the
+          codomain's default chart is assumed
+
+        OUTPUT:
+
+        - the functions `J_{ij}` as a double array, `J_{ij}` being the element
+          ``[i][j]``. 
+        
+        """
+        dom1 = self._domain; dom2 = self._codomain
+        if chart1 is None:
+            chart1 = dom1._def_chart
+        if chart2 is None:
+            chart2 = dom2._def_chart
+        if (chart1, chart2) not in self._diff:
+            # Some computation must be performed
+            manif1 = dom1._manifold
+            n2 = dom2._manifold.dim()
+            funct = self.multi_function_chart(chart1, chart2)
+            self._diff[(chart1, chart2)] = [[funct[i].diff(j) for j in
+                                           manif1.irange()] for i in range(n2)]
+        return self._diff[(chart1, chart2)]
     
