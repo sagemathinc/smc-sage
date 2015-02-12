@@ -1888,8 +1888,60 @@ class DiffMapping(Morphism):
         """
         tsp_target = self(point).tangent_space()
         tsp_source = point.tangent_space()
-        resu = tsp_source.hom(tsp_target, matrix)
-    
+        # Search for a common chart to perform the computation
+        chartp = None
+        # 1/ Search without any extra computation
+        for chart in point._coordinates:
+            for chart_pair in self._diff:
+                if chart == chart_pair[0]:
+                    chartp = chart_pair
+                    break
+            if chartp is not None:
+                break
+        else:
+            # 2/ Search with a coordinate transformation on the point
+            for chart_pair in self._diff:
+                try:
+                    point.coord(chart_pair[0])
+                    chartp = chart_pair
+                except ValueError:
+                    pass
+        if chartp is None:
+            # 3/ Search with a coordinate evaluation of self
+            for chart1 in point._coordinates:
+                for chart2 in self._codomain.atlas():
+                    try:
+                        self.differential_functions(chart1, chart2)
+                        chartp = (chart1, chart2)
+                        break
+                    except ValueError:
+                        pass
+                if chartp is not None:
+                    break
+        if chartp is None:
+            raise ValueError("no common chart have been found for the " +
+                     "coordinate expressions of {} and {}".format(self, point))
+        diff_funct = self.differential_functions(*chartp)
+        chart1 = chartp[0]
+        chart2 = chartp[1]
+        coord_point = chart1[:]
+        n1 = self._domain._manifold.dim()
+        n2 = self._codomain._manifold.dim()
+        matrix = [[diff_funct[i][j](*coord_point) for j in range(n1)]
+                                                            for i in range(n2)]
+        bases = (chart1.frame().at(point), chart2.frame().at(point))
+        if self._name is not None and point._name is not None:
+            name = 'd' + self._name + '_' + point._name
+        else:
+            name = None
+        if self._latex_name is not None and point._latex_name is not None:
+            latex_name = r'\mathrm{d}' + self._latex_name + r'_{' + \
+                         point._latex_name + '}'
+        else:
+            latex_name = None
+        return tsp_source.hom(tsp_target, matrix, bases=bases, name=name,
+                              latex_name=latex_name)
+
     def differential_functions(self, chart1=None, chart2=None):
         r"""
         Return the coordinate expression of the differential of ``self``
