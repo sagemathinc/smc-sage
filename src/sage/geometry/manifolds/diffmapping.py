@@ -16,8 +16,8 @@ AUTHORS:
 
 REFERENCES:
 
-- S. Kobayashi & K. Nomizu : *Foundations of Differential Geometry*, vol. 1,
-  Interscience Publishers (New York) (1963)
+- Chap. 1 of S. Kobayashi & K. Nomizu : *Foundations of Differential Geometry*,
+  vol. 1, Interscience Publishers (New York) (1963)
 - Chaps. 2 and 3 of J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed.,
   Springer (New York) (2013)
 
@@ -40,7 +40,7 @@ from sage.geometry.manifolds.chart import FunctionChart, MultiFunctionChart
 
 class DiffMapping(Morphism):
     r"""
-    Differentiable mappings between manifolds.
+    Differentiable mapping between manifolds.
 
     This class implements differentiable mappings of the type
 

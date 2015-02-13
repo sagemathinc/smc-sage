@@ -86,6 +86,7 @@ from sage.structure.parent import Parent
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.categories.sets_cat import Sets
 from sage.categories.homset import Hom
+from sage.rings.infinity import Infinity
 from sage.geometry.manifolds.point import ManifoldPoint
 
 class ManifoldSubset(UniqueRepresentation, Parent):
@@ -2287,6 +2288,23 @@ class ManifoldOpenSubset(ManifoldSubset):
         vmodule = self.vector_field_module(dest_map)
         return vmodule.identity_map(name=name, latex_name=latex_name)
 
+    def curve(self, coord_expression, tmin=-Infinity, tmax=+Infinity,
+              chart=None, name=None, latex_name=None):
+        r"""
+        Define a differentiable curve in ``self``.
+
+        """
+        from sage.geometry.manifolds.curve import ManifoldCurve
+        if not isinstance(coord_expression, dict):
+            # Turn coord_expression into a dictionary:
+            if chart is None:
+                chart = self._def_chart
+            elif chart not in self._atlas:
+                raise ValueError("the {} has not been".format(chart) +
+                                     " defined on the {}".format(self))
+            coord_expression = {chart: coord_expression}
+        return ManifoldCurve(self, coord_expression, tmin=tmin, tmax=tmax,
+                             name=name, latex_name=latex_name)
 
     def metric(self, name, signature=None, latex_name=None, dest_map=None):
         r"""
