@@ -275,6 +275,7 @@ EXAMPLES:
 #*****************************************************************************
 
 from sage.structure.unique_representation import UniqueRepresentation
+from sage.rings.infinity import infinity, minus_infinity
 from domain import ManifoldOpenSubset
 
 class Manifold(ManifoldOpenSubset):
@@ -560,21 +561,21 @@ class Manifold(ManifoldOpenSubset):
 class RealLine(Manifold):
     r"""
     Field of real numbers, as a manifold of dimension 1 (real line) with a
-    canonical coordinate.
+    canonical coordinate chart.
 
     INPUT:
 
-    - ``coordinate`` -- (default: None) string defining the symbol of the
+    - ``coordinate`` -- (default: ``None``) string defining the symbol of the
       canonical coordinate set on the real line; if none is provided and
-      ``names`` is none, the symbol 't' is used
+      ``names`` is ``None``, the symbol 't' is used
     - ``name`` -- (default: 'R') name given to the real line
     - ``latex_name`` -- (default: r'\\RR') LaTeX symbol to denote the real line
     - ``start_index`` -- (default: 0) unique value of the index for vectors and
       forms on the real line.
-    - ``names`` -- (default: None) used only when ``coordinate`` is None: it
-      must be a single-element tuple containing the canonical coordinate
-      symbol (this is guaranted if the shortcut operator <,> is used, see
-      examples below).
+    - ``names`` -- (default: ``None``) used only when ``coordinate`` is
+      ``None``: it must be a single-element tuple containing the canonical
+      coordinate symbol (this is guaranted if the shortcut operator ``<>`` is
+      used, see examples below).
 
     EXAMPLES:
 
@@ -592,14 +593,17 @@ class RealLine(Manifold):
         sage: R.dim()
         1
 
-    It is endowed with a default chart (canonical coordinate)::
+    It is endowed with a canonical chart::
 
-        sage: R.default_chart()
+        sage: R.canonical_chart()
         chart (R, (t,))
+        sage: R.canonical_chart() is R.default_chart()
+        True
         sage: R.atlas()
         [chart (R, (t,))]
 
-    The instance is unique (as long as the constructor arguments are the same)::
+    The instance is unique (as long as the constructor arguments are the
+    same)::
 
         sage: R is RealLine()
         True
@@ -616,7 +620,7 @@ class RealLine(Manifold):
         <type 'sage.symbolic.expression.Expression'>
 
     However, it can be obtained in the same step as the real line construction
-    by means of the shortcut operator <>::
+    by means of the shortcut operator ``<>``::
 
         sage: R.<t> = RealLine()
         sage: t
@@ -629,14 +633,16 @@ class RealLine(Manifold):
         sage: preparse("R.<t> = RealLine()")
         "R = RealLine(names=('t',)); (t,) = R._first_ngens(1)"
 
-    In particular the <> operator is to be used to set a canonical
+    In particular the ``<>`` operator is to be used to set a canonical
     coordinate symbol different from 't'::
 
-        sage: R.<u> = RealLine()
+        sage: R.<x> = RealLine()
+        sage: R.canonical_chart()
+        chart (R, (x,))
         sage: R.atlas()
-        [chart (R, (u,))]
+        [chart (R, (x,))]
         sage: R.canonical_coordinate()
-        u
+        x
 
     The LaTeX symbol of the canonical coordinate can be adjusted via the same
     syntax as a chart declaration (see
@@ -645,7 +651,7 @@ class RealLine(Manifold):
         sage: R.<x> = RealLine(coordinate=r'x:\xi')
         sage: latex(x)
         \xi
-        sage: latex(R.default_chart())
+        sage: latex(R.canonical_chart())
         (\RR,(\xi))
 
     The LaTeX symbol of the real line itself can also be customized::
@@ -657,6 +663,18 @@ class RealLine(Manifold):
     """
     def __init__(self, coordinate=None, name='R', latex_name=r'\RR',
                  start_index=0, names=None):
+        r"""
+        Construct the real line manifold.
+
+        TESTS::
+
+            sage: R = RealLine() ; R
+            field R of real numbers
+            sage: R.category()
+            Category of sets
+            sage: TestSuite(R).run()
+          
+        """
         from chart import Chart
         Manifold.__init__(self, 1, name, latex_name=latex_name,
                           start_index=start_index)
@@ -665,7 +683,7 @@ class RealLine(Manifold):
                 coordinate = 't'
             else:
                 coordinate = names[0]
-        Chart(self, coordinates=coordinate)
+        self._canon_chart = Chart(self, coordinates=coordinate)
 
     def _repr_(self):
         r"""
@@ -675,12 +693,28 @@ class RealLine(Manifold):
 
     def _first_ngens(self, n):
         r"""
-        Return the coordinate of the default chart
+        Return the coordinate of the canonical chart
 
-        This is useful only for the use of Sage preparser:
+        This is useful only for the use of Sage preparser.
 
         """
-        return self._def_chart[:]
+        return self._canon_chart[:]
+
+    def canonical_chart(self):
+        r"""
+        Return the canonical chart defined on ``self``.
+
+        EXAMPLES::
+
+            sage: R = RealLine()
+            sage: R.canonical_chart()
+            chart (R, (t,))
+            sage: R.<x> = RealLine()
+            sage: R.canonical_chart()
+            chart (R, (x,))
+
+        """
+        return self._canon_chart
 
     def canonical_coordinate(self):
         r"""
@@ -700,4 +734,54 @@ class RealLine(Manifold):
             x
 
         """
-        return self._def_chart._xx[0]
+        return self._canon_chart._xx[0]
+
+
+class OpenInterval(ManifoldOpenSubset):
+    r"""
+    Open real interval
+    """
+    def __init__(self, lower, upper):
+        rr = RealLine()
+        name = "({}, {})".format(lower, upper)
+        latex_name = r"\left(" + str(lower) + ", " + str(upper) + r"\right)"
+        ManifoldOpenSubset.__init__(self, rr, name, latex_name=latex_name)
+        t = rr.canonical_coordinate()
+        if lower != minus_infinity:
+            if upper != infinity:
+                restrictions = [t>lower, t<upper]
+            else:
+                restrictions = t>lower
+        else:
+            if upper != infinity:
+                restrictions = t<upper
+            else:
+                restrictions = None
+        self._canon_chart = rr.canonical_chart().restrict(self,
+                                                     restrictions=restrictions)
+
+
+    def _repr_(self):
+        r"""
+        String representation of ``self``.
+        """
+        return "Real interval " + self._name
+
+    def canonical_chart(self):
+        r"""
+        Return the canonical chart defined on ``self``.
+
+        EXAMPLES::
+
+
+        """
+        return self._canon_chart
+
+    def canonical_coordinate(self):
+        r"""
+        Return the canonical coordinate defined on ``self``.
+
+        EXAMPLES::
+
+        """
+        return self._canon_chart._xx[0]
