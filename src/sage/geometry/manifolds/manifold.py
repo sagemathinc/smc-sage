@@ -22,9 +22,9 @@ AUTHORS:
 
 REFERENCES:
 
-- M. Berger & B. Gostiaux: "Geometrie differentielle, varietes, courbes et
-  surfaces", Presses Universitaires de France (Paris, 1987)
-- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
+- M. Berger & B. Gostiaux: *Geometrie differentielle, varietes, courbes et
+  surfaces*, Presses Universitaires de France (Paris, 1987)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York,
   2013)
 
 EXAMPLES:
@@ -276,6 +276,7 @@ EXAMPLES:
 
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.rings.infinity import infinity, minus_infinity
+from sage.symbolic.ring import SR
 from domain import ManifoldOpenSubset
 
 class Manifold(ManifoldOpenSubset):
@@ -660,6 +661,29 @@ class RealLine(Manifold):
         sage: latex(R)
         \mathbb{R}
 
+    Elements of the real line can be constructed directly from a number::
+
+        sage: p = R(2) ; p
+        point on field R of real numbers
+        sage: p.coord()
+        (2,)
+        sage: p = R(1.742) ; p
+        point on field R of real numbers
+        sage: p.coord()
+        (1.74200000000000,)
+
+    Symbolic variables can also be used::
+
+        sage: p = R(pi, name='pi') ; p
+        point 'pi' on field R of real numbers
+        sage: p.coord()
+        (pi,)
+        sage: a = var('a')
+        sage: p = R(a) ; p
+        point on field R of real numbers
+        sage: p.coord()
+        (a,)
+
     """
     def __init__(self, coordinate=None, name='R', latex_name=r'\RR',
                  start_index=0, names=None):
@@ -684,10 +708,22 @@ class RealLine(Manifold):
             else:
                 coordinate = names[0]
         self._canon_chart = Chart(self, coordinates=coordinate)
+        self._lower = minus_infinity  # for compatibility with OpenInterval
+        self._upper = infinity        # idem
 
     def _repr_(self):
         r"""
         String representation of the object.
+
+        TESTS::
+
+            sage: R = RealLine()
+            sage: R._repr_()
+            'field R of real numbers'
+            sage: R = RealLine(name='r')
+            sage: R._repr_()
+            'field r of real numbers'
+
         """
         return "field " + self._name + " of real numbers"
 
@@ -697,12 +733,58 @@ class RealLine(Manifold):
 
         This is useful only for the use of Sage preparser.
 
+        TESTS::
+
+            sage: R = RealLine()
+            sage: R._first_ngens(1)
+            (t,)
+            sage: R = RealLine(coordinate='x')
+            sage: R._first_ngens(1)
+            (x,)
+            sage: R = RealLine(names=('x',))
+            sage: R._first_ngens(1)
+            (x,)
+
         """
         return self._canon_chart[:]
+
+    def _element_constructor_(self, coords=None, chart=None, name=None,
+                              latex_name=None, check_coords=True):
+        r"""
+        Construct a element of the real line.
+
+        This is a redefinition of
+        :meth:`sage.geometry.manifolds.domain.ManifoldSubset._element_constructor_`
+        to allow for construction from a number (considered as the canonical
+        coordinate)
+
+        EXAMPLES::
+
+            sage: R = RealLine()
+            sage: R(pi)
+            point on field R of real numbers
+            sage: R(pi).coord()
+            (pi,)
+            sage: R((pi,))
+            point on field R of real numbers
+            sage: R((pi,)) == R(pi)
+            True
+
+        """
+        if coords in SR:
+            coords = (coords,)
+        return ManifoldOpenSubset._element_constructor_(self, coords=coords,
+                                 chart=chart, name=name, latex_name=latex_name,
+                                 check_coords=check_coords)
 
     def canonical_chart(self):
         r"""
         Return the canonical chart defined on ``self``.
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.geometry.manifolds.chart.Chart`
 
         EXAMPLES::
 
@@ -720,6 +802,11 @@ class RealLine(Manifold):
         r"""
         Return the canonical coordinate defined on ``self``.
 
+        OUTPUT:
+
+        - the symbolic variable representing the canonical coordinate
+          defined on ``self``. 
+
         EXAMPLES::
 
             sage: R = RealLine()
@@ -736,17 +823,222 @@ class RealLine(Manifold):
         """
         return self._canon_chart._xx[0]
 
+    def lower_bound(self):
+        r"""
+        Return the lower bound (infimum) of ``self`` (considered as an
+        interval)
+
+        OUTPUT:
+
+        - always ``-Infinity``. 
+
+        EXAMPLE::
+
+            sage: R = RealLine()
+            sage: R.lower_bound()
+            -Infinity
+
+        An alias of :meth:`lower_bound` is :meth:`inf`::
+
+            sage: R.inf()
+            -Infinity
+
+        """
+        return self._lower
+
+    inf = lower_bound
+
+    def upper_bound(self):
+        r"""
+        Return the upper bound (supremum) of ``self`` (considered as an
+        interval)
+
+        OUTPUT:
+
+        - always ``+Infinity``. 
+
+        EXAMPLE::
+
+            sage: R = RealLine()
+            sage: R.upper_bound()
+            +Infinity
+
+        An alias of :meth:`upper_bound` is :meth:`sup`::
+
+            sage: R.sup()
+            +Infinity
+
+        """
+        return self._upper
+
+    sup = upper_bound
+
+    def open_interval(self, lower, upper):
+        r"""
+        Define an open interval of the field of real numbers represented
+        by ``self``.
+
+        INPUT:
+        
+        - ``lower`` -- lower bound of the interval (possibly ``-Infinity``)
+        - ``upper`` -- upper bound of the interval (possibly ``+Infinity``)
+
+        OUTPUT:
+
+        - instance of class
+          :class:`~sage.geomtry.manifolds.manifold.OpenInterval`
+          representing the open interval (``lower``, ``upper``).
+
+        EXAMPLES:
+
+        The interval `(0,\pi)`::
+
+            sage: R.<t> = RealLine()
+            sage: I = R.open_interval(0, pi) ; I
+            Real interval (0, pi)
+
+        The interval `(-\infty,1)`::
+
+            sage: I = R.open_interval(-oo, 1) ; I
+            Real interval (-Infinity, 1)
+
+        The interval `(0, +\infty)`::
+
+            sage: I = R.open_interval(0, +oo) ; I
+            Real interval (0, +Infinity)
+
+        The interval `(-\infty,+\infty)` is `\RR`::
+
+            sage: I = R.open_interval(-oo, +oo) ; I
+            field R of real numbers
+            sage: I is R
+            True
+
+        See :class:`~sage.geomtry.manifolds.manifold.OpenInterval` for more
+        examples and documentation. 
+
+        """
+        if lower == minus_infinity and upper == infinity:
+            return self
+        return OpenInterval(self, lower, upper)
+
+
+#******************************************************************************
 
 class OpenInterval(ManifoldOpenSubset):
     r"""
-    Open real interval
+    Open real interval.
+
+    This class implements open intervals as open subsets of the real line
+    manifold (see :class:`RealLine`).
+
+    INPUT:
+
+    - ``real_line`` -- instance of
+      :class:`~sage.geometry.manifolds.manifold.RealLine` representing the
+      1-dimensional manifold of real numbers in which the open interval is
+      included.
+    - ``lower`` -- lower bound of the interval (possibly ``-Infinity``)
+    - ``upper`` -- upper bound of the interval (possibly ``+Infinity``)
+
+    EXAMPLES:
+
+    The interval `(0,\pi)`::
+
+        sage: R.<t> = RealLine() ; R
+        field R of real numbers
+        sage: from sage.geometry.manifolds.manifold import OpenInterval
+        sage: I = OpenInterval(R, 0, pi) ; I
+        Real interval (0, pi)
+        sage: type(I)
+        <class 'sage.geometry.manifolds.manifold.OpenInterval_with_category'>
+
+    Instead of importing the class ``OpenInterval`` in the global namespace, it
+    is recommended to use the method
+    :meth:`~sage.geometry.manifolds.manifold.RealLine.open_interval` of the
+    real line instead::
+
+        sage: I = R.open_interval(0, pi) ; I
+        Real interval (0, pi)
+
+    The result is cached (unique representation property)::
+
+        sage: I is OpenInterval(R, 0, pi) 
+        True
+        sage: I is R.open_interval(0, pi)
+        True
+
+    ``I`` is a subset of the field of real numbers::
+    
+        sage: I.is_subset(R)
+        True
+
+    An element of ``I``::
+
+        sage: x = I.an_element() ; x
+        point on field R of real numbers
+        sage: x.coord() # coordinates in the default chart = canonical chart
+        (1/2*pi,)
+
+    Since intervals are facade sets, the parent of their elements is the whole
+    real-field manifold on which they are defined, i.e. ``R``::
+
+        sage: I.category()
+        Category of facade sets
+        sage: x.parent()
+        field R of real numbers
+        sage: x.parent() is R
+        True
+
+    We may check whether a real number (considered as an element of ``R``)
+    belongs to ``I``::
+    
+        sage: R(2) in I
+        True
+        sage: R(4) in I
+        False
+
+    The lower and upper bounds of the interval ``I``::
+    
+        sage: I.lower_bound()
+        0
+        sage: I.upper_bound()
+        pi
+
+    One of the endpoint can be infinite::
+
+        sage: J = R.open_interval(1, +oo) ; J
+        Real interval (1, +Infinity)
+        sage: R(10^8) in J
+        True
+        sage: J.an_element().coord()
+        (2,)
+
     """
-    def __init__(self, lower, upper):
-        rr = RealLine()
+    def __init__(self, real_line, lower, upper):
+        r"""
+        Construct an open inverval.
+
+        TESTS::
+
+            sage: from sage.geometry.manifolds.manifold import OpenInterval
+            sage: R = RealLine()
+            sage: I = OpenInterval(R, -1, 1) ; I
+            Real interval (-1, 1)
+            sage: TestSuite(I).run()
+            sage: J = OpenInterval(R, -oo, 2) ; J
+            Real interval (-Infinity, 2)
+            sage: TestSuite(J).run()
+
+        """
+        if not isinstance(real_line, RealLine):
+            raise TypeError("{} is not an instance of RealLine".format(
+                                                                    real_line))
         name = "({}, {})".format(lower, upper)
         latex_name = r"\left(" + str(lower) + ", " + str(upper) + r"\right)"
-        ManifoldOpenSubset.__init__(self, rr, name, latex_name=latex_name)
-        t = rr.canonical_coordinate()
+        ManifoldOpenSubset.__init__(self, real_line, name,
+                                    latex_name=latex_name)
+        t = real_line.canonical_coordinate()
         if lower != minus_infinity:
             if upper != infinity:
                 restrictions = [t>lower, t<upper]
@@ -757,13 +1049,29 @@ class OpenInterval(ManifoldOpenSubset):
                 restrictions = t<upper
             else:
                 restrictions = None
-        self._canon_chart = rr.canonical_chart().restrict(self,
+        self._lower = lower
+        self._upper = upper
+        self._canon_chart = real_line.canonical_chart().restrict(self,
                                                      restrictions=restrictions)
-
+        self._canon_chart._bounds = (((lower, False), (upper, False)),)
 
     def _repr_(self):
         r"""
         String representation of ``self``.
+
+        TESTS::
+
+            sage: R = RealLine()
+            sage: I = R.open_interval(-1,pi)
+            sage: I._repr_()
+            'Real interval (-1, pi)'
+            sage: I = R.open_interval(-1,+oo)
+            sage: I._repr_()
+            'Real interval (-1, +Infinity)'
+            sage: I = R.open_interval(-oo,0)
+            sage: I._repr_()
+            'Real interval (-Infinity, 0)'
+
         """
         return "Real interval " + self._name
 
@@ -771,8 +1079,39 @@ class OpenInterval(ManifoldOpenSubset):
         r"""
         Return the canonical chart defined on ``self``.
 
-        EXAMPLES::
+        OUTPUT:
 
+        - instance of
+          :class:`~sage.geometry.manifolds.chart.Chart`
+
+        EXAMPLES:
+
+        Canonical chart on the interval `(0,\pi)`::
+
+            sage: R.<t> = RealLine()
+            sage: I = R.open_interval(0, pi)
+            sage: I.canonical_chart()
+            chart ((0, pi), (t,))
+
+        The canonical chart is the restriction of the canonical chart of
+        `\RR` (represented by ``R``) to ``I``::
+        
+            sage: I.canonical_chart() == R.canonical_chart().restrict(I)
+            True
+
+        The information about the coordinate bounds has been passed to the
+        chart (``False`` means that the bound is not part of the interval)::
+
+            sage: I.canonical_chart().coord_bounds()
+            (((0, False), (pi, False)),)
+
+        The symbol used for the coordinate of the canonical chart is that
+        defined during the construction of the real line::
+
+            sage: R.<x> = RealLine()
+            sage: I = R.open_interval(0, pi)
+            sage: I.canonical_chart()
+            chart ((0, pi), (x,))
 
         """
         return self._canon_chart
@@ -781,7 +1120,90 @@ class OpenInterval(ManifoldOpenSubset):
         r"""
         Return the canonical coordinate defined on ``self``.
 
-        EXAMPLES::
+        OUTPUT:
+
+        - the symbolic variable representing the canonical coordinate
+          defined on ``self``. 
+
+        EXAMPLES:
+
+        Canonical coordinate on the interval `(0,\pi)`::
+
+            sage: R.<t> = RealLine()
+            sage: I = R.open_interval(0, pi)
+            sage: I.canonical_coordinate()
+            t
+            sage: type(I.canonical_coordinate())
+            <type 'sage.symbolic.expression.Expression'>
+            sage: t.is_real()
+            True
+
+        The canonical coordinate is the first (unique) coordinate of the
+        canonical chart::
+        
+            sage: I.canonical_coordinate() is I.canonical_chart()[0]
+            True
+
+        Its symbol is inherited from that declared during the construction
+        of the real line::
+
+            sage: R.<x> = RealLine()
+            sage: I = R.open_interval(0, pi)
+            sage: I.canonical_coordinate()
+            x
 
         """
         return self._canon_chart._xx[0]
+
+    def lower_bound(self):
+        r"""
+        Return the lower bound (infimum) of ``self``.
+
+        EXAMPLES::
+
+            sage: R.<t> = RealLine()
+            sage: I = R.open_interval(1/4, 3)
+            sage: I.lower_bound()
+            1/4
+            sage: J = R.open_interval(-oo, 2)
+            sage: J.lower_bound()
+            -Infinity
+
+        An alias of :meth:`lower_bound` is :meth:`inf`::
+
+            sage: I.inf()
+            1/4
+            sage: J.inf()
+            -Infinity
+
+        """
+        return self._lower
+
+    inf = lower_bound
+
+    def upper_bound(self):
+        r"""
+        Return the upper bound (supremum) of ``self``.
+
+        EXAMPLES::
+
+            sage: R.<t> = RealLine()
+            sage: I = R.open_interval(1/4, 3)
+            sage: I.upper_bound()
+            3
+            sage: J = R.open_interval(1, +oo)
+            sage: J.upper_bound()
+            +Infinity
+
+        An alias of :meth:`upper_bound` is :meth:`sup`::
+
+            sage: I.sup()
+            3
+            sage: J.sup()
+            +Infinity
+
+        """
+        return self._upper
+
+    sup = upper_bound
+
