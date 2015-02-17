@@ -30,6 +30,7 @@ from sage.categories.homset import Homset
 from sage.structure.parent import Parent
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.geometry.manifolds.diffmapping import DiffMapping
+from sage.geometry.manifolds.curve import ManifoldCurve
 
 class ManifoldHomset(Homset, UniqueRepresentation):
     r"""
@@ -422,3 +423,71 @@ class ManifoldHomset(Homset, UniqueRepresentation):
         return self._one
 
     #### End of monoid methods ####
+
+
+#******************************************************************************
+
+class ManifoldCurveSet(ManifoldHomset):
+    r"""
+    Set of curves in a differentiable manifold.
+
+    """
+
+    Element = ManifoldCurve
+
+    def __init__(self, domain, codomain, name=None, latex_name=None):
+        r"""
+        Construct a set of curves.
+
+        """
+        from sage.geometry.manifolds.manifold import RealLine, OpenInterval
+        if not isinstance(domain, (RealLine, OpenInterval)):
+            raise TypeError("{} is not an open real interval".format(domain))
+        ManifoldHomset.__init__(self, domain, codomain, name=name,
+                                latex_name=latex_name)
+
+        
+    #### Parent methods ####
+    
+    def _element_constructor_(self, coord_expression, name=None,
+                              latex_name=None, is_diffeomorphism=False,
+                              is_identity=False):
+        r"""
+        Construct an element of ``self``, i.e. a differentiable curve
+        I --> V, where I is a real interval and `V` some open subset of a
+        differentiable manifold.
+        
+        OUTPUT:
+
+        - instance of 
+          :class:`~sage.geometry.manifolds.curve.ManifoldCurve`
+
+        """
+        # Standard construction
+        return self.element_class(self, coord_expression=coord_expression,
+                                  name=name, latex_name=latex_name,
+                                  is_diffeomorphism=is_diffeomorphism,
+                                  is_identity=is_identity)
+
+    def _an_element_(self):
+        r"""
+        Construct some element.
+
+        OUTPUT:
+
+        - instance of 
+          :class:`~sage.geometry.manifolds.curve.ManifoldCurve`
+
+        EXAMPLE:
+   
+        """
+        dom = self.domain()
+        codom = self.codomain()
+        # A constant curve is constructed:
+        chart2 = codom.default_chart()
+        target_point = chart2.domain().an_element()
+        target_coord = target_point.coord(chart2)
+        coord_expression = {chart2: target_coord}
+        return self.element_class(self, coord_expression)
+
+

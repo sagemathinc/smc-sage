@@ -249,7 +249,6 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         r"""
         Construct some (unamed) point on ``self``.
         """
-        from sage.rings.infinity import Infinity
         if self._def_chart is None:
             return self.element_class(self)
         chart = self._def_chart
@@ -284,6 +283,25 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         LaTeX representation of ``self``.
         """
         return self._latex_name
+
+    def manifold(self):
+        r"""
+        Return the manifold of which ``self`` is a subset.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: A = M.subset('A')
+            sage: A.manifold()
+            2-dimensional manifold 'M'
+            sage: B = A.subset('B')
+            sage: B.manifold()
+            2-dimensional manifold 'M'
+            sage: M.manifold() is M
+            True
+
+        """
+        return self._manifold
 
     def subsets(self):
         r"""
@@ -2288,13 +2306,24 @@ class ManifoldOpenSubset(ManifoldSubset):
         vmodule = self.vector_field_module(dest_map)
         return vmodule.identity_map(name=name, latex_name=latex_name)
 
-    def curve(self, coord_expression, tmin=-Infinity, tmax=+Infinity,
-              chart=None, name=None, latex_name=None):
+    def curve(self, coord_expression, param, chart=None, name=None,
+              latex_name=None):
         r"""
         Define a differentiable curve in ``self``.
 
         """
-        from sage.geometry.manifolds.curve import ManifoldCurve
+        from sage.geometry.manifolds.manifold import RealLine
+        if not isinstance(param, (tuple, list)):
+            param = (param, -Infinity, Infinity)
+        elif len(param) != 3:
+            raise TypeError("the argument 'param' must be of the type " +
+                            "(t, t_min, t_max)")
+        t = param[0]
+        t_min = param[1]
+        t_max = param[2]
+        real_field = RealLine(names=(repr(t),))
+        interval = real_field.open_interval(t_min, t_max)
+        curve_set = Hom(interval, self)
         if not isinstance(coord_expression, dict):
             # Turn coord_expression into a dictionary:
             if chart is None:
@@ -2303,8 +2332,7 @@ class ManifoldOpenSubset(ManifoldSubset):
                 raise ValueError("the {} has not been".format(chart) +
                                      " defined on the {}".format(self))
             coord_expression = {chart: coord_expression}
-        return ManifoldCurve(self, coord_expression, tmin=tmin, tmax=tmax,
-                             name=name, latex_name=latex_name)
+        return curve_set(coord_expression, name=name, latex_name=latex_name)
 
     def metric(self, name, signature=None, latex_name=None, dest_map=None):
         r"""

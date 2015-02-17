@@ -14,7 +14,9 @@ The corresponding Sage :class:`~sage.structure.element.Element`'s are
 implemented via the class :class:`~sage.geometry.manifolds.point.ManifoldPoint`.
 
 The derived class :class:`RealLine` implements the field of real numbers
-`\RR` as a manifold of dimension one.
+`\RR` as a manifold of dimension one, while the class
+:class:`~sage.geometry.manifolds.manifold.OpenInterval` implements
+open intervals of it.
 
 AUTHORS:
 
@@ -49,7 +51,7 @@ EXAMPLES:
         sage: stereoN.<x,y> = U.chart() ; stereoN
         chart (U, (x, y))
 
-    Thanks to the operator <x,y> on the left-hand side, the coordinates
+    Thanks to the operator ``<x,y>`` on the left-hand side, the coordinates
     declared in a chart (here x and y), are accessible by their names; they are
     Sage's symbolic variables::
 
@@ -777,6 +779,29 @@ class RealLine(Manifold):
                                  chart=chart, name=name, latex_name=latex_name,
                                  check_coords=check_coords)
 
+    def _Hom_(self, other, category=None):
+        r"""
+        Construct the set of curves in ``other`` with parameter in ``self``.
+
+        INPUT:
+
+        - ``other`` -- an open subset of some manifold
+        - ``category`` -- (default: ``None``) not used here (to ensure
+          compatibility with generic hook ``_Hom_``)
+
+        OUTPUT:
+
+        - the set of curves R  --> V,  where R is ``self`` and V is ``other``
+
+        See class
+        :class:`~sage.geometry.manifolds.manifold_homset.ManifoldCurveSet`
+        for more documentation.
+        
+        """
+        from sage.geometry.manifolds.manifold_homset import ManifoldCurveSet
+        return ManifoldCurveSet(self, other)
+
+
     def canonical_chart(self):
         r"""
         Return the canonical chart defined on ``self``.
@@ -886,7 +911,7 @@ class RealLine(Manifold):
         OUTPUT:
 
         - instance of class
-          :class:`~sage.geomtry.manifolds.manifold.OpenInterval`
+          :class:`~sage.geometry.manifolds.manifold.OpenInterval`
           representing the open interval (``lower``, ``upper``).
 
         EXAMPLES:
@@ -914,7 +939,7 @@ class RealLine(Manifold):
             sage: I is R
             True
 
-        See :class:`~sage.geomtry.manifolds.manifold.OpenInterval` for more
+        See :class:`~sage.geometry.manifolds.manifold.OpenInterval` for more
         examples and documentation. 
 
         """
@@ -968,10 +993,15 @@ class OpenInterval(ManifoldOpenSubset):
         sage: I is R.open_interval(0, pi)
         True
 
-    ``I`` is a subset of the field of real numbers::
+    ``I`` is an open subset of the field of real numbers, considered as
+    a 1-dimensional manifold::
     
         sage: I.is_subset(R)
         True
+        sage: isinstance(I, sage.geometry.manifolds.domain.ManifoldOpenSubset)
+        True
+        sage: I.manifold()
+        field R of real numbers
 
     An element of ``I``::
 
@@ -980,8 +1010,10 @@ class OpenInterval(ManifoldOpenSubset):
         sage: x.coord() # coordinates in the default chart = canonical chart
         (1/2*pi,)
 
-    Since intervals are facade sets, the parent of their elements is the whole
-    real-field manifold on which they are defined, i.e. ``R``::
+    Since open intervals are facade sets (see
+    :meth:`~sage.categories.sets_cat.Sets.SubcategoryMethods.Facade`), the
+    parent of their elements is the whole real-line manifold on which
+    they are defined, i.e. ``R``::
 
         sage: I.category()
         Category of facade sets
@@ -1074,6 +1106,31 @@ class OpenInterval(ManifoldOpenSubset):
 
         """
         return "Real interval " + self._name
+
+
+    def _Hom_(self, other, category=None):
+        r"""
+        Construct the set of curves in ``other`` with parameter in ``self``.
+
+        INPUT:
+
+        - ``other`` -- an open subset of some manifold
+        - ``category`` -- (default: ``None``) not used here (to ensure
+          compatibility with generic hook ``_Hom_``)
+
+        OUTPUT:
+
+        - the set of curves I  --> V,  where I is ``self`` and V is ``other``
+
+        See class
+        :class:`~sage.geometry.manifolds.manifold_homset.ManifoldCurveSet`
+        for more documentation.
+        
+        """
+        from sage.geometry.manifolds.manifold_homset import ManifoldCurveSet
+        return ManifoldCurveSet(self, other)
+
+
 
     def canonical_chart(self):
         r"""

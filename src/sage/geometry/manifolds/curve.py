@@ -34,21 +34,19 @@ REFERENCES:
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 
-from sage.structure.sage_object import SageObject
-from sage.rings.infinity import Infinity
 from sage.symbolic.expression import Expression
 from sage.misc.latex import latex
 from sage.geometry.manifolds.domain import ManifoldOpenSubset
-from sage.geometry.manifolds.manifold import RealLine
+from sage.geometry.manifolds.diffmapping import DiffMapping
 from sage.geometry.manifolds.utilities import simplify_chain
 
-class ManifoldCurve(SageObject):
+class ManifoldCurve(DiffMapping):
     r"""
     Curve in a differentiable manifold.
     
     """
-    def __init__(self, codomain, coord_expression, tmin=-Infinity,
-                 tmax=+Infinity, param=None, name=None, latex_name=None):
+    def __init__(self, parent, coord_expression=None, name=None,
+                 latex_name=None, is_diffeomorphism=False, is_identity=False):
         r"""
         Construct a curve.
 
@@ -64,38 +62,33 @@ class ManifoldCurve(SageObject):
             sage: TestSuite(c).run()
 
         """
-        if not isinstance(codomain, ManifoldOpenSubset):
-            raise TypeError(
-                 "{} is not an open subset of some manifold".format(codomain))
-        if not isinstance(coord_expression, dict):
-            raise TypeError("{} is not a dictionary".format(coord_expression))
-        self._codomain = codomain
-        self._tmin = tmin
-        self._tmax = tmax
-        if param is None:
-            self._param = RealLine().canonical_coordinate()
+        domain = parent.domain()
+        codomain = parent.codomain()
+        if coord_expression is None:
+            coord_functions = None
         else:
-            if not isinstance(param, Expression):
-                raise TypeError("{} is not a symbolic expression".format(
-                                                                        param))
-            self._param = param
-        self._name = name
-        if latex_name is None:
-            self._latex_name = name
-        else:
-            self._latex_name = latex_name
-        self._coord_expression = {}
-        codom_atlas = codomain.atlas()
-        n = codomain._manifold._dim
-        for chart, expr in coord_expression.iteritems():
-            if chart not in codom_atlas:
-                raise ValueError("{} is not a chart defined on {}".format(
+            if not isinstance(coord_expression, dict):
+                raise TypeError("{} is not a dictionary".format(
+                                                             coord_expression))
+            param_chart = domain.canonical_chart()
+            codom_atlas = codomain.atlas()
+            n = codomain.manifold().dim()
+            coord_functions = {}
+            for chart, expr in coord_expression.iteritems():
+                if chart not in codom_atlas:
+                    raise ValueError("{} is not a chart defined on {}".format(
                                                               chart, codomain))
-            if len(expr) != n:
-                raise ValueError("{} coordinate functions must be ".format(n) + 
-                                                                    "provided")
-            self._coord_expression[chart] = expr
-
+                if len(expr) != n:
+                    raise ValueError("{} coordinate functions ".format(n) + 
+                                     "must be provided")
+                coord_functions[(param_chart, chart)] = expr
+        DiffMapping.__init__(self, parent, coord_functions=coord_functions,
+                             name=name, latex_name=latex_name,
+                             is_diffeomorphism=is_diffeomorphism,
+                             is_identity=is_identity)
+        # self._param = self._domain.canonical_coordinate()
+        # self._tmin = self._domain.lower_bound()
+        # self._tmax = self._domain.upper_bound()
 
     def _repr_(self):
         r"""
@@ -106,10 +99,10 @@ class ManifoldCurve(SageObject):
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: R.<t> = RealLine()
-            sage: c = M.curve([cos(t), sin(2*t)])
+            sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi))
             sage: c._repr_()
             "Curve in the 2-dimensional manifold 'M'"
-            sage: c = M.curve([cos(t), sin(2*t)], name='c')
+            sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi), name='c')
             sage: c._repr_()
             "Curve 'c' in the 2-dimensional manifold 'M'"
 
@@ -129,6 +122,7 @@ class ManifoldCurve(SageObject):
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: R.<t> = RealLine()
+            sage: R.<t> = RealLine()
             sage: c = M.curve([cos(t), sin(2*t)])
             sage: c._latex_()
             "\\mbox{Curve in the 2-dimensional manifold 'M'}"
@@ -144,102 +138,6 @@ class ManifoldCurve(SageObject):
             return r'\mbox{' + str(self) + r'}'
         else:
            return self._latex_name
-
-
-    def __eq__(self, other):
-        r"""
-        Comparison (equality) operator.
-
-        INPUT:
-
-        - ``other`` -- another instance of :class:`DiffMapping` to compare with
-
-        OUTPUT:
-
-        - True if ``self`` is equal to ``other``,  or False otherwise
-
-        TESTS::
-
-            sage: M = Manifold(2, 'M')
-            sage: X.<x,y> = M.chart()
-            sage: R.<t> = RealLine()
-            sage: c = M.curve([cos(t), sin(2*t)], name='c')
-            sage: c.__eq__(3)
-            False
-            sage: c.__eq__(M.curve([cos(t), sin(2*t)]))
-            True
-            sage: c.__eq__(M.curve([cos(t), sin(2*t)], name='d'))
-            True
-            sage: c.__eq__(M.curve([cos(t), sin(2*t)], tmin=0))
-            False
-            sage: c.__eq__(M.curve([cos(3*t), sin(2*t)]))
-            False
-
-        """
-        if not isinstance(other, ManifoldCurve):
-            return False
-        if self._codomain != other._codomain:
-            return False
-        if self._tmin != other._tmin:
-            return False
-        if self._tmax != other._tmax:
-            return False
-        for chart, expr in self._coord_expression.iteritems():
-            try:
-                if expr != other.expr(chart):
-                    return False
-            except ValueError:
-                return False
-        return True
-
-
-    def __ne__(self, other):
-        r"""
-        Inequality operator.
-
-        INPUT:
-
-        - ``other`` -- another instance of :class:`ManifoldCurve` to compare
-          with
-
-        OUTPUT:
-
-        - True if ``self`` is different from ``other``,  or False otherwise
-
-        TESTS::
-
-            sage: M = Manifold(2, 'M')
-            sage: X.<x,y> = M.chart()
-            sage: R.<t> = RealLine()
-            sage: c = M.curve([cos(t), sin(2*t)], name='c')
-            sage: c.__ne__(M.curve([cos(3*t), sin(2*t)]))
-            True
-
-        """
-        return not self.__eq__(other)
-
-    def __cmp__(self, other):
-        r"""
-        Old-style (Python 2) comparison operator.
-
-        This is provisory, until migration to Python 3 is achieved.
-
-        TESTS::
-
-            sage: M = Manifold(2, 'M')
-            sage: X.<x,y> = M.chart()
-            sage: R.<t> = RealLine()
-            sage: c = M.curve([cos(t), sin(2*t)], name='c')
-            sage: c.__cmp__(M.curve([cos(t), sin(2*t)]))
-            0
-            sage: c.__cmp__(M.curve([cos(3*t), sin(2*t)]))
-            -1
-
-        """
-        if self.__eq__(other):
-            return 0
-        else:
-            return -1
 
     def expr(self, chart=None):
         r"""
