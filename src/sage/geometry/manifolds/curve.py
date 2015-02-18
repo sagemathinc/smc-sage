@@ -1,5 +1,5 @@
 r"""
-Curves on manifolds
+Curves in manifolds
 
 Given a differentiable manifold `M`, a *differentiable curve* curve in
 `M` is a differential mapping
@@ -36,7 +36,7 @@ REFERENCES:
 
 from sage.symbolic.expression import Expression
 from sage.misc.latex import latex
-from sage.geometry.manifolds.domain import ManifoldOpenSubset
+from sage.geometry.manifolds.point import ManifoldPoint
 from sage.geometry.manifolds.diffmapping import DiffMapping
 from sage.geometry.manifolds.utilities import simplify_chain
 
@@ -55,10 +55,23 @@ class ManifoldCurve(DiffMapping):
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: R.<t> = RealLine()
+            sage: I = R.open_interval(0, 2*pi)
             sage: from sage.geometry.manifolds.curve import ManifoldCurve
-            sage: c = ManifoldCurve(M, {X: (cos(t), sin(2*t))}, tmin=0,
-            ....:                   tmax=2*pi, name='c') ; c
+            sage: c = ManifoldCurve(Hom(I,M), coord_expression={X: (cos(t), sin(2*t))},
+            ....:                   name='c') ; c
             Curve 'c' in the 2-dimensional manifold 'M'
+
+        To pass the test suite, the curve must be constructed from the parent
+        and not from a direct call to ManifoldCurve::
+
+            sage: c = Hom(I,M)({X: (cos(t), sin(2*t))},  name='c') ; c
+            Curve 'c' in the 2-dimensional manifold 'M'
+            sage: TestSuite(c).run()
+
+        The identity of interval I::
+
+            sage: c = Hom(I,I)({}, is_identity=True) ; c
+            Curve 'Id_(0, 2*pi)' in the Real interval (0, 2*pi)
             sage: TestSuite(c).run()
 
         """
@@ -122,14 +135,14 @@ class ManifoldCurve(DiffMapping):
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: R.<t> = RealLine()
-            sage: R.<t> = RealLine()
-            sage: c = M.curve([cos(t), sin(2*t)])
+            sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi))
             sage: c._latex_()
             "\\mbox{Curve in the 2-dimensional manifold 'M'}"
-            sage: c = M.curve([cos(t), sin(2*t)], name='c')
+            sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi), name='c')
             sage: c._latex_()
             'c'
-            sage: c = M.curve([cos(t), sin(2*t)], name='c', latex_name=r'\gamma')
+            sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi), name='c',
+            ....:             latex_name=r'\gamma')
             sage: c._latex_()
             '\\gamma'
 
@@ -138,10 +151,10 @@ class ManifoldCurve(DiffMapping):
             return r'\mbox{' + str(self) + r'}'
         else:
            return self._latex_name
-
-    def expr(self, chart=None):
+    
+    def coord_functions(self, chart=None):
         r"""
-        Return the expression of ``self`` in a given chart.
+        Return the coordinate functions expressing ``self`` in a given chart.
 
         INPUT:
 
@@ -151,8 +164,6 @@ class ManifoldCurve(DiffMapping):
         OUTPUT:
 
         - symbolic expression representing the curve in the above chart
-
-        EXAMPLES:
 
         EXAMPLES:
 
@@ -173,50 +184,35 @@ class ManifoldCurve(DiffMapping):
                r == r
                ph == arctan2(r*sin(ph), r*cos(ph))
             sage: R.<t> = RealLine()
-            sage: c = U.curve({c_spher: (1,t)}, tmin=0, tmax=2*pi, name='c')
-            sage: c.expr(c_spher)
+            sage: c = U.curve({c_spher: (1,t)}, (t, 0, 2*pi), name='c')
+            sage: c.coord_functions(c_spher)
             (1, t)
-            sage: c.expr(c_cart)
+            sage: c.coord_functions(c_cart)
             (cos(t), sin(t))
 
         Since ``c_cart`` is the default chart on ``U``, it can be omitted::
 
-            sage: c.expr()
+            sage: c.coord_functions()
             (cos(t), sin(t))
 
         Cartesian expression of a cardiod::
         
-            sage: c = U.curve({c_spher: (2*(1+cos(t)), t)}, tmin=0, tmax=2*pi, name='c')
-            sage: c.expr(c_cart)
+            sage: c = U.curve({c_spher: (2*(1+cos(t)), t)}, (t, 0, 2*pi), name='c')
+            sage: c.coord_functions(c_cart)
             (2*cos(t)^2 + 2*cos(t), 2*(cos(t) + 1)*sin(t))
 
         """
-        codom = self._codomain
-        def_chart = codom._def_chart
-        if chart is None:
-            chart = def_chart
-        if chart not in self._coord_expression:
-            # Some computation must be performed
-            sel_chart = None # selected chart
-            if def_chart in self._coord_expression \
-                                and (def_chart, chart) in codom._coord_changes:
-                sel_chart = def_chart
-            else:
-                for ochart in self._coord_expression:
-                    if (ochart, chart) in codom._coord_changes:
-                        sel_chart = ochart
-                        break
-            if sel_chart is None:
-                raise ValueError("No start chart has been found to compute " +
-                      "the expression of {} in the {}".format(self, chart))
-            oexpr = self._coord_expression[sel_chart]
-            chg = codom._coord_changes[(sel_chart, chart)]
-            self._coord_expression[chart] = chg(*oexpr)
-        return self._coord_expression[chart]
+        return self.expr(chart1=self._domain.canonical_chart(), chart2=chart)
 
     def __call__(self, t, simplify=True):
         r"""
-        Image of a given value of the parameter.
+        Image for a given value of the curve parameter.
+
+        This is a redefinition of :meth:`sage.categories.map.Map.__call__`
+        to allow for the direct call with some value of the parameter
+        (numerical value or symbolic expression) instead
+        of the element (ManifoldPoint) of the domain corresponding to that
+        value. 
 
         EXAMPLES:
 
@@ -225,7 +221,7 @@ class ManifoldCurve(DiffMapping):
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: R.<t> = RealLine()
-            sage: c = M.curve([cos(t), sin(t)], name='c')
+            sage: c = M.curve([cos(t), sin(t)], (t, 0, 2*pi), name='c')
             sage: c(0)
             point 'c(0)' on 2-dimensional manifold 'M'
             sage: c(0) in M
@@ -240,17 +236,23 @@ class ManifoldCurve(DiffMapping):
             (cos(t), sin(t))
         
         """
+        # Case of a point in the domain:
+        if isinstance(t, ManifoldPoint):
+            return DiffMapping.__call__(t)
+        # Case of a value of the canonical coordinate in the domain:
         codom = self._codomain
-        def_chart = codom._def_chart
-        if def_chart in self._coord_expression:
-            chart = def_chart
+        canon_chart = self._domain._canon_chart
+        canon_coord = canon_chart._xx[0]
+        if (canon_chart, codom._def_chart) in self._coord_expression:
+            chart_pair = (canon_chart, codom._def_chart)
         else:
-            chart = self._coord_expression.keys()[0]  # a chart is picked at
-                                                      # random
-        expr = self._coord_expression[chart]
-        n = len(expr)
-        dict_subs = {self._param: t}
-        coords = [expr[i].substitute(dict_subs) for i in range(n)]
+            chart_pair = self._coord_expression.keys()[0]  # a chart is picked
+                                                           # at random
+        coord_functions = self._coord_expression[chart_pair]._functions
+        n = codom._manifold._dim
+        dict_subs = {canon_coord: t}
+        coords = [coord_functions[i].expr().substitute(dict_subs)
+                  for i in range(n)]
         if simplify:
             coords = [simplify_chain(coords[i]) for i in range(n)]
         if self._name is not None:
@@ -261,11 +263,6 @@ class ManifoldCurve(DiffMapping):
             latex_name = self._latex_name + r"\left(" + latex(t) + r"\right)"
         else:
             latex_name = None
-        return codom.point(coords=coords, chart=chart, name=name,
-                           latex_name=latex_name)
-
-
-
-
-
-        
+        return codom.element_class(codom, coords=coords, chart=chart_pair[1],
+                                   name=name, latex_name=latex_name,
+                                   check_coords=False)

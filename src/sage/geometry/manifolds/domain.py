@@ -954,7 +954,8 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             {chart (A, (u, v)): (-1, 0)}
 
         """
-        return self.element_class(self, coords, chart, name, latex_name)
+        return self.element_class(self, coords=coords, chart=chart, name=name,
+                                  latex_name=latex_name)
 
     def default_chart(self):
         r"""
@@ -2588,17 +2589,29 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         - ``codomain`` -- mapping's codomain (the arrival manifold or some
           subset of it)
-        - ``coord_functions`` -- (default: None) the coordinate symbolic expression
-          of the mapping: list (or tuple) of the coordinates of the image expressed
-          in terms of the coordinates of the considered point; if the dimension of
-          the arrival manifold is 1, a single expression is expected
-          (not a list with a single element)
-        - ``chart1`` -- (default: None) chart in which the
-          coordinates are given on ``self``; if none is provided,
-          the coordinates are assumed to refer to the default chart of ``self``
-        - ``chart2`` -- (default: None) chart in which the
-          coordinates are given on the codomain; if none is provided, the coordinates
-          are assumed to refer to the codomain's default chart
+        - ``coord_functions`` -- (default: ``None``) if not ``None``, must be
+          either
+    
+          - (i) a dictionary of
+            the coordinate expressions (as lists (or tuples) of the
+            coordinates of the image expressed in terms of the coordinates of
+            the considered point) with the pairs of charts (chart1, chart2)
+            as keys (chart1 being a chart on ``self`` and chart2 a chart on
+            ``codomain``)
+          - (ii) a single coordinate expression in a given pair of charts, the
+            latter being provided by the arguments ``chart1`` and ``chart2``
+    
+          In both cases, if the dimension of the arrival manifold is 1,
+          a single coordinate expression is expected (not a list or tuple with
+          a single element)
+        - ``chart1`` -- (default: None; used only in case (ii) above) chart on
+          ``self`` defining the start coordinates involved in
+          ``coord_functions`` for case (ii); if none is provided, the
+          coordinates are assumed to refer to the default chart of ``self``
+        - ``chart2`` -- (default: None; used only in case (ii) above) chart on
+          ``codomain`` defining the arrival coordinates involved in
+          ``coord_functions`` for case (ii); if none is provided, the
+          coordinates are assumed to refer to the default chart of ``codomain``
         - ``name`` -- (default: None) name given to the differentiable mapping
         - ``latex_name`` -- (default: None) LaTeX symbol to denote the
           differentiable mapping; if none is provided, the LaTeX symbol is set to
@@ -2609,17 +2622,41 @@ class ManifoldOpenSubset(ManifoldSubset):
         - the differentiable mapping, as an instance of
           :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
 
-        EXAMPLE:
+        EXAMPLES:
 
-        A mapping between the sphere `S^2` and `\RR^3`::
+        A mapping between an open subset of `S^2` covered by regular spherical
+        coordinates and `\RR^3`::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2')
-            sage: U = M.open_subset('U') # the subset of S^2 covered by regular spherical coordinates
+            sage: U = M.open_subset('U') 
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: N = Manifold(3, 'R^3', r'\RR^3')
             sage: c_cart.<x,y,z> = N.chart()  # Cartesian coord. on R^3
-            sage: Phi = U.diff_mapping(N, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)), name='Phi', latex_name=r'\Phi')
+            sage: Phi = U.diff_mapping(N, (sin(th)*cos(ph), sin(th)*sin(ph), cos(th)),
+            ....:                      name='Phi', latex_name=r'\Phi') ; Phi
+            differentiable mapping 'Phi' from the open subset 'U' of the
+             2-dimensional manifold 'S^2' to the 3-dimensional manifold 'R^3'
+
+        The same definition, but with a dictionary with pairs of charts as
+        keys (case (i) above)::
+
+            sage: Phi1 = U.diff_mapping(N,
+            ....:        {(c_spher, c_cart): (sin(th)*cos(ph), sin(th)*sin(ph), cos(th))},
+            ....:        name='Phi', latex_name=r'\Phi')
+            sage: Phi1 == Phi
+            True
+
+        The differential mapping acting on a point::
+        
+            sage: p = U.point((pi/2, pi)) ; p
+            point on 2-dimensional manifold 'S^2'
+            sage: Phi(p)
+            point on 3-dimensional manifold 'R^3'
+            sage: Phi(p).coord(c_cart)
+            (-1, 0, 0)
+            sage: Phi1(p) == Phi(p)
+            True
 
         See the documentation of class
         :class:`~sage.geometry.manifolds.diffmapping.DiffMapping` for more

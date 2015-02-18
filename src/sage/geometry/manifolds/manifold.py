@@ -947,6 +947,53 @@ class RealLine(Manifold):
             return self
         return OpenInterval(self, lower, upper)
 
+    def diff_mapping(self, codomain, coord_expression, chart=None, name=None,
+                     latex_name=None):
+        r"""
+        Define a differentiable mapping between ``self`` and an open subset of
+        some manifold (possibly ``self``).
+
+        This is a redefinition of
+        :meth:`sage.geometry.manifolds.domain.ManifoldOpenSubset.diff_mapping`
+        in order to have a curve as output.
+        
+        See :class:`~sage.geometry.manifolds.curve.ManifoldCurve` for a
+        complete documentation.
+
+        INPUT:
+
+        - ``codomain`` -- mapping's codomain (the target manifold or some
+          subset of it)
+        - ``coord_expression`` -- the coordinate symbolic
+          expression of the mapping: list (or tuple) of the coordinates of the
+          image expressed
+          in terms of the coordinates of the considered point; if the
+          dimension of the target manifold is 1, a single expression is
+          expected (not a list with a single element)
+        - ``chart`` -- (default: None) chart of ``codomain`` in which the
+          coordinates are given on the codomain; if none is provided, the
+          coordinates are assumed to refer to default chart of ``codomain``
+        - ``name`` -- (default: None) name given to the differentiable mapping
+        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+          differentiable mapping; if none is provided, the LaTeX symbol is set to
+          ``name``
+
+        OUTPUT:
+
+        - the differentiable mapping, as an instance of
+          :class:`~sage.geometry.manifolds.curve.ManifoldCurve`
+
+        """
+        curve_set = self._Hom_(codomain)
+        if not isinstance(coord_expression, dict):
+            # Turn coord_expression into a dictionary:
+            if chart is None:
+                chart = codomain.default_chart()
+            elif chart not in codomain.atlas():
+                raise ValueError("the {} has not been".format(chart) +
+                                     " defined on the {}".format(codomain))
+            coord_expression = {chart: coord_expression}
+        return curve_set(coord_expression, name=name, latex_name=latex_name)
 
 #******************************************************************************
 

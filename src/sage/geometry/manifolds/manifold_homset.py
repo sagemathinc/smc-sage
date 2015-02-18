@@ -3,7 +3,11 @@ Sets of morphisms between manifolds
 
 The class :class:`ManifoldHomset` implements sets of morphisms between
 two differentiable manifolds over `\RR`, a morphism being a *differentiable
-mapping* for the category of differentiable manifolds. 
+mapping* for the category of differentiable manifolds.
+
+The subclass :class:`ManifoldCurveSet` is devoted to the specific case of
+differential curves, i.e. morphisms whose domain are an open interval of
+`\RR`. 
 
 AUTHORS:
 
@@ -429,7 +433,86 @@ class ManifoldHomset(Homset, UniqueRepresentation):
 
 class ManifoldCurveSet(ManifoldHomset):
     r"""
-    Set of curves in a differentiable manifold.
+    Set of differentiable curves in a differentiable manifold.
+
+    Given an open interval `I` of `\RR` (possibly `I=\RR`) and
+    a differentiable manifold `M` over `\RR`, the class
+    :class:`ManifoldCurveSet` implements the set `\mathrm{Hom}(I,U)` of
+    morphisms (i.e. differentiable curves) `I\rightarrow U`, where `U` is an
+    open subset of `M`. Note that, as open subsets of manifolds,
+    `I` and `U` are manifolds by themselves.
+
+    This is a Sage *parent* class, whose *element* class is
+    :class:`~sage.geometry.manifolds.curve.ManifoldCurve`.
+
+    INPUT:
+
+    - ``domain`` -- open interval `I\subset \RR` (domain of the morphisms),
+      as an instance of
+      :class:`~sage.geometry.manifolds.manifold.OpenInterval` or
+      of :class:`~sage.geometry.manifolds.manifold.RealLine` if `I=\RR`
+    - ``codomain`` -- open subset `U\subset M` (codomain of the morphisms),
+      as an instance of
+      :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`
+    - ``name`` -- (default: ``None``) string; name given to the set of
+      curves; if none is provided, Hom(I,U) will be used
+    - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to denote the
+      set of curves; if none is provided, `\mathrm{Hom}(I,U)` will be used
+
+    EXAMPLES:
+
+    Set of curves `\RR \longrightarrow M`, where `M` is a 2-dimensional
+    manifold::
+    
+        sage: M = Manifold(2, 'M')
+        sage: X.<x,y> = M.chart()
+        sage: R.<t> = RealLine() ; R
+        field R of real numbers
+        sage: H = Hom(R, M) ; H
+        Set of Morphisms from field R of real numbers to 2-dimensional manifold
+         'M' in Category of sets
+        sage: type(H)
+        <class 'sage.geometry.manifolds.manifold_homset.ManifoldCurveSet_with_category'>
+        sage: H.category()
+        Category of homsets of sets
+        sage: latex(H)
+        \mathrm{Hom}\left(\RR,M\right)
+        sage: H.domain()
+        field R of real numbers
+        sage: H.codomain()
+        2-dimensional manifold 'M'
+
+    An element of ``H`` is a curve in ``M``::
+
+        sage: H.Element
+        <class 'sage.geometry.manifolds.curve.ManifoldCurve'>
+        sage: c = H.an_element() ; c
+        Curve in the 2-dimensional manifold 'M'
+        sage: c.display()
+        R --> M
+           t |--> (x, y) = (0, 0)
+
+    The test suite is passed::
+
+        sage: TestSuite(H).run()
+
+    The set of curves `(0,1) \longrightarrow U`, where `U` is an open
+    subset of `M`::
+
+        sage: I = R.open_interval(0, 1) ; I
+        Real interval (0, 1)
+        sage: U = M.open_subset('U', coord_def={X: x^2+y^2<1}) ; U
+        open subset 'U' of the 2-dimensional manifold 'M'
+        sage: H = Hom(I, U) ; H
+        Set of Morphisms from Real interval (0, 1) to open subset 'U' of the 2-dimensional manifold 'M' in Category of facade sets
+
+    An element of ``H`` is a curve in ``U``::
+
+        sage: c = H.an_element() ; c
+        Curve in the open subset 'U' of the 2-dimensional manifold 'M'
+        sage: c.display()
+        (0, 1) --> U
+           t |--> (x, y) = (0, 0)
 
     """
 
@@ -479,7 +562,7 @@ class ManifoldCurveSet(ManifoldHomset):
           :class:`~sage.geometry.manifolds.curve.ManifoldCurve`
 
         EXAMPLE:
-   
+
         """
         dom = self.domain()
         codom = self.codomain()

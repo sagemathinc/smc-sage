@@ -33,6 +33,7 @@ from sage.structure.sage_object import SageObject
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.structure.element import RingElement
 from sage.rings.integer import Integer
+from sage.rings.infinity import Infinity
 from domain import ManifoldOpenSubset
 from utilities import simplify_chain
 
@@ -273,7 +274,6 @@ class Chart(UniqueRepresentation, SageObject):
     def __init__(self, domain, coordinates='', names=None):
         from sage.symbolic.ring import SR
         from sage.symbolic.assumptions import assume
-        from sage.rings.infinity import Infinity
         from vectorframe import CoordFrame
         if not isinstance(domain, ManifoldOpenSubset):
             raise TypeError("The first argument must be an open subset.")
@@ -710,6 +710,7 @@ class Chart(UniqueRepresentation, SageObject):
             True
 
         """
+        import operator
         if subset == self._domain:
             return self
         if subset not in self._dom_restrict:
@@ -723,6 +724,46 @@ class Chart(UniqueRepresentation, SageObject):
             res._bounds = self._bounds
             res._restrictions.extend(self._restrictions)
             res.add_restrictions(restrictions)
+            # Update of the coordinate bounds from the restrictions:
+            bounds = list(res._bounds) # convert to a list for modifications
+            for restrict in res._restrictions:
+                if not isinstance(restrict, tuple): # case of 'or' conditions
+                                                    # excluded
+                    operands = restrict.operands()
+                    left = operands[0]
+                    right = operands[1]
+                    right_var = right.variables()
+                    print "left, right, right_var: ", left, right, right_var
+                    if left in res._xx:
+                        # the l.h.s. of the restriction is a single
+                        # coordinate
+                        right_coord = [coord for coord in res._xx
+                                       if coord in right_var]
+                        print "right_coord:", right_coord
+                        if not right_coord:
+                            # there is no other coordinate in the r.h.s.
+                            ind = res._xx.index(left)
+                            left_bounds = list(bounds[ind])
+                            oper = restrict.operator()
+                            print "ind, left_bounds, oper: ", ind, left_bounds, oper
+                            oinf = left_bounds[0][0] # old coord inf
+                            osup = left_bounds[1][0] # old coord sup 
+                            if oper == operator.lt:
+                                if osup == Infinity or right <= osup:
+                                    left_bounds[1] = (right, False)
+                            elif oper == operator.le:
+                                if osup == Infinity or right < osup:
+                                    left_bounds[1] = (right, True)
+                            elif oper == operator.gt:
+                                print "right, left_bounds[0][0]:", right, left_bounds[0][0]
+                                if oinf == -Infinity or right >= oinf:
+                                    left_bounds[0] = (right, False)
+                                    print "left_bounds[0]:", left_bounds[0]
+                            elif oper == operator.ge:
+                                if oinf == -Infinity or right > oinf:
+                                    left_bounds[0] = (right, True)
+                            bounds[ind] = tuple(left_bounds)
+            res._bounds = tuple(bounds)
             # Update of supercharts and subcharts:
             res._supercharts.update(self._supercharts)
             for schart in self._supercharts:
@@ -1254,7 +1295,6 @@ class Chart(UniqueRepresentation, SageObject):
             sage: show(g)  # a 2D mesh square
 
         """
-        from sage.rings.infinity import Infinity
         from sage.misc.functional import numerical_approx
         from sage.misc.latex import latex
         from sage.plot.graphics import Graphics
@@ -2690,7 +2730,8 @@ class MultiFunctionChart(SageObject):
         self._chart = chart
         self._nc = len(self._chart._xx)    # number of coordinates
         self._nf = len(expressions)      # number of functions
-        self._functions = tuple(FunctionChart(chart, expressions[i]) for i in range(self._nf))
+        self._functions = tuple(FunctionChart(chart, expressions[i])
+                                for i in range(self._nf))
         self._jacob = None
         self._jacob_matrix = None
         self._jacob_det = None

@@ -8,3 +8,4 @@ Mappings between manifolds
 
    sage/geometry/manifolds/diffmapping
 
+   sage/geometry/manifolds/curve

@@ -252,8 +252,7 @@ class DiffMapping(Morphism):
         sage: R2 = Manifold(2, 'R^2') # R^2
         sage: c_xy.<x,y> = R2.chart() # Cartesian coordinates on R^2
         sage: Phi = R.diff_mapping(R2, [cos(t), sin(t)], name='Phi') ; Phi
-        differentiable mapping 'Phi' from the field R of real numbers to the
-         2-dimensional manifold 'R^2'
+        Curve 'Phi' in the 2-dimensional manifold 'R^2'
         sage: Phi.parent()
         Set of Morphisms from field R of real numbers to 2-dimensional manifold
          'R^2' in Category of sets
@@ -623,14 +622,13 @@ class DiffMapping(Morphism):
             True
 
         """
+        # NB: checking that ``point`` belongs to the mapping's domain has been
+        # already performed by Map.__call__(); this check is therefore not
+        # repeated here. 
         from manifold import RealLine
         if self._is_identity:
-            # no test of p being a point in the mapping domain (for efficiency)
             return point
         dom = self._domain
-        if point not in dom._manifold:
-            raise ValueError("The {} does not belong to the {} ".format(point,
-                                                                dom._manifold))
         chart1, chart2 = None, None
         for chart in point._coordinates:
             for chart_pair in self._coord_expression:
@@ -671,7 +669,8 @@ class DiffMapping(Morphism):
             # The image point is created as an element of the domain of chart2:
             dom2 = chart2.domain()
             return dom2.element_class(dom2, coords=y, chart=chart2,
-                                      name=res_name, latex_name=res_latex_name)
+                                      name=res_name, latex_name=res_latex_name,
+                                      check_coords=False)
     #
     # Morphism methods
     #
