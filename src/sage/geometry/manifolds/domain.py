@@ -248,9 +248,35 @@ class ManifoldSubset(UniqueRepresentation, Parent):
     def _an_element_(self):
         r"""
         Construct some (unamed) point on ``self``.
+
+        EXAMPLES::
+    
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M._an_element_() ; p
+            point on 2-dimensional manifold 'M'
+            sage: p.coord()
+            (0, 0)
+            sage: U = M.open_subset('U', coord_def={X: y>1}) ; U
+            open subset 'U' of the 2-dimensional manifold 'M'
+            sage: p = U._an_element_() ; p
+            point on 2-dimensional manifold 'M'
+            sage: p in U
+            True
+            sage: p.coord()
+            (0, 2)
+            sage: V = U.open_subset('V', coord_def={X.restrict(U): x<-pi})
+            sage: p = V._an_element_() ; p
+            point on 2-dimensional manifold 'M'
+            sage: p in V
+            True
+            sage: p.coord()
+            (-pi - 1, 2)
+
         """
         if self._def_chart is None:
             return self.element_class(self)
+        # Attempt to construct a point in the domain of the default chart
         chart = self._def_chart
         coords = []
         for coord_range in chart._bounds:
@@ -267,8 +293,37 @@ class ManifoldSubset(UniqueRepresentation, Parent):
                 else:
                     x = (xmin + xmax)/2
             coords.append(x)
+        if not chart.valid_coordinates(*coords):
+            # Attempt to construct a point in the domain of other charts
+            for ch in self._atlas:
+                if ch is self._def_chart:
+                    continue # since this case has already been attempted
+                coords = []
+                for coord_range in ch._bounds:
+                    xmin = coord_range[0][0]
+                    xmax = coord_range[1][0]
+                    if xmin == -Infinity:
+                        if xmax == Infinity:
+                            x = 0
+                        else:
+                            x = xmax - 1
+                    else:
+                        if xmax == Infinity:
+                            x = xmin + 1
+                        else:
+                            x = (xmin + xmax)/2
+                    coords.append(x)
+                if ch.valid_coordinates(*coords):
+                    chart = ch
+                    break
+            else:
+                raise ValueError("A generic element of {} ".format(self) +
+                             "could not be automatically generated, due to " +
+                             "too complex cooordinate conditions")
+        # The point is constructed with check_coords=False since the check
+        # has just been performed above:
         return self.element_class(self, coords=coords, chart=chart,
-                                  check_coords=False)
+                                  check_coords=False)  
 
     #### End of methods required for any Parent in the category of sets
 
@@ -1238,7 +1293,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     - ``manifold`` -- manifold on which the open subset is defined
     - ``name`` -- name given to the open subset
-    - ``latex_name`` --  (default: None) LaTeX symbol to denote the open
+    - ``latex_name`` -- (default: None) LaTeX symbol to denote the open
       subset; if none is provided, it is set to ``name``
 
     EXAMPLES:
@@ -1312,6 +1367,16 @@ class ManifoldOpenSubset(ManifoldSubset):
         True
         sage: p in U  # since p's coordinates in chart X are (x,y)=(-2,3)
         True
+
+    The coordinate conditions are taken into account when asking for a
+    generic element::
+
+        sage: q = U.an_element() ; q
+        point on 2-dimensional manifold 'M'
+        sage: q in U
+        True
+        sage: q.coord() # coordinates in U's default chart (x,y)
+        (-1, 0)
 
     An open subset can be called to construct a point from another one,
     provided that the latter belongs to the open subset::

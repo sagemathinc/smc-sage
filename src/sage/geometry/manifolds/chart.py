@@ -34,8 +34,9 @@ from sage.structure.unique_representation import UniqueRepresentation
 from sage.structure.element import RingElement
 from sage.rings.integer import Integer
 from sage.rings.infinity import Infinity
-from domain import ManifoldOpenSubset
-from utilities import simplify_chain
+from sage.misc.latex import latex
+from sage.geometry.manifolds.domain import ManifoldOpenSubset
+from sage.geometry.manifolds.utilities import simplify_chain
 
 class Chart(UniqueRepresentation, SageObject):
     r"""
@@ -177,6 +178,10 @@ class Chart(UniqueRepresentation, SageObject):
     Let us check that the declared coordinate ranges have been taken into
     account::
 
+        sage: c_cart.coord_range()
+        x: (-oo, +oo); y: (-oo, +oo); z: (-oo, +oo)
+        sage: c_spher.coord_range()
+        r: (0, +oo); th: (0, pi); ph: (0, 2*pi)
         sage: bool(th>0 and th<pi)
         True
         sage: assumptions()  # list all current symbolic assumptions
@@ -386,7 +391,6 @@ class Chart(UniqueRepresentation, SageObject):
         r"""
         LaTeX representation of the object.
         """
-        from sage.misc.latex import latex
         description = '(' + latex(self._domain).strip() + ',('
         n = len(self._xx)
         for i in range(n-1):
@@ -398,7 +402,6 @@ class Chart(UniqueRepresentation, SageObject):
         r"""
         Return a LaTeX representation of the coordinates only.
         """
-        from sage.misc.latex import latex
         description = '('
         n = len(self._xx)
         for i in range(n-1):
@@ -544,15 +547,16 @@ class Chart(UniqueRepresentation, SageObject):
         return self._coframe
 
 
-
     def coord_bounds(self, i=None):
         r"""
-        Return the coordinate lower and upper bounds.
+        Return the lower and upper bounds of the range of a coordinate.
+
+        For a nicely formatted output, use :meth:`coord_range` instead.
 
         INPUT:
 
-        - ``i`` -- index of the coordinate; if None, the bounds of all the
-            coordinates are returned
+        - ``i`` -- (default: ``None``)  index of the coordinate; if ``None``,
+          the bounds of all the coordinates are returned
 
         OUTPUT:
 
@@ -584,7 +588,15 @@ class Chart(UniqueRepresentation, SageObject):
             sage: c_xy.coord_bounds() == (c_xy.coord_bounds(0), c_xy.coord_bounds(1))
             True
 
-        The coordinate bounds can also be recovered via Sage's function
+        The coordinate bounds can also be recovered via the method
+        :meth:`coord_range`::
+
+            sage: c_xy.coord_range()
+            x: (-oo, +oo); y: [0, 1)
+            sage: c_xy.coord_range(y)
+            y: [0, 1)
+
+        or via Sage's function
         :func:`sage.symbolic.assumptions.assumptions`::
 
             sage: assumptions(x)
@@ -597,6 +609,98 @@ class Chart(UniqueRepresentation, SageObject):
             return self._bounds
         else:
             return self._bounds[i-self._manifold._sindex]
+
+    def coord_range(self, xx=None):
+        r"""
+        Display the range of a coordinate (or all coordinates), as an
+        interval.
+
+        INPUT:
+
+        - ``xx`` -- (default: ``None``) symbolic expression corresponding to a
+          coordinate of ``self``; if ``None``, the ranges of all coordinates
+          are displayed.
+
+        EXAMPLES:
+
+        Ranges of coordinates on a 2-dimensional manifold::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: X.coord_range()
+            x: (-oo, +oo); y: (-oo, +oo)
+            sage: X.coord_range(x)
+            x: (-oo, +oo)
+            sage: U = M.open_subset('U', coord_def={X: [x>1, y<pi]}) 
+            sage: XU = X.restrict(U)  # restriction of chart X to U
+            sage: XU.coord_range()
+            x: (1, +oo); y: (-oo, pi)
+            sage: XU.coord_range(x)
+            x: (1, +oo)
+            sage: XU.coord_range(y)
+            y: (-oo, pi)
+
+        The output is LaTeX-formatted for the notebook::
+
+            sage: latex(XU.coord_range(y))
+            y :\ \left( -\infty, \pi \right)
+
+        """
+        from sage.geometry.manifolds.utilities import FormattedExpansion
+        resu = FormattedExpansion(self)
+        resu.txt = ""
+        resu.latex = ""
+        if xx is None:
+            for x in self._xx:
+                if resu.txt != "":
+                    resu.txt += "; "
+                    resu.latex += r";\quad "
+                self._display_coord_range(x, resu)
+        else:
+            self._display_coord_range(xx, resu)
+        return resu
+
+    def _display_coord_range(self, xx, resu):
+        r"""
+        Helper function for the display of a coordinate range
+
+        INPUT:
+
+        - ``xx`` -- symbolic expression corresponding to a
+          coordinate of ``self``
+        - ``resu`` -- formatted expression
+        
+        """
+        ind = self._xx.index(xx)
+        bounds = self._bounds[ind]
+        resu.txt += "{}: ".format(xx)
+        resu.latex += latex(xx) + r":\ "
+        if bounds[0][1]:
+            resu.txt += "["
+            resu.latex += r"\left["
+        else:
+            resu.txt += "("
+            resu.latex += r"\left("
+        xmin = bounds[0][0]
+        if xmin == -Infinity:
+            resu.txt += "-oo, "
+            resu.latex += r"-\infty,"
+        else:
+            resu.txt += "{}, ".format(xmin)
+            resu.latex += latex(xmin) + ","
+        xmax = bounds[1][0]
+        if xmax == Infinity:
+            resu.txt += "+oo"
+            resu.latex += r"+\infty"
+        else:
+            resu.txt += "{}".format(xmax)
+            resu.latex += latex(xmax)
+        if bounds[1][1]:
+            resu.txt += "]"
+            resu.latex += r"\right]"
+        else:
+            resu.txt += ")"
+            resu.latex += r"\right)"
 
     def add_restrictions(self, restrictions):
         r"""
@@ -621,6 +725,7 @@ class Chart(UniqueRepresentation, SageObject):
 
         Cartesian coordinates on the open unit disc in $\RR^2$::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M') # the open unit disc
             sage: X.<x,y> = M.chart()
             sage: X.add_restrictions(x^2+y^2<1)
@@ -640,11 +745,70 @@ class Chart(UniqueRepresentation, SageObject):
             sage: X_A.valid_coordinates(2/3,1/3)
             True
 
+        If appropriate, the restrictions are transformed into bounds on
+        the coordinate ranges::
+
+            sage: U = M.open_subset('U')
+            sage: X_U = X.restrict(U)
+            sage: X_U.coord_range()
+            x: (-oo, +oo); y: (-oo, +oo)
+            sage: X_U.add_restrictions([x<0, y>1/2])
+            sage: X_U.coord_range()
+            x: (-oo, 0); y: (1/2, +oo)
+
         """
+        import operator
         if not isinstance(restrictions, list):
             # case of a single condition or conditions to be combined by "or"
             restrictions = [restrictions]
         self._restrictions.extend(restrictions)
+        # Update of the coordinate bounds from the restrictions:
+        bounds = list(self._bounds) # convert to a list for modifications
+        new_restrictions = []
+        for restrict in self._restrictions:
+            restrict_used = False # determines whether restrict is used
+                                  # to set some coordinate bound
+            if not isinstance(restrict, tuple): # case of 'or' conditions
+                                                # excluded
+                operands = restrict.operands()
+                left = operands[0]
+                right = operands[1]
+                right_var = right.variables()
+                if left in self._xx:
+                    # the l.h.s. of the restriction is a single
+                    # coordinate
+                    right_coord = [coord for coord in self._xx
+                                   if coord in right_var]
+                    if not right_coord:
+                        # there is no other coordinate in the r.h.s.
+                        ind = self._xx.index(left)
+                        left_bounds = list(bounds[ind])
+                        oper = restrict.operator()
+                        oinf = left_bounds[0][0] # old coord inf
+                        osup = left_bounds[1][0] # old coord sup
+                        if oper == operator.lt:
+                            if osup == Infinity or right <= osup:
+                                left_bounds[1] = (right, False)
+                                restrict_used = True
+                        elif oper == operator.le:
+                            if osup == Infinity or right < osup:
+                                left_bounds[1] = (right, True)
+                                restrict_used = True
+                        elif oper == operator.gt:
+                            if oinf == -Infinity or right >= oinf:
+                                left_bounds[0] = (right, False)
+                                restrict_used = True
+                        elif oper == operator.ge:
+                            if oinf == -Infinity or right > oinf:
+                                left_bounds[0] = (right, True)
+                                restrict_used = True
+                        bounds[ind] = tuple(left_bounds)
+            if not restrict_used:
+                # if restrict has not been used to set a coordinate bound
+                # it is maintained in the list of restrictions:
+                new_restrictions.append(restrict)
+        self._bounds = tuple(bounds) 
+        self._restrictions = new_restrictions
 
 
     def restrict(self, subset, restrictions=None):
@@ -710,7 +874,6 @@ class Chart(UniqueRepresentation, SageObject):
             True
 
         """
-        import operator
         if subset == self._domain:
             return self
         if subset not in self._dom_restrict:
@@ -723,47 +886,10 @@ class Chart(UniqueRepresentation, SageObject):
             res = Chart(subset, coordinates)
             res._bounds = self._bounds
             res._restrictions.extend(self._restrictions)
-            res.add_restrictions(restrictions)
-            # Update of the coordinate bounds from the restrictions:
-            bounds = list(res._bounds) # convert to a list for modifications
-            for restrict in res._restrictions:
-                if not isinstance(restrict, tuple): # case of 'or' conditions
-                                                    # excluded
-                    operands = restrict.operands()
-                    left = operands[0]
-                    right = operands[1]
-                    right_var = right.variables()
-                    print "left, right, right_var: ", left, right, right_var
-                    if left in res._xx:
-                        # the l.h.s. of the restriction is a single
-                        # coordinate
-                        right_coord = [coord for coord in res._xx
-                                       if coord in right_var]
-                        print "right_coord:", right_coord
-                        if not right_coord:
-                            # there is no other coordinate in the r.h.s.
-                            ind = res._xx.index(left)
-                            left_bounds = list(bounds[ind])
-                            oper = restrict.operator()
-                            print "ind, left_bounds, oper: ", ind, left_bounds, oper
-                            oinf = left_bounds[0][0] # old coord inf
-                            osup = left_bounds[1][0] # old coord sup 
-                            if oper == operator.lt:
-                                if osup == Infinity or right <= osup:
-                                    left_bounds[1] = (right, False)
-                            elif oper == operator.le:
-                                if osup == Infinity or right < osup:
-                                    left_bounds[1] = (right, True)
-                            elif oper == operator.gt:
-                                print "right, left_bounds[0][0]:", right, left_bounds[0][0]
-                                if oinf == -Infinity or right >= oinf:
-                                    left_bounds[0] = (right, False)
-                                    print "left_bounds[0]:", left_bounds[0]
-                            elif oper == operator.ge:
-                                if oinf == -Infinity or right > oinf:
-                                    left_bounds[0] = (right, True)
-                            bounds[ind] = tuple(left_bounds)
-            res._bounds = tuple(bounds)
+            # The coordinate restrictions are added to the result chart and
+            # possibly transformed into coordinate bounds:
+            if restrictions is not None: 
+                res.add_restrictions(restrictions)
             # Update of supercharts and subcharts:
             res._supercharts.update(self._supercharts)
             for schart in self._supercharts:
@@ -1296,7 +1422,6 @@ class Chart(UniqueRepresentation, SageObject):
 
         """
         from sage.misc.functional import numerical_approx
-        from sage.misc.latex import latex
         from sage.plot.graphics import Graphics
         from sage.plot.line import line
         from diffmapping import DiffMapping
@@ -1658,7 +1783,6 @@ class FunctionChart(SageObject):
         r"""
         Special Sage function for the LaTeX representation of the object.
         """
-        from sage.misc.latex import latex
         return latex(self._express)
 
     def expr(self):
@@ -1729,7 +1853,6 @@ class FunctionChart(SageObject):
             (x, y) \mapsto x^{2} + 3 \, y + 1
 
         """
-        from sage.misc.latex import latex
         from utilities import FormattedExpansion
         result = FormattedExpansion(self)
         result.txt = repr((self._chart)[:]) + ' |--> ' + repr(self._express)
@@ -2748,7 +2871,6 @@ class MultiFunctionChart(SageObject):
         r"""
         Special Sage function for the LaTeX representation of the object.
         """
-        from sage.misc.latex import latex
         return latex(self._functions)
 
     def expr(self):
