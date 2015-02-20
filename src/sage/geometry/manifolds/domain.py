@@ -2397,7 +2397,11 @@ class ManifoldOpenSubset(ManifoldSubset):
             elif chart not in self._atlas:
                 raise ValueError("the {} has not been".format(chart) +
                                      " defined on the {}".format(self))
-            coord_expression = {chart: coord_expression}
+            if isinstance(coord_expression, (tuple, list)):
+                coord_expression = {chart: coord_expression}
+            else:
+                # case self.dim()=1
+                coord_expression = {chart: (coord_expression,)}
         return curve_set(coord_expression, name=name, latex_name=latex_name)
 
     def metric(self, name, signature=None, latex_name=None, dest_map=None):
@@ -2667,8 +2671,8 @@ class ManifoldOpenSubset(ManifoldSubset):
             latter being provided by the arguments ``chart1`` and ``chart2``
     
           In both cases, if the dimension of the arrival manifold is 1,
-          a single coordinate expression is expected (not a list or tuple with
-          a single element)
+          a single coordinate expression can be passed instead of a tuple with
+          a single element
         - ``chart1`` -- (default: None; used only in case (ii) above) chart on
           ``self`` defining the start coordinates involved in
           ``coord_functions`` for case (ii); if none is provided, the

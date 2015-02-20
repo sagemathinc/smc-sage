@@ -43,7 +43,43 @@ from sage.geometry.manifolds.utilities import simplify_chain
 class ManifoldCurve(DiffMapping):
     r"""
     Curve in a differentiable manifold.
+
+
+    EXAMPLES:
+
+    LaTeX representation of curves::
     
+        sage: M = Manifold(2, 'M')
+        sage: X.<x,y> = M.chart()
+        sage: R.<t> = RealLine()
+        sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi))
+        sage: latex(c)
+        "\\mbox{Curve in the 2-dimensional manifold 'M'}"
+        sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi), name='c')
+        sage: latex(c)
+        'c'
+        sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi), name='c',
+        ....:             latex_name=r'\gamma')
+        sage: latex(c)
+        '\\gamma'
+
+    Curves `\RR\longrightarrow\RR` can be composed: the operator `\circle` is
+    denoted by ``*``::
+
+        sage: f = R.curve(t^2, (t,-oo,+oo))
+        sage: g = R.curve(cos(t), (t,-oo,+oo))
+        sage: s = g*f ; s
+        Curve in the field R of real numbers
+        sage: s.display()
+        R --> R
+           t |--> cos(t^2)
+        sage: s = g*f ; s
+        sage: s = f*g ; s
+        Curve in the field R of real numbers
+        sage: s.display()
+        R --> R
+           t |--> cos(t)^2
+
     """
     def __init__(self, parent, coord_expression=None, name=None,
                  latex_name=None, is_diffeomorphism=False, is_identity=False):
@@ -88,20 +124,15 @@ class ManifoldCurve(DiffMapping):
             n = codomain.manifold().dim()
             coord_functions = {}
             for chart, expr in coord_expression.iteritems():
-                if chart not in codom_atlas:
-                    raise ValueError("{} is not a chart defined on {}".format(
-                                                              chart, codomain))
-                if len(expr) != n:
-                    raise ValueError("{} coordinate functions ".format(n) + 
-                                     "must be provided")
-                coord_functions[(param_chart, chart)] = expr
+                if isinstance(chart, tuple):
+                    # a pair of charts is passed:
+                    coord_functions[chart] = expr
+                else:
+                    coord_functions[(param_chart, chart)] = expr
         DiffMapping.__init__(self, parent, coord_functions=coord_functions,
                              name=name, latex_name=latex_name,
                              is_diffeomorphism=is_diffeomorphism,
                              is_identity=is_identity)
-        # self._param = self._domain.canonical_coordinate()
-        # self._tmin = self._domain.lower_bound()
-        # self._tmax = self._domain.upper_bound()
 
     def _repr_(self):
         r"""
@@ -120,38 +151,14 @@ class ManifoldCurve(DiffMapping):
             "Curve 'c' in the 2-dimensional manifold 'M'"
 
         """
+        if self._codomain._manifold._dim == 1:
+            return DiffMapping._repr_(self)
         description = "Curve "
         if self._name is not None:
             description += "'" + self._name + "' "
         description += "in the {}".format(self._codomain)
         return description
 
-    def _latex_(self):
-        r"""
-        Return a LaTeX representation of ``self``.
-
-        TESTS::
-
-            sage: M = Manifold(2, 'M')
-            sage: X.<x,y> = M.chart()
-            sage: R.<t> = RealLine()
-            sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi))
-            sage: c._latex_()
-            "\\mbox{Curve in the 2-dimensional manifold 'M'}"
-            sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi), name='c')
-            sage: c._latex_()
-            'c'
-            sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi), name='c',
-            ....:             latex_name=r'\gamma')
-            sage: c._latex_()
-            '\\gamma'
-
-        """
-        if self._latex_name is None:
-            return r'\mbox{' + str(self) + r'}'
-        else:
-           return self._latex_name
-    
     def coord_functions(self, chart=None):
         r"""
         Return the coordinate functions expressing ``self`` in a given chart.

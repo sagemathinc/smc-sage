@@ -75,8 +75,8 @@ class DiffMapping(Morphism):
         latter being provided by the arguments ``chart1`` and ``chart2``
 
       In both cases, if the dimension of the arrival manifold is 1,
-      a single coordinate expression is expected (not a list or tuple with a
-      single element)
+      a single coordinate expression can be passed instead of a tuple with a
+      single element
     - ``chart1`` -- (default: None; used only in case (ii) above) chart on
       domain `U` defining the start coordinates involved in ``coord_functions``
       for case (ii); if none is provided, the coordinates are assumed to
@@ -419,23 +419,24 @@ class DiffMapping(Morphism):
                     if chart1 is None: chart1 = domain._def_chart
                     if chart2 is None: chart2 = codomain._def_chart
                     if chart1 not in self._domain._atlas:
-                        raise ValueError("the {} has not been".format(chart1) +
-                                     " defined on the {}".format(self._domain))
+                        raise ValueError("{} is not a chart ".format(chart1) +
+                                     "defined on the {}".format(self._domain))
                     if chart2 not in self._codomain._atlas:
-                        raise ValueError("the {} has not been".format(chart2) +
+                        raise ValueError("{} is not a chart ".format(chart2) +
                                    " defined on the {}".format(self._codomain))
                     coord_functions = {(chart1, chart2): coord_functions}
                 for chart_pair, expression in coord_functions.iteritems():
                     n2 = self._codomain._manifold._dim
-                    if n2 > 1:
-                        if len(expression) != n2:
-                            raise ValueError("{} coordinate ".format(n2) +
-                                             "functions must be provided")
-                        self._coord_expression[chart_pair] = \
-                                 MultiFunctionChart(chart_pair[0], *expression)
-                    else:
-                        self._coord_expression[chart_pair] = \
-                                  MultiFunctionChart(chart_pair[0], expression)
+                    if n2 == 1:
+                        # a single expression entry is allowed (instead of a
+                        # tuple)
+                        if not isinstance(expression, (tuple, list)):
+                            expression = (expression,)
+                    if len(expression) != n2:
+                        raise ValueError("{} coordinate ".format(n2) +
+                                         "functions must be provided")
+                    self._coord_expression[chart_pair] = \
+                             MultiFunctionChart(chart_pair[0], *expression)
             self._name = name
             if latex_name is None:
                 self._latex_name = self._name
@@ -487,8 +488,11 @@ class DiffMapping(Morphism):
             description = "differentiable mapping"
         if self._name is not None:
             description += " '%s'" % self._name
-        if self._is_diffeo and self._domain == self._codomain:
-            description += " of the {}".format(self._domain)
+        if self._domain == self._codomain:
+            if self._is_diffeo:
+                description += " of the {}".format(self._domain)
+            else:
+                description += " from the {} to itself".format(self._domain)
         else:
             description += " from the {} to the {}".format(self._domain,
                                                            self._codomain)
@@ -844,13 +848,23 @@ class DiffMapping(Morphism):
             result.txt += repr(coords1) + " |--> "
             result.latex += latex(coords1) + r"& \longmapsto & "
             if chart2 == chart1:
-                result.txt += repr(expression) + "\n"
-                result.latex += latex(expression) + r"\\"
+                if len(expression) == 1:
+                    result.txt += repr(expression[0]) + "\n"
+                    result.latex += latex(expression[0]) + r"\\"
+                else:
+                    result.txt += repr(expression) + "\n"
+                    result.latex += latex(expression) + r"\\"
             else:
-                result.txt += repr(coords2) + " = " + \
-                              repr(expression) + "\n"
-                result.latex += latex(coords2) + " = " + \
-                                latex(expression) + r"\\"
+                if len(expression) == 1:
+                    result.txt += repr(coords2[0]) + " = " + \
+                                  repr(expression[0]) + "\n"
+                    result.latex += latex(coords2[0]) + " = " + \
+                                    latex(expression[0]) + r"\\"
+                else:
+                    result.txt += repr(coords2) + " = " + \
+                                  repr(expression) + "\n"
+                    result.latex += latex(coords2) + " = " + \
+                                    latex(expression) + r"\\"
         except (TypeError, ValueError):
             pass
 

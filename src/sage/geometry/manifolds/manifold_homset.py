@@ -108,6 +108,8 @@ class ManifoldHomset(Homset, UniqueRepresentation):
         Category of endsets of sets
         sage: E.is_endomorphism_set()
         True
+        sage: E is End(M)
+        True
 
     In this case, the homset is a monoid for the law of morphism composition::
 
@@ -490,7 +492,7 @@ class ManifoldCurveSet(ManifoldHomset):
         Curve in the 2-dimensional manifold 'M'
         sage: c.display()
         R --> M
-           t |--> (x, y) = (0, 0)
+           t |--> (x, y) = (1/(t^2 + 1) - 1/2, 0)
 
     The test suite is passed::
 
@@ -512,7 +514,72 @@ class ManifoldCurveSet(ManifoldHomset):
         Curve in the open subset 'U' of the 2-dimensional manifold 'M'
         sage: c.display()
         (0, 1) --> U
-           t |--> (x, y) = (0, 0)
+           t |--> (x, y) = (1/(t^2 + 1) - 1/2, 0)
+
+    The set of curves `\RR\longrightarrow \RR` is a set of (manifold)
+    endomorphisms::
+
+        sage: E = Hom(R, R) ; E
+        Set of Morphisms from field R of real numbers to field R of real numbers in Category of sets
+        sage: E.category()
+        Category of endsets of sets
+        sage: E.is_endomorphism_set()
+        True
+        sage: E is End(R)
+        True
+
+    It is a monoid for the law of morphism composition::
+
+        sage: E in Monoids()
+        True
+
+    The identity element of the monoid is of course the identity map of `\RR`::
+
+        sage: E.one()
+        identity map 'Id_R' of the field R of real numbers
+        sage: E.one() is R.identity_map()
+        True
+        sage: E.one().display()
+        Id_R: R --> R
+           t |--> t
+        on (0, 1): t |--> t
+
+    A ``typical element`` of the monoid::
+
+        sage: E.an_element().display()
+        R --> R
+           t |--> 1/(t^2 + 1) - 1/2
+
+    The test suite is passed by ``E``::
+
+        sage: TestSuite(E).run()
+
+    Similarly, the set of curves `I\longrightarrow I` is a monoid, whose
+    elements are (manifold) endomorphisms::
+
+        sage: EI = Hom(I, I) ; EI
+        Set of Morphisms from Real interval (0, 1) to Real interval (0, 1) in Category of facade sets
+        sage: EI.category()
+        Category of endsets of sets
+        sage: EI is End(I)
+        True
+        sage: EI in Monoids()
+        True
+
+    The identity element and a "typical" element of this monoid::
+
+        sage: EI.one()
+        identity map 'Id_(0, 1)' of the Real interval (0, 1)
+        sage: EI.one().display()
+        Id_(0, 1): (0, 1) --> (0, 1)
+           t |--> t
+        sage: EI.an_element().display()
+        (0, 1) --> (0, 1)
+           t |--> 1/2/(t^2 + 1) + 1/4
+
+    The test suite is passed by ``EI``::
+
+        sage: TestSuite(EI).run()
 
     """
 
@@ -520,7 +587,28 @@ class ManifoldCurveSet(ManifoldHomset):
 
     def __init__(self, domain, codomain, name=None, latex_name=None):
         r"""
-        Construct a set of curves.
+        TESTS::
+
+            sage: M = Manifold(3, 'M')
+            sage: X.<x,y,z> = M.chart()
+            sage: R.<t> = RealLine()
+            sage: from sage.geometry.manifolds.manifold_homset import ManifoldCurveSet
+            sage: H = ManifoldCurveSet(R, M) ; H
+            Set of Morphisms from field R of real numbers to 3-dimensional
+             manifold 'M' in Category of sets
+            sage: TestSuite(H).run()
+            sage: ManifoldCurveSet(R, M) is Hom(R, M)
+            True
+            sage: H = ManifoldCurveSet(R, R) ; H
+            Set of Morphisms from field R of real numbers to field R of real numbers in Category of sets
+            sage: TestSuite(H).run()
+            sage: I = R.open_interval(-1, 2)
+            sage: H =  ManifoldCurveSet(I, M) ; H
+            Set of Morphisms from Real interval (-1, 2) to 3-dimensional manifold 'M' in Category of facade sets
+            sage: TestSuite(H).run()
+            sage: H =  ManifoldCurveSet(I, I) ; H
+            Set of Morphisms from Real interval (-1, 2) to Real interval (-1, 2) in Category of facade sets
+            sage: TestSuite(H).run()
 
         """
         from sage.geometry.manifolds.manifold import RealLine, OpenInterval
@@ -561,16 +649,66 @@ class ManifoldCurveSet(ManifoldHomset):
         - instance of 
           :class:`~sage.geometry.manifolds.curve.ManifoldCurve`
 
-        EXAMPLE:
+        EXAMPLES::
+
+            sage: M = Manifold(3, 'M')
+            sage: X.<x,y,z> = M.chart()
+            sage: R.<t> = RealLine()
+            sage: c = Hom(R,M)._an_element_() ; c
+            Curve in the 3-dimensional manifold 'M'
+            sage: c.display()
+            R --> M
+               t |--> (x, y, z) = (1/(t^2 + 1) - 1/2, 0, 0)
+
+        ::
+
+            sage: I = R.open_interval(0, pi)
+            sage: c = Hom(I,M)._an_element_() ; c
+            Curve in the 3-dimensional manifold 'M'
+            sage: c.display()
+            (0, pi) --> M
+               t |--> (x, y, z) = (1/(t^2 + 1) - 1/2, 0, 0)
+
+        ::
+
+            sage: c = Hom(I,I)._an_element_() ; c
+            differentiable mapping from the Real interval (0, pi) to itself
+            sage: c.display()
+            (0, pi) --> (0, pi)
+               t |--> 1/4*pi + 1/2*pi/(t^2 + 1)
 
         """
+        from sage.rings.infinity import Infinity
+        from sage.rings.rational_field import QQ
         dom = self.domain()
         codom = self.codomain()
-        # A constant curve is constructed:
+        # A simple curve is constructed around a point of the codomain:
         chart2 = codom.default_chart()
         target_point = chart2.domain().an_element()
-        target_coord = target_point.coord(chart2)
+        target_coord = list(target_point.coord(chart2))
+        bounds = chart2._bounds[0]  # bounds of first coordinate
+        # Determination of an interval (x1, x2) arround target_point:
+        xmin = bounds[0][0]
+        xmax = bounds[1][0]
+        one_half = QQ(1)/QQ(2)
+        if xmin == -Infinity:
+            if xmax == Infinity:
+                x1 = - one_half
+                x2 = one_half
+            else:
+                x1 = xmax - 3*one_half
+                x2 = xmax - one_half
+        else:
+            if xmax == Infinity:
+                x1 = xmin + one_half
+                x2 = xmin + 3*one_half
+            else:
+                dx = (xmax - xmin)/4
+                x1 = xmin + dx
+                x2 = xmax - dx
+        # The coordinate function defining the curve:
+        t = dom.canonical_coordinate()
+        target_coord[0] = x1 + (x2-x1)/(1+t*t)
         coord_expression = {chart2: target_coord}
         return self.element_class(self, coord_expression)
-
 
