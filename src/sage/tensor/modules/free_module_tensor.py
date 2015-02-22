@@ -1767,68 +1767,6 @@ class FreeModuleTensor(ModuleElement):
 
     ######### End of ModuleElement arithmetic operators ########
 
-    def __radd__(self, other):
-        r"""
-        Addition on the left with ``other``.
-
-        This allows to write "0 + t", where "t" is a tensor
-
-        EXAMPLES::
-
-            sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
-            sage: e = M.basis('e')
-            sage: a = M.tensor((2,0), name='a')
-            sage: a[:] = [[4,0], [-2,5]]
-            sage: b = M.tensor((2,0), name='b')
-            sage: b[:] = [[0,1], [2,3]]
-            sage: s = a.__radd__(b) ; s
-            Type-(2,0) tensor a+b on the Rank-2 free module M over the Integer Ring
-            sage: s[:]
-            [4 1]
-            [0 8]
-            sage: s == a+b
-            True
-            sage: s = a.__radd__(0) ; s
-            Type-(2,0) tensor +a on the Rank-2 free module M over the Integer Ring
-            sage: s == a
-            True
-            sage: 0 + a == a
-            True
-
-        """
-        return self.__add__(other)
-
-    def __rsub__(self, other):
-        r"""
-        Subtraction from ``other``.
-
-        This allows to write ``0 - t``, where ``t`` is a tensor.
-
-        EXAMPLES::
-
-            sage: M = FiniteRankFreeModule(ZZ, 2, name='M')
-            sage: e = M.basis('e')
-            sage: a = M.tensor((2,0), name='a')
-            sage: a[:] = [[4,0], [-2,5]]
-            sage: b = M.tensor((2,0), name='b')
-            sage: b[:] = [[0,1], [2,3]]
-            sage: s = a.__rsub__(b) ; s
-            Type-(2,0) tensor -a+b on the Rank-2 free module M over the Integer Ring
-            sage: s[:]
-            [-4  1]
-            [ 4 -2]
-            sage: s == b - a
-            True
-            sage: s = a.__rsub__(0) ; s
-            Type-(2,0) tensor +-a on the Rank-2 free module M over the Integer Ring
-            sage: s == -a
-            True
-            sage: 0 - a == -a
-            True
-
-        """
-        return (-self).__add__(other)
-
     def __mul__(self, other):
         r"""
         Tensor product.

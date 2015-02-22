@@ -6,7 +6,7 @@ Given a differentiable manifold `M`, a *differentiable curve* curve in
 
 .. MATH::
 
-    \gamma: I \longrightarrow N
+    \gamma: I \longrightarrow M
 
 where `I` is an interval of `\RR`. 
 
@@ -15,6 +15,7 @@ Differentiable curves are implemented by the class :class:`ManifoldCurve`.
 AUTHORS:
 
 - Eric Gourgoulhon (2015): initial version
+
 
 REFERENCES:
 
@@ -44,38 +45,117 @@ class ManifoldCurve(DiffMapping):
     r"""
     Curve in a differentiable manifold.
 
+    Given a differentiable manifold `M`, a *differentiable curve* curve in
+    `M` is a differential mapping
+    
+    .. MATH::
+    
+        \gamma: I \longrightarrow M
+    
+    where `I` is an interval of `\RR`. 
+
+    This is a Sage *element* class, whose *parent* class is
+    :class:`~sage.geometry.manifolds.manifold_homset.ManifoldCurveSet`.
+
+    INPUT:
+
+    - ``parent`` -- the set of curves `\mathrm{Hom}(I, M)` to which the curve
+      belongs; this must be an instance of
+      :class:`~sage.geometry.manifolds.manifold_homset.ManifoldCurveSet`
+    - ``coord_expression`` -- (default: ``None``) dictionary (possibly empty)
+      of the functions of the curve parameter `t` expressing the curve in
+      various charts of `M`, the keys of the dictionary being the charts and
+      the values being lists or tuples of `n` symbolic expressions of `t`,
+      where `n` is the dimension of `M`
+    - ``name`` -- (default: ``None``) string; symbol given to the curve
+    - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to denote the
+      the curve; if none is provided, ``name`` will be used
+    - ``is_diffeomorphism`` -- (default: ``False``) determines whether the
+      constructed object is a diffeomorphism; if set to ``True``,
+      then `M` must have dimension one.  
+    - ``is_identity`` -- (default: ``False``) determines whether the
+      constructed object is the identity map; if set to ``True``,
+      then `M` must be the interval `I`. 
 
     EXAMPLES:
 
-    LaTeX representation of curves::
-    
+    The lemniscate of Gerono in the 2-dimensional Euclidean plane::
+
         sage: M = Manifold(2, 'M')
         sage: X.<x,y> = M.chart()
         sage: R.<t> = RealLine()
-        sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi))
+        sage: c = M.curve({X: [sin(t), sin(2*t)/2]}, (t, 0, 2*pi), name='c') ; c
+        Curve 'c' in the 2-dimensional manifold 'M'
+        sage: type(c)
+        <class 'sage.geometry.manifolds.curve.ManifoldCurveSet_with_category.element_class'>
+
+    Curves are considered as (manifold) morphisms from real intervals to
+    differentiable manifolds::
+    
+        sage: c.parent()
+        Set of Morphisms from Real interval (0, 2*pi) to 2-dimensional manifold 'M' in Category of facade sets
+        sage: I = R.open_interval(0, 2*pi)
+        sage: c.parent() is Hom(I, M)
+        True
+        sage: c.domain()
+        Real interval (0, 2*pi)
+        sage: c.domain() is I
+        True
+        sage: c.codomain()
+        2-dimensional manifold 'M'
+
+    Accordingly, all methods of
+    :class:`~sage.geometry.manifolds.diffmapping.DiffMapping` are available
+    for them. In particular, the method
+    :meth:`~sage.geometry.manifolds.diffmapping.DiffMapping.display`
+    shows the coordinate representations in various charts of manifold ``M``::
+
+        sage: c.display()
+        c: (0, 2*pi) --> M
+           t |--> (x, y) = (sin(t), 1/2*sin(2*t))
+
+    Instead of a dictionary of coordinate expressions, the curve can be
+    defined by a single coordinate expression in a given chart::
+
+        sage: c = M.curve([sin(t), sin(2*t)/2], (t, 0, 2*pi), chart=X, name='c') ; c
+        Curve 'c' in the 2-dimensional manifold 'M'
+        sage: c.display()
+        c: (0, 2*pi) --> M
+           t |--> (x, y) = (sin(t), 1/2*sin(2*t))
+
+    Since ``X`` is the default chart on ``M``, it can be omitted::
+
+        sage: c = M.curve([sin(t), sin(2*t)/2], (t, 0, 2*pi), name='c') ; c
+        Curve 'c' in the 2-dimensional manifold 'M'
+        sage: c.display()
+        c: (0, 2*pi) --> M
+           t |--> (x, y) = (sin(t), 1/2*sin(2*t))
+
+    LaTeX symbols representing a curve::
+
+        sage: c = M.curve([sin(t), sin(2*t)/2], (t, 0, 2*pi))
         sage: latex(c)
-        "\\mbox{Curve in the 2-dimensional manifold 'M'}"
-        sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi), name='c')
+        \mbox{Curve in the 2-dimensional manifold 'M'}
+        sage: c = M.curve([sin(t), sin(2*t)/2], (t, 0, 2*pi), name='c')
         sage: latex(c)
-        'c'
-        sage: c = M.curve([cos(t), sin(2*t)], (t, 0, 2*pi), name='c',
+        c
+        sage: c = M.curve([sin(t), sin(2*t)/2], (t, 0, 2*pi), name='c',
         ....:             latex_name=r'\gamma')
         sage: latex(c)
-        '\\gamma'
+        \gamma
 
-    Curves `\RR\longrightarrow\RR` can be composed: the operator `\circle` is
+    Curves `\RR\longrightarrow\RR` can be composed: the operator `\circ` is
     denoted by ``*``::
 
         sage: f = R.curve(t^2, (t,-oo,+oo))
         sage: g = R.curve(cos(t), (t,-oo,+oo))
         sage: s = g*f ; s
-        Curve in the field R of real numbers
+        differentiable mapping from the field R of real numbers to itself
         sage: s.display()
         R --> R
            t |--> cos(t^2)
-        sage: s = g*f ; s
         sage: s = f*g ; s
-        Curve in the field R of real numbers
+        differentiable mapping from the field R of real numbers to itself
         sage: s.display()
         R --> R
            t |--> cos(t)^2
@@ -107,7 +187,7 @@ class ManifoldCurve(DiffMapping):
         The identity of interval I::
 
             sage: c = Hom(I,I)({}, is_identity=True) ; c
-            Curve 'Id_(0, 2*pi)' in the Real interval (0, 2*pi)
+            identity map 'Id_(0, 2*pi)' of the Real interval (0, 2*pi)
             sage: TestSuite(c).run()
 
         """
@@ -245,7 +325,7 @@ class ManifoldCurve(DiffMapping):
         """
         # Case of a point in the domain:
         if isinstance(t, ManifoldPoint):
-            return DiffMapping.__call__(t)
+            return DiffMapping.__call__(self, t)
         # Case of a value of the canonical coordinate in the domain:
         codom = self._codomain
         canon_chart = self._domain._canon_chart
@@ -273,3 +353,23 @@ class ManifoldCurve(DiffMapping):
         return codom.element_class(codom, coords=coords, chart=chart_pair[1],
                                    name=name, latex_name=latex_name,
                                    check_coords=False)
+
+    def tangent_vector_field(self, name=None, latex_name=None):
+        r"""
+        Return the tangent vector field to ``self``
+
+        """        
+        resu = self._domain.vector_field(name=name, latex_name=latex_name,
+                                         dest_map=self)
+        canon_chart = self._domain.canonical_chart()
+        codom = self._codomain
+        dim = codom._manifold._dim
+        codom_top_charts = codom._top_charts
+        for chart in codom_top_charts:
+            try:
+                jacob = self.differential_functions(canon_chart, chart)
+                resu.add_comp(chart.frame())[:] = [jacob[i][0]
+                                                           for i in range(dim)]
+            except ValueError:
+                pass
+        return resu

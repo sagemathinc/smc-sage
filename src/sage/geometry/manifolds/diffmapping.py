@@ -58,7 +58,10 @@ class DiffMapping(Morphism):
     differentiable manifolds. The set of all differentiable mappings from
     `U` to `V` is therefore the homset between `U` and `V` and is denoted
     by `\mathrm{Hom}(U,V)`.
-    
+
+    The class :class:`DiffMapping` is a Sage *element* class, whose *parent*
+    class is :class:`~sage.geometry.manifolds.manifold_homset.ManifoldHomset`.
+
     INPUT:
 
     - ``parent`` -- homset `\mathrm{Hom}(U,V)` to which the differentiable

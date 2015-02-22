@@ -231,6 +231,15 @@ class ManifoldHomset(Homset, UniqueRepresentation):
         r"""
         LaTeX representation of the object.
 
+        EXAMPLE::
+        
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: N = Manifold(3, 'N')
+            sage: H = Hom(M, N)
+            sage: H._latex_()
+            '\\mathrm{Hom}\\left(M,N\\right)'
+
         """
         if self._latex_name is None:
             return r'\mbox{' + str(self) + r'}'
@@ -296,6 +305,25 @@ class ManifoldHomset(Homset, UniqueRepresentation):
         - instance of 
           :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
 
+        EXAMPLES::
+        
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: N = Manifold(3, 'N')
+            sage: Y.<u,v,w> = N.chart()
+            sage: H = Hom(M, N)
+            sage: f = H._element_constructor_({(X, Y): [x+y, x-y, x*y]}, name='f') ; f
+            differentiable mapping 'f' from the 2-dimensional manifold 'M' to
+             the 3-dimensional manifold 'N'
+            sage: f.display()
+            f: M --> N
+               (x, y) |--> (u, v, w) = (x + y, x - y, x*y)
+            sage: id = Hom(M, M)._element_constructor_({}, is_identity=True) ; id
+            identity map 'Id_M' of the 2-dimensional manifold 'M'
+            sage: id.display()
+            Id_M: M --> M
+               (x, y) |--> (x, y)
+
         """
         # Standard construction
         return self.element_class(self, coord_functions=coord_functions,
@@ -350,8 +378,19 @@ class ManifoldHomset(Homset, UniqueRepresentation):
         r"""
         Determine whether coercion to self exists from other parent.
 
-        EXAMPLES:
+        EXAMPLE::
 
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: N = Manifold(3, 'N')
+            sage: Y.<u,v,w> = N.chart()
+            sage: H = Hom(M,N)
+            sage: H._coerce_map_from_(ZZ)
+            False
+            sage: H._coerce_map_from_(M)
+            False
+            sage: H._coerce_map_from_(N)
+            False
 
         """
         #!# for the time being:
@@ -362,7 +401,20 @@ class ManifoldHomset(Homset, UniqueRepresentation):
         r"""
         To bypass Homset.__call__, enforcing Parent.__call__ instead.
 
-        EXAMPLES:
+        EXAMPLE::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: N = Manifold(3, 'N')
+            sage: Y.<u,v,w> = N.chart()
+            sage: H = Hom(M,N)
+            sage: f = H.__call__({(X, Y): [x+y, x-y, x*y]}, name='f') ; f
+            differentiable mapping 'f' from the 2-dimensional manifold 'M' to
+             the 3-dimensional manifold 'N'
+            sage: f.display()
+            f: M --> N
+               (x, y) |--> (u, v, w) = (x + y, x - y, x*y)
+
         """
         return Parent.__call__(self, *args, **kwds)
 
@@ -632,6 +684,18 @@ class ManifoldCurveSet(ManifoldHomset):
 
         - instance of 
           :class:`~sage.geometry.manifolds.curve.ManifoldCurve`
+
+        EXAMPLES::
+        
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: R.<t> = RealLine() ; R
+            field R of real numbers
+            sage: H = Hom(R, M)
+            sage: c = H._element_constructor_({X: [sin(t), sin(2*t)/2]}, name='c') ; c
+            Curve 'c' in the 2-dimensional manifold 'M'
+            sage: c = Hom(R, R)._element_constructor_({}, is_identity=True) ; c
+            identity map 'Id_R' of the field R of real numbers
 
         """
         # Standard construction

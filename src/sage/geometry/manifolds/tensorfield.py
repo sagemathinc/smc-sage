@@ -1506,24 +1506,6 @@ class TensorField(ModuleElement):
 
     ######### End of ModuleElement arithmetic operators ########
 
-    def __radd__(self, other):
-        r"""
-        Addition on the left with ``other``.
-
-        This allows to write "0 + t", where "t" is a tensor
-
-        """
-        return self.__add__(other)
-
-    def __rsub__(self, other):
-        r"""
-        Subtraction from ``other``.
-
-        This allows to write "0 - t", where "t" is a tensor
-
-        """
-        return (-self).__add__(other)
-
     def __mul__(self, other):
         r"""
         Tensor product.
