@@ -1,14 +1,18 @@
 r"""
 Tangent spaces
 
+The class :class:`TangentSpace` implements vector spaces tangent to a
+differentiable manifold and the class :class:`TangentVector` implements the
+corresponding tangent vectors. 
+ 
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
 
 REFERENCES:
 
-- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
-  2013)
+- Chap. 3 of J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer
+  (New York) (2013)
 
 """
 
@@ -23,12 +27,29 @@ REFERENCES:
 #******************************************************************************
 
 from sage.symbolic.ring import SR
-from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule, \
-                                                    FiniteRankFreeModuleElement
+from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule
+from sage.tensor.modules.free_module_tensor import FiniteRankFreeModuleElement
 
 class TangentVector(FiniteRankFreeModuleElement):
     r"""
-    Tangent vector `v` beloning to the tangent space `T` at `p`
+    Tangent vector to a differentiable manifold at a given point.
+    
+    This is a Sage *element* class, the corresponding *parent* class being
+    :class:`~sage.geometry.manifolds.tangentspace.TangentSpace`.
+    It inherits from
+    :class:`~sage.tensor.modules.free_module_tensor.FiniteRankFreeModuleElement`
+    since :class:`~sage.geometry.manifolds.tangentspace.TangentSpace`
+    inherits from
+    :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`. 
+
+    INPUT:
+
+    - ``parent`` -- the tangent space to which the vector belongs (must be an
+      instance of
+      :class:`~sage.geometry.manifolds.tangentspace.TangentSpace`)
+    - ``name`` -- (default: ``None``) string; symbol given to the vector
+    - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to denote the
+      the vector; if none is provided, ``name`` will be used
 
     EXAMPLES:
 
@@ -67,7 +88,18 @@ class TangentVector(FiniteRankFreeModuleElement):
 
 class TangentSpace(FiniteRankFreeModule):
     r"""
-    Tangent space at a given point on a differentiable manifold.
+    Tangent space at a given point of a differentiable manifold.
+
+    Since the tangent space at a given point `p` of a differentiable
+    manifold `M` of dimension `n` is a `n`-dimensional vector space over `\RR`
+    without any distinguished basis, the class :class:`TangentSpace` inherits
+    from
+    :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`,
+    which implements free modules of finite rank (hence vector spaces of finite
+    dimension) without any distinguished basis. 
+
+    This is a Sage *parent* class, the corresponding *element* class being
+    :class:`~sage.geometry.manifolds.tangentspace.TangentVector`.
 
     INPUT:
 
@@ -85,13 +117,14 @@ class TangentSpace(FiniteRankFreeModule):
         sage: Tp = p.tangent_space() ; Tp
         tangent space at point 'p' on 2-dimensional manifold 'M'
 
-    Tangent spaces belong to a subclass of :class:`TangentSpace`::
+    Tangent spaces actually belong to a dynamically generated subclass of
+    :class:`TangentSpace`::
 
         sage: type(Tp)
         <class 'sage.geometry.manifolds.tangentspace.TangentSpace_with_category'>
 
-    They are free modules of finite rank over Sage Symbolic Rank (actually
-    vector space of finite dimension over `\RR`)::
+    They are free modules of finite rank over Sage's Symbolic Ring (actually
+    vector spaces of finite dimension over `\RR`)::
 
         sage: isinstance(Tp, FiniteRankFreeModule)
         True
@@ -124,7 +157,7 @@ class TangentSpace(FiniteRankFreeModule):
         [Basis (d/dx,d/dy) on the tangent space at point 'p' on 2-dimensional manifold 'M',
          Basis (d/du,d/dv) on the tangent space at point 'p' on 2-dimensional manifold 'M']
 
-    All the bases defined on Tp are on the same footing. Accordingly the
+    All the bases defined on ``Tp`` are on the same footing. Accordingly the
     tangent space is not in the category of modules with a distinguished
     basis::
 
@@ -137,7 +170,13 @@ class TangentSpace(FiniteRankFreeModule):
         sage: Tp in Modules(SR)
         True
 
-    A random element::
+    Since the base ring is a field, it is actually in the category of
+    vector spaces::
+
+        sage: Tp in VectorSpaces(SR)
+        True
+
+    A typical element::
 
         sage: v = Tp.an_element() ; v
         tangent vector at point 'p' on 2-dimensional manifold 'M'

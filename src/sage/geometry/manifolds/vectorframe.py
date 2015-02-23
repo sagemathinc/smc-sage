@@ -249,23 +249,35 @@ class VectorFrame(FreeModuleBasis):
                         r"\right)\right)"
             self._symbol = from_frame._symbol
             self._latex_symbol = from_frame._latex_symbol
+            # Names of the dual coframe:
+            self_dual = self.dual_basis()
+            from_dual = from_frame.dual_basis()
+            for i in range(n):
+                self_dual._form[i]._name = from_dual._form[i]._name
+                self_dual._form[i]._latex_name = from_dual._form[i]._latex_name
+            self_dual._name = "(" + self._domain._name + ", (" + \
+                  ",".join([self_dual._form[i]._name for i in range(n)]) + "))"
+            self_dual._latex_name = r"\left(" + self._domain._latex_name + \
+                r" ,\left(" + \
+                ",".join([self_dual._form[i]._latex_name for i in range(n)])+ \
+                r"\right)\right)"
         # The frame is added to the domain's set of frames, as well as to all
         # the superdomains' sets of frames; moreover the first defined frame
         # is considered as the default one
-        dest_map_name = self._dest_map._name
+        dest_map = self._dest_map
         for sd in self._domain._supersets:
             for other in sd._frames:
                 if repr(self) == repr(other):
-                    raise ValueError("The " + str(self) + " already exist on" +
-                                     " the " + str(sd))
+                    raise ValueError("the " + str(self) + " already exists " +
+                                     "on the " + str(sd))
             sd._frames.append(self)
             sd._top_frames.append(self)
             if sd._def_frame is None:
                 sd._def_frame = self
             if isinstance(sd, ManifoldOpenSubset):
                 # Initialization of the zero elements of tensor field modules:
-                if dest_map_name in sd._vector_field_modules:
-                    xsd = sd._vector_field_modules[dest_map_name] #!# to be improved
+                if dest_map in sd._vector_field_modules:  #!# check
+                    xsd = sd._vector_field_modules[dest_map]
                     if not isinstance(xsd, FiniteRankFreeModule):
                         for t in xsd._tensor_modules.itervalues():
                             t(0).add_comp(self)
@@ -365,10 +377,10 @@ class VectorFrame(FreeModuleBasis):
           describing the automorphism `P` that relates the current frame
           `(e_i)` (described by ``self``) to the new frame `(n_i)` according
           to `n_i = P(e_i)`
-        - ``symbol`` -- a letter (of a few letters) to denote a generic vector of
-          the frame
-        - ``latex_symbol`` -- (default: None) symbol to denote a generic vector of
-          the frame; if None, the value of ``symbol`` is used.
+        - ``symbol`` -- a letter (of a few letters) to denote a generic vector
+          of the frame
+        - ``latex_symbol`` -- (default: None) symbol to denote a generic vector
+          of the frame; if None, the value of ``symbol`` is used.
 
         OUTPUT:
 
@@ -559,8 +571,8 @@ class VectorFrame(FreeModuleBasis):
         if self._structure_coef is None:
             fmodule = self._fmodule
             self._structure_coef = CompWithSym(self._fmodule._ring, self, 3,
-                                                    start_index=fmodule._sindex,
-                                     output_formatter=fmodule._output_formatter,
+                                                   start_index=fmodule._sindex,
+                                    output_formatter=fmodule._output_formatter,
                                                                  antisym=(1,2))
             si = fmodule._sindex
             nsi = si + fmodule.rank()
@@ -581,8 +593,8 @@ class VectorFrame(FreeModuleBasis):
         INPUT:
 
         - ``point`` -- (instance of
-          :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in the
-          domain of ``self`` (denoted `e` hereafter)
+          :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in
+          the domain of ``self`` (denoted `e` hereafter)
 
         OUTPUT:
 

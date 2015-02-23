@@ -358,9 +358,9 @@ class ManifoldCurve(DiffMapping):
         r"""
         Return the tangent vector field to ``self``
 
-        """        
-        resu = self._domain.vector_field(name=name, latex_name=latex_name,
-                                         dest_map=self)
+        """
+        vmodule = self._domain.vector_field_module(dest_map=self)
+        resu = vmodule.element_class(vmodule, name=name, latex_name=latex_name)
         canon_chart = self._domain.canonical_chart()
         codom = self._codomain
         dim = codom._manifold._dim
@@ -368,8 +368,9 @@ class ManifoldCurve(DiffMapping):
         for chart in codom_top_charts:
             try:
                 jacob = self.differential_functions(canon_chart, chart)
-                resu.add_comp(chart.frame())[:] = [jacob[i][0]
-                                                           for i in range(dim)]
             except ValueError:
-                pass
+                continue
+            frame = vmodule.basis(from_frame=chart.frame())
+            resu.add_comp(frame)[:, canon_chart] = [jacob[i][0]
+                                                          for i in range(dim)]
         return resu

@@ -260,6 +260,7 @@ class Submanifold(Manifold):
 
         Pushforward of a vector field defined on `S^2`, submanifold of `\RR^3`::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'R^3', r'\RR^3', start_index=1)
             sage: c_cart.<x,y,z> = M.chart() # Cartesian coordinates on R^3
             sage: S = M.submanifold(2, 'S^2', start_index=1)
@@ -344,7 +345,7 @@ class Submanifold(Manifold):
             raise ValueError("No common chart could be find to compute " +
                              "the pushforward of the tensor field.")
         fmodule2 = dom1.vector_field_module(dest_map=embed)
-        frame2 = dom1.vector_frame(dest_map=embed, from_frame=chart2._frame)
+        frame2 = fmodule2.basis(from_frame=chart2._frame)
         si1 = dom1._manifold._sindex
         si2 = fmodule2._sindex
         ring2 = fmodule2._ring

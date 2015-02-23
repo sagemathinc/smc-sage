@@ -18,11 +18,11 @@ AUTHORS:
 
 REFERENCES:
 
-- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
-  Interscience Publishers (New York, 1963)
-- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
-  2013)
-- B O'Neill : "Semi-Riemannian Geometry", Academic Press (San Diego, 1983)
+- S. Kobayashi & K. Nomizu : *Foundations of Differential Geometry*, vol. 1,
+  Interscience Publishers (New York) (1963)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
+- B O'Neill : *Semi-Riemannian Geometry*, Academic Press (San Diego) (1983)
 
 """
 
@@ -54,7 +54,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
     .. MATH::
 
-        \Phi:\ U\subset S \longrightarrow V\subset \mathcal{M}
+        \Phi:\ U\subset S \longrightarrow V\subset M
 
     the module `\mathcal{X}(U,\Phi)` is the set of all vector fields of
     the type
@@ -843,28 +843,38 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
     def __init__(self, domain, dest_map=None):
         from scalarfield import ScalarField
         self._domain = domain
-        name = "X(" + domain._name
-        latex_name = r"\mathcal{X}\left(" + domain._latex_name
         if dest_map is None:
             dest_map = domain._identity_map
         self._dest_map = dest_map
-        if dest_map == domain._identity_map:
+        self._ambient_domain = self._dest_map._codomain
+        name = "X(" + domain._name
+        latex_name = r"\mathcal{X}\left(" + domain._latex_name
+        if self._dest_map == domain._identity_map:
             name += ")"
             latex_name += r"\right)"
         else:
             name += "," + self._dest_map._name + ")"
             latex_name += "," + self._dest_map._latex_name + r"\right)"
-        self._ambient_domain = dest_map._codomain
         manif = self._ambient_domain._manifold
         FiniteRankFreeModule.__init__(self, domain.scalar_field_algebra(),
                                   manif._dim, name=name, latex_name=latex_name,
                                   start_index=manif._sindex,
                                   output_formatter=ScalarField.function_chart)
+        #
+        # Special treatment when self._dest_map != identity:
+        # bases of self are created from vector frames of the ambient domain
+        #
+        self._induced_bases = {}
+        if self._dest_map != self._domain._identity_map:
+            for frame in self._ambient_domain._top_frames:
+                basis = self.basis(from_frame=frame)
+                self._induced_bases[frame] = basis
+
         # Initialization of the components of the zero element:
         for frame in self._domain._frames:
             if frame._dest_map == self._dest_map:
-                self._zero_element.add_comp(frame)
-                # (since new components are initialized to zero)
+                self._zero_element.add_comp(frame) # since new components are
+                                                   # initialized to zero
 
     #### Parent methods
 
@@ -1034,14 +1044,16 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         """
         from vectorframe import VectorFrame
         if symbol is None:
-            return self.default_basis()
-        else:
-            for other in self._known_bases:
-                if symbol == other._symbol:
-                    return other
-            return VectorFrame(self._domain, symbol=symbol,
-                               latex_symbol=latex_symbol,
-                               dest_map=self._dest_map)
+            if from_frame is None:
+                return self.default_basis()
+            else:
+                symbol = from_frame._symbol
+                latex_symbol = from_frame._latex_symbol
+        for other in self._known_bases:
+            if symbol == other._symbol:
+                return other
+        return VectorFrame(self, symbol=symbol, latex_symbol=latex_symbol,
+                           from_frame=from_frame)
 
     def tensor(self, tensor_type, name=None, latex_name=None, sym=None,
                antisym=None, specific_type=None):

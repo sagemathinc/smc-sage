@@ -40,7 +40,7 @@ from sage.geometry.manifolds.chart import FunctionChart, MultiFunctionChart
 
 class DiffMapping(Morphism):
     r"""
-    Differentiable mapping between manifolds.
+    Differentiable mapping between two manifolds.
 
     This class implements differentiable mappings of the type
 
@@ -67,29 +67,14 @@ class DiffMapping(Morphism):
     - ``parent`` -- homset `\mathrm{Hom}(U,V)` to which the differentiable
       mapping belongs
     - ``coord_functions`` -- (default: ``None``) if not ``None``, must be
-      either
-
-      - (i) a dictionary of
-        the coordinate expressions (as lists (or tuples) of the
-        coordinates of the image expressed in terms of the coordinates of
-        the considered point) with the pairs of charts (chart1, chart2)
-        as keys (chart1 being a chart on `U` and chart2 a chart on `V`)
-      - (ii) a single coordinate expression in a given pair of charts, the
-        latter being provided by the arguments ``chart1`` and ``chart2``
-
-      In both cases, if the dimension of the arrival manifold is 1,
-      a single coordinate expression can be passed instead of a tuple with a
-      single element
-    - ``chart1`` -- (default: None; used only in case (ii) above) chart on
-      domain `U` defining the start coordinates involved in ``coord_functions``
-      for case (ii); if none is provided, the coordinates are assumed to
-      refer to `U`'s default chart
-    - ``chart2`` -- (default: None; used only in case (ii) above) chart on the
-      codomain `V` defining the arrival coordinates involved in
-      ``coord_functions`` for case (ii); if none is provided, the coordinates
-      are assumed to refer to the codomain's default chart
-    - ``name`` -- (default: None) name given to the differentiable mapping
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+      a dictionary of the coordinate expressions (as lists (or tuples) of the
+      coordinates of the image expressed in terms of the coordinates of
+      the considered point) with the pairs of charts (chart1, chart2)
+      as keys (chart1 being a chart on `U` and chart2 a chart on `V`).
+      If the dimension of the arrival manifold is 1, a single coordinate
+      expression can be passed instead of a tuple with a single element
+    - ``name`` -- (default: ``None``) name given to the differentiable mapping
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
       differentiable mapping; if none is provided, the LaTeX symbol is set to
       ``name``
     - ``is_diffeomorphism`` -- (default: ``False``) determines whether the
@@ -97,14 +82,12 @@ class DiffMapping(Morphism):
       then the manifolds `M` and `N` must have the same dimension. 
     - ``is_identity`` -- (default: ``False``) determines whether the
       constructed object is the identity map; if set to ``True``,
-      then `V` must be `U` and the entries ``coord_functions``, ``chart1``
-      and ``chart2`` are not used.
+      then `V` must be `U` and the entry ``coord_functions`` is not used.
 
     .. NOTE::
 
         If the information passed by means of the argument ``coord_functions``
-        is not sufficient to fully specify the differentiable mapping (for
-        instance case (ii) with ``chart1`` not covering the entire domain `U`),
+        is not sufficient to fully specify the differentiable mapping,
         further coordinate expressions, in other charts, can be subsequently
         added by means of the method :meth:`add_expr`
 
@@ -143,11 +126,12 @@ class DiffMapping(Morphism):
         on U: (x, y) |--> (X, Y, Z) = (2*x/(x^2 + y^2 + 1), 2*y/(x^2 + y^2 + 1), (x^2 + y^2 - 1)/(x^2 + y^2 + 1))
         on V: (u, v) |--> (X, Y, Z) = (2*u/(u^2 + v^2 + 1), 2*v/(u^2 + v^2 + 1), -(u^2 + v^2 - 1)/(u^2 + v^2 + 1))
 
-    The mapping can be initialized only in a single pair of charts: the
-    argument ``coord_functions`` is then a mere list of coordinate expressions
-    (and not a dictionary) and the arguments ``chart1`` and ``chart2`` have
-    to be provided if the charts differ from the default ones on the domain
-    and/or the codomain::
+    The mapping can be initialized by the method
+    :meth:`~sage.geometry.manifolds.domain.ManifoldOpenSubset.diff_mapping`
+    only in a single pair of charts: the argument ``coord_functions`` is then
+    a mere list of coordinate expressions (and not a dictionary) and the
+    arguments ``chart1`` and ``chart2`` have to be provided if the charts
+    differ from the default ones on the domain and/or the codomain::
 
         sage: Phi1 = M.diff_mapping(N, [2*x/(1+x^2+y^2), 2*y/(1+x^2+y^2), (x^2+y^2-1)/(1+x^2+y^2)], \
         ....: chart1=c_xy, chart2=c_cart, name='Phi', latex_name=r'\Phi')
@@ -366,7 +350,7 @@ class DiffMapping(Morphism):
             sage: X.<x,y> = M.chart()
             sage: N = Manifold(3, 'N')
             sage: Y.<u,v,w> = N.chart()
-            sage: f = Hom(M,N)((x+y, x*y, x-y), name='f') ; f
+            sage: f = Hom(M,N)({(X,Y): (x+y, x*y, x-y)}, name='f') ; f
             differentiable mapping 'f' from the 2-dimensional manifold 'M' to the 3-dimensional manifold 'N'
             sage: f.display()
             f: M --> N
@@ -417,19 +401,16 @@ class DiffMapping(Morphism):
                                      "manifold and target manifold must " +
                                      "have the same dimension")
             if coord_functions is not None:
-                if not isinstance(coord_functions, dict):
-                    # Turn coord_functions into a dictionary:
-                    if chart1 is None: chart1 = domain._def_chart
-                    if chart2 is None: chart2 = codomain._def_chart
-                    if chart1 not in self._domain._atlas:
-                        raise ValueError("{} is not a chart ".format(chart1) +
-                                     "defined on the {}".format(self._domain))
-                    if chart2 not in self._codomain._atlas:
-                        raise ValueError("{} is not a chart ".format(chart2) +
-                                   " defined on the {}".format(self._codomain))
-                    coord_functions = {(chart1, chart2): coord_functions}
+                n2 = self._codomain._manifold._dim
                 for chart_pair, expression in coord_functions.iteritems():
-                    n2 = self._codomain._manifold._dim
+                    if chart_pair[0] not in self._domain._atlas:
+                        raise ValueError("{} is not a chart ".format(
+                                                              chart_pair[0]) +
+                                     "defined on the {}".format(self._domain))
+                    if chart_pair[1] not in self._codomain._atlas:
+                        raise ValueError("{} is not a chart ".format(
+                                                              chart_pair[1]) +
+                                   " defined on the {}".format(self._codomain))
                     if n2 == 1:
                         # a single expression entry is allowed (instead of a
                         # tuple)
@@ -462,19 +443,19 @@ class DiffMapping(Morphism):
             sage: X.<x,y> = M.chart()
             sage: N = Manifold(2, 'N')
             sage: Y.<u,v> = N.chart()
-            sage: f = Hom(M,N)((x+y,x*y))
+            sage: f = Hom(M,N)({(X,Y): (x+y,x*y)})
             sage: f._repr_()
             "differentiable mapping from the 2-dimensional manifold 'M' to the
              2-dimensional manifold 'N'"
-            sage: f = Hom(M,N)((x+y,x*y), name='f')
+            sage: f = Hom(M,N)({(X,Y): (x+y,x*y)}, name='f')
             sage: f._repr_()
             "differentiable mapping 'f' from the 2-dimensional manifold 'M' to
              the 2-dimensional manifold 'N'"
-            sage: f = Hom(M,N)((x+y,x-y), name='f', is_diffeomorphism=True)
+            sage: f = Hom(M,N)({(X,Y): (x+y,x-y)}, name='f', is_diffeomorphism=True)
             sage: f._repr_()
             "diffeomorphism 'f' from the 2-dimensional manifold 'M' to the
              2-dimensional manifold 'N'"
-            sage: f = Hom(M,M)((x+y,x-y), name='f', is_diffeomorphism=True)
+            sage: f = Hom(M,M)({(X,X): (x+y,x-y)}, name='f', is_diffeomorphism=True)
             sage: f._repr_()
             "diffeomorphism 'f' of the 2-dimensional manifold 'M'"
             sage: f = Hom(M,M)({}, name='f', is_identity=True)
@@ -509,10 +490,10 @@ class DiffMapping(Morphism):
 
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
-            sage: f = Hom(M,M)((x+y,x*y), name='f')
+            sage: f = Hom(M,M)({(X,X): (x+y,x*y)}, name='f')
             sage: f._latex_()
             'f'
-            sage: f = Hom(M,M)((x+y,x*y), name='f', latex_name=r'\Phi')
+            sage: f = Hom(M,M)({(X,X): (x+y,x*y)}, name='f', latex_name=r'\Phi')
             sage: f._latex_()
             '\\Phi'
         

@@ -1817,16 +1817,15 @@ class ManifoldOpenSubset(ManifoldSubset):
         from vectorfield_module import VectorFieldModule, VectorFieldFreeModule
         if dest_map is None:
             dest_map = self._identity_map
-        dest_map_name = dest_map._name
         codomain = dest_map._codomain
-        if dest_map_name not in self._vector_field_modules: #!# to be improved (replace dest_map_name by dest_map)
+        if dest_map not in self._vector_field_modules:
             if codomain.is_manifestly_parallelizable() or force_free:
-                self._vector_field_modules[dest_map_name] = \
+                self._vector_field_modules[dest_map] = \
                                  VectorFieldFreeModule(self, dest_map=dest_map)
             else:
-                self._vector_field_modules[dest_map_name] = \
+                self._vector_field_modules[dest_map] = \
                                      VectorFieldModule(self, dest_map=dest_map)
-        return self._vector_field_modules[dest_map_name]
+        return self._vector_field_modules[dest_map]
 
     def tensor_field_module(self, tensor_type, dest_map=None):
         r"""
@@ -2736,16 +2735,17 @@ class ManifoldOpenSubset(ManifoldSubset):
           In both cases, if the dimension of the arrival manifold is 1,
           a single coordinate expression can be passed instead of a tuple with
           a single element
-        - ``chart1`` -- (default: None; used only in case (ii) above) chart on
-          ``self`` defining the start coordinates involved in
+        - ``chart1`` -- (default: ``None``; used only in case (ii) above) chart
+          on ``self`` defining the start coordinates involved in
           ``coord_functions`` for case (ii); if none is provided, the
           coordinates are assumed to refer to the default chart of ``self``
-        - ``chart2`` -- (default: None; used only in case (ii) above) chart on
-          ``codomain`` defining the arrival coordinates involved in
+        - ``chart2`` -- (default: ``None``; used only in case (ii) above) chart
+          on ``codomain`` defining the arrival coordinates involved in
           ``coord_functions`` for case (ii); if none is provided, the
           coordinates are assumed to refer to the default chart of ``codomain``
-        - ``name`` -- (default: None) name given to the differentiable mapping
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``name`` -- (default: ``None``) name given to the differentiable
+          mapping
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           differentiable mapping; if none is provided, the LaTeX symbol is set to
           ``name``
 
@@ -2798,8 +2798,20 @@ class ManifoldOpenSubset(ManifoldSubset):
         homset = Hom(self, codomain)
         if coord_functions is None:
             coord_functions = {}
-        return homset(coord_functions, chart1=chart1, chart2=chart2,
-                      name=name, latex_name=latex_name)
+        if not isinstance(coord_functions, dict):
+            # Turn coord_functions into a dictionary:
+            if chart1 is None:
+                chart1 = self._def_chart
+            elif chart1 not in self._atlas:
+                raise ValueError("{} is not a chart ".format(chart1) +
+                                 "defined on the {}".format(self))
+            if chart2 is None:
+                chart2 = codomain._def_chart
+            elif chart2 not in codomain._atlas:
+                raise ValueError("{} is not a chart ".format(chart2) +
+                                 " defined on the {}".format(codomain))
+            coord_functions = {(chart1, chart2): coord_functions}
+        return homset(coord_functions, name=name, latex_name=latex_name)
 
     def diffeomorphism(self, codomain, coord_functions=None, chart1=None,
                        chart2=None, name=None, latex_name=None):
@@ -2814,17 +2826,31 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         - ``codomain`` -- mapping's codomain (the arrival manifold or some
           subset of it)
-        - ``coord_functions`` -- the coordinate symbolic expression of the mapping:
-          list (or tuple) of the coordinates of the image expressed in terms of the
-          coordinates of the considered point
-        - ``chart1`` -- (default: None) chart in which the
-          coordinates are given on ``self``; if none is provided,
-          the coordinates are assumed to refer to default chart of ``self``
-        - ``chart2`` -- (default: None) chart in which the
-          coordinates are given on the codomain; if none is provided, the coordinates
-          are assumed to refer to the codomain's default chart
-        - ``name`` -- (default: None) name given to the diffeomorphism
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``coord_functions`` -- (default: ``None``) if not ``None``, must be
+          either
+    
+          - (i) a dictionary of
+            the coordinate expressions (as lists (or tuples) of the
+            coordinates of the image expressed in terms of the coordinates of
+            the considered point) with the pairs of charts (chart1, chart2)
+            as keys (chart1 being a chart on ``self`` and chart2 a chart on
+            ``codomain``)
+          - (ii) a single coordinate expression in a given pair of charts, the
+            latter being provided by the arguments ``chart1`` and ``chart2``
+    
+          In both cases, if the dimension of the arrival manifold is 1,
+          a single coordinate expression can be passed instead of a tuple with
+          a single element
+        - ``chart1`` -- (default: ``None``; used only in case (ii) above) chart
+          on ``self`` defining the start coordinates involved in
+          ``coord_functions`` for case (ii); if none is provided, the
+          coordinates are assumed to refer to the default chart of ``self``
+        - ``chart2`` -- (default: ``None``; used only in case (ii) above) chart
+          on ``codomain`` defining the arrival coordinates involved in
+          ``coord_functions`` for case (ii); if none is provided, the
+          coordinates are assumed to refer to the default chart of ``codomain``
+        - ``name`` -- (default: ``None``) name given to the diffeomorphism
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           diffeomorphism; if none is provided, the LaTeX symbol is set to
           ``name``
 
@@ -2855,8 +2881,20 @@ class ManifoldOpenSubset(ManifoldSubset):
         homset = Hom(self, codomain)
         if coord_functions is None:
             coord_functions = {}
-        return homset(coord_functions, chart1=chart1, chart2=chart2,
-                      name=name, latex_name=latex_name,
+        if not isinstance(coord_functions, dict):
+            # Turn coord_functions into a dictionary:
+            if chart1 is None:
+                chart1 = self._def_chart
+            elif chart1 not in self._atlas:
+                raise ValueError("{} is not a chart ".format(chart1) +
+                                 "defined on the {}".format(self))
+            if chart2 is None:
+                chart2 = codomain._def_chart
+            elif chart2 not in codomain._atlas:
+                raise ValueError("{} is not a chart ".format(chart2) +
+                                 " defined on the {}".format(codomain))
+            coord_functions = {(chart1, chart2): coord_functions}
+        return homset(coord_functions, name=name, latex_name=latex_name,
                       is_diffeomorphism=True)
 
     def identity_map(self):
