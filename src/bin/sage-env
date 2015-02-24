@@ -659,3 +659,5 @@ fi
 # tell it where to find it. See Trac Ticket #15091
 
 export TERMINFO="$SAGE_LOCAL/share/terminfo"
+
+export SAGE_DATA="$SAGE_SHARE"
