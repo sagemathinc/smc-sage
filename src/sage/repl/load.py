@@ -224,7 +224,7 @@ def load(filename, globals, attach=False):
             # we will do this.
             # http://www.diveintopython.net/http_web_services/etags.html
             raise NotImplementedError("you can't attach a URL")
-        from remote_file import get_remote_file
+        from sage.misc.remote_file import get_remote_file
         filename = get_remote_file(filename, verbose=False)
 
     if not is_loadable_filename(filename):
