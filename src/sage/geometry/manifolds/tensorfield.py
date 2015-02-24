@@ -25,11 +25,11 @@ AUTHORS:
 
 REFERENCES:
 
-- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
-  Interscience Publishers (New York, 1963)
-- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
-  2013)
-- B O'Neill : "Semi-Riemannian Geometry", Academic Press (San Diego, 1983)
+- S. Kobayashi & K. Nomizu : *Foundations of Differential Geometry*, vol. 1,
+  Interscience Publishers (New York) (1963)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
+- B O'Neill : *Semi-Riemannian Geometry*, Academic Press (San Diego) (1983)
 
 EXAMPLES:
 
@@ -2469,23 +2469,35 @@ class TensorField(ModuleElement):
 
     def at(self, point):
         r"""
-        Value of the tensor field at a given point on the manifold.
+        Value of the tensor field at a point of its domain. 
 
-        The returned object is a tensor on the tangent space at the given
-        point.
+        If ``self`` is the tensor field
+        
+        .. MATH::
+        
+            t:\ U\subset S  \longrightarrow T^{(k,l)} M
+
+        associated with the differentiable mapping
+        
+        .. MATH::
+        
+            \Phi:\ U\subset S \longrightarrow M
+
+        where `S` and `M` are two manifolds, then for any point `p\in U`,
+        `t(p)` is a tensor on the tangent space to `M` at the point `\Phi(p)`.
 
         INPUT:
 
         - ``point`` -- (instance of
           :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in
-          the domain of ``self`` (denoted `t` hereafter)
+          the domain of ``self`` (`U`)
 
         OUTPUT:
 
         - instance of
           :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`
-          representing the tensor `t(p)` on the tangent vector space `T_p M`
-          (`M` being the manifold on which ``self`` is defined)
+          representing the tensor `t(p)` on the tangent vector space
+          `T_{\Phi(p)} M`
 
         EXAMPLES:
 
@@ -3349,23 +3361,35 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
     def at(self, point):
         r"""
-        Value of the tensor field at a given point on the manifold.
+        Value of the tensor field at a point of its domain. 
 
-        The returned object is a tensor on the tangent space at the given
-        point.
+        If ``self`` is the tensor field
+        
+        .. MATH::
+        
+            t:\ U\subset S  \longrightarrow T^{(k,l)} M
+
+        associated with the differentiable mapping
+        
+        .. MATH::
+        
+            \Phi:\ U\subset S \longrightarrow M
+
+        where `S` and `M` are two manifolds, then for any point `p\in U`,
+        `t(p)` is a tensor on the tangent space to `M` at the point `\Phi(p)`.
 
         INPUT:
 
         - ``point`` -- (instance of
           :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in
-          the domain of ``self`` (denoted `t` hereafter)
+          the domain of ``self`` (`U`)
 
         OUTPUT:
 
         - instance of
           :class:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor`
-          representing the tensor `t(p)` on the tangent vector space `T_p M`
-          (`M` being the manifold on which ``self`` is defined)
+          representing the tensor `t(p)` on the tangent vector space
+          `T_{\Phi(p)} M`
 
         EXAMPLES:
 
@@ -3425,11 +3449,35 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: ap.display()
             a = -6 dx/\dy
 
+        Example with a non trivial mapping `\Phi`::
+
+            sage: R.<t> = RealLine()
+            sage: U = R.open_interval(0, 2*pi)
+            sage: Phi = U.diff_mapping(M, [cos(t), sin(t)], name='Phi',
+            ....:                      latex_name=r'\Phi')
+            sage: v = U.vector_field(name='v', dest_map=Phi) ; v
+            vector field 'v' along the Real interval (0, 2*pi) with values on
+             the 2-dimensional manifold 'M'
+            sage: v[:] = [1+t, t^2]
+            sage: v.display()
+            v = (t + 1) d/dx + t^2 d/dy
+            sage: p = R(pi/6)
+            sage: p in U
+            True
+            sage: vp = v.at(p) ; vp
+            tangent vector v at point on 2-dimensional manifold 'M'
+            sage: vp.parent() is Phi(p).tangent_space()
+            True
+            sage: vp.display()
+            v = (1/6*pi + 1) d/dx + 1/36*pi^2 d/dy
+
         """
         if point not in self._domain:
             raise TypeError("The " + str(point) + " is not a point in the "
                             "domain of " + str(self) + ".")
-        ts = point.tangent_space()
+        dest_map = self._fmodule._dest_map
+        amb_point = dest_map(point)  #  "ambient" point          
+        ts = amb_point.tangent_space()
         resu = ts.tensor(self._tensor_type, name=self._name,
                          latex_name=self._latex_name, sym=self._sym,
                          antisym=self._antisym)

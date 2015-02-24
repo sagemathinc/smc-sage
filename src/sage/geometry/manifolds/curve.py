@@ -358,8 +358,63 @@ class ManifoldCurve(DiffMapping):
         r"""
         Return the tangent vector field to ``self``
 
+        INPUT:
+
+        - ``name`` -- (default: ``None``) string; symbol given to the tangent
+          vector field; if none is provided, the primed curve symbol (if any)
+          will be used
+        - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to denote
+          the tangent vector field; if ``None`` then (i) if ``name`` is
+          ``None`` as well, the primed curve LaTeX symbol (if any) will be
+          used or (ii) if ``name`` is not ``None``, ``name`` will be used
+
+        OUTPUT:
+
+        - the tangent vector field, as an instance of
+          :class:`~sage.geometry.manifolds.vectorfield.VectorField`
+
+        EXAMPLES:
+
+        Tangent vector field to a circle curve in `\RR^2`::
+
+            sage: M = Manifold(2, 'R^2')
+            sage: X.<x,y> = M.chart()
+            sage: R.<t> = RealLine()
+            sage: c = M.curve([cos(t), sin(t)], (t, 0, 2*pi), name='c')
+            sage: v = c.tangent_vector_field() ; v
+            vector field 'c'' along the Real interval (0, 2*pi) with values on
+             the 2-dimensional manifold 'R^2'
+            sage: v.display()
+            c' = -sin(t) d/dx + cos(t) d/dy
+            sage: latex(v)
+            {c'}
+            sage: v.parent()
+            free module X((0, 2*pi),c) of vector fields along the Real interval
+             (0, 2*pi) mapped into the 2-dimensional manifold 'R^2'
+
+        Value of the tangent vector field for some specific value of the
+        curve parameter (`t=\pi`)::
+
+            sage: R(pi) in c.domain()  # pi in (0, 2*pi)
+            True
+            sage: vp = v.at(R(pi)) ; vp
+            tangent vector c' at point on 2-dimensional manifold 'R^2'
+            sage: vp.parent() is c(R(pi)).tangent_space()
+            True
+            sage: vp.display()
+            c' = -d/dy
+
+        
         """
         vmodule = self._domain.vector_field_module(dest_map=self)
+        if latex_name is None:
+            if name is None:
+                if self._latex_name is not None:
+                    latex_name = r"{" + self._latex_name + r"'}"
+            else:
+                latex_name = name
+        if name is None and self._name is not None:
+            name = self._name + "'"
         resu = vmodule.element_class(vmodule, name=name, latex_name=latex_name)
         canon_chart = self._domain.canonical_chart()
         codom = self._codomain

@@ -679,6 +679,10 @@ class VectorFrame(FreeModuleBasis):
         for frame in point._frame_bases:
             if self in frame._subframes or self in frame._superframes:
                 return point._frame_bases[frame]
+        # Case of a non-trivial destination map
+        if self._from_frame is not None:
+            ambient_point = self._dest_map(point)
+            return self._from_frame.at(ambient_point)
         # If this point is reached, the basis has to be constructed from
         # scratch:
         if point not in self._domain:
@@ -715,6 +719,7 @@ class VectorFrame(FreeModuleBasis):
         for frame_pair, automorph in self._domain._frame_changes.iteritems():
             frame1 = frame_pair[0] ; frame2 = frame_pair[1]
             if frame1 is self:
+                fr2 = None
                 for frame in point._frame_bases:
                     if frame2 in frame._subframes:
                         fr2 = frame
@@ -735,6 +740,7 @@ class VectorFrame(FreeModuleBasis):
                                 cauto._comp[ind] = val(point)
                     ts._basis_changes[(basis1, basis2)] = auto
             if frame2 is self:
+                fr1 = None
                 for frame in point._frame_bases:
                     if frame1 in frame._subframes:
                         fr1 = frame

@@ -536,7 +536,7 @@ class Metric(TensorField):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.geometry.tensorfield.TensorField`
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
           with tensor_type = (2,0) representing the inverse metric
 
         EXAMPLES:
@@ -1534,7 +1534,7 @@ class MetricParal(Metric, TensorFieldParal):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.geometry.tensorfield.TensorFieldParal`
+          :class:`~sage.geometry.manifolds.tensorfield.TensorFieldParal`
           with tensor_type = (2,0) representing the inverse metric
 
         EXAMPLES:

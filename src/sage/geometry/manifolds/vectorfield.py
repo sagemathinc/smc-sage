@@ -1,8 +1,33 @@
 r"""
 Vector fields
 
-The class :class:`VectorField` implements vector fields on differentiable
-manifolds over `\RR`.
+Given an open set `U` of a differentiable manifold `S`,  an open set `V`
+of a differentiable manifold `M` and a differentiable mapping
+
+.. MATH::
+
+    \Phi:\ U\subset S \longrightarrow V\subset M
+
+we define a *vector field along* `U` *with values on* `V` to be a
+differentiable mapping
+
+.. MATH::
+
+    v:\ U  \longrightarrow TM
+
+such that
+
+.. MATH::
+
+    \forall p \in U,\ v(p) \in T_{\Phi(p)}M
+
+The standard case of vector fields *on* a manifold corresponds to `S=M`,
+`U=V` and `\Phi = \mathrm{Id}_U`. Another common case is `\Phi` being an
+immersion.
+
+Vector fields are implemented via two classes: :class:`VectorFieldParal` and
+:class:`VectorField`, depending respectively whether the open set `V`
+is parallelizable or not. 
 
 
 AUTHORS:
@@ -11,11 +36,11 @@ AUTHORS:
 
 REFERENCES:
 
-- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
-  Interscience Publishers (New York, 1963)
-- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
-  2013)
-- B O'Neill : "Semi-Riemannian Geometry", Academic Press (San Diego, 1983)
+- S. Kobayashi & K. Nomizu : *Foundations of Differential Geometry*, vol. 1,
+  Interscience Publishers (New York) (1963)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
+- B O'Neill : *Semi-Riemannian Geometry*, Academic Press (San Diego) (1983)
 
 """
 
@@ -46,6 +71,9 @@ class VectorField(TensorField):
 
     If `V` is parallelizable, the class :class:`VectorFieldParal` must be
     used instead.
+
+    This is a Sage *element* class, the corresponding *parent* class being
+    :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`.
 
     INPUT:
 
@@ -229,7 +257,7 @@ class VectorField(TensorField):
 class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorField):
     r"""
     Vector field on an open set of a differentiable manifold,
-    with values on parallelizable open subset of a differentiable manifold.
+    with values on a parallelizable open subset of a differentiable manifold.
 
     An instance of this class is a vector field along an open subset `U`
     of some manifold `S` with values in a parallelizable open subset `V`
@@ -237,6 +265,9 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
     The standard case of a vector field *on* a manifold corresponds to `S=M`,
     `U=V` and `\Phi = \mathrm{Id}`. Another common case is `\Phi` being an
     immersion.
+
+    This is a Sage *element* class, the corresponding *parent* class being
+    :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldFreeModule`.
 
     INPUT:
 

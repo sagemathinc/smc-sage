@@ -75,9 +75,11 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
     The standard case of vector fields *on* a manifold corresponds to `S=M`,
     `U=V` and `\Phi = \mathrm{Id}`.
-
     Another common case is `\Phi` being an immersion.
 
+    This is a Sage *parent* class, the corresponding *element* class being
+    :class:`~sage.geometry.manifolds.vectorfield.VectorField`.
+    
     INPUT:
 
     - ``domain`` -- open subset `U` on which the vector fields are defined
@@ -401,13 +403,13 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries
           among the arguments, with the same convention as for ``sym``.
         - ``specific_type`` -- (default: None) specific subclass of
-          :class:`~sage.geometry.geometry.tensorfield.TensorField` for the
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField` for the
           output
 
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.geometry.tensorfield.TensorField`
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
           representing the tensor defined on ``self`` with the provided
           characteristics.
 
@@ -675,7 +677,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
     .. MATH::
 
-        \Phi:\ U\subset S \longrightarrow V\subset \mathcal{M}
+        \Phi:\ U\subset S \longrightarrow V\subset M
 
     the module `\mathcal{X}(U,\Phi)` is the set of all vector fields of
     the type
@@ -697,8 +699,10 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
     The standard case of vector fields *on* a manifold corresponds to `S=M`,
     `U=V` and `\Phi = \mathrm{Id}`.
-
     Another common case is `\Phi` being an immersion.
+
+    This is a Sage *parent* class, the corresponding *element* class being
+    :class:`~sage.geometry.manifolds.vectorfield.VectorFieldParal`.
 
     INPUT:
 
@@ -721,7 +725,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         sage: XM.base_ring() is M.scalar_field_algebra()
         True
 
-    Since `\RR^2` is obviously parallelizable, XM is a free module::
+    Since `\RR^2` is obviously parallelizable, ``XM`` is a free module::
 
         sage: isinstance(XM, FiniteRankFreeModule)
         True
@@ -737,8 +741,53 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         sage: v.display()
         -y d/dx + x d/dy
 
-    Module of vector fields on the circle `S^1`: we start by constructing
-    the `S^1` manifold::
+    An example of module of vector fields with a destination map `\Phi`
+    different from the identity map, namely a mapping
+    `\Phi: I \rightarrow \RR^2`, where `I` is an open interval of `\RR`::
+
+        sage: R.<t> = RealLine()
+        sage: I = R.open_interval(0, 2*pi)
+        sage: Phi = I.diff_mapping(M, coord_functions=[cos(t), sin(t)], name='Phi',
+        ....:                      latex_name=r'\Phi') ; Phi
+        Curve 'Phi' in the 2-dimensional manifold 'R^2'
+        sage: Phi.display()
+        Phi: (0, 2*pi) --> R^2
+           t |--> (x, y) = (cos(t), sin(t))
+        sage: XIM = I.vector_field_module(dest_map=Phi) ; XIM
+        free module X((0, 2*pi),Phi) of vector fields along the Real interval
+         (0, 2*pi) mapped into the 2-dimensional manifold 'R^2'
+        sage: XIM.category()
+        Category of modules over algebra of scalar fields on the Real interval
+         (0, 2*pi)
+
+    The rank of the free module `\mathcal{X}((0, 2\pi),\Phi)` is the dimension
+    of the manifold `\RR^2`, namely two::
+    
+        sage: XIM.rank()
+        2
+
+    A basis of it is induced by the coordinate vector frame of `\RR^2`::
+    
+        sage: XIM.bases()
+        [vector frame ((0, 2*pi), (d/dx,d/dy)) with values on the 2-dimensional
+         manifold 'R^2']
+
+    Some elements of this module::
+
+        sage: XIM.an_element().display()
+        2 d/dx + 2 d/dy
+        sage: v = XIM([t, t^2]) ; v
+        vector field along the Real interval (0, 2*pi) with values on the
+         2-dimensional manifold 'R^2'
+        sage: v.display()
+        t d/dx + t^2 d/dy
+
+    The test suite is passed::
+
+        sage: TestSuite(XIM).run()
+
+    Let us now consider the module of vector fields on the circle `S^1`; we
+    start by constructing the `S^1` manifold::
 
         sage: M = Manifold(1, 'S^1')
         sage: U = M.open_subset('U')  # the complement of one point
@@ -943,7 +992,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         OUTPUT:
 
         - instance of
-          :class:`TensorFieldFreeModule`
+          :class:`~sage.geometry.manifolds.tensorfield_module.TensorFieldFreeModule`
           representing the free module of type-`(k,l)` tensors on the
           free module ``self``.
 
@@ -1036,7 +1085,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.manifolds.vector.VectorFrame`
+          :class:`~sage.geometry.manifolds.vectorframe.VectorFrame`
           representing a basis on ``self``.
 
         EXAMPLES:
@@ -1081,13 +1130,13 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries
           among the arguments, with the same convention as for ``sym``.
         - ``specific_type`` -- (default: None) specific subclass of
-          :class:`~sage.geometry.geometry.tensorfield.TensorFieldParal` for the
+          :class:`~sage.geometry.manifolds.tensorfield.TensorFieldParal` for the
           output
 
         OUTPUT:
 
         - instance of
-          :class:`~sage.geometry.geometry.tensorfield.TensorFieldParal`
+          :class:`~sage.geometry.manifolds.tensorfield.TensorFieldParal`
           representing the tensor defined on ``self`` with the provided
           characteristics.
 
