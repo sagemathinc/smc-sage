@@ -114,6 +114,11 @@ class ManifoldCurve(DiffMapping):
         c: (0, 2*pi) --> M
            t |--> (x, y) = (sin(t), 1/2*sin(2*t))
 
+    Another mapping method is of course ``__call__``, which returns the image
+    of a point in the curve's domain:
+
+
+    
     Instead of a dictionary of coordinate expressions, the curve can be
     defined by a single coordinate expression in a given chart::
 
@@ -144,6 +149,23 @@ class ManifoldCurve(DiffMapping):
         sage: latex(c)
         \gamma
 
+    The curve's tangent vector field (velocity vector)::
+
+        sage: v = c.tangent_vector_field() ; v
+        vector field 'c'' along the Real interval (0, 2*pi) with values on the
+         2-dimensional manifold 'M'
+        sage: v.display()
+        c' = cos(t) d/dx + (2*cos(t)^2 - 1) d/dy
+
+    Its value at `t=\pi`::
+
+        sage: v.at(R(pi))
+        tangent vector c' at point on 2-dimensional manifold 'M'
+        sage: v.at(R(pi)) in c(R(pi)).tangent_space()
+        True
+        sage: v.at(R(pi)).display()
+        c' = -d/dx + d/dy
+    
     Curves `\RR\longrightarrow\RR` can be composed: the operator `\circ` is
     denoted by ``*``::
 
@@ -356,7 +378,7 @@ class ManifoldCurve(DiffMapping):
 
     def tangent_vector_field(self, name=None, latex_name=None):
         r"""
-        Return the tangent vector field to ``self``
+        Return the tangent vector field to ``self`` (velocity vector).
 
         INPUT:
 
@@ -429,3 +451,167 @@ class ManifoldCurve(DiffMapping):
             resu.add_comp(frame)[:, canon_chart] = [jacob[i][0]
                                                           for i in range(dim)]
         return resu
+
+
+    def plot(self, chart=None, prange=None, max_value=8, plot_coords=None,
+             mapping=None, parameters=None, color='red',  style='-',
+             thickness=1, plot_points=75, label_axes=True):
+        r"""
+        Plot of the curve in terms of a given chart.
+
+        INPUT:
+
+        - ``chart`` -- (default: ``None``) the chart in terms of which the plot
+          is performed
+        - ``prange`` -- (default: ``None``) range of the curve parameter for
+          the plot; if ``None``, the entire parameter range declared during the
+          curve construction is considered (with -Infinity
+          replaced by ``-max_value`` and +Infinity by ``max_value``)
+        - ``max_value`` -- (default: 8) numerical value substituted to
+          +Infinity if the latter is the upper bound of the parameter range;
+          similarly ``-max_value`` is the numerical valued substituted for
+          -Infinity
+        - ``ambient_coords`` -- (default: ``None``) tuple containing the 2 or 3
+          coordinates of ``chart`` in terms of which the plot is
+          performed; if ``None``, all the coordinates of ``chart`` are
+          considered
+        - ``mapping`` -- (default: ``None``) differentiable mapping (instance
+          of :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
+          providing the link between ``self`` and the chart ``chart`` (cf.
+          above); if ``None``, chart is supposed to be defined on the
+          codomain of the curve ``self``. 
+        - ``parameters`` -- (default: ``None``) dictionary giving the numerical
+          values of the parameters that may appear in the coordinate expression
+          of ``self``
+        - ``color`` -- (default: 'red') color of the drawn curve
+        - ``style`` -- (default: '-') color of the drawn curve; NB: ``style``
+          is effective only for 2D plots
+        - ``thickness`` -- (default: 1) thickness of the drawn curve
+        - ``plot_points`` -- (default: 75) number of points to plot the curve
+        - ``label_axes`` -- (default: ``True``) boolean determining whether the
+          labels of the coordinate axes of ``chart`` shall be added to the
+          graph; can be set to ``False`` if the graph is 3D and must be
+          superposed with another graph.
+
+        OUTPUT:
+
+        - a graphic object, either an instance of
+          :class:`~sage.plot.graphics.Graphics` for a 2D plot (i.e. based on
+          2 coordinates of ``chart``) or an instance of
+          :class:`~sage.plot.plot3d.base.Graphics3d` for a 3D plot (i.e.
+          based on 3 coordinates of ``chart``)
+
+        """
+        from sage.rings.infinity import Infinity
+        from sage.misc.functional import numerical_approx
+        from sage.plot.graphics import Graphics
+        from sage.plot.line import line
+        from sage.geometry.manifolds.chart import Chart
+        from sage.geometry.manifolds.utilities import set_axes_labels
+        #
+        # The "effective" curve to be plotted
+        #
+        if mapping is None:
+            eff_curve = self
+        else:
+            eff_curve = mapping * self
+        #
+        # The chart w.r.t. which the curve is plotted
+        #
+        if chart is None:
+            chart = self._codomain.default_chart()
+        elif not isinstance(chart, Chart):
+            raise TypeError("{} is not a chart".format(chart))
+        #
+        # Coordinates of the above chart w.r.t. which the curve is plotted
+        #
+        if plot_coords is None:
+            plot_coords = chart[:]  # all chart coordinates are used
+        n_pc = len(plot_coords)
+        if n_pc != 2 and n_pc !=3:
+            raise ValueError("Bad number of plot coordinates: {}".format(n_cp))
+        ind_pc = [chart[:].index(pc) for pc in plot_coords] # indices of plot
+                                                            # coordinates
+        #
+        # Parameter range for the plot
+        #
+        if prange is None:
+            prange = (self._domain.lower_bound(), self._domain.upper_bound())
+        elif not isinstance(prange, (tuple, list)):
+            raise TypeError("{} is neither a tuple nor a list".format(prange))
+        elif len(prange) != 2:
+            raise ValueError("the argument prange must be a tuple/list " +
+                             "of 2 elements")
+        tmin = prange[0]
+        tmax = prange[1]
+        if tmin == -Infinity:
+            tmin = -max_value
+        if tmax == Infinity:
+            tmax = max_value
+        tmin = numerical_approx(tmin)
+        tmax = numerical_approx(tmax)
+        #
+        # The coordinate expression of the effective curve
+        #
+        canon_chart = self._domain.canonical_chart()
+        transf = None
+        for chart_pair in eff_curve._coord_expression:
+            if chart_pair == (canon_chart, chart):
+                transf = eff_curve._coord_expression[chart_pair]
+                break
+        else:
+            # Search for a subchart
+            for chart_pair in eff_curve._coord_expression:
+                for schart in chart._subcharts:
+                    if chart_pair == (canon_chart, schart):
+                        transf = eff_curve._coord_expression[chart_pair]
+        if transf is None:
+            raise ValueError("No expression has been found for " + 
+                              "{} in terms of {}".format(self, format))
+        #
+        # List of points for the plot curve
+        #
+        plot_curve = []
+        dt = (tmax - tmin) / (plot_points + 1) 
+        t = tmin + dt
+        if parameters is None:
+            for i in range(plot_points):
+                x = transf(t, simplify=False)
+                plot_curve.append( [numerical_approx(x[j]) for j in ind_pc] )
+                t += dt
+        else:
+             for i in range(plot_points):
+                x = transf(t, simplify=False)
+                plot_curve.append(
+                               [numerical_approx( x[j].substitute(parameters) )
+                                for j in ind_pc] )
+                t += dt
+        #
+        # The plot
+        #
+        resu = Graphics()
+        resu += line(plot_curve, color=color, linestyle=style,
+                     thickness=thickness)
+        if n_pc==2:  # 2D graphic
+            resu.set_aspect_ratio(1)
+            if label_axes:
+                resu.axes_labels([r'$'+latex(pc)+r'$' for pc in plot_coords])
+        else: # 3D graphic
+            resu.aspect_ratio(1)
+            if label_axes:
+                labels = [str(pc) for pc in plot_coords]
+                resu = set_axes_labels(resu, *labels)
+        return resu
+
+
+
+
+
+
+
+
+
+
+
+
+

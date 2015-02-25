@@ -753,7 +753,7 @@ class RealLine(Manifold):
     def _element_constructor_(self, coords=None, chart=None, name=None,
                               latex_name=None, check_coords=True):
         r"""
-        Construct a element of the real line.
+        Construct an element of ``self``.
 
         This is a redefinition of
         :meth:`sage.geometry.manifolds.domain.ManifoldSubset._element_constructor_`
@@ -763,19 +763,19 @@ class RealLine(Manifold):
         EXAMPLES::
 
             sage: R = RealLine()
-            sage: R(pi)
+            sage: R._element_constructor_((pi,)) # standard use of ManifoldSubset._element_constructor_
             point on field R of real numbers
-            sage: R(pi).coord()
+            sage: R._element_constructor_(pi) # specific use with a single coordinate as argument
+            point on field R of real numbers
+            sage: R._element_constructor_(pi).coord()
             (pi,)
-            sage: R((pi,))
-            point on field R of real numbers
-            sage: R((pi,)) == R(pi)
+            sage: R._element_constructor_(pi) == R._element_constructor_((pi,))
             True
 
         """
         if coords in SR:
             coords = (coords,)
-        return ManifoldOpenSubset._element_constructor_(self, coords=coords,
+        return super(RealLine, self)._element_constructor_(coords=coords,
                                  chart=chart, name=name, latex_name=latex_name,
                                  check_coords=check_coords)
 
@@ -1057,6 +1057,34 @@ class OpenInterval(ManifoldOpenSubset):
         sage: x.coord() # coordinates in the default chart = canonical chart
         (1/2*pi,)
 
+    As for any manifold subset, a specific element of ``I`` can be created
+    by providing a tuple containing its coordinate(s) in a given chart::
+
+        sage: x = I((2,)) # (2,) = tuple of coordinates in the canonical chart
+        sage: x
+        point on field R of real numbers
+
+    But for convenience, it can also be created directly from the coordinate::
+
+        sage: x = I(2) ; x
+        point on field R of real numbers
+        sage: x.coord()
+        (2,)
+        sage: I(2) == I((2,))
+        True
+
+    ``I`` is endoved with a canonical chart, which is inherited from the
+    canonical chart of ``R``::
+
+        sage: I.canonical_chart()
+        chart ((0, pi), (t,))
+
+    By default, the coordinates passed for the element ``x`` are those relative
+    to the canonical chart::
+
+        sage: I(2) ==  I((2,), chart=I.canonical_chart())
+        True
+
     Since open intervals are facade sets (see
     :meth:`~sage.categories.sets_cat.Sets.SubcategoryMethods.Facade`), the
     parent of their elements is the whole real-line manifold on which
@@ -1153,6 +1181,45 @@ class OpenInterval(ManifoldOpenSubset):
 
         """
         return "Real interval " + self._name
+
+    def _element_constructor_(self, coords=None, chart=None, name=None,
+                              latex_name=None, check_coords=True):
+        r"""
+        Construct an element of ``self``.
+
+        This is a redefinition of
+        :meth:`sage.geometry.manifolds.domain.ManifoldSubset._element_constructor_`
+        to allow for construction from a number (considered as the canonical
+        coordinate)
+
+        EXAMPLES::
+
+            sage: R = RealLine()
+            sage: I = R.open_interval(-1, 4)
+            sage: I._element_constructor_((2,)) # standard used of ManifoldSubset._element_constructor_
+            point on field R of real numbers
+            sage: I._element_constructor_(2)  # specific use with a single coordinate
+            point on field R of real numbers
+            sage: I._element_constructor_(2).coord()
+            (2,)
+            sage: I._element_constructor_(2) == I._element_constructor_((2,))
+            True
+            sage: I._element_constructor_(pi)
+            point on field R of real numbers
+            sage: I._element_constructor_(pi).coord()
+            (pi,)
+            sage: I._element_constructor_(8)
+            Traceback (most recent call last):
+            ...
+            ValueError: The coordinates (8,) are not valid on the chart
+             ((-1, 4), (t,))
+    
+        """
+        if coords in SR:
+            coords = (coords,)
+        return super(OpenInterval, self)._element_constructor_(coords=coords,
+                                 chart=chart, name=name, latex_name=latex_name,
+                                 check_coords=check_coords)
 
 
     def _Hom_(self, other, category=None):
