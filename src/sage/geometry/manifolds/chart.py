@@ -1852,12 +1852,19 @@ class FunctionChart(SageObject):
             sage: latex(f.display())
             (x, y) \mapsto x^{2} + 3 \, y + 1
 
+        A shortcut is ``disp()``::
+
+            sage: f.disp()
+            (x, y) |--> x^2 + 3*y + 1
+
         """
         from utilities import FormattedExpansion
         result = FormattedExpansion(self)
         result.txt = repr((self._chart)[:]) + ' |--> ' + repr(self._express)
         result.latex = self._chart._latex_coordinates() + r' \mapsto' + latex(self._express)
         return result
+
+    disp = display
 
     def view(self):
         r"""

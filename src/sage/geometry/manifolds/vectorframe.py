@@ -264,7 +264,7 @@ class VectorFrame(FreeModuleBasis):
         # The frame is added to the domain's set of frames, as well as to all
         # the superdomains' sets of frames; moreover the first defined frame
         # is considered as the default one
-        dest_map = self._dest_map
+        dest_map_name = self._dest_map._name
         for sd in self._domain._supersets:
             for other in sd._frames:
                 if repr(self) == repr(other):
@@ -276,8 +276,8 @@ class VectorFrame(FreeModuleBasis):
                 sd._def_frame = self
             if isinstance(sd, ManifoldOpenSubset):
                 # Initialization of the zero elements of tensor field modules:
-                if dest_map in sd._vector_field_modules:  #!# check
-                    xsd = sd._vector_field_modules[dest_map]
+                if dest_map_name in sd._vector_field_modules:  #!# to be improved
+                    xsd = sd._vector_field_modules[dest_map_name]
                     if not isinstance(xsd, FiniteRankFreeModule):
                         for t in xsd._tensor_modules.itervalues():
                             t(0).add_comp(self)
@@ -681,12 +681,15 @@ class VectorFrame(FreeModuleBasis):
                 return point._frame_bases[frame]
         # Case of a non-trivial destination map
         if self._from_frame is not None:
+            if self._dest_map.is_identity():  #!# probably not necessary
+                raise ValueError("the destination map should not be the " + 
+                                 "identity")
             ambient_point = self._dest_map(point)
             return self._from_frame.at(ambient_point)
         # If this point is reached, the basis has to be constructed from
         # scratch:
         if point not in self._domain:
-            raise TypeError("The " + str(point) + " is not a point in the "
+            raise ValueError("The " + str(point) + " is not a point in the "
                             "domain of " + str(self) + ".")
         ts = point.tangent_space()
         basis = ts.basis(symbol=self._symbol, latex_symbol=self._latex_symbol)

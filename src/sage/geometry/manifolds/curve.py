@@ -115,10 +115,27 @@ class ManifoldCurve(DiffMapping):
            t |--> (x, y) = (sin(t), 1/2*sin(2*t))
 
     Another mapping method is of course ``__call__``, which returns the image
-    of a point in the curve's domain:
+    of a point in the curve's domain::
 
+        sage: t0 = pi/2
+        sage: I(t0)
+        point on field R of real numbers
+        sage: c(I(t0))
+        point on 2-dimensional manifold 'M'
+        sage: c(I(t0)).coord(X)
+        (1, 0)
 
-    
+    For curves, the value of the parameter, instead of the corresponding point
+    in the real line manifold, can be passed directly to the method
+    ``__call__``::
+
+        sage: c(t0)
+        point 'c(1/2*pi)' on 2-dimensional manifold 'M'
+        sage: c(t0).coord(X)
+        (1, 0)
+        sage: c(t0) == c(I(t0))
+        True
+
     Instead of a dictionary of coordinate expressions, the curve can be
     defined by a single coordinate expression in a given chart::
 
@@ -453,20 +470,31 @@ class ManifoldCurve(DiffMapping):
         return resu
 
 
-    def plot(self, chart=None, prange=None, max_value=8, plot_coords=None,
+    def plot(self, chart=None, prange=None, include_end_point=(True, True),
+             end_point_offset=(0.001, 0.001), max_value=8, plot_coords=None,
              mapping=None, parameters=None, color='red',  style='-',
-             thickness=1, plot_points=75, label_axes=True):
+             thickness=1, plot_points=75, label_axes=True,
+             aspect_ratio='automatic'):
         r"""
         Plot of the curve in terms of a given chart.
 
         INPUT:
 
         - ``chart`` -- (default: ``None``) the chart in terms of which the plot
-          is performed
+          is performed; if ``None``, the default chart of the codomain of
+          curve (or of the curve composed by ``mapping``) is used
         - ``prange`` -- (default: ``None``) range of the curve parameter for
           the plot; if ``None``, the entire parameter range declared during the
           curve construction is considered (with -Infinity
           replaced by ``-max_value`` and +Infinity by ``max_value``)
+        - ``include_end_point`` -- (default: ``(True, True)``) determines
+          whether the end points of ``prange`` are included in the plot
+        - ``end_point_offset`` -- (default: ``(0.001, 0.001)``) offsets from
+          the end points when they are not included in the plot: if
+          ``include_end_point[0] == False``, the minimal value of the curve
+          parameter used for the plot is ``prange[0] + end_point_offset[0]``,
+          while if ``include_end_point[1] == False``, the maximal value is
+          ``prange[1] - end_point_offset[1]``.
         - ``max_value`` -- (default: 8) numerical value substituted to
           +Infinity if the latter is the upper bound of the parameter range;
           similarly ``-max_value`` is the numerical valued substituted for
@@ -492,6 +520,9 @@ class ManifoldCurve(DiffMapping):
           labels of the coordinate axes of ``chart`` shall be added to the
           graph; can be set to ``False`` if the graph is 3D and must be
           superposed with another graph.
+        - ``aspect_ratio`` -- (default: 'automatic') aspect ratio of the plot;
+          the default value ('automatic') applies only for 2D plots; for
+          3D plots, the default value is ``1`` instead.
 
         OUTPUT:
 
@@ -500,6 +531,46 @@ class ManifoldCurve(DiffMapping):
           2 coordinates of ``chart``) or an instance of
           :class:`~sage.plot.plot3d.base.Graphics3d` for a 3D plot (i.e.
           based on 3 coordinates of ``chart``)
+
+        EXAMPLES:
+
+        Plot of the lemniscate of Gerono::
+
+            sage: R2 = Manifold(2, 'R^2')
+            sage: X.<x,y> = R2.chart()
+            sage: R.<t> = RealLine()
+            sage: c = R2.curve([sin(t), sin(2*t)/2], (t, 0, 2*pi), name='c')
+            sage: c.plot()  # 2D plot
+            Graphics object consisting of 1 graphics primitive
+            
+        Plot for a subinterval of the curve's domain::
+
+            sage: c.plot(prange=(0,pi))
+            Graphics object consisting of 1 graphics primitive
+            
+        Plot with various options::
+        
+            sage: c.plot(color='green', style=':', thickness=3, aspect_ratio=1)
+            Graphics object consisting of 1 graphics primitive
+
+        Plot via a mapping to another manifold: loxodrome of a sphere viewed
+        in `\RR^3`::
+
+            sage: S2 = Manifold(2, 'S^2')
+            sage: U = S2.open_subset('U')
+            sage: XS.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: R3 = Manifold(3, 'R^3')
+            sage: X3.<x,y,z> = R3.chart()
+            sage: F = S2.diff_mapping(R3, {(XS, X3): [sin(th)*cos(ph),
+            ....:                     sin(th)*sin(ph), cos(th)]}, name='F')
+            sage: F.display()
+            F: S^2 --> R^3
+            on U: (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
+            sage: c = S2.curve([2*atan(exp(-t/10)), t], (t, -oo, +oo), name='c')
+            sage: graph_c = c.plot(mapping=F, max_value=40,
+            ....:                  plot_points=200, thickness=2, label_axes=False)  # 3D plot
+            sage: graph_S2 = XS.plot(X3, mapping=F, nb_values=11, color='black') # plot of the sphere
+            sage: show(graph_c + graph_S2) # the loxodrome + the sphere
 
         """
         from sage.rings.infinity import Infinity
@@ -519,7 +590,7 @@ class ManifoldCurve(DiffMapping):
         # The chart w.r.t. which the curve is plotted
         #
         if chart is None:
-            chart = self._codomain.default_chart()
+            chart = eff_curve._codomain.default_chart()
         elif not isinstance(chart, Chart):
             raise TypeError("{} is not a chart".format(chart))
         #
@@ -546,8 +617,12 @@ class ManifoldCurve(DiffMapping):
         tmax = prange[1]
         if tmin == -Infinity:
             tmin = -max_value
+        elif not include_end_point[0]:
+            tmin = tmin + end_point_offset[0]
         if tmax == Infinity:
             tmax = max_value
+        elif not include_end_point[1]:
+            tmax = tmax - end_point_offset[1]
         tmin = numerical_approx(tmin)
         tmax = numerical_approx(tmax)
         #
@@ -572,8 +647,8 @@ class ManifoldCurve(DiffMapping):
         # List of points for the plot curve
         #
         plot_curve = []
-        dt = (tmax - tmin) / (plot_points + 1) 
-        t = tmin + dt
+        dt = (tmax - tmin) / (plot_points - 1) 
+        t = tmin
         if parameters is None:
             for i in range(plot_points):
                 x = transf(t, simplify=False)
@@ -593,25 +668,14 @@ class ManifoldCurve(DiffMapping):
         resu += line(plot_curve, color=color, linestyle=style,
                      thickness=thickness)
         if n_pc==2:  # 2D graphic
-            resu.set_aspect_ratio(1)
+            resu.set_aspect_ratio(aspect_ratio)
             if label_axes:
                 resu.axes_labels([r'$'+latex(pc)+r'$' for pc in plot_coords])
         else: # 3D graphic
-            resu.aspect_ratio(1)
+            if aspect_ratio == 'automatic':
+                aspect_ratio = 1
+            resu.aspect_ratio(aspect_ratio)
             if label_axes:
                 labels = [str(pc) for pc in plot_coords]
                 resu = set_axes_labels(resu, *labels)
         return resu
-
-
-
-
-
-
-
-
-
-
-
-
-

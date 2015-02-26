@@ -1201,11 +1201,18 @@ class TensorField(ModuleElement):
             sage: t.display(h)
             t = -u^3*v/(v + 1) h_0*h^1 - u*v h_1*h^1
 
+        A shortcut of ``display()`` is ``disp()``::
+
+            sage: t.disp(h)
+            t = -u^3*v/(v + 1) h_0*h^1 - u*v h_1*h^1
+
         """
         if basis is None:
             basis = self._domain._def_frame
         rst = self.restrict(basis._domain, dest_map=basis._dest_map)
         return rst.display(basis, chart)
+
+    disp = display
 
     def view(self, basis=None, chart=None):
         r"""
@@ -2525,7 +2532,7 @@ class TensorField(ModuleElement):
             Type-(1,1) tensor a on the tangent space at point 'p' on 2-dimensional manifold 'M'
             sage: ap.parent()
             Free module of type-(1,1) tensors on the tangent space at point 'p' on 2-dimensional manifold 'M'
-            sage: ap.display()
+            sage: ap.display(eU.at(p))
             a = 4 d/dx*dx + 2 d/dx*dy + 5 d/dy*dy
             sage: ap.display(eV.at(p))
             a = 11/2 d/du*du - 3/2 d/du*dv + 1/2 d/dv*du + 7/2 d/dv*dv
@@ -3476,7 +3483,10 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             raise TypeError("The " + str(point) + " is not a point in the "
                             "domain of " + str(self) + ".")
         dest_map = self._fmodule._dest_map
-        amb_point = dest_map(point)  #  "ambient" point          
+        if dest_map.is_identity():
+            amb_point = point
+        else:
+            amb_point = dest_map(point)  #  "ambient" point          
         ts = amb_point.tangent_space()
         resu = ts.tensor(self._tensor_type, name=self._name,
                          latex_name=self._latex_name, sym=self._sym,

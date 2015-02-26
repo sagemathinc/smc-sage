@@ -1817,15 +1817,17 @@ class ManifoldOpenSubset(ManifoldSubset):
         from vectorfield_module import VectorFieldModule, VectorFieldFreeModule
         if dest_map is None:
             dest_map = self._identity_map
+        dest_map_name = dest_map._name
         codomain = dest_map._codomain
-        if dest_map not in self._vector_field_modules:
+        if dest_map_name not in self._vector_field_modules: #!# to be improved
+                                        # (replace dest_map_name by dest_map ?)
             if codomain.is_manifestly_parallelizable() or force_free:
-                self._vector_field_modules[dest_map] = \
+                self._vector_field_modules[dest_map_name] = \
                                  VectorFieldFreeModule(self, dest_map=dest_map)
             else:
-                self._vector_field_modules[dest_map] = \
+                self._vector_field_modules[dest_map_name] = \
                                      VectorFieldModule(self, dest_map=dest_map)
-        return self._vector_field_modules[dest_map]
+        return self._vector_field_modules[dest_map_name]
 
     def tensor_field_module(self, tensor_type, dest_map=None):
         r"""

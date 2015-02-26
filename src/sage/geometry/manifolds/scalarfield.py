@@ -960,6 +960,12 @@ class ScalarField(CommutativeAlgebraElement):
             sage: latex(g.display())
             \begin{array}{llcl} g:& M & \longrightarrow & \RR \\ & \left(x, y\right) & \longmapsto & G\left(x, y\right) \end{array}
 
+        A shortcut of ``display()`` is ``disp()``::
+
+            sage: f.disp()
+            f: M --> R
+               (x, y) |--> sqrt(x + 1)
+
         """
         from sage.misc.latex import latex
         from utilities import FormattedExpansion
@@ -984,6 +990,7 @@ class ScalarField(CommutativeAlgebraElement):
         result.latex = result.latex[:-2] + r"\end{array}"
         return result
 
+    disp = display
 
     def view(self, chart=None):
         r"""

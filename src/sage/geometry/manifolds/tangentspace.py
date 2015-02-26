@@ -239,6 +239,12 @@ class TangentSpace(FiniteRankFreeModule):
                   ",".join([cobasis._form[i]._latex_name for i in range(n)])+ \
                   r"\right)"
                 point._frame_bases[frame] = basis
+        # The basis induced by the default frame of the manifold subset
+        # in which the point has been created is declared the default
+        # basis of self:
+        def_frame = point._subset._def_frame
+        if def_frame in point._frame_bases:
+            self._def_basis = point._frame_bases[def_frame]
         # Initialization of the changes of bases from the existing changes of
         # frames around the point:
         for frame_pair, automorph in point._subset._frame_changes.iteritems():

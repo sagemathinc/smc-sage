@@ -937,6 +937,13 @@ class DiffMapping(Morphism):
             Phi: U --> R^3
                (x, y) |--> (X, Y, Z) = (2*x/(x^2 + y^2 + 1), 2*y/(x^2 + y^2 + 1), (x^2 + y^2 - 1)/(x^2 + y^2 + 1))
 
+        A shortcut of ``display()`` is ``disp()``::
+
+            sage: Phi.disp()
+            Phi: S^2 --> R^3
+            on U: (x, y) |--> (X, Y, Z) = (2*x/(x^2 + y^2 + 1), 2*y/(x^2 + y^2 + 1), (x^2 + y^2 - 1)/(x^2 + y^2 + 1))
+            on V: (u, v) |--> (X, Y, Z) = (2*u/(u^2 + v^2 + 1), 2*v/(u^2 + v^2 + 1), -(u^2 + v^2 - 1)/(u^2 + v^2 + 1))
+        
         """
         from sage.misc.latex import latex
         from utilities import FormattedExpansion
@@ -971,6 +978,8 @@ class DiffMapping(Morphism):
         result.txt = result.txt[:-1]
         result.latex = result.latex[:-2] + r"\end{array}"
         return result
+
+    disp = display
 
     def view(self, chart1=None, chart2=None):
         r"""
