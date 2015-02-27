@@ -300,14 +300,14 @@ def simplify_sqrt_real(expr):
         -2*x + 1
 
     This improves over Sage's
-    :meth:`~sage.symbolic.expression.Expression.simplify_radical` which yields
+    :meth:`~sage.symbolic.expression.Expression.canonicalize_radical` which yields
     incorrect results when x<0:
 
-        sage: sqrt(x^2).simplify_radical() # wrong output
+        sage: sqrt(x^2).canonicalize_radical() # wrong output
         x
-        sage: sqrt(x^2-2*x+1).simplify_radical() # wrong output
+        sage: sqrt(x^2-2*x+1).canonicalize_radical() # wrong output
         x - 1
-        sage: ( sqrt(x^2) + sqrt(x^2-2*x+1) ).simplify_radical() # wrong output
+        sage: ( sqrt(x^2) + sqrt(x^2-2*x+1) ).canonicalize_radical() # wrong output
         2*x - 1
 
     """
@@ -415,7 +415,7 @@ def simplify_abs_trig(expr):
 
 def simplify_chain(expr):
     r"""
-    Perform a chain of simplications to a symbolic expression.
+    Apply a chain of simplications to a symbolic expression.
 
     """
     expr = expr.simplify_factorial()
@@ -423,7 +423,9 @@ def simplify_chain(expr):
     expr = expr.simplify_rational()
     expr = simplify_sqrt_real(expr)
     expr = simplify_abs_trig(expr)
-    expr = expr.simplify_radical()
+    expr = expr.canonicalize_radical() # NB: for Sage < 6.5, it was
+                                       # simplify_radical()
+                                       # see http://trac.sagemath.org/11912
     expr = expr.simplify_log('one')
     expr = expr.simplify_rational()
     expr = expr.simplify_trig()

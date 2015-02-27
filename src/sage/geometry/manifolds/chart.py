@@ -156,7 +156,7 @@ class Chart(UniqueRepresentation, SageObject):
         sage: print type(th)
         <type 'sage.symbolic.expression.Expression'>
         sage: latex(th)
-        \theta
+        {\theta}
         sage: assumptions(th)
         [th is real, th > 0, th < pi]
 
@@ -3157,7 +3157,7 @@ class CoordChange(SageObject):
         sage: ch
         coordinate change from chart (R3, (r, th, ph)) to chart (R3, (x, y, z))
         sage: latex(ch)
-        (r, \theta, \phi) \mapsto (x, y, z)
+        (r, {\theta}, {\phi}) \mapsto (x, y, z)
         sage: type(ch)
         <class 'sage.geometry.manifolds.chart.CoordChange'>
 

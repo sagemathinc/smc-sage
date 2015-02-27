@@ -795,7 +795,7 @@ class CoordFrame(VectorFrame):
         sage: b[2]
         vector field 'd/dph' on the 2-dimensional manifold 'S^2'
         sage: latex(b)
-        \left(S^2 ,\left(\frac{\partial}{\partial \theta },\frac{\partial}{\partial \phi }\right)\right)
+        \left(S^2 ,\left(\frac{\partial}{\partial {\theta} },\frac{\partial}{\partial {\phi} }\right)\right)
 
     """
     def __init__(self, chart):

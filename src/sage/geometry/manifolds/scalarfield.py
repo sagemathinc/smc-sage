@@ -127,7 +127,7 @@ class ScalarField(CommutativeAlgebraElement):
         f: S^2 --> R
         on U: (th, ph) |--> cos(ph)*sin(th)
         sage: latex(f.display(c_spher)) # nice LaTeX formatting for the notebook
-        \begin{array}{llcl} f:& S^2 & \longrightarrow & \RR \\ \mbox{on}\ U : & \left(\theta, \phi\right) & \longmapsto & \cos\left(\phi\right) \sin\left(\theta\right) \end{array}
+        \begin{array}{llcl} f:& S^2 & \longrightarrow & \RR \\ \mbox{on}\ U : & \left({\theta}, {\phi}\right) & \longmapsto & \cos\left({\phi}\right) \sin\left({\theta}\right) \end{array}
 
     A scalar field can also be defined by an unspecified function of the
     coordinates::
