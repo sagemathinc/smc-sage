@@ -264,7 +264,7 @@ class VectorFrame(FreeModuleBasis):
         # The frame is added to the domain's set of frames, as well as to all
         # the superdomains' sets of frames; moreover the first defined frame
         # is considered as the default one
-        dest_map_name = self._dest_map._name
+        dest_map = self._dest_map
         for sd in self._domain._supersets:
             for other in sd._frames:
                 if repr(self) == repr(other):
@@ -276,13 +276,13 @@ class VectorFrame(FreeModuleBasis):
                 sd._def_frame = self
             if isinstance(sd, ManifoldOpenSubset):
                 # Initialization of the zero elements of tensor field modules:
-                if dest_map_name in sd._vector_field_modules:  #!# to be improved
-                    xsd = sd._vector_field_modules[dest_map_name]
+                if dest_map in sd._vector_field_modules:
+                    xsd = sd._vector_field_modules[dest_map]
                     if not isinstance(xsd, FiniteRankFreeModule):
                         for t in xsd._tensor_modules.itervalues():
                             t(0).add_comp(self)
                             # (since new components are initialized to zero)
-        if self._dest_map is self._domain._identity_map:
+        if dest_map is self._domain._identity_map:
             # The frame is added to the list of the domain's covering frames:
             self._domain._set_covering_frame(self)
         #

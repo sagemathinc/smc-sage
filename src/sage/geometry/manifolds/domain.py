@@ -1425,7 +1425,9 @@ class ManifoldOpenSubset(ManifoldSubset):
         self._scalar_field_algebra = None
         # The zero scalar field is constructed:
         self._zero_scalar_field = ZeroScalarField(self)
-        # dict. of vector field modules along self:
+        # dict. of vector field modules along self
+        # (keys = diff. mapping from self to an open set (possibly the identity
+        #  map))
         self._vector_field_modules = {}
         # the identity map on self
         self._identity_map = Hom(self, self).one()
@@ -1817,17 +1819,15 @@ class ManifoldOpenSubset(ManifoldSubset):
         from vectorfield_module import VectorFieldModule, VectorFieldFreeModule
         if dest_map is None:
             dest_map = self._identity_map
-        dest_map_name = dest_map._name
         codomain = dest_map._codomain
-        if dest_map_name not in self._vector_field_modules: #!# to be improved
-                                        # (replace dest_map_name by dest_map ?)
+        if dest_map not in self._vector_field_modules: 
             if codomain.is_manifestly_parallelizable() or force_free:
-                self._vector_field_modules[dest_map_name] = \
+                self._vector_field_modules[dest_map] = \
                                  VectorFieldFreeModule(self, dest_map=dest_map)
             else:
-                self._vector_field_modules[dest_map_name] = \
+                self._vector_field_modules[dest_map] = \
                                      VectorFieldModule(self, dest_map=dest_map)
-        return self._vector_field_modules[dest_map_name]
+        return self._vector_field_modules[dest_map]
 
     def tensor_field_module(self, tensor_type, dest_map=None):
         r"""
