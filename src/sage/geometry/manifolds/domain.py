@@ -107,9 +107,9 @@ class ManifoldSubset(UniqueRepresentation, Parent):
     INPUT:
 
     - ``manifold`` -- manifold on which the subset is defined
-    - ``name`` -- name given to the subset
-    - ``latex_name`` --  (default: None) LaTeX symbol to denote the subset; if
-      none is provided, it is set to ``name``
+    - ``name`` -- string; name (symbol) given to the subset
+    - ``latex_name`` --  (default: None) string: LaTeX symbol to denote the
+      subset; if none is provided, it is set to ``name``
 
     EXAMPLES:
 
@@ -1278,8 +1278,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
 class ManifoldOpenSubset(ManifoldSubset):
     r"""
-    This class is devoted to open subsets of a differentiable manifold
-    over `\RR`.
+    Open subset of a differentiable manifold over `\RR`.
 
     The class :class:`ManifoldOpenSubset` inherits naturally from the class
     :class:`ManifoldSubset`. Via the latter, it inherits from the generic
@@ -1294,8 +1293,8 @@ class ManifoldOpenSubset(ManifoldSubset):
     INPUT:
 
     - ``manifold`` -- manifold on which the open subset is defined
-    - ``name`` -- name given to the open subset
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the open
+    - ``name`` -- string; name (symbol) given to the open subset
+    - ``latex_name`` -- (default: None) string; LaTeX symbol to denote the open
       subset; if none is provided, it is set to ``name``
 
     EXAMPLES:

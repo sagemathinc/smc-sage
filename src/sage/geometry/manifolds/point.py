@@ -1,14 +1,22 @@
 r"""
 Points on a manifold
 
-The class :class:`ManifoldPoint` implements the concept of point on a manifold, in a
-coordinate independent manner: a :class:`ManifoldPoint` object can have coordinates in
+The class :class:`ManifoldPoint` implements the concept of point of a
+differentiable manifold, in a coordinate independent manner:
+a :class:`ManifoldPoint` object can have coordinates in
 various charts defined on the manifold. Two points are declared equal if they
 have the same coordinates in the same chart.
 
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2013-2015) : initial version
+
+REFERENCES:
+
+- M. Berger & B. Gostiaux: *Geometrie differentielle, varietes, courbes et
+  surfaces*, Presses Universitaires de France (Paris, 1987)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York,
+  2013)
 
 EXAMPLES:
 
@@ -61,7 +69,10 @@ from sage.structure.element import Element
 
 class ManifoldPoint(Element):
     r"""
-    Class for points on a manifold.
+    Point of a differentiable manifold.
+
+    This is a Sage *element* class, the corresponding *parent* class being
+    :class:`~sage.geometry.manifolds.manifold.Manifold`.
 
     INPUT:
 
@@ -587,7 +598,31 @@ class ManifoldPoint(Element):
 
     def tangent_space(self):
         r"""
-        Returns the tangent space at self.
+        Return the tangent space to the manifold at ``self``.
+
+        OUTPUT:
+
+        - instance of class
+          :class:`~sage.geometry.manifolds.tangentspace.TangentSpace`
+
+        EXAMPLE:
+
+        A tangent space to a 2-dimensional manifold::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M.point((2, -3), name='p')
+            sage: Tp = p.tangent_space() ; Tp
+            tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: Tp.category()
+            Category of vector spaces over Symbolic Ring
+            sage: dim(Tp)
+            2
+
+        See documentation of class
+        :class:`~sage.geometry.manifolds.tangentspace.TangentSpace`
+        for more examples.
+
         """
         from tangentspace import TangentSpace
         if self._tangent_space is not None:

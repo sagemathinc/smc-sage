@@ -17,20 +17,20 @@ into a differentiable manifold `M` is a differentiable mapping
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
+- Eric Gourgoulhon, Michal Bejger (2013-2015): initial version
 
 REFERENCES:
 
-- M. Berger & B. Gostiaux: "Geometrie differentielle, varietes, courbes et
-  surfaces", Presses Universitaires de France (Paris, 1987)
-- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
-  2013)
+- M. Berger & B. Gostiaux: *Geometrie differentielle, varietes, courbes et
+  surfaces*, Presses Universitaires de France (Paris) (1987)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
 
 """
 
 #******************************************************************************
-#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -45,17 +45,26 @@ from diffmapping import DiffMapping
 
 class Submanifold(Manifold):
     r"""
-    Base class for submanifolds, i.e. manifolds embedded in a differentiable
-    manifold.
+    Embedded submanifold of a differentiable manifold over `\RR`. 
+
+    Given a differentiable manifold `M`, an *embedded submanifold* is a subset
+    `S\subset M` such that `S` is a manifold for the topology induced by `M`
+    and `S` is endowed with a differentiable structure with respect to which the
+    inclusion map `\iota: S\hookrightarrow M` is a differentiable embedding.
+
 
     INPUT:
 
-    - ``ambient_manifold`` -- the ambient manifold
-    - ``n`` -- dimension of the submanifold
-    - ``name`` -- name given to the submanifold
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the submanifold
-    - ``start_index`` -- (default: 0) lower bound of the range of indices on the
+    - ``ambient_manifold`` -- the ambient manifold `M`, as an instance of
+      :class:`~sage.geometry.manifolds.manifold.Manifold`
+    - ``n`` -- positive integer; dimension of the submanifold
+    - ``name`` -- string; name (symbol) given to the submanifold
+    - ``latex_name`` -- (default: None) string; LaTeX symbol to denote the
       submanifold
+    - ``start_index`` -- (default: 0) integer; lower bound of the range of
+      indices used for "indexed objects" on the submanifold, e.g. coordinates
+      in a chart or elements of a vector frame and the corresponding tensor
+      components. 
 
     EXAMPLES:
 
@@ -70,7 +79,7 @@ class Submanifold(Manifold):
         sage: S.def_embedding(emb)
         sage: S
         2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
-        sage: S._embedding.display()
+        sage: S.embedding().display()
         i: U --> R^3
            (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
 
@@ -82,7 +91,7 @@ class Submanifold(Manifold):
         sage: H.def_embedding(emb)
         sage: H
         1-dimensional submanifold 'H' of the 3-dimensional manifold 'R^3'
-        sage: H._embedding.display()
+        sage: H.embedding().display()
          i: H --> R^3
             t |--> (x, y, z) = (cos(t), sin(t), t)
 
@@ -100,13 +109,13 @@ class Submanifold(Manifold):
         coordinate coframe (R^3, (dx,dy,dz))
         sage: dX[1]
         1-form 'dx' on the 3-dimensional manifold 'R^3'
-        sage: S._embedding.pullback(dX[1])
+        sage: S.embedding().pullback(dX[1])
         1-form 'i_*(dx)' on the open subset 'U' of the 2-dimensional submanifold 'S^2' of the 3-dimensional manifold 'R^3'
-        sage: S._embedding.pullback(dX[1]).display()
+        sage: S.embedding().pullback(dX[1]).display()
         i_*(dx) = cos(ph)*cos(th) dth - sin(ph)*sin(th) dph
-        sage: S._embedding.pullback(dX[2]).display()
+        sage: S.embedding().pullback(dX[2]).display()
         i_*(dy) = cos(th)*sin(ph) dth + cos(ph)*sin(th) dph
-        sage: S._embedding.pullback(dX[3]).display()
+        sage: S.embedding().pullback(dX[3]).display()
         i_*(dz) = -sin(th) dth
 
     Pushforward of vector fields defined on `S^2` to `\RR^3`::
@@ -150,7 +159,8 @@ class Submanifold(Manifold):
         INPUT:
 
         - ``embedding`` -- the inclusion map as a differentiable embedding
-          `S\rightarrow M`; must be an instance of class :class:`DiffMapping`.
+          `S\rightarrow M`; must be an instance of class
+          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`.
 
         """
         if not isinstance(embedding, DiffMapping):
@@ -245,14 +255,17 @@ class Submanifold(Manifold):
 
         INPUT:
 
-        - ``tensor`` -- instance of :class:`TensorField` representing a fully
-          contravariant tensor field `T` on the submanifold, i.e. a tensor
-          field of type (k,0), with k a positive integer. The case k=0
-          corresponds to a scalar field.
+        - ``tensor`` -- instance of
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
+          representing a fully contravariant tensor field `T` on the
+          submanifold, i.e. a tensor field of type (k,0), with k a positive
+          integer. The case k=0 corresponds to a scalar field.
 
         OUTPUT:
 
-        - instance of :class:`TensorField` representing a field of fully
+        - instance of
+          :class:`~sage.geometry.manifolds.tensorfield.TensorField`
+          representing a field of fully
           contravariant tensors of the ambient manifold, field defined on
           the subset occupied by the submanifold.
 

@@ -1,10 +1,28 @@
 r"""
 Group of tangent-space automorphism fields
 
+Given an open subset `U` of a manifold `S` and a differentiable mapping
+`\Phi: U \rightarrow M`, where `M` is a manifold,
+the *group of tangent-space automorphism fields* associated with `U` and
+`\Phi` is the general linear group `\mathrm{GL}(\mathcal{X}(U,\Phi))` of
+the module `\mathcal{X}(U,\Phi)` of vector fields along `U` with values in
+`\Phi(U)`. Note that `\mathcal{X}(U,\Phi)` is a module over
+`C^\infty(U)`, the algebra of smooth scalar fields on `U`.
+Elements of `\mathrm{GL}(\mathcal{X}(U,\Phi))` are fields along `U` of
+automorphisms of the tangent spaces of `\Phi(U)`. 
+
+Two classes implement `\mathrm{GL}(\mathcal{X}(U,\Phi))` depending whether
+`\Phi(U)` is parallelizable or not:
+:class:`AutomorphismFieldParalGroup` and :class:`AutomorphismFieldGroup`.
 
 AUTHORS:
 
 - Eric Gourgoulhon (2015): initial version
+
+REFERENCES:
+
+- Chap. 15 of R. Godement: *Algebra*, Hermann (Paris) / Houghton Mifflin
+  (Boston) (1968)
 
 """
 
@@ -39,8 +57,8 @@ class AutomorphismFieldGroup(UniqueRepresentation, Parent):
     `\mathcal{X}(U,\Phi)` of vector fields along `U` with values in
     `V=\Phi(U)`. Note that `\mathcal{X}(U,\Phi)` is a module over
     `C^\infty(U)`, the ring (algebra) of smooth scalar fields on `U`.
-    Elements of this group are fields along `U` of automorphisms of the tangent
-    spaces of `V=\Phi(U)`. 
+    Elements of `\mathrm{GL}(\mathcal{X}(U,\Phi))` are fields along `U` of
+    automorphisms of the tangent spaces of `V=\Phi(U)`. 
 
     If `V=\Phi(U)` is parallelizable, the class
     :class:`AutomorphismFieldParalGroup` must be used instead.
@@ -200,8 +218,8 @@ class AutomorphismFieldParalGroup(FreeModuleLinearGroup):
     `\mathcal{X}(U,\Phi)` of vector fields along `U` with values in
     `V=\Phi(U)`. Since `V` is parallelizable, `\mathcal{X}(U,\Phi)` is indeed
     a free module over `C^\infty(U)`, the ring (algebra) of smooth scalar
-    fields on `U`. Elements of this group are fields along `U` of automorphisms
-    of the tangent spaces of `V=\Phi(U)`. 
+    fields on `U`. Elements of `\mathrm{GL}(\mathcal{X}(U,\Phi))` are fields
+    along `U` of automorphisms of the tangent spaces of `V=\Phi(U)`. 
 
     If `V=\Phi(U)` is not parallelizable, the class
     :class:`AutomorphismFieldGroup` must be used instead.

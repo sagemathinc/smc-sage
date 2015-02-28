@@ -10,20 +10,25 @@ manifolds over `\RR`, i.e. differentiable mappings of the form
 
 where `U` is an open subset of the differentiable manifold `M`.
 
-The class :class:`ScalarField`  inherits from the class  :class:`~sage.structure.element.CommutativeAlgebraElement` (a scalar field on
-`U` being an element of the commutative algebra `C^\infty(U)`).
-
 The subclass :class:`ZeroScalarField` deals with null scalar fields.
 
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2013,2014): initial version
 
+REFERENCES:
+
+- S. Kobayashi & K. Nomizu : *Foundations of Differential Geometry*, vol. 1,
+  Interscience Publishers (New York) (1963)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
+- B O'Neill : *Semi-Riemannian Geometry*, Academic Press (San Diego) (1983)
+
 """
 
 #******************************************************************************
-#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -38,18 +43,35 @@ from chart import FunctionChart, ZeroFunctionChart, MultiFunctionChart
 
 class ScalarField(CommutativeAlgebraElement):
     r"""
-    Class for scalar fields on a differentiable manifold.
+    Scalar field on a differentiable manifold.
+
+    This class implements scalar fields on differentiable
+    manifolds over `\RR`, i.e. differentiable mappings of the form
+    
+    .. MATH::
+    
+        f: U\subset M \longrightarrow \RR
+    
+    where `U` is an open subset of the differentiable manifold `M`.
+
+    The class :class:`ScalarField`  inherits from the class  :class:`~sage.structure.element.CommutativeAlgebraElement` (a scalar field
+    on `U` being an element of the commutative algebra `C^\infty(U)`).
 
     INPUT:
 
     - ``domain`` -- the manifold open subset `U` on which the scalar field is
       defined (must be an instance of class
       :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
-    - ``coord_expression`` -- (default: None) coordinate expression of the
+    - ``coord_expression`` -- (default: ``None``) coordinate expression of the
+      scalar field; the coordinate expression can be given in various
+      charts by means of a dictionary, with the charts as keys. If ``None``,
+      coordinate expressions can be added after the creation of the object,
+      by means of the methods :meth:`add_expr`,
+      :meth:`add_expr_by_continuation` and :meth:`set_expr`
+    - ``name`` -- (default: ``None``) string; name (symbol) given to the
       scalar field
-    - ``name`` -- (default: None) name given to the scalar field
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the scalar field;
-      if none is provided, the LaTeX symbol is set to ``name``
+    - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to denote the
+      scalar field; if none is provided, the LaTeX symbol is set to ``name``
 
     EXAMPLES:
 
@@ -361,7 +383,7 @@ class ScalarField(CommutativeAlgebraElement):
             else:
                 for chart in self._domain._atlas:
                     self._express[chart] = FunctionChart(chart,
-                                                        coord_expression)
+                                                         coord_expression)
         self._init_derived()   # initialization of derived quantities
 
     ####### Required methods for an algebra element (beside arithmetic) #######
@@ -1481,70 +1503,9 @@ class ScalarField(CommutativeAlgebraElement):
 
     #########  End of CommutativeAlgebraElement arithmetic operators ########
 
-
-    def exterior_der(self):
-        r"""
-        Return the exterior derivative of the scalar field.
-
-        NB: for a scalar field, the exterior derivative is nothing but the
-        differential of the field. Accordingly, this method simply calls
-        :meth:`differential`.
-
-        OUTPUT:
-
-        - the 1-form exterior derivative of ``self``.
-
-        EXAMPLES:
-
-        Exterior derivative on a 3-dimensional manifold::
-
-            sage: Manifold._clear_cache_() # for doctests only
-            sage: M = Manifold(3, 'M')
-            sage: c_xyz.<x,y,z> = M.chart()
-            sage: f = M.scalar_field(cos(x)*z^3 + exp(y)*z^2, name='f')
-            sage: df = f.exterior_der() ; df
-            1-form 'df' on the 3-dimensional manifold 'M'
-            sage: df.display()
-            df = -z^3*sin(x) dx + z^2*e^y dy + (3*z^2*cos(x) + 2*z*e^y) dz
-            sage: latex(df)
-            \mathrm{d}f
-
-        Exterior derivative computed on a chart that is not the default one::
-
-            sage: c_uvw.<u,v,w> = M.chart()
-            sage: g = M.scalar_field(u*v^2*w^3, c_uvw, name='g')
-            sage: dg = g.exterior_der() ; dg
-            1-form 'dg' on the 3-dimensional manifold 'M'
-            sage: dg._components
-            {coordinate frame (M, (d/du,d/dv,d/dw)): 1-index components w.r.t. coordinate frame (M, (d/du,d/dv,d/dw))}
-            sage: dg.comp(c_uvw.frame())[:, c_uvw]
-            [v^2*w^3, 2*u*v*w^3, 3*u*v^2*w^2]
-            sage: dg.display(c_uvw.frame(), c_uvw)
-            dg = v^2*w^3 du + 2*u*v*w^3 dv + 3*u*v^2*w^2 dw
-
-        The exterior derivative is nilpotent::
-
-            sage: ddf = df.exterior_der() ; ddf
-            2-form 'ddf' on the 3-dimensional manifold 'M'
-            sage: ddf == 0
-            True
-            sage: ddf[:]
-            [0 0 0]
-            [0 0 0]
-            [0 0 0]
-            sage: ddg = dg.exterior_der() ; ddg
-            2-form 'ddg' on the 3-dimensional manifold 'M'
-            sage: ddg == 0
-            True
-
-        """
-        return self.differential()
-
     def differential(self):
         r"""
         Return the differential of the scalar field.
-
-        This method simply calls the method :meth:`exterior_der`.
 
         OUTPUT:
 
@@ -1557,13 +1518,53 @@ class ScalarField(CommutativeAlgebraElement):
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
             sage: c_xyz.<x,y,z> = M.chart()
-            sage: f = M.scalar_field(cos(x)*z**3 + exp(y)*z**2, name='f')
+            sage: f = M.scalar_field(cos(x)*z^3 + exp(y)*z^2, name='f')
             sage: df = f.differential() ; df
             1-form 'df' on the 3-dimensional manifold 'M'
             sage: df.display()
             df = -z^3*sin(x) dx + z^2*e^y dy + (3*z^2*cos(x) + 2*z*e^y) dz
             sage: latex(df)
             \mathrm{d}f
+
+        Since the exterior derivative of a scalar field (considered a 0-form)
+        is nothing but its differential, ``exterior_der()`` is an alias of
+        ``differential()``::
+
+            sage: df = f.exterior_der() ; df
+            1-form 'df' on the 3-dimensional manifold 'M'
+            sage: df.display()
+            df = -z^3*sin(x) dx + z^2*e^y dy + (3*z^2*cos(x) + 2*z*e^y) dz
+            sage: latex(df)
+            \mathrm{d}f
+
+        Differential computed on a chart that is not the default one::
+
+            sage: c_uvw.<u,v,w> = M.chart()
+            sage: g = M.scalar_field(u*v^2*w^3, c_uvw, name='g')
+            sage: dg = g.differential() ; dg
+            1-form 'dg' on the 3-dimensional manifold 'M'
+            sage: dg._components
+            {coordinate frame (M, (d/du,d/dv,d/dw)): 1-index components w.r.t.
+             coordinate frame (M, (d/du,d/dv,d/dw))}
+            sage: dg.comp(c_uvw.frame())[:, c_uvw]
+            [v^2*w^3, 2*u*v*w^3, 3*u*v^2*w^2]
+            sage: dg.display(c_uvw.frame(), c_uvw)
+            dg = v^2*w^3 du + 2*u*v*w^3 dv + 3*u*v^2*w^2 dw
+
+        The exterior derivative is nilpotent::
+
+            sage: ddf = df.exterior_der() ; ddf
+            2-form 'ddf' on the 3-dimensional manifold 'M'
+            sage: ddf == 0
+            True
+            sage: ddf[:] # for the incredule
+            [0 0 0]
+            [0 0 0]
+            [0 0 0]
+            sage: ddg = dg.exterior_der() ; ddg
+            2-form 'ddg' on the 3-dimensional manifold 'M'
+            sage: ddg == 0
+            True
 
         """
         from utilities import format_unop_txt, format_unop_latex
@@ -1578,6 +1579,8 @@ class ScalarField(CommutativeAlgebraElement):
                     self._differential.add_comp(chart._frame)[i, chart] \
                         = f.diff(i)
         return self._differential
+
+    exterior_der = differential
 
     def lie_der(self, vector):
         r"""

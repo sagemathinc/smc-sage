@@ -1,27 +1,30 @@
 r"""
 Coordinate charts
 
-Five classes are defined to deal with coordinates on a differentiable manifold
-over `\RR`:
+Five classes deal with coordinates on a differentiable manifold over `\RR`:
 
-* :class:`Chart` for charts on a manifold
-* :class:`FunctionChart` for real-valued functions of the coordinates of a given
-  chart
-* :class:`ZeroFunctionChart` for the null function of the coordinates of a given
-  chart
-* :class:`MultiFunctionChart` for sets of real-valued functions of coordinates
-  of a given chart
-* :class:`CoordChange` for transition maps between charts
+* :class:`Chart`: charts on a manifold
+* :class:`FunctionChart`: real-valued functions of the coordinates of a
+  given chart
+* :class:`ZeroFunctionChart`: the null function of the coordinates of a
+  given chart
+* :class:`MultiFunctionChart`: functions from a chart codomain to `\RR^m`
+* :class:`CoordChange`: transition maps between charts
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013) : initial version
+- Eric Gourgoulhon, Michal Bejger (2013-2015) : initial version
+
+REFERENCES:
+
+- Chap. 1 of J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer
+  (New York) (2013)
 
 """
 
 #*****************************************************************************
-#       Copyright (C) 2013 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -40,7 +43,7 @@ from sage.geometry.manifolds.utilities import simplify_chain
 
 class Chart(UniqueRepresentation, SageObject):
     r"""
-    Class for charts on a manifold.
+    Chart on a manifold.
 
     Given a manifold `M` of dimension `n`, a *chart* is a pair `(U,\varphi)`,
     where `U` is an open subset of `M` and
@@ -55,17 +58,18 @@ class Chart(UniqueRepresentation, SageObject):
 
     - ``domain`` -- open subset `U` on which the chart is defined (must be
       an instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
-    - ``coordinates`` -- (default: '') single string defining the coordinate
-      symbols and ranges: the coordinates are separated by ' ' (space) and
-      each coordinate has at most three fields, separated by ':':
+    - ``coordinates`` -- (default: '' (empty string)) single string defining
+      the coordinate symbols and ranges: the coordinates are separated by ' '
+      (space) and each coordinate has at most three fields, separated by ':':
 
         1. The coordinate symbol (a letter or a few letters)
         2. (optional) The interval `I` defining the coordinate range: if not
            provided, the coordinate is assumed to span all `\RR`; otherwise
-           `I` must be provided in the form (a,b) (or equivalently ]a,b[)
-           The bounds a and b can be +/-Infinity, Inf, infinity, inf or oo.
-           For *singular* coordinates, non-open intervals such as [a,b] and
-           (a,b] (or equivalently ]a,b]) are allowed.
+           `I` must be provided in the form ``(a,b)`` (or equivalently
+           ``]a,b[``). The bounds ``a`` and ``b`` can be ``+/-Infinity``,
+           ``Inf``, ``infinity``, ``inf`` or ``oo``.
+           For *singular* coordinates, non-open intervals such as ``[a,b]`` and
+           ``(a,b]`` (or equivalently ``]a,b]``) are allowed.
            Note that the interval declaration must not contain any space
            character.
         3. (optional) The LaTeX spelling of the coordinate; if not provided the
@@ -76,13 +80,13 @@ class Chart(UniqueRepresentation, SageObject):
       If it contains any LaTeX expression, the string ``coordinates`` must be
       declared with the prefix 'r' (for "raw") to allow for a proper treatment
       of the backslash character (see examples below).
-      If no interval range and no LaTeX spelling is to be provided for any
+      If no interval range and no LaTeX spelling is to be set for any
       coordinate, the argument ``coordinates`` can be omitted when the
-      shortcut operator <,> is used via Sage preparser (see examples below)
+      shortcut operator ``<,>`` is used via Sage preparser (see examples below)
     - ``names`` -- (default: None) unused argument, except if
       ``coordinates`` is not provided; it must then be a tuple containing
-      the coordinate symbols (this is guaranted if the shortcut operator <,>
-      is used).
+      the coordinate symbols (this is guaranted if the shortcut operator
+      ``<,>`` is used).
 
     EXAMPLES:
 
@@ -1680,24 +1684,31 @@ class Chart(UniqueRepresentation, SageObject):
 
 class FunctionChart(SageObject):
     r"""
-    Real-valued function of coordinates belonging to a chart on a manifold.
+    Real-valued function on a chart codomain.
 
-    Given a chart `\varphi` on a manifold `M` of dimension `n`, an instance of
-    the class :class:`FunctionChart` is a function
+    Given a chart `(U, \varphi)` on a differentiable manifold `M` of
+    dimension `n`, i.e. an open subset `U` of `M` along with an
+    homeomorphism `\varphi: U \rightarrow V \subset \RR^n` (`V` being
+    an open subset of `\RR^n`), an instance of class :class:`FunctionChart` is
+    a function
 
     .. MATH::
 
         \begin{array}{llcl}
-        f:& U \subset\RR^n & \longrightarrow & \RR \\
+        f:& V \subset\RR^n & \longrightarrow & \RR \\
           & (x^1,\ldots,x^n) & \longmapsto & f(x^1,\ldots,x^n)
         \end{array}
 
-    where `U` is the subset of `\RR^n` covered by the chart `\varphi`.
-
+    Instances of :class:`FunctionChart` differ from Sage symbolic functions,
+    implemented as callable symbolic expressions, by the automatic
+    simplification of the result of any operation. 
+    
     INPUT:
 
-    - ``chart`` -- the chart defining the coordinates
-    - ``expression`` -- the coordinate expression of the function
+    - ``chart`` -- the chart `(U, \varphi)`, as an instance of
+      class :class:`~sage.geometry.manifolds.chart.Chart`
+    - ``expression`` -- a symbolic expression representing `f(x^1,\ldots,x^n)`,
+      where `(x^1,\ldots,x^n)` are the coordinates of the chart `(U, \varphi)`
 
     EXAMPLES:
 
@@ -2021,7 +2032,7 @@ class FunctionChart(SageObject):
 
     def is_zero(self):
         r"""
-        Return True if the function is zero and False otherwise.
+        Return ``True`` if the function is zero and ``False`` otherwise.
 
         EXAMPLES:
 
@@ -2430,11 +2441,25 @@ class FunctionChart(SageObject):
 
 class ZeroFunctionChart(FunctionChart):
     r"""
-    Null function of coordinates belonging to a chart on a manifold.
+    Null function defined on the codomain of a chart.
+
+    Given a chart `(U, \varphi)` on a differentiable manifold `M` of
+    dimension `n`, i.e. an open subset `U` of `M` along with an
+    homeomorphism `\varphi: U \rightarrow V \subset \RR^n` (`V` being
+    an open subset of `\RR^n`), the function
+
+    .. MATH::
+
+        \begin{array}{llcl}
+        f:& V \subset\RR^n & \longrightarrow & \RR \\
+          & (x^1,\ldots,x^n) & \longmapsto & 0
+        \end{array}
+
+    is implemented as an instance of class :class:`ZeroFunctionChart`.
 
     INPUT:
 
-    - ``chart`` -- the chart on which the null function is defined
+    - ``chart`` -- the chart `(U, \varphi)`
 
     EXAMPLES:
 
@@ -2454,7 +2479,7 @@ class ZeroFunctionChart(FunctionChart):
         sage: f(1,2)
         0
 
-    Each chart has its zero function::
+    Each chart is equipped with its zero function::
 
         sage: c_xy._zero_function
         0
@@ -2585,8 +2610,7 @@ class ZeroFunctionChart(FunctionChart):
 
     def is_zero(self):
         r"""
-        Return True if the function is zero and False otherwise.
-
+        Always return ``True``.
         """
         return True
 
@@ -2762,34 +2786,33 @@ class ZeroFunctionChart(FunctionChart):
 
 class MultiFunctionChart(SageObject):
     r"""
-    Class for handling a set of `m` real-valued functions  of
-    the coordinates of a given chart.
+    Function from a chart codomain to `\RR^m`.
 
-    Given an integer `m \geq 1` and a chart `\varphi` on a manifold `M` of
-    dimension `n`, an instance of the class :class:`MultiFunctionChart` is a
-    function
+    Given a chart `(U, \varphi)` on a differentiable manifold `M` of
+    dimension `n`, i.e. an open subset `U` of `M` along with an
+    homeomorphism `\varphi: U \rightarrow V` (`V` = open subset of `\RR^n`),
+    an instance of class :class:`MultiFunctionChart` is a function
 
     .. MATH::
 
         \begin{array}{llcl}
-        f:& U \subset\RR^n & \longrightarrow & \RR^m \\
+        f:& V \subset\RR^n & \longrightarrow & \RR^m \\
           & (x^1,\ldots,x^n) & \longmapsto & (f_1(x^1,\ldots,x^n),\ldots,
             f_m(x^1,\ldots,x^n))
         \end{array}
 
-    where `U` is the subset of `\RR^n` covered by the chart `\varphi`.
-
-    Each function `f_i` is stored as an instance of :class:`FunctionChart`.
+    Each function `f_i` is stored as an instance of
+    :class:`~sage.geometry.manifolds.chart.FunctionChart`.
 
     INPUT:
 
-    - ``chart`` -- the chart defining the coordinates
+    - ``chart`` -- the chart `(U, \varphi)`
     - ``*expressions`` -- the list of the coordinate expressions of the `m`
-      functions (`m\geq 1`)
+      functions `f_i` (`1\leq i \leq m`)
 
     EXAMPLES:
 
-    A set of 3 functions of 2 coordinates::
+    A function `V\subset \RR^2 \longrightarrow \RR^3`::
 
         sage: M = Manifold(2, 'M')
         sage: c_xy.<x,y>  = M.chart()
@@ -2822,7 +2845,8 @@ class MultiFunctionChart(SageObject):
         sage: f[0].display()
         (x, y) |--> x - y
 
-    A MultiFunctionChart can contain a single function, although one should
+    An instance of class :class:`MultiFunctionChart` can represent a
+    real-valued function (case `m=1`), although one should
     rather employ the class :class:`FunctionChart` for this purpose::
 
         sage: g = c_xy.multifunction(x*y^2)
@@ -2846,8 +2870,7 @@ class MultiFunctionChart(SageObject):
         sage: g.jacobian()
         [[y^2, 2*x*y]]
 
-    If the number of functions equals the number of coordinates, the Jacobian
-    determinant can be evaluated::
+    If `m=n`, the Jacobian determinant can be evaluated::
 
         sage: h = c_xy.multifunction(x-y, x*y)
         sage: h.jacobian_det()
@@ -3135,7 +3158,7 @@ class MultiFunctionChart(SageObject):
 
 class CoordChange(SageObject):
     r"""
-    Class for changes of coordinates (transition maps between charts).
+    Change of coordinates (transition map between two charts).
 
     The two charts may belong to different manifolds.
 
@@ -3191,7 +3214,9 @@ class CoordChange(SageObject):
     The Jacobian matrix of the coordinate change::
 
         sage: ch._jacobian
-        [[cos(ph)*sin(th), r*cos(ph)*cos(th), -r*sin(ph)*sin(th)], [sin(ph)*sin(th), r*cos(th)*sin(ph), r*cos(ph)*sin(th)], [cos(th), -r*sin(th), 0]]
+        [[cos(ph)*sin(th), r*cos(ph)*cos(th), -r*sin(ph)*sin(th)],
+         [sin(ph)*sin(th), r*cos(th)*sin(ph), r*cos(ph)*sin(th)],
+         [cos(th), -r*sin(th), 0]]
         sage: ch._jacobian_det  # Jacobian determinant
         r^2*sin(th)
 

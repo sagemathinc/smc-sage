@@ -9,7 +9,7 @@ parallelizable domain `V` of a manifold `M` such that for each `p\in U`,
 `e(p)` is a vector basis of the tangent space `T_{\Phi(p)}M`.
 
 The standard case of a vector frame *on* `U` corresponds to `S=M`, `U=V`
-and `\Phi = \mathrm{Id}`.
+and `\Phi = \mathrm{Id}_U`.
 
 A derived class of :class:`VectorFrame` is :class:`CoordFrame`; it regards the
 vector frames associated with a chart, i.e. the so-called coordinate bases.
@@ -20,12 +20,12 @@ coframes deriving from a chart.
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013, 2014): initial version
+- Eric Gourgoulhon, Michal Bejger (2013-2015): initial version
 
 REFERENCES:
 
-- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
-  2013)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
 
 EXAMPLES:
 

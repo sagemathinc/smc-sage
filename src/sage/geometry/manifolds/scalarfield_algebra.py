@@ -13,21 +13,21 @@ SR.
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2014): initial version
+- Eric Gourgoulhon, Michal Bejger (2014-2015): initial version
 
 REFERENCES:
 
-- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
-  Interscience Publishers (New York, 1963)
-- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
-  2013)
-- B O'Neill : "Semi-Riemannian Geometry", Academic Press (San Diego, 1983)
+- S. Kobayashi & K. Nomizu : *Foundations of Differential Geometry*, vol. 1,
+  Interscience Publishers (New York) (1963)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
+- B O'Neill : *Semi-Riemannian Geometry*, Academic Press (San Diego) (1983)
 
 """
 
 #******************************************************************************
-#       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -53,7 +53,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
     The class :class:`ScalarFieldAlgebra` inherits from
     :class:`~sage.structure.parent.Parent`, with the category set to
     :class:`~sage.categories.commutative_algebras.CommutativeAlgebras`.
-    The corresponding Element class is
+    The corresponding *element* class is
     :class:`~sage.geometry.manifolds.scalarfield.ScalarField`.
 
     INPUT:
@@ -149,7 +149,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         (u, v) |--> 1
 
     A generic element can be constructed as for any parent in Sage, namely
-    by means of the __call__ operator on the parent (here with the dictionary
+    by means of the ``__call__`` operator on the parent (here with the dictionary
     of the coordinate expressions defining the scalar field)::
 
         sage: f = CM({c_xy: atan(x^2+y^2), c_uv: pi/2 - atan(u^2+v^2)}) ; f

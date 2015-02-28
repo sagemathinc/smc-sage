@@ -88,7 +88,7 @@ class TangentVector(FiniteRankFreeModuleElement):
 
 class TangentSpace(FiniteRankFreeModule):
     r"""
-    Tangent space at a given point of a differentiable manifold.
+    Tangent space to a differentiable manifold at a given point.
 
     Since the tangent space at a given point `p` of a differentiable
     manifold `M` of dimension `n` is a `n`-dimensional vector space over `\RR`
@@ -134,7 +134,7 @@ class TangentSpace(FiniteRankFreeModule):
         Category of vector spaces over Symbolic Ring
         sage: Tp.rank()
         2
-        sage: Tp.dim()
+        sage: dim(Tp)
         2
 
     The tangent space is automatically endowed with bases deduced from the
@@ -291,8 +291,10 @@ class TangentSpace(FiniteRankFreeModule):
             resu.set_comp()[:] = range(1, self._rank+1)
         return resu
 
-    def dim(self):
+    def dimension(self):
         r"""
         Return the vector space dimension of ``self``.
         """
         return self._rank
+
+    dim = dimension

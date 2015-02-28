@@ -25,9 +25,9 @@ AUTHORS:
 REFERENCES:
 
 - M. Berger & B. Gostiaux: *Geometrie differentielle, varietes, courbes et
-  surfaces*, Presses Universitaires de France (Paris, 1987)
-- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York,
-  2013)
+  surfaces*, Presses Universitaires de France (Paris) (1987)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
 
 EXAMPLES:
 
@@ -36,7 +36,7 @@ EXAMPLES:
         sage: M = Manifold(2, 'S^2')
         sage: M
         2-dimensional manifold 'S^2'
-        sage: M.dim()
+        sage: dim(M)
         2
 
     Let us consider the complement of the North pole; it is an open subset
@@ -177,7 +177,7 @@ EXAMPLES:
         tangent space at point 'p' on 2-dimensional manifold 'S^2'
         sage: Tp.category()
         Category of vector spaces over Symbolic Ring
-        sage: Tp.dim()
+        sage: dim(Tp)
         2
 
     A scalar field on the sphere::
@@ -283,9 +283,9 @@ from domain import ManifoldOpenSubset
 
 class Manifold(ManifoldOpenSubset):
     r"""
-    Base class for differentiable manifolds.
+    Differentiable manifold over `\RR`.
 
-    This class implements differentiable manifolds over `\RR`. Ideally it
+    Ideally this class
     should inherit from a class describing topological manifolds, or at
     least, topological spaces. Since such classes do not exist in Sage yet,
     the class :class:`Manifold` inherits from the generic Sage
@@ -298,12 +298,14 @@ class Manifold(ManifoldOpenSubset):
 
     INPUT:
 
-    - ``n`` -- dimension of the manifold
-    - ``name`` -- name given to the manifold
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the manifold; if
-      none is provided, it is set to ``name``
-    - ``start_index`` -- (default: 0) lower bound of the range of indices on the
-      manifold
+    - ``n`` -- positive integer; dimension of the manifold
+    - ``name`` -- string; name (symbol) given to the manifold
+    - ``latex_name`` -- (default: None) string; LaTeX symbol to denote the
+      manifold; if none is provided, it is set to ``name``
+    - ``start_index`` -- (default: 0) integer; lower bound of the range of
+      indices used for "indexed objects" on the manifold, e.g. coordinates
+      in a chart or elements of a vector frame and the corresponding tensor
+      components. 
 
     EXAMPLES:
 
@@ -407,18 +409,30 @@ class Manifold(ManifoldOpenSubset):
         """
         return self._latex_name
 
-    def dim(self):
+    def dimension(self):
         r"""
         Return the dimension of the manifold.
 
         EXAMPLE::
 
             sage: M = Manifold(2, 'M')
+            sage: M.dimension()
+            2
+
+        A shortcut is ``dim()``::
+
             sage: M.dim()
+            2
+
+        The Sage global function ``dim`` can also be used::
+
+            sage: dim(M)
             2
 
         """
         return self._dim
+
+    dim = dimension
 
     def irange(self, start=None):
         r"""
@@ -593,7 +607,7 @@ class RealLine(Manifold):
 
         sage: isinstance(R, Manifold)
         True
-        sage: R.dim()
+        sage: dim(R)
         1
 
     It is endowed with a canonical chart::

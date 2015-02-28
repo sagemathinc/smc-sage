@@ -153,6 +153,17 @@ class ManifoldCurve(DiffMapping):
         c: (0, 2*pi) --> M
            t |--> (x, y) = (sin(t), 1/2*sin(2*t))
 
+    Note that a curve in `M` can also be created as a differentiable mapping
+    `I\rightarrow M`::
+
+        sage: c1 = I.diff_mapping(M, coord_functions={X: [sin(t), sin(2*t)/2]},
+        ....:                     name='c') ; c1
+        Curve 'c' in the 2-dimensional manifold 'M'
+        sage: c1.parent() is c.parent()
+        True
+        sage: c1 == c
+        True
+
     LaTeX symbols representing a curve::
 
         sage: c = M.curve([sin(t), sin(2*t)/2], (t, 0, 2*pi))
@@ -183,7 +194,7 @@ class ManifoldCurve(DiffMapping):
         sage: v.at(R(pi)).display()
         c' = -d/dx + d/dy
     
-    Curves `\RR\longrightarrow\RR` can be composed: the operator `\circ` is
+    Curves `\RR\rightarrow\RR` can be composed: the operator `\circ` is
     denoted by ``*``::
 
         sage: f = R.curve(t^2, (t,-oo,+oo))
@@ -476,7 +487,7 @@ class ManifoldCurve(DiffMapping):
              thickness=1, plot_points=75, label_axes=True,
              aspect_ratio='automatic'):
         r"""
-        Plot of the curve in terms of a given chart.
+        Plot of the curve in terms of a given chart of its codomain.
 
         INPUT:
 
@@ -571,6 +582,18 @@ class ManifoldCurve(DiffMapping):
             ....:                  plot_points=200, thickness=2, label_axes=False)  # 3D plot
             sage: graph_S2 = XS.plot(X3, mapping=F, nb_values=11, color='black') # plot of the sphere
             sage: show(graph_c + graph_S2) # the loxodrome + the sphere
+
+        Example of use of the argument ``parameters``: we define a curve with
+        some symbolic parameters ``a`` and ``b``::
+
+            sage: a, b = var('a b')
+            sage: c = R2.curve([a*cos(t) + b, a*sin(t)], (t, 0, 2*pi), name='c')
+
+        To make a plot, we set spectific values for ``a`` and ``b`` by means
+        of the Python dictionary ``parameters``::
+
+            sage: c.plot(parameters={a: 2, b: -3}, aspect_ratio=1)
+            Graphics object consisting of 1 graphics primitive
 
         """
         from sage.rings.infinity import Infinity
