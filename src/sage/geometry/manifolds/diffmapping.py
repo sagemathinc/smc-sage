@@ -946,8 +946,8 @@ class DiffMapping(Morphism):
         
         """
         from sage.misc.latex import latex
-        from utilities import FormattedExpansion
-        result = FormattedExpansion(self)
+        from sage.geometry.manifolds.utilities import FormattedExpansion
+        result = FormattedExpansion()
         if self._name is None:
             symbol = ""
         else:

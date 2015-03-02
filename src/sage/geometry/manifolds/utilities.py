@@ -1,19 +1,20 @@
 r"""
-SageManifolds utilities.
+Utilities for calculus and tensor display
 
-This module defines helper functions that are not class methods.
-
+This module defines helper functions which are used for simplifications of
+symbolic expressions, for display of tensor expansions or for graphical
+outputs. 
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013) : initial version
-- Joris Vankerschaver (2010): for the function is_atomic()
+- Eric Gourgoulhon, Michal Bejger (2013-2015) : initial version
+- Joris Vankerschaver (2010): for the function :func:`is_atomic`
 
 """
 
 #******************************************************************************
-#       Copyright (C) 2013 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -22,13 +23,17 @@ AUTHORS:
 #******************************************************************************
 
 from sage.structure.sage_object import SageObject
+from sage.version import version
 
 def is_atomic(expression):
     r"""
-    Helper function to check whether some LaTeX expression is atomic.
+    Helper function to check whether some symbolic expression is atomic.
 
-    Adapted from function :meth:`DifferentialFormFormatter._is_atomic` written
-    by Joris Vankerschaver (2010)
+    Adapted from method 
+    :meth:`~sage.tensor.differential_form_element.DifferentialFormFormatter._is_atomic`
+    of class
+    :class:`~sage.tensor.differential_form_element.DifferentialFormFormatter`
+    written by Joris Vankerschaver (2010).
 
     INPUT:
 
@@ -36,7 +41,8 @@ def is_atomic(expression):
 
     OUTPUT:
 
-    - True if additive operations are enclosed in parentheses, false otherwise.
+    - ``True`` if additive operations are enclosed in parentheses,
+      ``False`` otherwise.
 
     EXAMPLES::
 
@@ -78,8 +84,11 @@ def is_atomic_wedge_txt(expression):
     Helper function to check whether some text-formatted expression is atomic
     in terms of wedge products.
 
-    Adapted from function :meth:`DifferentialFormFormatter._is_atomic` written
-    by Joris Vankerschaver (2010)
+    Adapted from method 
+    :meth:`~sage.tensor.differential_form_element.DifferentialFormFormatter._is_atomic`
+    of class
+    :class:`~sage.tensor.differential_form_element.DifferentialFormFormatter`
+    written by Joris Vankerschaver (2010).
 
     INPUT:
 
@@ -87,7 +96,8 @@ def is_atomic_wedge_txt(expression):
 
     OUTPUT:
 
-    - True if wedge products are enclosed in parentheses, false otherwise.
+    - ``True`` if wedge products are enclosed in parentheses, ``False``
+      otherwise.
 
     EXAMPLES::
 
@@ -123,8 +133,11 @@ def is_atomic_wedge_latex(expression):
     Helper function to check whether LaTeX-formatted expression is atomic in
     terms of wedge products.
 
-    Adapted from function :meth:`DifferentialFormFormatter._is_atomic` written
-    by Joris Vankerschaver (2010)
+    Adapted from method 
+    :meth:`~sage.tensor.differential_form_element.DifferentialFormFormatter._is_atomic`
+    of class
+    :class:`~sage.tensor.differential_form_element.DifferentialFormFormatter`
+    written by Joris Vankerschaver (2010).
 
     INPUT:
 
@@ -132,7 +145,8 @@ def is_atomic_wedge_latex(expression):
 
     OUTPUT:
 
-    - True if wedge products are enclosed in parentheses, false otherwise.
+    - ``True`` if wedge products are enclosed in parentheses, ``False``
+      otherwise.
 
     EXAMPLES::
 
@@ -229,21 +243,32 @@ def format_unop_latex(operator, name):
 class FormattedExpansion(SageObject):
     r"""
     Helper class for displaying tensor expansions.
+
+    EXAMPLE::
+
+        sage: from sage.geometry.manifolds.utilities import FormattedExpansion
+        sage: a = FormattedExpansion()
+        sage: a.txt = "x/2"
+        sage: a.latex = r"\frac{x}{2}"
+        sage: a
+        x/2
+        sage: latex(a)
+        \frac{x}{2}
+
     """
-    def  __init__(self, tensor):
-        self.tensor = tensor
+    def  __init__(self):
         self.txt = None
         self.latex = None
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
         return self.txt
 
     def _latex_(self):
         r"""
-        Special Sage function for the LaTeX representation of the object.
+        LaTeX representation of the object.
         """
         return self.latex
 
@@ -254,7 +279,22 @@ def simple_determinant(aa):
     r"""
     Compute the determinant of a square matrix.
 
-    This function is a workaround to bypass a bug in Sage det method.
+    This function, which is based on Laplace's cofactor expansion, is a
+    workaround for a bug in Sage method
+    :meth:`~sage.matrix.matrix2.Matrix.determinant`
+    (cf. http://trac.sagemath.org/ticket/14403).
+
+    NB: this bug was fixed in Sage 6.2.
+
+    EXAMPLE::
+
+        sage: a = matrix([[sqrt(x),0,0,0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+        sage: a.determinant() # this resulted in an error in Sage < 6.2
+        sqrt(x)
+        sage: from sage.geometry.manifolds.utilities import simple_determinant
+        sage: simple_determinant(a)
+        sqrt(x)
+    
     """
     from sage.matrix.constructor import matrix
     n = aa.nrows()
@@ -301,7 +341,7 @@ def simplify_sqrt_real(expr):
 
     This improves over Sage's
     :meth:`~sage.symbolic.expression.Expression.canonicalize_radical` which yields
-    incorrect results when x<0:
+    incorrect results when x<0::
 
         sage: sqrt(x^2).canonicalize_radical() # wrong output
         x
@@ -361,7 +401,51 @@ def simplify_sqrt_real(expr):
 
 def simplify_abs_trig(expr):
     r"""
-    Simplify abs(sin(...)) in symbolic expressions
+    Simplify abs(sin(...)) in symbolic expressions.
+
+    EXAMPLES::
+
+        sage: forget()  # for doctests only
+        sage: M = Manifold(3, 'M')
+        sage: X.<x,y,z> = M.chart(r'x y:(0,pi) z:(-pi/3,0)')
+        sage: X.coord_range()
+        x: (-oo, +oo); y: (0, pi); z: (-1/3*pi, 0)
+
+    Since ``x`` spans all `\RR`, no simplification of ``abs(sin(x))``
+    occurs, while ``abs(sin(y))`` and ``abs(sin(3*z))`` are correctly
+    simplified, given that `y \in (0,\pi)` and `z \in (-\pi/3,0)`::
+
+        sage: from sage.geometry.manifolds.utilities import simplify_abs_trig
+        sage: simplify_abs_trig( abs(sin(x)) + abs(sin(y)) + abs(sin(3*z)) )
+        abs(sin(x)) + sin(y) - sin(3*z)
+
+    Note that neither Sage's function
+    :meth:`~sage.symbolic.expression.Expression.simplify_trig` nor
+    :meth:`~sage.symbolic.expression.Expression.simplify_full`
+    works in this case::
+
+        sage: s = abs(sin(x)) + abs(sin(y)) + abs(sin(3*z))
+        sage: s.simplify_trig()
+        abs(4*cos(z)^2 - 1)*abs(sin(z)) + abs(sin(x)) + abs(sin(y))
+        sage: s.simplify_full()
+        abs(4*cos(z)^2 - 1)*abs(sin(z)) + abs(sin(x)) + abs(sin(y))
+
+    despite the following assumptions hold::
+
+        sage: assumptions()
+        [x is real, y is real, y > 0, y < pi, z is real, z > -1/3*pi, z < 0]
+
+    Additional checks are::
+
+        sage: simplify_abs_trig( abs(sin(y/2)) )  # shall simplify
+        sin(1/2*y)
+        sage: simplify_abs_trig( abs(sin(2*y)) )  # must not simplify
+        abs(sin(2*y))
+        sage: simplify_abs_trig( abs(sin(z/2)) )  # shall simplify
+        -sin(1/2*z)
+        sage: simplify_abs_trig( abs(sin(4*z)) )  # must not simplify 
+        abs(sin(4*z))
+
     """
     from sage.symbolic.ring import SR
     from sage.symbolic.constants import pi
@@ -417,15 +501,38 @@ def simplify_chain(expr):
     r"""
     Apply a chain of simplications to a symbolic expression.
 
+    This is the simplification chain used in calculus involving functions
+    of coordinates in a given chart, as implemented in
+    :class:`~sage.geometry.manifolds.chart.FunctionChart`.
+
+    The chain is formed by the following functions, called
+    successively:
+
+    #. :meth:`~sage.symbolic.expression.Expression.simplify_factorial`
+    #. :meth:`~sage.symbolic.expression.Expression.simplify_trig`
+    #. :meth:`~sage.symbolic.expression.Expression.simplify_rational`
+    #. :func:`simplify_sqrt_real`
+    #. :func:`simplify_abs_trig`
+    #. :meth:`~sage.symbolic.expression.Expression.canonicalize_radical`
+       (for Sage >= 6.5) or
+       :meth:`~sage.symbolic.expression.Expression.simplify_radical` (for
+       Sage < 6.5)
+    #. :meth:`~sage.symbolic.expression.Expression.simplify_log`
+    #. :meth:`~sage.symbolic.expression.Expression.simplify_rational`
+    #. :meth:`~sage.symbolic.expression.Expression.simplify_trig`
+
     """
     expr = expr.simplify_factorial()
     expr = expr.simplify_trig()
     expr = expr.simplify_rational()
     expr = simplify_sqrt_real(expr)
     expr = simplify_abs_trig(expr)
-    expr = expr.canonicalize_radical() # NB: for Sage < 6.5, it was
-                                       # simplify_radical()
-                                       # see http://trac.sagemath.org/11912
+    # In Sage 6.5, simplify_radical() has been renamed canonicalize_radical()
+    #  (cf. http://trac.sagemath.org/11912): 
+    if version == '6.5':
+        expr = expr.canonicalize_radical()
+    else:
+        expr = expr.simplify_radical()
     expr = expr.simplify_log('one')
     expr = expr.simplify_rational()
     expr = expr.simplify_trig()
@@ -442,7 +549,7 @@ def set_axes_labels(graph, xlabel, ylabel, zlabel, **kwds):
     INPUT:
 
     - ``graph`` -- a 3D graphic object, as an instance of
-          :class:`~sage.plot.plot3d.base.Graphics3d`
+      :class:`~sage.plot.plot3d.base.Graphics3d`
     - ``xlabel`` -- string for the x-axis label
     - ``ylabel`` -- string for the y-axis label
     - ``zlabel`` -- string for the z-axis label

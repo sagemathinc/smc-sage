@@ -651,7 +651,7 @@ class Chart(UniqueRepresentation, SageObject):
 
         """
         from sage.geometry.manifolds.utilities import FormattedExpansion
-        resu = FormattedExpansion(self)
+        resu = FormattedExpansion()
         resu.txt = ""
         resu.latex = ""
         if xx is None:
@@ -1701,8 +1701,9 @@ class FunctionChart(SageObject):
 
     Instances of :class:`FunctionChart` differ from Sage symbolic functions,
     implemented as callable symbolic expressions, by the automatic
-    simplification of the result of any operation. 
-    
+    simplification of the result of any operation, via the function
+    :func:`~sage.geometry.manifolds.utilities.simplify_chain`.
+
     INPUT:
 
     - ``chart`` -- the chart `(U, \varphi)`, as an instance of
@@ -1869,10 +1870,11 @@ class FunctionChart(SageObject):
             (x, y) |--> x^2 + 3*y + 1
 
         """
-        from utilities import FormattedExpansion
-        result = FormattedExpansion(self)
+        from sage.geometry.manifolds.utilities import FormattedExpansion
+        result = FormattedExpansion()
         result.txt = repr((self._chart)[:]) + ' |--> ' + repr(self._express)
-        result.latex = self._chart._latex_coordinates() + r' \mapsto' + latex(self._express)
+        result.latex = self._chart._latex_coordinates() + r' \mapsto' + \
+                       latex(self._express)
         return result
 
     disp = display
