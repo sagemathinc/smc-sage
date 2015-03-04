@@ -1409,7 +1409,8 @@ class ScalarField(CommutativeAlgebraElement):
           ``other``
 
         """
-        from utilities import format_mul_txt, format_mul_latex
+        from sage.tensor.modules.format_utilities import format_mul_txt, \
+                                                         format_mul_latex
         if isinstance(other, ZeroScalarField):
             return other
         com_charts = self.common_charts(other)
@@ -1442,7 +1443,8 @@ class ScalarField(CommutativeAlgebraElement):
           ``other``
 
         """
-        from utilities import format_mul_txt, format_mul_latex
+        from sage.tensor.modules.format_utilities import format_mul_txt, \
+                                                         format_mul_latex
         if isinstance(other, ZeroScalarField):
             raise ZeroDivisionError("Division of a scalar field by zero.")
         com_charts = self.common_charts(other)
@@ -1567,7 +1569,8 @@ class ScalarField(CommutativeAlgebraElement):
             True
 
         """
-        from utilities import format_unop_txt, format_unop_latex
+        from sage.tensor.modules.format_utilities import format_unop_txt, \
+                                                         format_unop_latex
         if self._differential is None:
             # A new computation is necessary:
             rname = format_unop_txt('d', self._name)
@@ -1691,7 +1694,8 @@ class ScalarField(CommutativeAlgebraElement):
             True
 
         """
-        from utilities import format_unop_txt, format_unop_latex
+        from sage.tensor.modules.format_utilities import format_unop_txt, \
+                                                         format_unop_latex
         eps = metric.volume_form()
         dom_resu = self._domain.intersection(eps._domain) # result domain
         resu = self.restrict(dom_resu) * eps.restrict(dom_resu)
@@ -2057,7 +2061,8 @@ class ZeroScalarField(ScalarField):
         - the (vanishing) 1-form differential of ``self``.
 
         """
-        from utilities import format_unop_txt, format_unop_latex
+        from sage.tensor.modules.format_utilities import format_unop_txt, \
+                                                         format_unop_latex
         if self._differential is None:
             # A new computation is necessary:
             rname = format_unop_txt('d', self._name)

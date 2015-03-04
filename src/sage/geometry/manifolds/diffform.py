@@ -247,7 +247,8 @@ class DiffForm(TensorField):
         EXAMPLE:
         
         """
-        from utilities import format_unop_txt, format_unop_latex
+        from sage.tensor.modules.format_utilities import format_unop_txt, \
+                                                         format_unop_latex
         if self._exterior_derivative is None:
             vmodule = self._vmodule # shortcut
             rname = format_unop_txt('d', self._name)
@@ -351,7 +352,8 @@ class DiffForm(TensorField):
         
         """
         from sage.functions.other import factorial
-        from utilities import format_unop_txt, format_unop_latex
+        from sage.tensor.modules.format_utilities import format_unop_txt, \
+                                                         format_unop_latex
         p = self._tensor_rank
         eps = metric.volume_form(p)
         args = range(p) + [eps] + range(p)
@@ -755,7 +757,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
 
         """
         from sage.calculus.functional import diff
-        from utilities import format_unop_txt, format_unop_latex
+        from sage.tensor.modules.format_utilities import format_unop_txt, \
+                                                         format_unop_latex
         from sage.tensor.modules.comp import CompFullyAntiSym
         from vectorframe import CoordFrame
         if self._exterior_derivative is None:
@@ -1003,7 +1006,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
 
         """
         from sage.functions.other import factorial
-        from utilities import format_unop_txt, format_unop_latex
+        from sage.tensor.modules.format_utilities import format_unop_txt, \
+                                                         format_unop_latex
         p = self._tensor_rank
         eps = metric.volume_form(p)
         resu = self.contract(0, eps, 0)

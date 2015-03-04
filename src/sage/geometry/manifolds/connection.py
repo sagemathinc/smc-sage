@@ -701,7 +701,8 @@ class AffConnection(SageObject):
 
         """
         from tensorfield import TensorFieldParal
-        from utilities import format_unop_txt, format_unop_latex
+        from sage.tensor.modules.format_utilities import format_unop_txt, \
+                                                         format_unop_latex
         dom_resu = self._domain.intersection(tensor._domain)
         tensor_r = tensor.restrict(dom_resu)
         if tensor_r._tensor_type == (0,0):  # scalar field case
@@ -746,7 +747,8 @@ class AffConnection(SageObject):
         """
         from scalarfield import ScalarField
         from sage.tensor.modules.comp import Components, CompWithSym
-        from utilities import format_unop_txt, format_unop_latex
+        from sage.tensor.modules.format_utilities import format_unop_txt, \
+                                                         format_unop_latex
         manif = self._manifold
         tdom = tensor._domain
         frame = self._common_frame(tensor)
