@@ -2,11 +2,11 @@ r"""
 Differential form modules
 
 The set `\Lambda^p(U,\Phi)` of `p`-forms along an open subset `U` of
-some manifold `S` with values in a open subset `V=\Phi(U)` of a manifold `M`
-(`\Phi` being a differentiable mapping `U\rightarrow M`; possibly
-`\Phi=\mathrm{Id}`, `S=M` and `U=V`) is a module over the algebra `C^\infty(U)`
-of differentiable scalar fields on `U`. It is a free module iff `V` is
-parallelizable. Accordingly, two classes are implementing `\Lambda^p(U,\Phi)`:
+some manifold `S` with values in a open subset `V` of a manifold `M`
+(via a differentiable mapping `\Phi:\ U\rightarrow V`) is a module over the
+algebra `C^\infty(U)` of differentiable scalar fields on `U`. It is a free
+module iff `V` is parallelizable. Accordingly, two classes
+implement `\Lambda^p(U,\Phi)`:
 
 - :class:`DiffFormModule` for differential forms with values in a generic (in
   practice, not parallelizable) open set `V`
@@ -19,10 +19,10 @@ AUTHORS:
 
 REFERENCES:
 
-- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
-  Interscience Publishers (New York, 1963)
-- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
-  2013)
+- S. Kobayashi & K. Nomizu : *Foundations of Differential Geometry*, vol. 1,
+  Interscience Publishers (New York) (1963)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
 
 """
 #******************************************************************************
@@ -47,16 +47,18 @@ class DiffFormModule(UniqueRepresentation, Parent):
     open subset `U` of some manifold `S` with values in an open subset `V` of
     a manifold `M`.
 
-    Given an open subset `U` of a manifold `S` and a differentiable mapping
-    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a differentiable
-    manifold, the set `\Lambda^p(U,\Phi)` of `p`-forms along `U` with values
-    in `V` is a module over `C^\infty(U)`, the commutative algebra of
-    differentiable scalar fields on `U`.
-    The standard case of `p`-forms *on* a manifold corresponds to
-    `\Phi=\mathrm{Id}`, `U=V` and `S=M`. Another common case is `\Phi` being an
-    immersion.
+    Given an open subset `U` of a manifold `S`, an open subset `V` of a
+    manifold `M` and a differentiable mapping
+    `\Phi:\; U \rightarrow V`, the set `\Lambda^p(U,\Phi)` of `p`-forms along
+    `U` with values in `V` is a module over `C^\infty(U)`, the commutative
+    algebra of differentiable scalar fields on `U` (see
+    :class:`~sage.geometry.manifolds.scalarfield_algebra.ScalarFieldAlgebra`).
+    The standard case of `p`-forms *on* a manifold corresponds to `S=M`,
+    `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
 
-    This class implements `\Lambda^p(U,\Phi)` in the case where `V=\Phi(U)` is
+    This class implements `\Lambda^p(U,\Phi)` in the case where `V` is
     not assumed to be parallelizable; the module `\Lambda^p(U,\Phi)` is then
     not necessarily free. If `V` is parallelizable, the class
     :class:`DiffFormFreeModule` must be used instead. 
@@ -67,7 +69,7 @@ class DiffFormModule(UniqueRepresentation, Parent):
     INPUT:
 
     - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
-      fields along `U` associated with the mapping `\Phi:\; U \rightarrow V`.
+      fields along `U` associated with the mapping `\Phi: U \rightarrow V`.
     - ``degree`` -- positive integer; the degree `p` of the differential forms
 
     EXAMPLES:
@@ -453,20 +455,22 @@ class DiffFormModule(UniqueRepresentation, Parent):
 
 class DiffFormFreeModule(ExtPowerFreeModule):
     r"""
-    Module of differential forms of a given degree `p` (`p`-forms) along an
-    open subset `U` of some manifold `S` with values in a parallelizable open
-    subset `V` of a manifold `M`.
+    Free module of differential forms of a given degree `p` (`p`-forms) along
+    an open subset `U` of some manifold `S` with values in a parallelizable
+    open subset `V` of a manifold `M`.
 
-    Given an open subset `U` of a manifold `S` and a differentiable mapping
-    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a differentiable
-    manifold, the set `\Lambda^p(U,\Phi)` of `p`-forms along `U` with values
-    in `V` is a module over `C^\infty(U)`, the commutative algebra of
-    differentiable scalar fields on `U`.
-    The standard case of `p`-forms *on* a manifold corresponds to
-    `\Phi=\mathrm{Id}`, `U=V` and `S=M`. Another common case is `\Phi` being an
-    immersion.
+    Given an open subset `U` of a manifold `S`, an open subset `V` of a
+    manifold `M` and a differentiable mapping
+    `\Phi:\; U \rightarrow V`, the set `\Lambda^p(U,\Phi)` of `p`-forms along
+    `U` with values in `V` is a module over `C^\infty(U)`, the commutative
+    algebra of differentiable scalar fields on `U` (see
+    :class:`~sage.geometry.manifolds.scalarfield_algebra.ScalarFieldAlgebra`).
+    The standard case of `p`-forms *on* a manifold corresponds to `S=M`,
+    `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
 
-    This class implements `\Lambda^p(U,\Phi)` in the case where `V=\Phi(U)` is
+    This class implements `\Lambda^p(U,\Phi)` in the case where `V` is
     parallelizable; `\Lambda^p(U,\Phi)` is then a *free* module. If `V` is not
     parallelizable, the class :class:`DiffFormModule` must be used instead. 
     
@@ -476,7 +480,7 @@ class DiffFormFreeModule(ExtPowerFreeModule):
     INPUT:
 
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector
-      fields along `U` associated with the mapping `\Phi:\; U \rightarrow V`.
+      fields along `U` associated with the mapping `\Phi: U \rightarrow V`.
     - ``degree`` -- positive integer; the degree `p` of the differential forms
 
     EXAMPLES:

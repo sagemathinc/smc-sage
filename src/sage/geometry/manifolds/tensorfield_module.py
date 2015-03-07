@@ -18,11 +18,11 @@ AUTHORS:
 
 REFERENCES:
 
-- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
-  Interscience Publishers (New York, 1963)
-- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
-  2013)
-- B O'Neill : "Semi-Riemannian Geometry", Academic Press (San Diego, 1983)
+- S. Kobayashi & K. Nomizu : *Foundations of Differential Geometry*, vol. 1,
+  Interscience Publishers (New York) (1963)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
+- B O'Neill : *Semi-Riemannian Geometry*, Academic Press (San Diego) (1983)
 
 """
 
@@ -47,22 +47,47 @@ from automorphismfield import AutomorphismField, AutomorphismFieldParal
 class TensorFieldModule(UniqueRepresentation, Parent):
     r"""
     Module of tensor fields of a given type `(k,l)` along an open subset `U`
-    of some manifold `S` with values in a open subset `V` of a manifold `M`.
+    of some manifold `S` with values in a open subset `V` of a manifold `M`,
+    
+    Given two non-negative integers `k` and `l` and a differentiable mapping
 
-    This is a module over `C^\infty(U)`, the ring (algebra) of differentiable
-    scalar fields on `U`.
+    .. MATH::
 
-    The standard case of tensor fields *on* a manifold corresponds to
-    `U=V` (and hence `S=M`). Another common case is `\Phi` being an
-    immersion.
+        \Phi:\ U\subset S \longrightarrow V\subset M
+
+    the tensor field module `T^{(k,l)}(U,\Phi)` is the set of all tensor
+    fields of the type
+
+    .. MATH::
+
+        t:\ U  \longrightarrow T^{(k,l)}M
+
+    such that
+
+    .. MATH::
+
+        \forall p \in U,\ t(p) \in T^{(k,l)}(T_{\Phi(p)}M)
+
+    i.e. `t(p)` is a tensor on the vector space `T_{\Phi(p)}M`.
+    The set `T^{(k,l)}(U,\Phi)` is a module over `C^\infty(U)`, the ring
+    (algebra) of differentiable scalar fields on `U` (see
+    :class:`~sage.geometry.manifolds.scalarfield_algebra.ScalarFieldAlgebra`).
+
+    The standard case of tensor fields *on* a manifold corresponds to `S=M`,
+    `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
 
     If `V` is parallelizable, the class :class:`TensorFieldFreeModule` should
     be used instead.
 
+    This is a Sage *parent* class, the corresponding *element* class being
+    :class:`~sage.geometry.manifolds.tensorfield.TensorField`.
+
     INPUT:
 
     - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
-      fields along `U` associated with the mapping `\Phi:\; U \rightarrow V`.
+      fields along `U` associated with the mapping `\Phi: U \rightarrow V`.
     - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank and
       `l` the covariant rank
 
@@ -312,21 +337,48 @@ class TensorFieldModule(UniqueRepresentation, Parent):
 
 class TensorFieldFreeModule(TensorFreeModule):
     r"""
-    Module of tensor fields of a given type `(k,l)` along an open subset `U`
-    of some manifold `S` with values in a parallelizable open subset `V` of
-    a manifold `M`.
+    Free module of tensor fields of a given type `(k,l)` along an open
+    subset `U` of some manifold `S` with values in a parallelizable open
+    subset `V` of a manifold `M`.
 
-    Since `V` is parallelizable, the module is a free module over `C^\infty(U)`,
-    the ring (algebra) of differentiable scalar fields on `U`.
+    Given two non-negative integers `k` and `l` and a differentiable mapping
 
-    The standard case of tensor fields *on* a manifold corresponds to
-    `U=V` (and hence `S=M`). Another common case is `\Phi` being an
-    immersion.
+    .. MATH::
+
+        \Phi:\ U\subset S \longrightarrow V\subset M
+
+    the tensor field module `T^{(k,l)}(U,\Phi)` is the set of all tensor
+    fields of the type
+
+    .. MATH::
+
+        t:\ U  \longrightarrow T^{(k,l)}M
+
+    such that
+
+    .. MATH::
+
+        \forall p \in U,\ t(p) \in T^{(k,l)}(T_{\Phi(p)}M)
+
+    i.e. `t(p)` is a tensor on the vector space `T_{\Phi(p)}M`.
+
+    The standard case of tensor fields *on* a manifold corresponds to `S=M`,
+    `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
+
+    Since `V` is parallelizable, the set `T^{(k,l)}(U,\Phi)` is a free
+    module over `C^\infty(U)`, the ring (algebra) of differentiable scalar
+    fields on `U` (see
+    :class:`~sage.geometry.manifolds.scalarfield_algebra.ScalarFieldAlgebra`).
+
+    This is a Sage *parent* class, the corresponding *element* class being
+    :class:`~sage.geometry.manifolds.tensorfield.TensorFieldParal`.
 
     INPUT:
 
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector
-      fields along `U` associated with the mapping `\Phi:\; U \rightarrow V`.
+      fields along `U` associated with the mapping `\Phi: U \rightarrow V`.
     - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank and
       `l` the covariant rank
 

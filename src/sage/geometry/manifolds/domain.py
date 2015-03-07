@@ -2780,7 +2780,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: Phi1 == Phi
             True
 
-        The differential mapping acting on a point::
+        The differentiable mapping acting on a point::
         
             sage: p = U.point((pi/2, pi)) ; p
             point on 2-dimensional manifold 'S^2'

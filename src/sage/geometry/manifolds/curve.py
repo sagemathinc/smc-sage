@@ -2,7 +2,7 @@ r"""
 Curves in manifolds
 
 Given a differentiable manifold `M`, a *differentiable curve* curve in
-`M` is a differential mapping
+`M` is a differentiable mapping
 
 .. MATH::
 
@@ -46,7 +46,7 @@ class ManifoldCurve(DiffMapping):
     Curve in a differentiable manifold.
 
     Given a differentiable manifold `M`, a *differentiable curve* curve in
-    `M` is a differential mapping
+    `M` is a differentiable mapping
     
     .. MATH::
     

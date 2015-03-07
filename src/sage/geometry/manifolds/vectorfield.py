@@ -22,8 +22,9 @@ such that
     \forall p \in U,\ v(p) \in T_{\Phi(p)}M
 
 The standard case of vector fields *on* a manifold corresponds to `S=M`,
-`U=V` and `\Phi = \mathrm{Id}_U`. Another common case is `\Phi` being an
-immersion.
+`U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+of `\RR`).
 
 Vector fields are implemented via two classes: :class:`VectorFieldParal` and
 :class:`VectorField`, depending respectively whether the open set `V`
@@ -59,15 +60,15 @@ from tensorfield import TensorField, TensorFieldParal
 
 class VectorField(TensorField):
     r"""
-    Vector field on an open set of a differentiable manifold,
-    with values on an open subset of a differentiable manifold.
+    Vector field along an open set of a differentiable manifold.
 
     An instance of this class is a vector field along an open subset `U`
     of some manifold `S` with values in an open subset `V`
     of a manifold `M`, via a differentiable mapping `\Phi: U \rightarrow V`.
     The standard case of a vector field *on* a manifold corresponds to `S=M`,
-    `U=V` and `\Phi = \mathrm{Id}`. Another common case is `\Phi` being an
-    immersion.
+    `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
 
     If `V` is parallelizable, the class :class:`VectorFieldParal` must be
     used instead.
@@ -256,15 +257,16 @@ class VectorField(TensorField):
 
 class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorField):
     r"""
-    Vector field on an open set of a differentiable manifold,
-    with values on a parallelizable open subset of a differentiable manifold.
+    Vector field along an open set of a differentiable manifold,
+    with values on a parallelizable open set of a differentiable manifold.
 
     An instance of this class is a vector field along an open subset `U`
     of some manifold `S` with values in a parallelizable open subset `V`
     of a manifold `M`, via a differentiable mapping `\Phi: U \rightarrow V`.
     The standard case of a vector field *on* a manifold corresponds to `S=M`,
-    `U=V` and `\Phi = \mathrm{Id}`. Another common case is `\Phi` being an
-    immersion.
+    `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
 
     This is a Sage *element* class, the corresponding *parent* class being
     :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldFreeModule`.

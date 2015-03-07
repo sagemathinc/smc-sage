@@ -50,7 +50,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
     If `V` is parallelizable, the class :class:`VectorFieldFreeModule` should
     be used instead.
 
-    Given a differential mapping
+    Given a differentiable mapping
 
     .. MATH::
 
@@ -71,11 +71,13 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
 
     The set `\mathcal{X}(U,\Phi)` is a module over `C^\infty(U)`, the ring
-    (algebra) of differentiable scalar fields on `U`.
+    (algebra) of differentiable scalar fields on `U` (see
+    :class:`~sage.geometry.manifolds.scalarfield_algebra.ScalarFieldAlgebra`).
 
     The standard case of vector fields *on* a manifold corresponds to `S=M`,
-    `U=V` and `\Phi = \mathrm{Id}`.
-    Another common case is `\Phi` being an immersion.
+    `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
 
     This is a Sage *parent* class, the corresponding *element* class being
     :class:`~sage.geometry.manifolds.vectorfield.VectorField`.
@@ -670,10 +672,10 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
 class VectorFieldFreeModule(FiniteRankFreeModule):
     r"""
-    Module of vector fields along an open subset `U` of some manifold `S`
+    Free module of vector fields along an open subset `U` of some manifold `S`
     with values in a parallelizable open subset `V` of a manifold `M`.
 
-    Given a differential mapping
+    Given a differentiable mapping
 
     .. MATH::
 
@@ -695,11 +697,14 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
     Since `V` is parallelizable, the set `\mathcal{X}(U,\Phi)` is a free module
     over `C^\infty(U)`, the ring (algebra) of differentiable scalar fields on
-    `U`. Its rank is the dimension of `M`.
+    `U` (see
+    :class:`~sage.geometry.manifolds.scalarfield_algebra.ScalarFieldAlgebra`).
+    Its rank is the dimension of `M`.
 
     The standard case of vector fields *on* a manifold corresponds to `S=M`,
-    `U=V` and `\Phi = \mathrm{Id}`.
-    Another common case is `\Phi` being an immersion.
+    `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
 
     This is a Sage *parent* class, the corresponding *element* class being
     :class:`~sage.geometry.manifolds.vectorfield.VectorFieldParal`.

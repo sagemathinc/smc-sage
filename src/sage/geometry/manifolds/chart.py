@@ -650,21 +650,22 @@ class Chart(UniqueRepresentation, SageObject):
             y :\ \left( -\infty, \pi \right)
 
         """
-        from sage.geometry.manifolds.utilities import FormattedExpansion
-        resu = FormattedExpansion()
-        resu.txt = ""
-        resu.latex = ""
+        from sage.tensor.modules.format_utilities import FormattedExpansion
+        resu_txt = ""
+        resu_latex = ""
         if xx is None:
             for x in self._xx:
-                if resu.txt != "":
-                    resu.txt += "; "
-                    resu.latex += r";\quad "
-                self._display_coord_range(x, resu)
+                if resu_txt != "":
+                    resu_txt += "; "
+                    resu_latex += r";\quad "
+                resu_txt, resu_latex = self._display_coord_range(x, resu_txt,
+                                                                 resu_latex)
         else:
-            self._display_coord_range(xx, resu)
-        return resu
+            resu_txt, resu_latex = self._display_coord_range(xx, resu_txt,
+                                                             resu_latex)
+        return FormattedExpansion(resu_txt, resu_latex)
 
-    def _display_coord_range(self, xx, resu):
+    def _display_coord_range(self, xx, rtxt, rlatex):
         r"""
         Helper function for the display of a coordinate range
 
@@ -672,39 +673,47 @@ class Chart(UniqueRepresentation, SageObject):
 
         - ``xx`` -- symbolic expression corresponding to a
           coordinate of ``self``
-        - ``resu`` -- formatted expression
+        - ``rtxt`` -- string; initial state for the text version of the range
+        - ``rlatex`` -- string; initial state for the LaTeX version of the
+          range
+          
+        OUTPUT:
+        
+        - tuple of 2 strings containing the final state for the text and
+          LaTeX versions of the range
         
         """
         ind = self._xx.index(xx)
         bounds = self._bounds[ind]
-        resu.txt += "{}: ".format(xx)
-        resu.latex += latex(xx) + r":\ "
+        rtxt += "{}: ".format(xx)
+        rlatex += latex(xx) + r":\ "
         if bounds[0][1]:
-            resu.txt += "["
-            resu.latex += r"\left["
+            rtxt += "["
+            rlatex += r"\left["
         else:
-            resu.txt += "("
-            resu.latex += r"\left("
+            rtxt += "("
+            rlatex += r"\left("
         xmin = bounds[0][0]
         if xmin == -Infinity:
-            resu.txt += "-oo, "
-            resu.latex += r"-\infty,"
+            rtxt += "-oo, "
+            rlatex += r"-\infty,"
         else:
-            resu.txt += "{}, ".format(xmin)
-            resu.latex += latex(xmin) + ","
+            rtxt += "{}, ".format(xmin)
+            rlatex += latex(xmin) + ","
         xmax = bounds[1][0]
         if xmax == Infinity:
-            resu.txt += "+oo"
-            resu.latex += r"+\infty"
+            rtxt += "+oo"
+            rlatex += r"+\infty"
         else:
-            resu.txt += "{}".format(xmax)
-            resu.latex += latex(xmax)
+            rtxt += "{}".format(xmax)
+            rlatex += latex(xmax)
         if bounds[1][1]:
-            resu.txt += "]"
-            resu.latex += r"\right]"
+            rtxt += "]"
+            rlatex += r"\right]"
         else:
-            resu.txt += ")"
-            resu.latex += r"\right)"
+            rtxt += ")"
+            rlatex += r"\right)"
+        return rtxt, rlatex
 
     def add_restrictions(self, restrictions):
         r"""
@@ -1870,12 +1879,11 @@ class FunctionChart(SageObject):
             (x, y) |--> x^2 + 3*y + 1
 
         """
-        from sage.geometry.manifolds.utilities import FormattedExpansion
-        result = FormattedExpansion()
-        result.txt = repr((self._chart)[:]) + ' |--> ' + repr(self._express)
-        result.latex = self._chart._latex_coordinates() + r' \mapsto' + \
-                       latex(self._express)
-        return result
+        from sage.tensor.modules.format_utilities import FormattedExpansion
+        resu_txt = repr((self._chart)[:]) + ' |--> ' + repr(self._express)
+        resu_latex = self._chart._latex_coordinates() + r' \mapsto' + \
+                     latex(self._express)
+        return FormattedExpansion(resu_txt, resu_latex)
 
     disp = display
 

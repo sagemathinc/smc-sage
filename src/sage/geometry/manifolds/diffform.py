@@ -2,13 +2,15 @@ r"""
 Differential forms
 
 Let `S` and `M` be two differentiable manifolds over `\RR`. 
-Given a positive integer `p`, an open subset `U` of `S` and a
-differentiable mapping `\Phi: U \rightarrow V = \Phi(U) \subset M`,
-a *diffential form of degree* `p`, or *p-form*,
+Given a positive integer `p`, an open subset `U` of `S`,  an open subset
+`V` of `M` and differentiable mapping `\Phi: U \rightarrow V \subset M`,
+a *differential form of degree* `p`, or *p-form*,
 *along* `U` *with values in* `V` is a field along `U` of alternating
-multilinear forms of degree `p` in the tangent spaces to `V`.  
-The standard case of a differential form *on* a manifold corresponds 
-to `\Phi=\mathrm{Id}`, `U=V` and `S=M`. 
+multilinear forms of degree `p` in the tangent spaces to `V`.
+The standard case of a differential form *on* a manifold corresponds to `S=M`,
+`U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+of `\RR`).
 
 Two classes implement differential forms, depending whether the open
 set `V` is parallelizable:
@@ -41,10 +43,10 @@ AUTHORS:
 
 REFERENCES:
 
-- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
-  Interscience Publishers (New York, 1963)
-- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
-  2013)
+- S. Kobayashi & K. Nomizu : *Foundations of Differential Geometry*, vol. 1,
+  Interscience Publishers (New York) (1963)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
 
 """
 
@@ -67,23 +69,25 @@ class DiffForm(TensorField):
     Differential form with values in an open subset of a differentiable
     manifold. 
 
-    Given an open subset `U` of a manifold `S` and a differentiable mapping
-    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a manifold,
-    an instance of this class is a field of alternating multilinear forms
-    along `U` with values in `V`. 
-    The standard case of a differential form *on* a manifold corresponds 
-    to `\Phi=\mathrm{Id}`, `U=V` and `S=M`. 
+    Given an positive integer `p`, an open set `U` of a manifold `S`,
+    an open set `V` of a manifold `M`  and a differentiable mapping
+    `\Phi: U \rightarrow V`, an instance of this class is a field along `U`
+    of alternating multilinear forms of degree `p` in the tangent spaces to
+    `V`. The standard case of a differential form *on* a manifold corresponds
+    to `S=M`, `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi`
+    being an immersion and `\Phi` being a curve in `V` (`U` is then an open
+    interval of `\RR`).
 
-    If `V=\Phi(U)` is parallelizable, the class :class:`DiffFormParal` must be 
+    If `V` is parallelizable, the class :class:`DiffFormParal` must be 
     used instead.
 
     This is a Sage *element* class, the corresponding *parent* class being
     :class:`~sage.geometry.manifolds.diffform_module.DiffFormModule`.
 
     INPUT:
-    
-    - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector 
-      fields along `U` with values on `V=\Phi(U)`
+
+    - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
+      fields along `U` associated with the mapping `\Phi: U \rightarrow V`.
     - ``degree`` -- the degree of the differential form (i.e. its tensor rank)
     - ``name`` -- (default: None) name given to the differential form
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the differential 
@@ -393,14 +397,17 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     Differential form with values in a parallelizable open subset of a 
     differentiable manifold. 
 
-    Given an open subset `U` of a manifold `S` and a differentiable mapping
-    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a manifold and
-    `V` is parallelizable, an instance of this class is a field of
-    alternating multilinear forms along `U` with values in `V`. 
-    The standard case of a differential form *on* a manifold corresponds 
-    to `\Phi=\mathrm{Id}`, `U=V` and `S=M`. 
+    Given an positive integer `p`, an open set `U` of a manifold `S`,
+    a parallelizable open set `V` of a manifold `M`  and a differentiable
+    mapping
+    `\Phi: U \rightarrow V`, an instance of this class is a field along `U`
+    of alternating multilinear forms of degree `p` in the tangent spaces to
+    `V`. The standard case of a differential form *on* a manifold corresponds
+    to `S=M`, `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi`
+    being an immersion and `\Phi` being a curve in `V` (`U` is then an open
+    interval of `\RR`).
 
-    If `V=\Phi(U)` is not parallelizable, the class :class:`DiffForm` must
+    If `V` is not parallelizable, the class :class:`DiffForm` must
     be used instead. 
 
     This is a Sage *element* class, the corresponding *parent* class being
@@ -408,8 +415,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
 
     INPUT:
     
-    - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector 
-      fields along `U` with values on `V=\Phi(U)`
+    - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
+      fields along `U` associated with the mapping `\Phi: U \rightarrow V`.
     - ``degree`` -- the degree of the differential form (i.e. its tensor rank)
     - ``name`` -- (default: None) name given to the differential form
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the differential 

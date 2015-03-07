@@ -285,24 +285,30 @@ class FormattedExpansion(SageObject):
     EXAMPLES::
 
         sage: from sage.tensor.modules.format_utilities import FormattedExpansion
-        sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-        sage: v = M.an_element()
-        sage: f = FormattedExpansion(v, 'v', r'\tilde v')
+        sage: f = FormattedExpansion('v', r'\tilde v')
         sage: f
         v
+        sage: latex(f)
+        \tilde v
+        sage: f = FormattedExpansion('x/2', r'\frac{x}{2}') 
+        sage: f
+        x/2
+        sage: latex(f)
+        \frac{x}{2}
+
     """
-    def  __init__(self, tensor, txt=None, latex=None):
+    def  __init__(self, txt=None, latex=None):
         r"""
         TESTS::
 
             sage: from sage.tensor.modules.format_utilities import FormattedExpansion
-            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-            sage: v = M.an_element()
-            sage: f = FormattedExpansion(v, 'v', r'\tilde v')
+            sage: f = FormattedExpansion('v', r'\tilde v')
+            sage: f
+            v
+
         """
-        self.tensor = tensor
-        self.txt = txt
-        self.latex = latex
+        self._txt = txt
+        self._latex = latex
 
     def _repr_(self):
         r"""
@@ -311,14 +317,12 @@ class FormattedExpansion(SageObject):
         EXAMPLES::
 
             sage: from sage.tensor.modules.format_utilities import FormattedExpansion
-            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-            sage: v = M.an_element()
-            sage: f = FormattedExpansion(v, 'v', r'\tilde v')
+            sage: f = FormattedExpansion('v', r'\tilde v')
             sage: f._repr_()
             'v'
 
         """
-        return self.txt
+        return self._txt
 
     def _latex_(self):
         r"""
@@ -327,11 +331,9 @@ class FormattedExpansion(SageObject):
         EXAMPLE::
 
             sage: from sage.tensor.modules.format_utilities import FormattedExpansion
-            sage: M = FiniteRankFreeModule(ZZ, 3, name='M')
-            sage: v = M.an_element()
-            sage: f = FormattedExpansion(v, 'v', r'\tilde v')
+            sage: f = FormattedExpansion('v', r'\tilde v')
             sage: f._latex_()
             '\\tilde v'
 
         """
-        return self.latex
+        return self._latex

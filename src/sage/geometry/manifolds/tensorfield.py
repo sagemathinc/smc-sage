@@ -21,7 +21,7 @@ fields:
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013, 2014) : initial version
+- Eric Gourgoulhon, Michal Bejger (2013-2014) : initial version
 
 REFERENCES:
 
@@ -295,8 +295,8 @@ as follows::
 """
 
 #******************************************************************************
-#       Copyright (C) 2013, 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2013, 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2014 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -311,38 +311,41 @@ from sage.tensor.modules.tensor_with_indices import TensorWithIndices
 
 class TensorField(ModuleElement):
     r"""
-    Base class for tensor fields on an open set of a differentiable manifold,
-    with values on an open subset of a differentiable manifold.
+    Tensor field along an open set of a differentiable manifold.
 
     An instance of this class is a tensor field along an open subset `U`
     of some manifold `S` with values in an open subset `V`
     of a manifold `M`, via a differentiable mapping `\Phi: U \rightarrow V`.
     The standard case of a tensor field *on* a manifold corresponds to `S=M`,
-    `U=V` and `\Phi = \mathrm{Id}`. Another common case is `\Phi` being an
-    immersion.
+    `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
 
     If `V` is parallelizable, the class :class:`TensorFieldParal` should be
     used instead.
 
-    A tensor field of type `(k,\ell)` is a field `t` on `U`, so that at each
-    point `p\in U`, `t(p)` is a multilinear map of the type:
+    A tensor field of type `(k,l)` is a field `t` on `U`, such that at each
+    point `p\in U`, `t(p)` is a multilinear map
 
     .. MATH::
 
         t(p):\ \underbrace{T_q^*M\times\cdots\times T_q^*M}_{k\ \; \mbox{times}}
-        \times \underbrace{T_q M\times\cdots\times T_q M}_{\ell\ \; \mbox{times}}
+        \times \underbrace{T_q M\times\cdots\times T_q M}_{l\ \; \mbox{times}}
         \longrightarrow \RR
 
-    where `T_q M` stands for the tangent space at the point `q=\Phi(p)` on the
-    manifold `M` and `T_q^* M` for its dual vector space. The integer `k+\ell`
+    where `T_q M` stands for the tangent space to the manifold `M` at the point
+    `q=\Phi(p)` and `T_q^* M` for its dual vector space. The integer `k+l`
     is called the tensor rank.
+
+    This is a Sage *element* class, the corresponding *parent* class being
+    :class:`~sage.geometry.manifolds.tensorfield_module.TensorFieldModule`.
 
     INPUT:
 
     - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
-      fields along `U` with values on `\Phi(U)\subset V \subset M`
-    - ``tensor_type`` -- pair (k,l) with k being the contravariant rank and l
-      the covariant rank
+      fields along `U` associated with the mapping `\Phi: U \rightarrow V`.
+    - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank
+      and `l` the covariant rank
     - ``name`` -- (default: None) name given to the tensor field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the tensor field;
       if none is provided, the LaTeX symbol is set to ``name``
@@ -1559,16 +1562,16 @@ class TensorField(ModuleElement):
         r"""
         Compute a metric dual by raising some index with a given metric.
 
-        If ``self`` is a tensor field `T` of type `(k,\ell)` and `p` is the
-        position of a covariant index (i.e. `k\leq p < k+\ell`),
+        If ``self`` is a tensor field `T` of type `(k,l)` and `p` is the
+        position of a covariant index (i.e. `k\leq p < k+l`),
         the output with ``pos`` `=p` is the tensor field `T^\sharp` of type
-        `(k+1,\ell-1)` whose components are
+        `(k+1,l-1)` whose components are
 
         .. MATH::
 
-            (T^\sharp)^{a_1\ldots a_{k+1}}_{\qquad\quad b_1 \ldots b_{\ell-1}}
+            (T^\sharp)^{a_1\ldots a_{k+1}}_{\qquad\quad b_1 \ldots b_{l-1}}
             = g^{a_{k+1} i} \,
-            T^{a_1\ldots a_k}_{\qquad\ \  b_1 \ldots b_{p-k} \, i \, b_{p-k+1} \ldots b_{\ell-1}},
+            T^{a_1\ldots a_k}_{\qquad\ \  b_1 \ldots b_{p-k} \, i \, b_{p-k+1} \ldots b_{l-1}},
 
         `g^{ab}` being the components of the inverse metric.
 
@@ -1694,16 +1697,16 @@ class TensorField(ModuleElement):
         r"""
         Compute a metric dual by lowering some index with a given metric.
 
-        If ``self`` is a tensor field `T` of type `(k,\ell)` and `p` is the
+        If ``self`` is a tensor field `T` of type `(k,l)` and `p` is the
         position of a contravariant index (i.e. `0\leq p < k`), the output with
-        ``pos`` `=p` is the tensor field `T^\flat` of type `(k-1,\ell+1)` whose
+        ``pos`` `=p` is the tensor field `T^\flat` of type `(k-1,l+1)` whose
         components are
 
         .. MATH::
 
-            (T^\flat)^{a_1\ldots a_{k-1}}_{\qquad\quad b_1 \ldots b_{\ell+1}}
+            (T^\flat)^{a_1\ldots a_{k-1}}_{\qquad\quad b_1 \ldots b_{l+1}}
             = g_{b_1 i} \,
-            T^{a_1\ldots a_{p} \, i \, a_{p+1}\ldots a_{k-1}}_{\qquad\qquad\qquad\quad b_2 \ldots b_{\ell+1}},
+            T^{a_1\ldots a_{p} \, i \, a_{p+1}\ldots a_{k-1}}_{\qquad\qquad\qquad\quad b_2 \ldots b_{l+1}},
 
         `g_{ab}` being the components of the metric tensor.
 
@@ -2551,35 +2554,39 @@ class TensorField(ModuleElement):
 
 class TensorFieldParal(FreeModuleTensor, TensorField):
     r"""
-    Base class for tensor fields on an open set of a differentiable manifold,
-    with values on parallelizable open subset of a differentiable manifold.
+    Tensor field along an open set of a differentiable manifold,
+    with values on a parallelizable open set of a differentiable manifold.
 
     An instance of this class is a tensor field along an open subset `U`
     of some manifold `S` with values in a parallelizable open subset `V`
     of a manifold `M`, via a differentiable mapping `\Phi: U \rightarrow V`.
     The standard case of a tensor field *on* a manifold corresponds to `S=M`,
-    `U=V` and `\Phi = \mathrm{Id}`. Another common case is `\Phi` being an
-    immersion.
+    `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
 
-    A tensor field of type `(k,\ell)` is a field `t` on `U`, so that at each
-    point `p\in U`, `t(p)` is a multilinear map of the type:
+    A tensor field of type `(k,l)` is a field `t` on `U`, such that at each
+    point `p\in U`, `t(p)` is a multilinear map
 
     .. MATH::
 
         t(p):\ \underbrace{T_q^*M\times\cdots\times T_q^*M}_{k\ \; \mbox{times}}
-        \times \underbrace{T_q M\times\cdots\times T_q M}_{\ell\ \; \mbox{times}}
+        \times \underbrace{T_q M\times\cdots\times T_q M}_{l\ \; \mbox{times}}
         \longrightarrow \RR
 
-    where `T_q M` stands for the tangent space at the point `q=\Phi(p)` on the
-    manifold `M` and `T_q^* M` for its dual vector space. The integer `k+\ell`
+    where `T_q M` stands for the tangent space to the manifold `M` at the point
+    `q=\Phi(p)` and `T_q^* M` for its dual vector space. The integer `k+l`
     is called the tensor rank.
+
+    This is a Sage *element* class, the corresponding *parent* class being
+    :class:`~sage.geometry.manifolds.tensorfield_module.TensorFieldFreeModule`.
 
     INPUT:
 
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector
-      fields along `U` with values on `\Phi(U)\subset V \subset M`
-    - ``tensor_type`` -- pair (k,l) with k being the contravariant rank and l
-      the covariant rank
+      fields along `U` associated with the mapping `\Phi: U \rightarrow V`.
+    - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank
+      and `l` the covariant rank
     - ``name`` -- (default: None) name given to the tensor field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the tensor field;
       if none is provided, the LaTeX symbol is set to ``name``

@@ -85,7 +85,7 @@ class ManifoldHomset(Homset, UniqueRepresentation):
         sage: H.codomain()
         3-dimensional manifold 'N'
 
-    An element of ``H`` is a differential mapping from ``M`` to ``N``::
+    An element of ``H`` is a differentiable mapping from ``M`` to ``N``::
 
         sage: H.Element
         <class 'sage.geometry.manifolds.diffmapping.DiffMapping'>
@@ -295,7 +295,7 @@ class ManifoldHomset(Homset, UniqueRepresentation):
     
             If the information passed by means of the argument
             ``coord_functions`` is not sufficient to fully specify the
-            differential mapping (for instance case (ii) with ``chart1`` not
+            differentiable mapping (for instance case (ii) with ``chart1`` not
             covering the entire domain `U`), further coordinate expressions,
             in other charts, can be subsequently added by means of the method
             :meth:`~sage.geometry.manifolds.diffmapping.DiffMapping.add_expr`

@@ -823,31 +823,31 @@ class DiffMapping(Morphism):
             if len(coords2) == 1:
                 coords2 = coords2[0]
             if chart1._domain == self._domain:
-                result.txt += "   "
-                result.latex += " & "
+                result._txt += "   "
+                result._latex += " & "
             else:
-                result.txt += "on " + chart1._domain._name + ": "
-                result.latex += r"\mbox{on}\ " + latex(chart1._domain) + \
+                result._txt += "on " + chart1._domain._name + ": "
+                result._latex += r"\mbox{on}\ " + latex(chart1._domain) + \
                                 r": & "
-            result.txt += repr(coords1) + " |--> "
-            result.latex += latex(coords1) + r"& \longmapsto & "
+            result._txt += repr(coords1) + " |--> "
+            result._latex += latex(coords1) + r"& \longmapsto & "
             if chart2 == chart1:
                 if len(expression) == 1:
-                    result.txt += repr(expression[0]) + "\n"
-                    result.latex += latex(expression[0]) + r"\\"
+                    result._txt += repr(expression[0]) + "\n"
+                    result._latex += latex(expression[0]) + r"\\"
                 else:
-                    result.txt += repr(expression) + "\n"
-                    result.latex += latex(expression) + r"\\"
+                    result._txt += repr(expression) + "\n"
+                    result._latex += latex(expression) + r"\\"
             else:
                 if len(expression) == 1:
-                    result.txt += repr(coords2[0]) + " = " + \
+                    result._txt += repr(coords2[0]) + " = " + \
                                   repr(expression[0]) + "\n"
-                    result.latex += latex(coords2[0]) + " = " + \
+                    result._latex += latex(coords2[0]) + " = " + \
                                     latex(expression[0]) + r"\\"
                 else:
-                    result.txt += repr(coords2) + " = " + \
+                    result._txt += repr(coords2) + " = " + \
                                   repr(expression) + "\n"
-                    result.latex += latex(coords2) + " = " + \
+                    result._latex += latex(coords2) + " = " + \
                                     latex(expression) + r"\\"
         except (TypeError, ValueError):
             pass
@@ -946,19 +946,19 @@ class DiffMapping(Morphism):
         
         """
         from sage.misc.latex import latex
-        from sage.geometry.manifolds.utilities import FormattedExpansion
+        from sage.tensor.modules.format_utilities import FormattedExpansion
         result = FormattedExpansion()
         if self._name is None:
             symbol = ""
         else:
             symbol = self._name + ": "
-        result.txt = symbol + self._domain._name + " --> " + \
+        result._txt = symbol + self._domain._name + " --> " + \
                      self._codomain._name + "\n"
         if self._latex_name is None:
             symbol = ""
         else:
             symbol = self._latex_name + ":"
-        result.latex = r"\begin{array}{llcl} " + symbol + r"&" + \
+        result._latex = r"\begin{array}{llcl} " + symbol + r"&" + \
                        latex(self._domain) + r"& \longrightarrow & " + \
                        latex(self._codomain) + r"\\"
         if chart1 is None:
@@ -975,8 +975,8 @@ class DiffMapping(Morphism):
                     self._display_expression(chart1, ch2, result)
             else:
                 self._display_expression(chart1, chart2, result)
-        result.txt = result.txt[:-1]
-        result.latex = result.latex[:-2] + r"\end{array}"
+        result._txt = result._txt[:-1]
+        result._latex = result._latex[:-2] + r"\end{array}"
         return result
 
     disp = display
@@ -2117,7 +2117,7 @@ class DiffMapping(Morphism):
         where $(x^1,\ldots,x^n)$ are coordinates of a chart `X` on the
         domain of ``self`` and $(y^1,\ldots,y^m)$ are coordinates of a chart
         `Y` on the codomain of ``self``, the *Jacobian matrix* of the
-        differential mapping ``self`` w.r.t. to charts `X` and `Y` is
+        differentiable mapping ``self`` w.r.t. to charts `X` and `Y` is
         
         .. MATH::
 

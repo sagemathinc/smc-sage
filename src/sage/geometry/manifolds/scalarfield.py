@@ -932,13 +932,13 @@ class ScalarField(CommutativeAlgebraElement):
                 coords = coords[0]
             if chart._domain == self._domain:
                 if self._name is not None:
-                    result.txt += "   "
-                result.latex += " & "
+                    result._txt += "   "
+                result._latex += " & "
             else:
-                result.txt += "on " + chart._domain._name + ": "
-                result.latex += r"\mbox{on}\ " + latex(chart._domain) + r": & "
-            result.txt += repr(coords) + " |--> " + repr(expression) + "\n"
-            result.latex += latex(coords) + r"& \longmapsto & " + \
+                result._txt += "on " + chart._domain._name + ": "
+                result._latex += r"\mbox{on}\ " + latex(chart._domain) + r": & "
+            result._txt += repr(coords) + " |--> " + repr(expression) + "\n"
+            result._latex += latex(coords) + r"& \longmapsto & " + \
                             latex(expression) + r"\\"
         except (TypeError, ValueError):
             pass
@@ -990,26 +990,26 @@ class ScalarField(CommutativeAlgebraElement):
 
         """
         from sage.misc.latex import latex
-        from sage.geometry.manifolds.utilities import FormattedExpansion
+        from sage.tensor.modules.format_utilities import FormattedExpansion
         result = FormattedExpansion()
         if self._name is None:
             symbol = ""
         else:
             symbol = self._name + ": "
-        result.txt = symbol + self._domain._name + " --> R\n"
+        result._txt = symbol + self._domain._name + " --> R\n"
         if self._latex_name is None:
             symbol = ""
         else:
             symbol = self._latex_name + ":"
-        result.latex = r"\begin{array}{llcl} " + symbol + r"&" + \
+        result._latex = r"\begin{array}{llcl} " + symbol + r"&" + \
                        latex(self._domain) + r"& \longrightarrow & \RR \\"
         if chart is None:
             for ch in self._domain._top_charts:
                 self._display_expression(ch, result)
         else:
             self._display_expression(chart, result)
-        result.txt = result.txt[:-1]
-        result.latex = result.latex[:-2] + r"\end{array}"
+        result._txt = result._txt[:-1]
+        result._latex = result._latex[:-2] + r"\end{array}"
         return result
 
     disp = display

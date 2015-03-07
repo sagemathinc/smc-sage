@@ -23,41 +23,6 @@ AUTHORS:
 from sage.structure.sage_object import SageObject
 from sage.version import version
 
-class FormattedExpansion(SageObject):
-    r"""
-    Helper class for displaying tensor expansions.
-
-    EXAMPLE::
-
-        sage: from sage.geometry.manifolds.utilities import FormattedExpansion
-        sage: a = FormattedExpansion()
-        sage: a.txt = "x/2"
-        sage: a.latex = r"\frac{x}{2}"
-        sage: a
-        x/2
-        sage: latex(a)
-        \frac{x}{2}
-
-    """
-    def  __init__(self):
-        self.txt = None
-        self.latex = None
-
-    def _repr_(self):
-        r"""
-        String representation of the object.
-        """
-        return self.txt
-
-    def _latex_(self):
-        r"""
-        LaTeX representation of the object.
-        """
-        return self.latex
-
-
-#***********************************************************
-
 def simple_determinant(aa):
     r"""
     Compute the determinant of a square matrix.
