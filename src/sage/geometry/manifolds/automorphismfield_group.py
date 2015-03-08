@@ -2,17 +2,19 @@ r"""
 Group of tangent-space automorphism fields
 
 Given an open subset `U` of a manifold `S` and a differentiable mapping
-`\Phi: U \rightarrow M`, where `M` is a manifold,
+`\Phi: U \rightarrow V`, where `V` is an open subset of a manifold `M`,
 the *group of tangent-space automorphism fields* associated with `U` and
 `\Phi` is the general linear group `\mathrm{GL}(\mathcal{X}(U,\Phi))` of
 the module `\mathcal{X}(U,\Phi)` of vector fields along `U` with values in
-`\Phi(U)`. Note that `\mathcal{X}(U,\Phi)` is a module over
+`V\subset M` (see
+:class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`).
+Note that `\mathcal{X}(U,\Phi)` is a module over
 `C^\infty(U)`, the algebra of smooth scalar fields on `U`.
 Elements of `\mathrm{GL}(\mathcal{X}(U,\Phi))` are fields along `U` of
-automorphisms of the tangent spaces of `\Phi(U)`. 
+automorphisms of the tangent spaces to `M`. 
 
 Two classes implement `\mathrm{GL}(\mathcal{X}(U,\Phi))` depending whether
-`\Phi(U)` is parallelizable or not:
+`V` is parallelizable or not:
 :class:`AutomorphismFieldParalGroup` and :class:`AutomorphismFieldGroup`.
 
 AUTHORS:
@@ -51,16 +53,18 @@ class AutomorphismFieldGroup(UniqueRepresentation, Parent):
     manifold `M`.
 
     Given an open subset `U` of a manifold `S` and a differentiable mapping
-    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a manifold,
-    this class implements the general linear group
-    `\mathrm{GL}(\mathcal{X}(U,\Phi))` of the module
-    `\mathcal{X}(U,\Phi)` of vector fields along `U` with values in
-    `V=\Phi(U)`. Note that `\mathcal{X}(U,\Phi)` is a module over
-    `C^\infty(U)`, the ring (algebra) of smooth scalar fields on `U`.
+    `\Phi: U \rightarrow V`, where `V` is an open subset of a manifold `M`,
+    the *group of tangent-space automorphism fields* associated with `U` and
+    `\Phi` is the general linear group `\mathrm{GL}(\mathcal{X}(U,\Phi))` of
+    the module `\mathcal{X}(U,\Phi)` of vector fields along `U` with values in
+    `V\subset M` (see
+    :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`).
+    Note that `\mathcal{X}(U,\Phi)` is a module over
+    `C^\infty(U)`, the algebra of smooth scalar fields on `U`.
     Elements of `\mathrm{GL}(\mathcal{X}(U,\Phi))` are fields along `U` of
-    automorphisms of the tangent spaces of `V=\Phi(U)`. 
+    automorphisms of the tangent spaces to `M`. 
 
-    If `V=\Phi(U)` is parallelizable, the class
+    If `V` is parallelizable, the class
     :class:`AutomorphismFieldParalGroup` must be used instead.
 
     This is a Sage *parent* class, the corresponding *element* class being
@@ -212,16 +216,19 @@ class AutomorphismFieldParalGroup(FreeModuleLinearGroup):
     of a manifold `M`.
 
     Given an open subset `U` of a manifold `S` and a differentiable mapping
-    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a manifold
-    and `V` is parallelizable, this class implements the general linear
-    group `\mathrm{GL}(\mathcal{X}(U,\Phi))` of the free module
-    `\mathcal{X}(U,\Phi)` of vector fields along `U` with values in
-    `V=\Phi(U)`. Since `V` is parallelizable, `\mathcal{X}(U,\Phi)` is indeed
-    a free module over `C^\infty(U)`, the ring (algebra) of smooth scalar
-    fields on `U`. Elements of `\mathrm{GL}(\mathcal{X}(U,\Phi))` are fields
-    along `U` of automorphisms of the tangent spaces of `V=\Phi(U)`. 
+    `\Phi: U \rightarrow V`, where `V` is a parrallelizable open subset of
+    a manifold `M`,
+    the *group of tangent-space automorphism fields* associated with `U` and
+    `\Phi` is the general linear group `\mathrm{GL}(\mathcal{X}(U,\Phi))` of
+    the module `\mathcal{X}(U,\Phi)` of vector fields along `U` with values in
+    `V\subset M` (see
+    :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldFreeModule`).
+    Note that `\mathcal{X}(U,\Phi)` is a module over
+    `C^\infty(U)`, the algebra of smooth scalar fields on `U`.
+    Elements of `\mathrm{GL}(\mathcal{X}(U,\Phi))` are fields along `U` of
+    automorphisms of the tangent spaces to `M`. 
 
-    If `V=\Phi(U)` is not parallelizable, the class
+    If `V` is not parallelizable, the class
     :class:`AutomorphismFieldGroup` must be used instead.
 
     This is a Sage *parent* class, the corresponding *element* class being

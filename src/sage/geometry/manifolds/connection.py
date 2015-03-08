@@ -13,11 +13,11 @@ AUTHORS:
 
 REFERENCES:
 
-- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
-  Interscience Publishers (New York, 1963)
-- J.M. Lee : "Introduction to Smooth Manifolds", 2nd ed., Springer (New York,
-  2013)
-- B O'Neill : "Semi-Riemannian Geometry", Academic Press (San Diego, 1983)
+- S. Kobayashi & K. Nomizu : *Foundations of Differential Geometry*, vol. 1,
+  Interscience Publishers (New York) (1963)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
+- B O'Neill : *Semi-Riemannian Geometry*, Academic Press (San Diego) (1983)
 
 """
 #******************************************************************************
@@ -38,8 +38,9 @@ class AffConnection(SageObject):
     Affine connection on a differentiable manifold.
 
     Given a differentiable manifold `M` and denoting by `\mathcal{X}(M)`
-    the `C^\infty(M)`-module of vector fields on `M`, an *affine connection*
-    on `M` is an operator
+    the `C^\infty(M)`-module of vector fields on `M` (cf.
+    :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`),
+    an *affine connection* on `M` is an operator
 
     .. MATH::
 
@@ -51,7 +52,7 @@ class AffConnection(SageObject):
 
     that
 
-    - is a bilinear when considering `\mathcal{X}(M)` as a
+    - is bilinear when considering `\mathcal{X}(M)` as a
       vector space over `\RR`
     - is `C^\infty(M)`-linear w.r.t. the first argument:
       `\forall f\in C^\infty(M),\ \nabla_{fu} v = f\nabla_u v`
@@ -69,7 +70,9 @@ class AffConnection(SageObject):
         \end{array}
 
     where `T^{(k,l)}(M)` stands for the `C^\infty(M)`-module of tensor fields
-    of type `(k,l)` on `M` (with the convention `T^{(0,0)}(M):=C^\infty(M)`).
+    of type `(k,l)` on `M` (cf.
+    :class:`~sage.geometry.manifolds.tensorfield_module.TensorFieldModule`),
+    with the convention `T^{(0,0)}(M):=C^\infty(M)`.
     For a vector field `v`,  the covariant derivative `\nabla v` is a
     type-(1,1) tensor field such that
 
@@ -1401,8 +1404,9 @@ class LeviCivitaConnection(AffConnection):
 
     Given a differentiable manifold `M` endowed with a pseudo-Riemannian
     metric `g` and denoting by `\mathcal{X}(M)`
-    the `C^\infty(M)`-module of vector fields on `M`, the
-    *Levi-Civita connection associated with* `g` is the unique operator
+    the `C^\infty(M)`-module of vector fields on `M` (cf.
+    :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`),
+    the *Levi-Civita connection associated with* `g` is the unique operator
 
     .. MATH::
 
@@ -1414,7 +1418,7 @@ class LeviCivitaConnection(AffConnection):
 
     that
 
-    - is a bilinear when considering `\mathcal{X}(M)` as a
+    - is bilinear when considering `\mathcal{X}(M)` as a
       vector space over `\RR`
     - is `C^\infty(M)`-linear w.r.t. the first argument:
       `\forall f\in C^\infty(M),\ \nabla_{fu} v = f\nabla_u v`
@@ -1436,7 +1440,9 @@ class LeviCivitaConnection(AffConnection):
         \end{array}
 
     where `T^{(k,l)}(M)` stands for the `C^\infty(M)`-module of tensor fields
-    of type `(k,l)` on `M` (with the convention `T^{(0,0)}(M):=C^\infty(M)`).
+    of type `(k,l)` on `M` (cf.
+    :class:`~sage.geometry.manifolds.tensorfield_module.TensorFieldModule`),
+    with the convention `T^{(0,0)}(M):=C^\infty(M)`.
     For a vector field `v`,  the covariant derivative `\nabla v` is a
     type-(1,1) tensor field such that
 

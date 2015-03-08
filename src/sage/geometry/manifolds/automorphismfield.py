@@ -29,13 +29,15 @@ class AutomorphismField(TensorField):
     subset of a differentiable manifold.
 
     Given an open subset `U` of a manifold `S` and a differentiable mapping
-    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a manifold,
+    `\Phi: U \rightarrow V`, where `V` is an open subset of a manifold `M`,
     an instance of this class is a field of tangent-space automorphisms 
     along `U` with values in `V`. 
     The standard case of a field of tangent-space automorphisms *on* a
-    manifold corresponds to `\Phi=\mathrm{Id}`, `U=V` and `S=M`. 
+    manifold corresponds to `S=M`, `U=V` and `\Phi = \mathrm{Id}_U`. Other
+    common cases are `\Phi` being an immersion and `\Phi` being a curve in `V`
+    (`U` is then an open interval of `\RR`).
 
-    If `V=\Phi(U)` is parallelizable, the class :class:`AutomorphismFieldParal`
+    If `V` is parallelizable, the class :class:`AutomorphismFieldParal`
     must be used instead.
 
     This is a Sage *element* class, the corresponding *parent* class being
@@ -44,7 +46,7 @@ class AutomorphismField(TensorField):
     INPUT:
 
     - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
-      fields along `U` with values on `V=\Phi(U)`
+      fields along `U` with values on `V`
     - ``name`` -- (default: None) name given to the field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
       if none is provided, the LaTeX symbol is set to ``name``
@@ -424,13 +426,15 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
     subset of a differentiable manifold.
 
     Given an open subset `U` of a manifold `S` and a differentiable mapping
-    `\Phi: U \rightarrow V = \Phi(U) \subset M`, where `M` is a manifold
-    and `V` is parallelizable, an instance of this class is a field of
-    tangent-space automorphisms along `U` with values in `V`. 
+    `\Phi: U \rightarrow V`, where `V` is a parallelizable open subset of a
+    manifold `M`, an instance of this class is a field of tangent-space
+    automorphisms along `U` with values in `V`. 
     The standard case of a field of tangent-space automorphisms *on* a
-    manifold corresponds to `\Phi=\mathrm{Id}`, `U=V` and `S=M`. 
+    manifold corresponds to `S=M`, `U=V` and `\Phi = \mathrm{Id}_U`. Other
+    common cases are `\Phi` being an immersion and `\Phi` being a curve in `V`
+    (`U` is then an open interval of `\RR`).
 
-    If `V=\Phi(U)` is not parallelizable, the class :class:`AutomorphismField`
+    If `V` is not parallelizable, the class :class:`AutomorphismField`
     must be used instead.
 
     This is a Sage *element* class, the corresponding *parent* class being
@@ -439,7 +443,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
     INPUT:
 
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector
-      fields along `U` with values on `V=\Phi(U)`
+      fields along `U` with values on `V`
     - ``name`` -- (default: None) name given to the field
     - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
       if none is provided, the LaTeX symbol is set to ``name``

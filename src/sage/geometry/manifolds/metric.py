@@ -25,10 +25,11 @@ AUTHORS:
 
 REFERENCES:
 
-- S. Kobayashi & K. Nomizu : "Foundations of Differential Geometry", vol. 1,
-  Interscience Publishers (New York, 1963)
-- J.M. Lee : "Riemannian Manifolds", Springer (New York, 1997)
-- B O'Neill : "Semi-Riemannian Geometry", Academic Press (San Diego, 1983)
+- S. Kobayashi & K. Nomizu : *Foundations of Differential Geometry*, vol. 1,
+  Interscience Publishers (New York) (1963)
+- J.M. Lee : *Introduction to Smooth Manifolds*, 2nd ed., Springer (New York)
+  (2013)
+- B O'Neill : *Semi-Riemannian Geometry*, Academic Press (San Diego) (1983)
 
 """
 #******************************************************************************
@@ -46,16 +47,17 @@ from sage.rings.integer import Integer
 
 class Metric(TensorField):
     r"""
-    Base class for pseudo-Riemannian metrics with values on an
-    open subset of a differentiable manifold.
+    Pseudo-Riemannian metric with values on an open subset of a
+    differentiable manifold.
 
     An instance of this class is a field of nondegenerate symmetric bilinear
     forms (metric field) along an open subset `U` of some manifold `S` with
-    values in an open subset `V` of a manifold `M`, via a
+    values on an open subset `V` of a manifold `M`, via a
     differentiable mapping `\Phi: U \rightarrow V`.
     The standard case of a metric field *on* a manifold corresponds to `S=M`,
-    `U=V` and `\Phi = \mathrm{Id}`. Another common case is `\Phi` being an
-    immersion.
+    `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
 
     If `V` is parallelizable, the class :class:`MetricParal` should be
     used instead.
@@ -67,8 +69,8 @@ class Metric(TensorField):
 
         g(p):\ T_q M\times T_q M  \longrightarrow \RR
 
-    where `T_q M` stands for the tangent space at the point `q=\Phi(p)` on the
-    manifold `M`, such that `g(p)` is symmetric:
+    where `T_q M` stands for the tangent space to the
+    manifold `M` at the point `q=\Phi(p)`, such that `g(p)` is symmetric:
     `\forall (u,v)\in  T_q M\times T_q M, \ g(p)(v,u) = g(p)(u,v)`
     and nondegenerate:
     `(\forall v\in T_q M,\ \ g(p)(u,v) = 0) \Longrightarrow u=0`.
@@ -1295,7 +1297,7 @@ class LorentzMetric(Metric):
 
 class MetricParal(Metric, TensorFieldParal):
     r"""
-    Base class for pseudo-Riemannian metrics with values on a parallelizable
+    Pseudo-Riemannian metric with values on a parallelizable
     open subset of a differentiable manifold.
 
     An instance of this class is a field of nondegenerate symmetric bilinear
@@ -1303,8 +1305,9 @@ class MetricParal(Metric, TensorFieldParal):
     values in a parallelizable open subset `V` of a manifold `M`, via a
     differentiable mapping `\Phi: U \rightarrow V`.
     The standard case of a metric field *on* a manifold corresponds to `S=M`,
-    `U=V` and `\Phi = \mathrm{Id}`. Another common case is `\Phi` being an
-    immersion.
+    `U=V` and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
 
     A *metric* `g` is a field on `U`, so that at each
     point `p\in U`, `g(p)` is a bilinear map of the type:
@@ -1313,8 +1316,8 @@ class MetricParal(Metric, TensorFieldParal):
 
         g(p):\ T_q M\times T_q M  \longrightarrow \RR
 
-    where `T_q M` stands for the tangent space at the point `q=\Phi(p)` on the
-    manifold `M`, such that `g(p)` is symmetric:
+    where `T_q M` stands for the tangent space to manifold `M` at the point
+    `q=\Phi(p)`, such that `g(p)` is symmetric:
     `\forall (u,v)\in  T_q M\times T_q M, \ g(p)(v,u) = g(p)(u,v)`
     and nondegenerate:
     `(\forall v\in T_q M,\ \ g(p)(u,v) = 0) \Longrightarrow u=0`.

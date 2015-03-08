@@ -4,15 +4,17 @@ Vector frames
 The class :class:`VectorFrame` implements vector frames on differentiable
 manifolds over `\RR`.
 By *vector frame*, it is meant a field `e` on some open domain `U` of a
-manifold `S` endowed with a mapping `\Phi: U\rightarrow V` to a
+manifold `S` endowed with a differentiable mapping `\Phi: U\rightarrow V` to a
 parallelizable domain `V` of a manifold `M` such that for each `p\in U`,
 `e(p)` is a vector basis of the tangent space `T_{\Phi(p)}M`.
 
 The standard case of a vector frame *on* `U` corresponds to `S=M`, `U=V`
-and `\Phi = \mathrm{Id}_U`.
+and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+of `\RR`).
 
 A derived class of :class:`VectorFrame` is :class:`CoordFrame`; it regards the
-vector frames associated with a chart, i.e. the so-called coordinate bases.
+vector frames associated with a chart, i.e. the so-called *coordinate bases*.
 
 The vector frame duals, i.e. the coframes, are implemented via the class
 :class:`CoFrame`. The derived class :class:`CoordCoFrame` is devoted to
@@ -165,15 +167,17 @@ from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule
 
 class VectorFrame(FreeModuleBasis):
     r"""
-    Class for vector frames on a differentiable manifold over `\RR`.
+    Vector frame on a differentiable manifold over `\RR`.
 
     By *vector frame*, it is meant a field `e` on some open domain `U` of a
-    manifold `S` endowed with a mapping `\Phi: U\rightarrow V` to a
-    parallelizable domain `V` of a manifold `M` such that for each `p\in U`,
-    `e(p)` is a vector basis of the tangent space `T_{\Phi(p)}M`.
+    manifold `S` endowed with a differentiable mapping `\Phi: U\rightarrow V`
+    to a parallelizable domain `V` of a manifold `M` such that for each
+    `p\in U`, `e(p)` is a vector basis of the tangent space `T_{\Phi(p)}M`.
 
     The standard case of a vector frame *on* `U` corresponds to `S=M`, `U=V`
-    and `\Phi = \mathrm{Id}`.
+    and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
 
     For each instanciation of a vector frame, a coframe is automatically
     created, as an instance of the class :class:`CoFrame`.
@@ -181,7 +185,7 @@ class VectorFrame(FreeModuleBasis):
     INPUT:
 
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector
-      fields along `U` with values on `\Phi(U)\subset V \subset M`
+      fields along `U\subset S` with values on `\Phi(U)\subset V \subset M`
     - ``symbol`` -- a letter (of a few letters) to denote a
       generic vector of the frame; can be set to None if the parameter
       ``from_frame`` is filled.
@@ -199,8 +203,7 @@ class VectorFrame(FreeModuleBasis):
         sage: Manifold._clear_cache_() # for doctests only
         sage: M = Manifold(3, 'M')
         sage: c_xyz.<x,y,z> = M.chart()
-        sage: e = M.vector_frame('e')
-        sage: e
+        sage: e = M.vector_frame('e') ; e
         vector frame (M, (e_0,e_1,e_2))
         sage: latex(e)
         \left(M, \left(e_0,e_1,e_2\right)\right)
@@ -211,7 +214,24 @@ class VectorFrame(FreeModuleBasis):
         sage: latex(e)
         \left(M, \left(\epsilon_0,\epsilon_1,\epsilon_2\right)\right)
 
+    Example with a non-trivial mapping `\Phi`: vector frame along a curve::
 
+        sage: R.<t> = RealLine()
+        sage: U = R.open_interval(-1, 1)
+        sage: Phi = U.diff_mapping(M, [cos(t), sin(t), t], name='Phi', latex_name=r'\Phi')
+        sage: Phi
+        Curve 'Phi' in the 3-dimensional manifold 'M'
+        sage: f = U.vector_frame('f', dest_map=Phi) ; f
+        vector frame ((-1, 1), (f_0,f_1,f_2)) with values on the 3-dimensional
+         manifold 'M'
+        sage: f.domain()
+        Real interval (-1, 1)
+        sage: p = U(0, name='p') ; p
+        point 'p' on field R of real numbers
+        sage: f.at(p)
+        Basis (f_0,f_1,f_2) on the tangent space at point 'Phi(p)' on
+         3-dimensional manifold 'M'
+    
     """
     def __init__(self, vector_field_module, symbol, latex_symbol=None,
                  from_frame=None):
@@ -587,25 +607,27 @@ class VectorFrame(FreeModuleBasis):
 
     def at(self, point):
         r"""
-        Return the value of the frame at a given point on the manifold, i.e. a
-        basis of the tangent vector space.
+        Return the value of the frame at a given point, i.e. a basis of the
+        tangent vector space. 
 
         INPUT:
 
         - ``point`` -- (instance of
           :class:`~sage.geometry.manifolds.point.ManifoldPoint`) point `p` in
-          the domain of ``self`` (denoted `e` hereafter)
+          the domain `U` of ``self`` (denoted `e` hereafter)
 
         OUTPUT:
 
         - instance of
           :class:`~sage.tensor.modules.free_module_basis.FreeModuleBasis`
-          representing the basis `e(p)` of the tangent vector space `T_p M`
-          (`M` being the manifold on which ``self`` is defined)
+          representing the basis `e(p)` of the tangent vector space
+          `T_{\Phi(p)} M`, where `\Phi: U \rightarrow V\subset M` is
+          the differentiable mapping associated with `e` (possibly
+          `\Phi = \mathrm{Id}_U`) 
 
         EXAMPLES:
 
-        Basis of a tangent space on a 2-dimensional manifold::
+        Basis of a tangent space to a 2-dimensional manifold::
 
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
@@ -691,10 +713,14 @@ class VectorFrame(FreeModuleBasis):
         if point not in self._domain:
             raise ValueError("The " + str(point) + " is not a point in the "
                             "domain of " + str(self) + ".")
-        ts = point.tangent_space()
+        if self._dest_map.is_identity():
+            ambient_point = point
+        else:
+            ambient_point = self._dest_map(point)
+        ts = ambient_point.tangent_space()
         basis = ts.basis(symbol=self._symbol, latex_symbol=self._latex_symbol)
         # Names of basis vectors set to those of the frame vector fields:
-        n = self._manifold._dim
+        n = ts.dim()
         for i in range(n):
             basis._vec[i]._name = self._vec[i]._name
             basis._vec[i]._latex_name = self._vec[i]._latex_name
@@ -769,10 +795,10 @@ class VectorFrame(FreeModuleBasis):
 
 class CoordFrame(VectorFrame):
     r"""
-    Class for coordinate frames on a differentiable manifold over `\RR`.
+    Coordinate frame on a differentiable manifold over `\RR`.
 
-    By 'coordinate frame', it is meant a vector frame on a manifold M that
-    is associated to a coordinate system (chart) on M.
+    By *coordinate frame*, it is meant a vector frame on a manifold `M` that
+    is associated to a coordinate system (chart) on `M`.
 
     INPUT:
 
@@ -898,11 +924,18 @@ class CoordFrame(VectorFrame):
 
 class CoFrame(FreeModuleCoBasis):
     r"""
-    Class for coframes on a differentiable manifold over `\RR`.
+    Coframe on a differentiable manifold over `\RR`.
 
-    By 'coframe', it is meant a n-tuple of 1-forms on a manifold M that
-    provides, at each point p in M, a basis of the space dual to the tangent
-    space at p.
+    By *coframe*, it is meant a field `f` on some open domain `U` of a
+    manifold `S` endowed with a differentiable mapping `\Phi: U\rightarrow V`
+    to a parallelizable domain `V` of a manifold `M` such that for each
+    `p\in U`, `f(p)` is a basis of the vector space dual to the tangent space
+    `T_{\Phi(p)}M`.
+
+    The standard case of a coframe *on* `U` corresponds to `S=M`, `U=V`
+    and `\Phi = \mathrm{Id}_U`. Other common cases are `\Phi` being an
+    immersion and `\Phi` being a curve in `V` (`U` is then an open interval
+    of `\RR`).
 
     INPUT:
 
@@ -1028,10 +1061,10 @@ class CoFrame(FreeModuleCoBasis):
 
 class CoordCoFrame(CoFrame):
     r"""
-    Class for coordinate coframes on a differentiable manifold over `\RR`.
+    Coordinate coframe on a differentiable manifold over `\RR`.
 
-    By 'coordinate coframe', it is meant the n-tuple of the differentials of
-    the coordinates belonging to a chart on a manifold.
+    By *coordinate coframe*, it is meant the n-tuple of the differentials of
+    the coordinates of some chart on the manifold.
 
     INPUT:
 
