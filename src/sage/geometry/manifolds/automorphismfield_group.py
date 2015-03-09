@@ -78,6 +78,62 @@ class AutomorphismFieldGroup(UniqueRepresentation, Parent):
 
     EXAMPLES:
 
+    Group of tangent-space automorphism fields of the 2-sphere::
+
+        sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
+        sage: U = M.open_subset('U') # complement of the North pole
+        sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+        sage: V = M.open_subset('V') # complement of the South pole
+        sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+        sage: M.declare_union(U,V)   # S^2 is the union of U and V
+        sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
+                                             intersection_name='W', restrictions1= x^2+y^2!=0, \
+                                             restrictions2= u^2+v^2!=0)
+        sage: uv_to_xy = xy_to_uv.inverse()
+        sage: G = M.automorphism_field_group() ; G
+        General linear group of the module X(M) of vector fields on the 2-dimensional manifold 'M'
+        sage: type(G)
+        <class 'sage.geometry.manifolds.automorphismfield_group.AutomorphismFieldGroup_with_category'>
+
+    ``G`` is the general linear group of the vector field module
+    `\mathcal{X}(M)`::
+
+        sage: XM = M.vector_field_module() ; XM
+        module X(M) of vector fields on the 2-dimensional manifold 'M'
+        sage: G is XM.general_linear_group()
+        True
+
+    ``G`` is a non-abelian group::
+    
+        sage: G.category()
+        Category of groups
+        sage: G in Groups()
+        True
+        sage: G in CommutativeAdditiveGroups()
+        False
+
+    ``G`` is a *parent* object, whose elements are tangent-space automorphisms::
+
+        sage: G.Element
+        <class 'sage.geometry.manifolds.automorphismfield.AutomorphismField'>
+        sage: a = G.an_element() ; a
+        field of tangent-space identity maps on the 2-dimensional manifold 'M'
+        sage: a.parent() is G
+        True
+
+    The identity element of the group ``G``::
+
+        sage: e = G.one() ; e
+        field of tangent-space identity maps on the 2-dimensional manifold 'M'
+        sage: eU = U.default_frame() ; eU
+        coordinate frame (U, (d/dx,d/dy))
+        sage: eV = V.default_frame() ; eV
+        coordinate frame (V, (d/du,d/dv))
+        sage: e.display(eU)
+        Id = d/dx*dx + d/dy*dy
+        sage: e.display(eV)
+        Id = d/du*du + d/dv*dv
+
     """
 
     Element = AutomorphismField
@@ -164,6 +220,31 @@ class AutomorphismFieldGroup(UniqueRepresentation, Parent):
           :class:`~sage.geometry.manifolds.automorphismfield.AutomorphismField`
           representing the identity element.
 
+        EXAMPLE:
+    
+        Identity element of the group of tangent-space automorphism fields of
+        the 2-sphere::
+    
+            sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
+            sage: U = M.open_subset('U') # complement of the North pole
+            sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+            sage: V = M.open_subset('V') # complement of the South pole
+            sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+            sage: M.declare_union(U,V)   # S^2 is the union of U and V
+            sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
+                                                 intersection_name='W', restrictions1= x^2+y^2!=0, \
+                                                 restrictions2= u^2+v^2!=0)
+            sage: uv_to_xy = xy_to_uv.inverse()
+            sage: G = M.automorphism_field_group()
+            sage: G.one()
+            field of tangent-space identity maps on the 2-dimensional manifold 'M'
+            sage: G.one().restrict(U)[:]
+            [1 0]
+            [0 1]
+            sage: G.one().restrict(V)[:]
+            [1 0]
+            [0 1]
+
         """
         if self._one is None:
             self._one = self.element_class(self._vmodule, is_identity=True)
@@ -201,7 +282,25 @@ class AutomorphismFieldGroup(UniqueRepresentation, Parent):
           :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`
 
         EXAMPLE:
-
+    
+        Base module of the group of tangent-space automorphism fields of
+        the 2-sphere::
+    
+            sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
+            sage: U = M.open_subset('U') # complement of the North pole
+            sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+            sage: V = M.open_subset('V') # complement of the South pole
+            sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+            sage: M.declare_union(U,V)   # S^2 is the union of U and V
+            sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)), \
+                                                 intersection_name='W', restrictions1= x^2+y^2!=0, \
+                                                 restrictions2= u^2+v^2!=0)
+            sage: uv_to_xy = xy_to_uv.inverse()
+            sage: G = M.automorphism_field_group()
+            sage: G.base_module()
+            module X(M) of vector fields on the 2-dimensional manifold 'M'
+            sage: G.base_module() is M.vector_field_module()
+            True
 
         """
         return self._vmodule

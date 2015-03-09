@@ -281,7 +281,7 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
 
     EXAMPLES:
 
-    A vector field on a 3-dimensional manifold::
+    A vector field on a parallelizable 3-dimensional manifold::
 
         sage: M = Manifold(3, 'M')
         sage: c_xyz.<x,y,z> = M.chart()
@@ -302,9 +302,9 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
 
     A vector field is a tensor field of rank 1 and of type (1,0)::
 
-        sage: v._tensor_rank
+        sage: v.tensor_rank()
         1
-        sage: v._tensor_type
+        sage: v.tensor_type()
         (1, 0)
 
     Components of a vector field with respect to a given frame::
@@ -336,7 +336,7 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
         sage: v[:2]
         [1, -2]
 
-    The components are instances of the class
+    The components are instances of class
     :class:`~sage.tensor.modules.comp.Components`::
 
         sage: type(v.comp())
@@ -349,6 +349,8 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
         ...       v.set_comp(f)[i] = (i+1)**3
         ...
         sage: v.comp(f)[2]
+        27
+        sage: v[f, 2]  # equivalent to above
         27
         sage: v.display(f)
         V = f_0 + 8 f_1 + 27 f_2
@@ -382,6 +384,37 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
         sage: latex(v(f))
         v\left(f\right)
 
+    Example of a vector field associated with a non-trivial mapping `\Phi`:
+    vector field along a curve in `M`::
+
+        sage: R.<t> = RealLine() ; R  # R as a 1-dimensional manifold
+        field R of real numbers
+        sage: Phi = R.diff_mapping(M, [cos(t), sin(t)], name='Phi') ; Phi
+        Curve 'Phi' in the 2-dimensional manifold 'M'
+        sage: Phi.display()
+        Phi: R --> M
+           t |--> (x, y) = (cos(t), sin(t))
+        sage: w = R.vector_field('w', dest_map=Phi) ; w
+        vector field 'w' along the field R of real numbers with values on the
+         2-dimensional manifold 'M'
+        sage: w.parent()
+        free module X(R,Phi) of vector fields along the field R of real numbers
+         mapped into the 2-dimensional manifold 'M'
+        sage: w[:] = (-sin(t), cos(t))
+        sage: w.display()
+        w = -sin(t) d/dx + cos(t) d/dy
+
+    Value at a given point::
+    
+        sage: p = R(0, name='p') ; p
+        point 'p' on field R of real numbers
+        sage: w.at(p)
+        tangent vector w at point 'Phi(p)' on 2-dimensional manifold 'M'
+        sage: w.at(p).display()
+        w = d/dy
+        sage: w.at(p) == v.at(Phi(p))
+        True
+    
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
         FiniteRankFreeModuleElement.__init__(self, vector_field_module, name=name,

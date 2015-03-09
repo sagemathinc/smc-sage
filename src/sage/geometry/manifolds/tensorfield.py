@@ -343,7 +343,8 @@ class TensorField(ModuleElement):
     INPUT:
 
     - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
-      fields along `U` associated with the mapping `\Phi: U \rightarrow V`.
+      fields along `U` associated with the mapping `\Phi: U \rightarrow V` (cf.
+      :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`)
     - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank
       and `l` the covariant rank
     - ``name`` -- (default: None) name given to the tensor field
@@ -2584,7 +2585,8 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
     INPUT:
 
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector
-      fields along `U` associated with the mapping `\Phi: U \rightarrow V`.
+      fields along `U` associated with the mapping `\Phi: U \rightarrow V` (cf.
+      :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldFreeModule`)
     - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank
       and `l` the covariant rank
     - ``name`` -- (default: None) name given to the tensor field
@@ -2791,6 +2793,23 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         sage: d*a == a*d
         True
 
+    Example of tensor field associated with a non-trivial differentiable
+    mapping `\Phi`: tensor field along a curve in `M`::
+
+        sage: R.<t> = RealLine() ; R  # R as a 1-dimensional manifold
+        field R of real numbers
+        sage: Phi = R.diff_mapping(M, [cos(t), sin(t), t], name='Phi') ; Phi
+        Curve 'Phi' in the 3-dimensional manifold 'M'
+        sage: h = R.tensor_field(2, 0, name='h', dest_map=Phi) ; h
+        tensor field 'h' of type (2,0) along the field R of real numbers with
+         values on the 3-dimensional manifold 'M'
+        sage: h.parent()
+        free module T^(2,0)(R,Phi) of type-(2,0) tensors fields along the
+         field R of real numbers mapped into the 3-dimensional manifold 'M'
+        sage: h[0,0], h[0,1], h[2,0] = 1+t, t^2, sin(t)
+        sage: h.display()
+        h = (t + 1) d/dx*d/dx + t^2 d/dx*d/dy + sin(t) d/dz*d/dx
+    
     """
     def __init__(self, vector_field_module, tensor_type, name=None,
                  latex_name=None, sym=None, antisym=None):
