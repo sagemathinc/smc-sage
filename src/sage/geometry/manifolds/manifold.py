@@ -305,7 +305,7 @@ class Manifold(ManifoldOpenSubset):
     - ``start_index`` -- (default: 0) integer; lower bound of the range of
       indices used for "indexed objects" on the manifold, e.g. coordinates
       in a chart or elements of a vector frame and the corresponding tensor
-      components. 
+      components.
 
     EXAMPLES:
 
@@ -713,7 +713,7 @@ class RealLine(Manifold):
             sage: R.category()
             Category of sets
             sage: TestSuite(R).run()
-          
+
         """
         from chart import Chart
         Manifold.__init__(self, 1, name, latex_name=latex_name,
@@ -810,7 +810,7 @@ class RealLine(Manifold):
         See class
         :class:`~sage.geometry.manifolds.manifold_homset.ManifoldCurveSet`
         for more documentation.
-        
+
         """
         from sage.geometry.manifolds.manifold_homset import ManifoldCurveSet
         return ManifoldCurveSet(self, other)
@@ -844,7 +844,7 @@ class RealLine(Manifold):
         OUTPUT:
 
         - the symbolic variable representing the canonical coordinate
-          defined on ``self``. 
+          defined on ``self``.
 
         EXAMPLES::
 
@@ -869,7 +869,7 @@ class RealLine(Manifold):
 
         OUTPUT:
 
-        - always ``-Infinity``. 
+        - always ``-Infinity``.
 
         EXAMPLE::
 
@@ -894,7 +894,7 @@ class RealLine(Manifold):
 
         OUTPUT:
 
-        - always ``+Infinity``. 
+        - always ``+Infinity``.
 
         EXAMPLE::
 
@@ -918,7 +918,7 @@ class RealLine(Manifold):
         by ``self``.
 
         INPUT:
-        
+
         - ``lower`` -- lower bound of the interval (possibly ``-Infinity``)
         - ``upper`` -- upper bound of the interval (possibly ``+Infinity``)
 
@@ -954,7 +954,7 @@ class RealLine(Manifold):
             True
 
         See :class:`~sage.geometry.manifolds.manifold.OpenInterval` for more
-        examples and documentation. 
+        examples and documentation.
 
         """
         if lower == minus_infinity and upper == infinity:
@@ -970,7 +970,7 @@ class RealLine(Manifold):
         This is a redefinition of
         :meth:`sage.geometry.manifolds.domain.ManifoldOpenSubset.diff_mapping`
         in order to have a curve as output.
-        
+
         See :class:`~sage.geometry.manifolds.curve.ManifoldCurve` for a
         complete documentation.
 
@@ -1049,14 +1049,14 @@ class OpenInterval(ManifoldOpenSubset):
 
     The result is cached (unique representation property)::
 
-        sage: I is OpenInterval(R, 0, pi) 
+        sage: I is OpenInterval(R, 0, pi)
         True
         sage: I is R.open_interval(0, pi)
         True
 
     ``I`` is an open subset of the field of real numbers, considered as
     a 1-dimensional manifold::
-    
+
         sage: I.is_subset(R)
         True
         sage: isinstance(I, sage.geometry.manifolds.domain.ManifoldOpenSubset)
@@ -1113,14 +1113,14 @@ class OpenInterval(ManifoldOpenSubset):
 
     We may check whether a real number (considered as an element of ``R``)
     belongs to ``I``::
-    
+
         sage: R(2) in I
         True
         sage: R(4) in I
         False
 
     The lower and upper bounds of the interval ``I``::
-    
+
         sage: I.lower_bound()
         0
         sage: I.upper_bound()
@@ -1227,7 +1227,7 @@ class OpenInterval(ManifoldOpenSubset):
             ...
             ValueError: The coordinates (8,) are not valid on the chart
              ((-1, 4), (t,))
-    
+
         """
         if coords in SR:
             coords = (coords,)
@@ -1253,7 +1253,7 @@ class OpenInterval(ManifoldOpenSubset):
         See class
         :class:`~sage.geometry.manifolds.manifold_homset.ManifoldCurveSet`
         for more documentation.
-        
+
         """
         from sage.geometry.manifolds.manifold_homset import ManifoldCurveSet
         return ManifoldCurveSet(self, other)
@@ -1280,7 +1280,7 @@ class OpenInterval(ManifoldOpenSubset):
 
         The canonical chart is the restriction of the canonical chart of
         `\RR` (represented by ``R``) to ``I``::
-        
+
             sage: I.canonical_chart() == R.canonical_chart().restrict(I)
             True
 
@@ -1308,7 +1308,7 @@ class OpenInterval(ManifoldOpenSubset):
         OUTPUT:
 
         - the symbolic variable representing the canonical coordinate
-          defined on ``self``. 
+          defined on ``self``.
 
         EXAMPLES:
 
@@ -1325,7 +1325,7 @@ class OpenInterval(ManifoldOpenSubset):
 
         The canonical coordinate is the first (unique) coordinate of the
         canonical chart::
-        
+
             sage: I.canonical_coordinate() is I.canonical_chart()[0]
             True
 
@@ -1391,4 +1391,3 @@ class OpenInterval(ManifoldOpenSubset):
         return self._upper
 
     sup = upper_bound
-
