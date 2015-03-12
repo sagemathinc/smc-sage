@@ -7,7 +7,7 @@ mapping* for the category of differentiable manifolds.
 
 The subclass :class:`ManifoldCurveSet` is devoted to the specific case of
 differential curves, i.e. morphisms whose domain are an open interval of
-`\RR`. 
+`\RR`.
 
 AUTHORS:
 
@@ -38,13 +38,13 @@ from sage.geometry.manifolds.curve import ManifoldCurve
 
 class ManifoldHomset(Homset, UniqueRepresentation):
     r"""
-    Set of differentiable mappings between two differentiable manifolds. 
+    Set of differentiable mappings between two differentiable manifolds.
 
     Given two differentiable manifolds `M` and `N` over `\RR`, the class
     :class:`ManifoldHomset` implements the set `\mathrm{Hom}(U,V)` of morphisms
     (i.e. differentiable mappings) `U\rightarrow V`, where `U` is an open
     subset of `M` and `V` an open subset of `N`. Note that, as open subsets of
-    manifolds, `U` and `V` are manifolds by themselves. 
+    manifolds, `U` and `V` are manifolds by themselves.
 
     This is a Sage *parent* class, whose *element* class is
     :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`.
@@ -188,7 +188,7 @@ class ManifoldHomset(Homset, UniqueRepresentation):
     def __init__(self, domain, codomain, name=None, latex_name=None):
         r"""
         TESTS::
-        
+
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: N = Manifold(3, 'N')
@@ -199,7 +199,7 @@ class ManifoldHomset(Homset, UniqueRepresentation):
             sage: TestSuite(H).run()
 
         Test for an endomorphism set::
-        
+
             sage: E = Hom(M, M) ; E
             Set of Morphisms from 2-dimensional manifold 'M' to 2-dimensional
              manifold 'M' in Category of sets
@@ -232,7 +232,7 @@ class ManifoldHomset(Homset, UniqueRepresentation):
         LaTeX representation of the object.
 
         EXAMPLE::
-        
+
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: N = Manifold(3, 'N')
@@ -248,7 +248,7 @@ class ManifoldHomset(Homset, UniqueRepresentation):
 
 
     #### Parent methods ####
-    
+
     def _element_constructor_(self, coord_functions, chart1=None, chart2=None,
                               name=None, latex_name=None,
                               is_diffeomorphism=False, is_identity=False):
@@ -259,7 +259,7 @@ class ManifoldHomset(Homset, UniqueRepresentation):
         INPUT:
 
         - ``coord_functions`` -- must be either
-    
+
           - (i) a dictionary of
             the coordinate expressions (as lists (or tuples) of the
             coordinates of the image expressed in terms of the coordinates of
@@ -267,7 +267,7 @@ class ManifoldHomset(Homset, UniqueRepresentation):
             as keys (chart1 being a chart on `U` and chart2 a chart on `N`)
           - (ii) a single coordinate expression in a given pair of charts, the
             latter being provided by the arguments ``chart1`` and ``chart2``
-    
+
           In both cases, if the dimension of the arrival manifold is 1,
           a single coordinate expression is expected (not a list or tuple with a
           single element)
@@ -285,14 +285,14 @@ class ManifoldHomset(Homset, UniqueRepresentation):
           ``name``
         - ``is_diffeomorphism`` -- (default: ``False``) determines whether the
           constructed object is a diffeomorphism; if set to ``True``,
-          then the manifolds `M` and `N` must have the same dimension. 
+          then the manifolds `M` and `N` must have the same dimension.
         - ``is_identity`` -- (default: ``False``) determines whether the
           constructed object is the identity map; if set to ``True``,
           then `V` must be `U` and the entries ``coord_functions``, ``chart1``
           and ``chart2`` are not used.
 
         .. NOTE::
-    
+
             If the information passed by means of the argument
             ``coord_functions`` is not sufficient to fully specify the
             differentiable mapping (for instance case (ii) with ``chart1`` not
@@ -302,11 +302,11 @@ class ManifoldHomset(Homset, UniqueRepresentation):
 
         OUTPUT:
 
-        - instance of 
+        - instance of
           :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
 
         EXAMPLES::
-        
+
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: N = Manifold(3, 'N')
@@ -338,7 +338,7 @@ class ManifoldHomset(Homset, UniqueRepresentation):
 
         OUTPUT:
 
-        - instance of 
+        - instance of
           :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
 
         EXAMPLE::
@@ -347,7 +347,7 @@ class ManifoldHomset(Homset, UniqueRepresentation):
             sage: X.<x,y> = M.chart()
             sage: N = Manifold(3, 'N')
             sage: Y.<u,v,w> = N.chart()
-            sage: H = Hom(M,N) 
+            sage: H = Hom(M,N)
             sage: f = H._an_element_() ; f
             differentiable mapping from the 2-dimensional manifold 'M' to the
              3-dimensional manifold 'N'
@@ -396,7 +396,7 @@ class ManifoldHomset(Homset, UniqueRepresentation):
         #!# for the time being:
         return False
 
-    #!# check 
+    #!# check
     def __call__(self, *args, **kwds):
         r"""
         To bypass Homset.__call__, enforcing Parent.__call__ instead.
@@ -435,7 +435,7 @@ class ManifoldHomset(Homset, UniqueRepresentation):
 
         OUTPUT:
 
-        - the identity map of `U`, as an instance of 
+        - the identity map of `U`, as an instance of
           :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
 
         EXAMPLE:
@@ -517,7 +517,7 @@ class ManifoldCurveSet(ManifoldHomset):
 
     Set of curves `\RR \longrightarrow M`, where `M` is a 2-dimensional
     manifold::
-    
+
         sage: M = Manifold(2, 'M')
         sage: X.<x,y> = M.chart()
         sage: R.<t> = RealLine() ; R
@@ -669,9 +669,9 @@ class ManifoldCurveSet(ManifoldHomset):
         ManifoldHomset.__init__(self, domain, codomain, name=name,
                                 latex_name=latex_name)
 
-        
+
     #### Parent methods ####
-    
+
     def _element_constructor_(self, coord_expression, name=None,
                               latex_name=None, is_diffeomorphism=False,
                               is_identity=False):
@@ -679,14 +679,14 @@ class ManifoldCurveSet(ManifoldHomset):
         Construct an element of ``self``, i.e. a differentiable curve
         I --> V, where I is a real interval and `V` some open subset of a
         differentiable manifold.
-        
+
         OUTPUT:
 
-        - instance of 
+        - instance of
           :class:`~sage.geometry.manifolds.curve.ManifoldCurve`
 
         EXAMPLES::
-        
+
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: R.<t> = RealLine() ; R
@@ -710,7 +710,7 @@ class ManifoldCurveSet(ManifoldHomset):
 
         OUTPUT:
 
-        - instance of 
+        - instance of
           :class:`~sage.geometry.manifolds.curve.ManifoldCurve`
 
         EXAMPLES::
@@ -775,4 +775,3 @@ class ManifoldCurveSet(ManifoldHomset):
         target_coord[0] = x1 + (x2-x1)/(1+t*t)
         coord_expression = {chart2: target_coord}
         return self.element_class(self, coord_expression)
-

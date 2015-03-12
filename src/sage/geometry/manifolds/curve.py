@@ -8,7 +8,7 @@ Given a differentiable manifold `M`, a *differentiable curve* curve in
 
     \gamma: I \longrightarrow M
 
-where `I` is an interval of `\RR`. 
+where `I` is an interval of `\RR`.
 
 Differentiable curves are implemented by the class :class:`ManifoldCurve`.
 
@@ -47,12 +47,12 @@ class ManifoldCurve(DiffMapping):
 
     Given a differentiable manifold `M`, a *differentiable curve* curve in
     `M` is a differentiable mapping
-    
+
     .. MATH::
-    
+
         \gamma: I \longrightarrow M
-    
-    where `I` is an interval of `\RR`. 
+
+    where `I` is an interval of `\RR`.
 
     This is a Sage *element* class, whose *parent* class is
     :class:`~sage.geometry.manifolds.manifold_homset.ManifoldCurveSet`.
@@ -72,10 +72,10 @@ class ManifoldCurve(DiffMapping):
       the curve; if none is provided, ``name`` will be used
     - ``is_diffeomorphism`` -- (default: ``False``) determines whether the
       constructed object is a diffeomorphism; if set to ``True``,
-      then `M` must have dimension one.  
+      then `M` must have dimension one.
     - ``is_identity`` -- (default: ``False``) determines whether the
       constructed object is the identity map; if set to ``True``,
-      then `M` must be the interval `I`. 
+      then `M` must be the interval `I`.
 
     EXAMPLES:
 
@@ -91,7 +91,7 @@ class ManifoldCurve(DiffMapping):
 
     Curves are considered as (manifold) morphisms from real intervals to
     differentiable manifolds::
-    
+
         sage: c.parent()
         Set of Morphisms from Real interval (0, 2*pi) to 2-dimensional manifold 'M' in Category of facade sets
         sage: I = R.open_interval(0, 2*pi)
@@ -193,7 +193,7 @@ class ManifoldCurve(DiffMapping):
         True
         sage: v.at(R(pi)).display()
         c' = -d/dx + d/dy
-    
+
     Curves `\RR\rightarrow\RR` can be composed: the operator `\circ` is
     denoted by ``*``::
 
@@ -333,7 +333,7 @@ class ManifoldCurve(DiffMapping):
             (cos(t), sin(t))
 
         Cartesian expression of a cardiod::
-        
+
             sage: c = U.curve({c_spher: (2*(1+cos(t)), t)}, (t, 0, 2*pi), name='c')
             sage: c.coord_functions(c_cart)
             (2*cos(t)^2 + 2*cos(t), 2*(cos(t) + 1)*sin(t))
@@ -349,12 +349,12 @@ class ManifoldCurve(DiffMapping):
         to allow for the direct call with some value of the parameter
         (numerical value or symbolic expression) instead
         of the element (ManifoldPoint) of the domain corresponding to that
-        value. 
+        value.
 
         EXAMPLES:
 
         Points on circle in the Euclidean plane::
-        
+
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: R.<t> = RealLine()
@@ -371,7 +371,7 @@ class ManifoldCurve(DiffMapping):
             point 'c(t)' on 2-dimensional manifold 'M'
             sage: c(t).coord(X)
             (cos(t), sin(t))
-        
+
         """
         # Case of a point in the domain:
         if isinstance(t, ManifoldPoint):
@@ -454,7 +454,7 @@ class ManifoldCurve(DiffMapping):
             sage: vp.display()
             c' = -d/dy
 
-        
+
         """
         vmodule = self._domain.vector_field_module(dest_map=self)
         if latex_name is None:
@@ -518,7 +518,7 @@ class ManifoldCurve(DiffMapping):
           of :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
           providing the link between ``self`` and the chart ``chart`` (cf.
           above); if ``None``, chart is supposed to be defined on the
-          codomain of the curve ``self``. 
+          codomain of the curve ``self``.
         - ``parameters`` -- (default: ``None``) dictionary giving the numerical
           values of the parameters that may appear in the coordinate expression
           of ``self``
@@ -553,14 +553,14 @@ class ManifoldCurve(DiffMapping):
             sage: c = R2.curve([sin(t), sin(2*t)/2], (t, 0, 2*pi), name='c')
             sage: c.plot()  # 2D plot
             Graphics object consisting of 1 graphics primitive
-            
+
         Plot for a subinterval of the curve's domain::
 
             sage: c.plot(prange=(0,pi))
             Graphics object consisting of 1 graphics primitive
-            
+
         Plot with various options::
-        
+
             sage: c.plot(color='green', style=':', thickness=3, aspect_ratio=1)
             Graphics object consisting of 1 graphics primitive
 
@@ -664,13 +664,13 @@ class ManifoldCurve(DiffMapping):
                     if chart_pair == (canon_chart, schart):
                         transf = eff_curve._coord_expression[chart_pair]
         if transf is None:
-            raise ValueError("No expression has been found for " + 
+            raise ValueError("No expression has been found for " +
                               "{} in terms of {}".format(self, format))
         #
         # List of points for the plot curve
         #
         plot_curve = []
-        dt = (tmax - tmin) / (plot_points - 1) 
+        dt = (tmax - tmin) / (plot_points - 1)
         t = tmin
         if parameters is None:
             for i in range(plot_points):

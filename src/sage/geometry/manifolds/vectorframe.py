@@ -231,7 +231,7 @@ class VectorFrame(FreeModuleBasis):
         sage: f.at(p)
         Basis (f_0,f_1,f_2) on the tangent space at point 'Phi(p)' on
          3-dimensional manifold 'M'
-    
+
     """
     def __init__(self, vector_field_module, symbol, latex_symbol=None,
                  from_frame=None):
@@ -608,7 +608,7 @@ class VectorFrame(FreeModuleBasis):
     def at(self, point):
         r"""
         Return the value of the frame at a given point, i.e. a basis of the
-        tangent vector space. 
+        tangent vector space.
 
         INPUT:
 
@@ -623,7 +623,7 @@ class VectorFrame(FreeModuleBasis):
           representing the basis `e(p)` of the tangent vector space
           `T_{\Phi(p)} M`, where `\Phi: U \rightarrow V\subset M` is
           the differentiable mapping associated with `e` (possibly
-          `\Phi = \mathrm{Id}_U`) 
+          `\Phi = \mathrm{Id}_U`)
 
         EXAMPLES:
 
@@ -704,7 +704,7 @@ class VectorFrame(FreeModuleBasis):
         # Case of a non-trivial destination map
         if self._from_frame is not None:
             if self._dest_map.is_identity():  #!# probably not necessary
-                raise ValueError("the destination map should not be the " + 
+                raise ValueError("the destination map should not be the " +
                                  "identity")
             ambient_point = self._dest_map(point)
             return self._from_frame.at(ambient_point)

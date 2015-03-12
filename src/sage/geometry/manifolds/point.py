@@ -123,7 +123,7 @@ class ManifoldPoint(Element):
     Note that the parent of a point is always the manifold, not the subset
     in which it has been defined (the latter being returned by the method
     :meth:`containing_set`)::
-    
+
         sage: q.parent()
         2-dimensional manifold 'M'
         sage: q.containing_set()
@@ -160,7 +160,7 @@ class ManifoldPoint(Element):
             sage: q = U((-1,2), name='q') ; q
             point 'q' on 2-dimensional manifold 'M'
             sage: TestSuite(q).run()
-        
+
         """
         Element.__init__(self, subset._manifold)
         self._manifold = subset._manifold
@@ -247,7 +247,7 @@ class ManifoldPoint(Element):
 
         Note that in the present case, the containing set is tighter than the
         parent, which is always the manifold::
-        
+
             sage: q.parent()
             2-dimensional manifold 'M'
             sage: q.containing_set().is_subset(q.parent())
@@ -534,7 +534,7 @@ class ManifoldPoint(Element):
             False
 
         Comparison with coordinates of other in a subchart::
-        
+
             sage: U = M.open_subset('U', coord_def={X: x>0})
             sage: XU = X.restrict(U)
             sage: q = U((2,-3), chart=XU)

@@ -2390,7 +2390,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
           identity map
         - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote
           the identity map; if none is provided, the LaTeX symbol is set to
-          '\mathrm{Id}' if ``name`` is 'Id' and to ``name`` otherwise 
+          '\mathrm{Id}' if ``name`` is 'Id' and to ``name`` otherwise
 
         OUTPUT:
 
@@ -2416,14 +2416,14 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
             sage: latex(Id)
             \mathrm{Id}
-        
+
         It can be changed by means of the method
         :meth:`~sage.tensor.modules.free_module_tensor.FreeModuleTensor.set_name`::
 
             sage: Id.set_name(latex_name=r'\mathrm{1}_M')
             sage: latex(Id)
             \mathrm{1}_M
-        
+
         The identity map is actually the identity element of GL(M)::
 
             sage: Id is M.general_linear_group().one()

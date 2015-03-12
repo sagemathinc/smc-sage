@@ -47,11 +47,11 @@ class ScalarField(CommutativeAlgebraElement):
 
     This class implements scalar fields on differentiable
     manifolds over `\RR`, i.e. differentiable mappings of the form
-    
+
     .. MATH::
-    
+
         f: U\subset M \longrightarrow \RR
-    
+
     where `U` is an open subset of the differentiable manifold `M`.
 
     The class :class:`ScalarField`  inherits from the class  :class:`~sage.structure.element.CommutativeAlgebraElement` (a scalar field

@@ -28,7 +28,7 @@ of `\RR`).
 
 Vector fields are implemented via two classes: :class:`VectorFieldParal` and
 :class:`VectorField`, depending respectively whether the open set `V`
-is parallelizable or not. 
+is parallelizable or not.
 
 
 AUTHORS:
@@ -405,7 +405,7 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
         w = -sin(t) d/dx + cos(t) d/dy
 
     Value at a given point::
-    
+
         sage: p = R(0, name='p') ; p
         point 'p' on field R of real numbers
         sage: w.at(p)
@@ -414,7 +414,7 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal, VectorFiel
         w = d/dy
         sage: w.at(p) == v.at(Phi(p))
         True
-    
+
     """
     def __init__(self, vector_field_module, name=None, latex_name=None):
         FiniteRankFreeModuleElement.__init__(self, vector_field_module, name=name,

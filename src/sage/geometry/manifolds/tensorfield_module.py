@@ -48,7 +48,7 @@ class TensorFieldModule(UniqueRepresentation, Parent):
     r"""
     Module of tensor fields of a given type `(k,l)` along an open subset `U`
     of some manifold `S` with values in a open subset `V` of a manifold `M`,
-    
+
     Given two non-negative integers `k` and `l` and a differentiable mapping
 
     .. MATH::
@@ -206,7 +206,7 @@ class TensorFieldModule(UniqueRepresentation, Parent):
                               latex_name=None, sym=None, antisym=None):
         r"""
         Construct a tensor field.
-        
+
         """
         if comp == 0:
             if not hasattr(self, '_zero_element'):
@@ -256,7 +256,7 @@ class TensorFieldModule(UniqueRepresentation, Parent):
     def _an_element_(self):
         r"""
         Construct some (unamed) tensor field.
-        
+
         """
         resu = self.element_class(self._vmodule, self._tensor_type)
         #!# a zero element is returned
@@ -265,7 +265,7 @@ class TensorFieldModule(UniqueRepresentation, Parent):
     def _coerce_map_from_(self, other):
         r"""
         Determine whether coercion to self exists from other parent.
-        
+
         """
         from diffform_module import DiffFormModule
         if isinstance(other, (TensorFieldModule, TensorFieldFreeModule)):
@@ -496,7 +496,7 @@ class TensorFieldFreeModule(TensorFreeModule):
                               latex_name=None, sym=None, antisym=None):
         r"""
         Construct a tensor field.
-        
+
         """
         if comp == 0:
             return self._zero_element
@@ -552,7 +552,7 @@ class TensorFieldFreeModule(TensorFreeModule):
     def _coerce_map_from_(self, other):
         r"""
         Determine whether coercion to ``self`` exists from other parent.
-        
+
         """
         from sage.geometry.manifolds.diffform_module import DiffFormFreeModule
         from sage.geometry.manifolds.automorphismfield_group import \

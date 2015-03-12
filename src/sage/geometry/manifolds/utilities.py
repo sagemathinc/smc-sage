@@ -2,7 +2,7 @@ r"""
 Utilities for calculus and graphical outputs
 
 This module defines helper functions which are used for simplifications of
-symbolic expressions or for graphical outputs. 
+symbolic expressions or for graphical outputs.
 
 AUTHORS:
 
@@ -42,7 +42,7 @@ def simple_determinant(aa):
         sage: from sage.geometry.manifolds.utilities import simple_determinant
         sage: simple_determinant(a)
         sqrt(x)
-    
+
     """
     from sage.matrix.constructor import matrix
     n = aa.nrows()
@@ -128,7 +128,7 @@ def simplify_sqrt_real(expr):
     for i, pos in enumerate(pos_sqrts):
         # radcan is called on each sqrt:
         x = SR(the_sqrts[i])
-        argum = x.operands()[0] # the argument of sqrt 
+        argum = x.operands()[0] # the argument of sqrt
         den = argum.denominator()
         if den != 1:  # the argument of sqrt is a fraction
             num = argum.numerator()
@@ -191,7 +191,7 @@ def simplify_abs_trig(expr):
         abs(sin(2*y))
         sage: simplify_abs_trig( abs(sin(z/2)) )  # shall simplify
         -sin(1/2*z)
-        sage: simplify_abs_trig( abs(sin(4*z)) )  # must not simplify 
+        sage: simplify_abs_trig( abs(sin(4*z)) )  # must not simplify
         abs(sin(4*z))
 
     """
@@ -276,7 +276,7 @@ def simplify_chain(expr):
     expr = simplify_sqrt_real(expr)
     expr = simplify_abs_trig(expr)
     # In Sage 6.5, simplify_radical() has been renamed canonicalize_radical()
-    #  (cf. http://trac.sagemath.org/11912): 
+    #  (cf. http://trac.sagemath.org/11912):
     if version == '6.5':
         expr = expr.canonicalize_radical()
     else:

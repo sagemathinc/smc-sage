@@ -61,8 +61,8 @@ class DiffFormModule(UniqueRepresentation, Parent):
     This class implements `\Lambda^p(U,\Phi)` in the case where `V` is
     not assumed to be parallelizable; the module `\Lambda^p(U,\Phi)` is then
     not necessarily free. If `V` is parallelizable, the class
-    :class:`DiffFormFreeModule` must be used instead. 
-    
+    :class:`DiffFormFreeModule` must be used instead.
+
     This is a Sage *parent* class, whose *element* class is
     :class:`~sage.geometry.manifolds.diffform.DiffForm`.
 
@@ -77,7 +77,7 @@ class DiffFormModule(UniqueRepresentation, Parent):
     Module of 2-forms on a non-parallelizable 2-dimensional manifold::
 
         sage: M = Manifold(2, 'M')
-        sage: U = M.open_subset('U') ; V = M.open_subset('V') 
+        sage: U = M.open_subset('U') ; V = M.open_subset('V')
         sage: M.declare_union(U,V)   # M is the union of U and V
         sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
         sage: transf = c_xy.transition_map(c_uv, (x+y, x-y),
@@ -168,12 +168,12 @@ class DiffFormModule(UniqueRepresentation, Parent):
 
     The module `\Lambda^1(M)` is nothing but the dual of `\mathcal{X}(M)` (the
     module of vector fields on `M`)::
-        
+
         sage: L1 = M.diff_form_module(1) ; L1
         Module /\^1(M) of 1-forms on the 2-dimensional manifold 'M'
         sage: L1 is XM.dual()
         True
-        
+
     Since any tensor field of type (0,1) is a 1-form, there is a coercion map
     from the set `T^{(0,1)}(M)` of such tensors to `\Lambda^1(M)`::
 
@@ -182,7 +182,7 @@ class DiffFormModule(UniqueRepresentation, Parent):
         sage: L1.has_coerce_map_from(T01)
         True
 
-    There is also a coercion map in the reverse direction:: 
+    There is also a coercion map in the reverse direction::
 
         sage: T01.has_coerce_map_from(L1)
         True
@@ -222,7 +222,7 @@ class DiffFormModule(UniqueRepresentation, Parent):
         sage: tlb.display(eV)
         b = 1/2*u du - 1/2*v dv
         sage: tlb == b
-        True    
+        True
 
     The coercion map `\Lambda^2(M) \rightarrow T^{(0,2)}(M)` in action::
 
@@ -262,7 +262,7 @@ class DiffFormModule(UniqueRepresentation, Parent):
         Module of 2-forms on a non-parallelizable 2-dimensional manifold::
 
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_subset('U') ; V = M.open_subset('V') 
+            sage: U = M.open_subset('U') ; V = M.open_subset('V')
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y),
@@ -359,7 +359,7 @@ class DiffFormModule(UniqueRepresentation, Parent):
     def _coerce_map_from_(self, other):
         r"""
         Determine whether coercion to ``self`` exists from other parent.
-        
+
         """
         from tensorfield_module import TensorFieldModule
         if isinstance(other, (DiffFormModule, DiffFormFreeModule)):
@@ -394,7 +394,7 @@ class DiffFormModule(UniqueRepresentation, Parent):
     def _latex_(self):
         r"""
         Return a LaTeX representation of ``self``.
-        
+
         """
         if self._latex_name is None:
             return r'\mbox{' + str(self) + r'}'
@@ -425,7 +425,7 @@ class DiffFormModule(UniqueRepresentation, Parent):
             Module /\^2(U) of 2-forms on the open subset 'U' of the 3-dimensional manifold 'M'
             sage: A2U.base_module()
             module X(U) of vector fields on the open subset 'U' of the 3-dimensional manifold 'M'
-        
+
         """
         return self._vmodule
 
@@ -472,8 +472,8 @@ class DiffFormFreeModule(ExtPowerFreeModule):
 
     This class implements `\Lambda^p(U,\Phi)` in the case where `V` is
     parallelizable; `\Lambda^p(U,\Phi)` is then a *free* module. If `V` is not
-    parallelizable, the class :class:`DiffFormModule` must be used instead. 
-    
+    parallelizable, the class :class:`DiffFormModule` must be used instead.
+
     This is a Sage *parent* class, whose *element* class is
     :class:`~sage.geometry.manifolds.diffform.DiffFormParal`.
 
@@ -516,7 +516,7 @@ class DiffFormFreeModule(ExtPowerFreeModule):
 
     A is a module over the algebra `C^\infty(M)` of (smooth) scalar fields
     on M::
-    
+
         sage: A.category()
         Category of modules over algebra of scalar fields on the 3-dimensional
          manifold 'M'
@@ -532,14 +532,14 @@ class DiffFormFreeModule(ExtPowerFreeModule):
         True
         sage: A.rank()
         3
-        
+
     A is a *parent* object, whose elements are 2-forms, represented by
     instances of the class
     :class:`~sage.geometry.manifolds.diffform.DiffFormParal`::
 
         sage: A.Element
         <class 'sage.geometry.manifolds.diffform.DiffFormParal'>
-        sage: a = A.an_element() ; a 
+        sage: a = A.an_element() ; a
         2-form on the 3-dimensional manifold 'M'
         sage: a.display()
         2 dx/\dy
@@ -594,7 +594,7 @@ class DiffFormFreeModule(ExtPowerFreeModule):
         sage: L1.has_coerce_map_from(T01)
         True
 
-    There is also a coercion map in the reverse direction:: 
+    There is also a coercion map in the reverse direction::
 
         sage: T01.has_coerce_map_from(L1)
         True
@@ -653,7 +653,7 @@ class DiffFormFreeModule(ExtPowerFreeModule):
         2-form 'a' on the open subset 'U' of the 3-dimensional manifold 'M'
         sage: a_U.display()
         a = 3*x dx/\dy - z dx/\dz + 4 dy/\dz
-    
+
     """
 
     Element = DiffFormParal
@@ -670,7 +670,7 @@ class DiffFormFreeModule(ExtPowerFreeModule):
             sage: A = DiffFormFreeModule(M.vector_field_module(), 2) ; A
             Free module /\^2(M) of 2-forms on the 3-dimensional manifold 'M'
             sage: TestSuite(A).run()
-        
+
         """
         domain = vector_field_module._domain
         dest_map = vector_field_module._dest_map
@@ -730,7 +730,7 @@ class DiffFormFreeModule(ExtPowerFreeModule):
     def _coerce_map_from_(self, other):
         r"""
         Determine whether coercion to ``self`` exists from other parent.
-        
+
         """
         from tensorfield_module import TensorFieldFreeModule
         if isinstance(other, (DiffFormModule, DiffFormFreeModule)):

@@ -81,7 +81,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
     This is a Sage *parent* class, the corresponding *element* class being
     :class:`~sage.geometry.manifolds.vectorfield.VectorField`.
-    
+
     INPUT:
 
     - ``domain`` -- open subset `U` on which the vector fields are defined
@@ -323,7 +323,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         `p`-forms along `U` with values in `\Phi(U)`. It is a module over
         `C^\infty(U)`, the ring (algebra) of differentiable scalar fields on
         `U`.
-        
+
         INPUT:
 
         - ``p`` -- non-negative integer
@@ -362,7 +362,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         linear group* is the group `\mathrm{GL}(\mathcal{X}(U,\Phi))` of
         automorphisms of `\mathcal{X}(U,\Phi)`. Note that an automorphism of
         `\mathcal{X}(U,\Phi)` can also be viewed as a *field* along `U` of
-        automorphisms of the tangent spaces of `V=\Phi(U)`. 
+        automorphisms of the tangent spaces of `V=\Phi(U)`.
 
         OUTPUT:
 
@@ -555,7 +555,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         - ``name`` -- (string; default: 'Id') name given to the identity map
         - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
           identity map;  if none is provided, the LaTeX symbol is set to
-          '\mathrm{Id}' if ``name`` is 'Id' and to ``name`` otherwise 
+          '\mathrm{Id}' if ``name`` is 'Id' and to ``name`` otherwise
 
         OUTPUT:
 
@@ -767,12 +767,12 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
     The rank of the free module `\mathcal{X}((0, 2\pi),\Phi)` is the dimension
     of the manifold `\RR^2`, namely two::
-    
+
         sage: XIM.rank()
         2
 
     A basis of it is induced by the coordinate vector frame of `\RR^2`::
-    
+
         sage: XIM.bases()
         [vector frame ((0, 2*pi), (d/dx,d/dy)) with values on the 2-dimensional
          manifold 'R^2']
@@ -1019,7 +1019,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         `p`-forms along `U` with values in `\Phi(U)`. It is a module over
         `C^\infty(U)`, the ring (algebra) of differentiable scalar fields on
         `U`.
-        
+
         INPUT:
 
         - ``p`` -- non-negative integer
@@ -1049,7 +1049,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         linear group* is the group `\mathrm{GL}(\mathcal{X}(U,\Phi))` of
         automorphisms of `\mathcal{X}(U,\Phi)`. Note that an automorphism of
         `\mathcal{X}(U,\Phi)` can also be viewed as a *field* along `U` of
-        automorphisms of the tangent spaces of `V=\Phi(U)`. 
+        automorphisms of the tangent spaces of `V=\Phi(U)`.
 
         OUTPUT:
 

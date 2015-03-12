@@ -30,8 +30,8 @@ class AutomorphismField(TensorField):
 
     Given an open subset `U` of a manifold `S` and a differentiable mapping
     `\Phi: U \rightarrow V`, where `V` is an open subset of a manifold `M`,
-    an instance of this class is a field of tangent-space automorphisms 
-    along `U` with values in `V`. 
+    an instance of this class is a field of tangent-space automorphisms
+    along `U` with values in `V`.
     The standard case of a field of tangent-space automorphisms *on* a
     manifold corresponds to `S=M`, `U=V` and `\Phi = \mathrm{Id}_U`. Other
     common cases are `\Phi` being an immersion and `\Phi` being a curve in `V`
@@ -111,7 +111,7 @@ class AutomorphismField(TensorField):
                              parent=vector_field_module.general_linear_group())
         self._is_identity = is_identity
         self._init_derived() # initialization of derived quantities
-        # Specific initializations for the field of identity maps: 
+        # Specific initializations for the field of identity maps:
         if self._is_identity:
             self._inverse = self
             for dom in self._domain._subsets:
@@ -298,7 +298,7 @@ class AutomorphismField(TensorField):
 
         EXAMPLES:
 
- 
+
         """
         if isinstance(other, AutomorphismField):
             return self._mul_(other)  # general linear group law
@@ -428,7 +428,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
     Given an open subset `U` of a manifold `S` and a differentiable mapping
     `\Phi: U \rightarrow V`, where `V` is a parallelizable open subset of a
     manifold `M`, an instance of this class is a field of tangent-space
-    automorphisms along `U` with values in `V`. 
+    automorphisms along `U` with values in `V`.
     The standard case of a field of tangent-space automorphisms *on* a
     manifold corresponds to `S=M`, `U=V` and `\Phi = \mathrm{Id}_U`. Other
     common cases are `\Phi` being an immersion and `\Phi` being a curve in `V`
@@ -500,7 +500,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
             sage: a.parent() is M.automorphism_field_group()
             True
             sage: TestSuite(a).run()
-            
+
         """
         FreeModuleAutomorphism.__init__(self, vector_field_module,
                                         name=name, latex_name=latex_name,
@@ -758,5 +758,3 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
             for ind, val in comp._comp.iteritems():
                 comp_resu._comp[ind] = val(point)
         return resu
-
-

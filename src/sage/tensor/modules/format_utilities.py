@@ -26,7 +26,7 @@ def is_atomic(expression):
     r"""
     Helper function to check whether some LaTeX expression is atomic.
 
-    Adapted from method 
+    Adapted from method
     :meth:`~sage.tensor.differential_form_element.DifferentialFormFormatter._is_atomic`
     of class
     :class:`~sage.tensor.differential_form_element.DifferentialFormFormatter`
@@ -71,7 +71,7 @@ def is_atomic_wedge_txt(expression):
     Helper function to check whether some text-formatted expression is atomic
     in terms of wedge products.
 
-    Adapted from method 
+    Adapted from method
     :meth:`~sage.tensor.differential_form_element.DifferentialFormFormatter._is_atomic`
     of class
     :class:`~sage.tensor.differential_form_element.DifferentialFormFormatter`
@@ -120,7 +120,7 @@ def is_atomic_wedge_latex(expression):
     Helper function to check whether LaTeX-formatted expression is atomic in
     terms of wedge products.
 
-    Adapted from method 
+    Adapted from method
     :meth:`~sage.tensor.differential_form_element.DifferentialFormFormatter._is_atomic`
     of class
     :class:`~sage.tensor.differential_form_element.DifferentialFormFormatter`
@@ -290,7 +290,7 @@ class FormattedExpansion(SageObject):
         v
         sage: latex(f)
         \tilde v
-        sage: f = FormattedExpansion('x/2', r'\frac{x}{2}') 
+        sage: f = FormattedExpansion('x/2', r'\frac{x}{2}')
         sage: f
         x/2
         sage: latex(f)

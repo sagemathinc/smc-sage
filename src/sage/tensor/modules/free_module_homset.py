@@ -531,4 +531,3 @@ class FreeModuleHomset(Homset):
         return self._one
 
     #### End of monoid methods ####
-

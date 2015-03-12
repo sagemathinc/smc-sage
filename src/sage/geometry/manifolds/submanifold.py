@@ -45,7 +45,7 @@ from diffmapping import DiffMapping
 
 class Submanifold(Manifold):
     r"""
-    Embedded submanifold of a differentiable manifold over `\RR`. 
+    Embedded submanifold of a differentiable manifold over `\RR`.
 
     Given a differentiable manifold `M`, an *embedded submanifold* is a subset
     `S\subset M` such that `S` is a manifold for the topology induced by `M`
@@ -64,7 +64,7 @@ class Submanifold(Manifold):
     - ``start_index`` -- (default: 0) integer; lower bound of the range of
       indices used for "indexed objects" on the submanifold, e.g. coordinates
       in a chart or elements of a vector frame and the corresponding tensor
-      components. 
+      components.
 
     EXAMPLES:
 

@@ -150,7 +150,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
     Instances of :class:`ManifoldSubset` are Sage's facade sets
     (see :meth:`~sage.categories.sets_cat.Sets.SubcategoryMethods.Facade`):
     their elements are manifold points
-    (class :class:`~sage.geometry.manifolds.point.ManifoldPoint`), 
+    (class :class:`~sage.geometry.manifolds.point.ManifoldPoint`),
     which have the manifold (and not the subset) as parent::
 
         sage: isinstance(A, Parent)
@@ -250,7 +250,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         Construct some (unamed) point on ``self``.
 
         EXAMPLES::
-    
+
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: p = M._an_element_() ; p
@@ -325,7 +325,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         # The point is constructed with check_coords=False since the check
         # has just been performed above:
         return self.element_class(self, coords=coords, chart=chart,
-                                  check_coords=False)  
+                                  check_coords=False)
 
     #### End of methods required for any Parent in the category of sets
 
@@ -362,12 +362,12 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def subsets(self):
         r"""
-        Return the set of subsets that have been defined on ``self``. 
+        Return the set of subsets that have been defined on ``self``.
 
         OUTPUT:
 
         - A Python set containing all the subsets that have been defined on
-          ``self``. 
+          ``self``.
 
         .. NOTE::
 
@@ -401,14 +401,14 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     def list_of_subsets(self):
         r"""
-        Return the list of subsets that have been defined on ``self``. 
+        Return the list of subsets that have been defined on ``self``.
 
         The list is sorted by the alphabetical names of the subsets.
-        
+
         OUTPUT:
 
         - A list containing all the subsets that have been defined on
-          ``self``. 
+          ``self``.
 
         .. NOTE::
 
@@ -434,7 +434,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
             {open subset 'U' of the 2-dimensional manifold 'M',
              subset 'V' of the 2-dimensional manifold 'M',
              2-dimensional manifold 'M'}
-                   
+
         """
         return sorted(self._subsets, key = lambda x: x._name)
 
@@ -1328,7 +1328,7 @@ class ManifoldOpenSubset(ManifoldSubset):
     Instances of :class:`ManifoldOpenSubset` are Sage's facade sets
     (see :meth:`~sage.categories.sets_cat.Sets.SubcategoryMethods.Facade`):
     their elements are manifold points
-    (class :class:`~sage.geometry.manifolds.point.ManifoldPoint`), 
+    (class :class:`~sage.geometry.manifolds.point.ManifoldPoint`),
     which have the manifold (and not the open subset) as parent::
 
         sage: A.category()
@@ -1361,7 +1361,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         True
 
     An open subset can be defined by some coordinate conditions::
-    
+
         sage: U = A.open_subset('U', coord_def={X: x<0}) ; U
         open subset 'U' of the 2-dimensional manifold 'M'
         sage: U.is_subset(A)
@@ -1381,13 +1381,13 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     An open subset can be called to construct a point from another one,
     provided that the latter belongs to the open subset::
-    
+
         sage: p1 = U(p) ; p1
         point 'p' on 2-dimensional manifold 'M'
 
     The two points simply differ by the returned value of
     :meth:`~sage.geometry.manifolds.point.ManifoldPoint.containing_set`::
-    
+
         sage: p1 == p
         True
         sage: p.containing_set()
@@ -1819,7 +1819,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         if dest_map is None:
             dest_map = self._identity_map
         codomain = dest_map._codomain
-        if dest_map not in self._vector_field_modules: 
+        if dest_map not in self._vector_field_modules:
             if codomain.is_manifestly_parallelizable() or force_free:
                 self._vector_field_modules[dest_map] = \
                                  VectorFieldFreeModule(self, dest_map=dest_map)
@@ -1890,7 +1890,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         for a complete documentation.
 
         INPUT:
-    
+
         - ``degree`` -- positive integer; the degree `p` of the differential forms
         - ``dest_map`` -- (default: None) destination map
           `\Phi:\ U \rightarrow V`, where `U` is ``self``
@@ -1922,7 +1922,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         being `\Phi` returns the general linear group
         `\mathrm{GL}(\mathcal{X}(U,\Phi))` of the module
         `\mathcal{X}(U,\Phi)` of vector fields along `U` with values in
-        `V=\Phi(U)`. 
+        `V=\Phi(U)`.
 
         INPUT:
 
@@ -1963,7 +1963,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         See class
         :class:`~sage.geometry.manifolds.manifold_homset.ManifoldHomset`
         for more documentation.
-        
+
         """
         from sage.geometry.manifolds.manifold_homset import ManifoldHomset
         return ManifoldHomset(self, other)
@@ -2337,7 +2337,7 @@ class ManifoldOpenSubset(ManifoldSubset):
           identity maps
         - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote
           the field of identity map; if none is provided, the LaTeX symbol is
-          set to '\mathrm{Id}' if ``name`` is 'Id' and to ``name`` otherwise 
+          set to '\mathrm{Id}' if ``name`` is 'Id' and to ``name`` otherwise
         - ``dest_map`` -- (default: None) instance of
           class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
           representing the destination map `\Phi:\ U \rightarrow V`, where `U`
@@ -2380,17 +2380,17 @@ class ManifoldOpenSubset(ManifoldSubset):
         Define a differentiable curve in ``self``.
 
         See :class:`~sage.geometry.manifolds.curve.ManifoldCurve` for details.
-    
+
         INPUT:
-    
+
         - ``coord_expression`` -- either
-    
+
           - (i) a dictionary whose keys are charts on ``self`` and values
             the coordinate expressions (as lists or tuples) of the curve in
             the given chart
           - (ii) a single coordinate expression in a given chart on ``self``,
-            the latter being provided by the argument ``chart`` 
-    
+            the latter being provided by the argument ``chart``
+
           In both cases, if the dimension of the arrival manifold is 1,
           a single coordinate expression can be passed instead of a tuple with
           a single element
@@ -2400,7 +2400,7 @@ class ManifoldOpenSubset(ManifoldSubset):
           and ``t_max=+Infinity``, they can be omitted and ``t`` can be passed
           for ``param``, instead of the tuple ``(t, t_min, t_max)``
         - ``chart`` -- (default: ``None``) chart on ``self`` used for case (ii)
-          above; if ``None`` the default chart of ``self`` is assumed. 
+          above; if ``None`` the default chart of ``self`` is assumed.
         - ``name`` -- (default: ``None``) string; symbol given to the curve
         - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to denote the
           the curve; if none is provided, ``name`` will be used
@@ -2413,7 +2413,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         EXAMPLES:
 
         The lemniscate of Gerono in the 2-dimensional Euclidean plane::
-    
+
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: R.<t> = RealLine()
@@ -2422,7 +2422,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         The same definition with the coordinate expression passed as a
         dictionary::
-        
+
             sage: c = M.curve({X: [sin(t), sin(2*t)/2]}, (t, 0, 2*pi), name='c') ; c
             Curve 'c' in the 2-dimensional manifold 'M'
 
@@ -2723,7 +2723,7 @@ class ManifoldOpenSubset(ManifoldSubset):
           subset of it)
         - ``coord_functions`` -- (default: ``None``) if not ``None``, must be
           either
-    
+
           - (i) a dictionary of
             the coordinate expressions (as lists (or tuples) of the
             coordinates of the image expressed in terms of the coordinates of
@@ -2732,7 +2732,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             ``codomain``)
           - (ii) a single coordinate expression in a given pair of charts, the
             latter being provided by the arguments ``chart1`` and ``chart2``
-    
+
           In both cases, if the dimension of the arrival manifold is 1,
           a single coordinate expression can be passed instead of a tuple with
           a single element
@@ -2762,7 +2762,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'S^2')
-            sage: U = M.open_subset('U') 
+            sage: U = M.open_subset('U')
             sage: c_spher.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
             sage: N = Manifold(3, 'R^3', r'\RR^3')
             sage: c_cart.<x,y,z> = N.chart()  # Cartesian coord. on R^3
@@ -2781,7 +2781,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             True
 
         The differentiable mapping acting on a point::
-        
+
             sage: p = U.point((pi/2, pi)) ; p
             point on 2-dimensional manifold 'S^2'
             sage: Phi(p)
@@ -2829,7 +2829,7 @@ class ManifoldOpenSubset(ManifoldSubset):
           subset of it)
         - ``coord_functions`` -- (default: ``None``) if not ``None``, must be
           either
-    
+
           - (i) a dictionary of
             the coordinate expressions (as lists (or tuples) of the
             coordinates of the image expressed in terms of the coordinates of
@@ -2838,7 +2838,7 @@ class ManifoldOpenSubset(ManifoldSubset):
             ``codomain``)
           - (ii) a single coordinate expression in a given pair of charts, the
             latter being provided by the arguments ``chart1`` and ``chart2``
-    
+
           In both cases, if the dimension of the arrival manifold is 1,
           a single coordinate expression can be passed instead of a tuple with
           a single element

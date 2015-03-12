@@ -495,9 +495,9 @@ class TensorField(ModuleElement):
         Construct a tensor field.
 
         TESTS::
-        
+
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_subset('U') ; V = M.open_subset('V') 
+            sage: U = M.open_subset('U') ; V = M.open_subset('V')
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y),
@@ -2480,18 +2480,18 @@ class TensorField(ModuleElement):
 
     def at(self, point):
         r"""
-        Value of the tensor field at a point of its domain. 
+        Value of the tensor field at a point of its domain.
 
         If ``self`` is the tensor field
-        
+
         .. MATH::
-        
+
             t:\ U\subset S  \longrightarrow T^{(k,l)} M
 
         associated with the differentiable mapping
-        
+
         .. MATH::
-        
+
             \Phi:\ U\subset S \longrightarrow M
 
         where `S` and `M` are two manifolds, then for any point `p\in U`,
@@ -2809,7 +2809,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         sage: h[0,0], h[0,1], h[2,0] = 1+t, t^2, sin(t)
         sage: h.display()
         h = (t + 1) d/dx*d/dx + t^2 d/dx*d/dy + sin(t) d/dz*d/dx
-    
+
     """
     def __init__(self, vector_field_module, tensor_type, name=None,
                  latex_name=None, sym=None, antisym=None):
@@ -2832,7 +2832,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             sage: t.parent() is M.tensor_field_module((0,2))
             True
             sage: TestSuite(t).run()
-    
+
         """
         FreeModuleTensor.__init__(self, vector_field_module, tensor_type,
                                   name=name, latex_name=latex_name,
@@ -3394,18 +3394,18 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
     def at(self, point):
         r"""
-        Value of the tensor field at a point of its domain. 
+        Value of the tensor field at a point of its domain.
 
         If ``self`` is the tensor field
-        
+
         .. MATH::
-        
+
             t:\ U\subset S  \longrightarrow T^{(k,l)} M
 
         associated with the differentiable mapping
-        
+
         .. MATH::
-        
+
             \Phi:\ U\subset S \longrightarrow M
 
         where `S` and `M` are two manifolds, then for any point `p\in U`,
@@ -3512,7 +3512,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         if dest_map.is_identity():
             amb_point = point
         else:
-            amb_point = dest_map(point)  #  "ambient" point          
+            amb_point = dest_map(point)  #  "ambient" point
         ts = amb_point.tangent_space()
         resu = ts.tensor(self._tensor_type, name=self._name,
                          latex_name=self._latex_name, sym=self._sym,

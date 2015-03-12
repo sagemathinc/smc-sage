@@ -50,10 +50,10 @@ class DiffMapping(Morphism):
 
     where `M` and `N` are differentiable manifolds, `U` is an open subset
     of `M` and `V` is an open subset of `N`.
-    
+
     In what follows, `M` is called the *start manifold* and
     `N` the *arrival manifold*.
-    
+
     Differentiable mappings are the *morphisms* of the *category* of
     differentiable manifolds. The set of all differentiable mappings from
     `U` to `V` is therefore the homset between `U` and `V` and is denoted
@@ -79,7 +79,7 @@ class DiffMapping(Morphism):
       ``name``
     - ``is_diffeomorphism`` -- (default: ``False``) determines whether the
       constructed object is a diffeomorphism; if set to ``True``,
-      then the manifolds `M` and `N` must have the same dimension. 
+      then the manifolds `M` and `N` must have the same dimension.
     - ``is_identity`` -- (default: ``False``) determines whether the
       constructed object is the identity map; if set to ``True``,
       then `V` must be `U` and the entry ``coord_functions`` is not used.
@@ -196,7 +196,7 @@ class DiffMapping(Morphism):
 
     Then we compose ``Psi`` with ``Phi``, thereby getting a mapping
     `S^2\rightarrow \RR^2`::
-    
+
         sage: ster = Psi*Phi ; ster
         differentiable mapping from the 2-dimensional manifold 'S^2' to the
          2-dimensional manifold 'R^2'
@@ -209,7 +209,7 @@ class DiffMapping(Morphism):
 
     Actually ``ster`` is the stereographic projection from the North pole, as
     its coordinate expression reveals::
-    
+
         sage: ster.display()
         S^2 --> R^2
         on U: (x, y) |--> (xP, yP) = (x, y)
@@ -297,9 +297,9 @@ class DiffMapping(Morphism):
         True
         sage: ~Phi * Phi == D.identity_map()
         True
-    
+
     The coordinate expression of the inverse diffeomorphism::
-    
+
         sage: (~Phi).display()
         Phi^(-1): R^2 --> D
            (x, y) |--> (x, y) = (x/sqrt(x^2 + y^2 + 1), y/sqrt(x^2 + y^2 + 1))
@@ -358,14 +358,14 @@ class DiffMapping(Morphism):
             sage: TestSuite(f).run()
 
         The identity map::
-        
+
             sage: f = Hom(M,M)({}, is_identity=True) ; f
             identity map 'Id_M' of the 2-dimensional manifold 'M'
             sage: f.display()
             Id_M: M --> M
                (x, y) |--> (x, y)
             sage: TestSuite(f).run()
-            
+
         """
         Morphism.__init__(self, parent)
         domain = parent.domain()
@@ -438,7 +438,7 @@ class DiffMapping(Morphism):
         String representation of the object.
 
         TESTS::
-        
+
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: N = Manifold(2, 'N')
@@ -461,7 +461,7 @@ class DiffMapping(Morphism):
             sage: f = Hom(M,M)({}, name='f', is_identity=True)
             sage: f._repr_()
             "identity map 'f' of the 2-dimensional manifold 'M'"
-        
+
         """
         if self._is_identity:
             return "identity map '" + self._name + \
@@ -496,7 +496,7 @@ class DiffMapping(Morphism):
             sage: f = Hom(M,M)({(X,X): (x+y,x*y)}, name='f', latex_name=r'\Phi')
             sage: f._latex_()
             '\\Phi'
-        
+
         """
         if self._latex_name is None:
             return r'\mbox{' + str(self) + r'}'
@@ -565,7 +565,7 @@ class DiffMapping(Morphism):
 
     def _call_(self, point):
         r"""
-        Compute the image of a point by ``self``. 
+        Compute the image of a point by ``self``.
 
         INPUT:
 
@@ -602,7 +602,7 @@ class DiffMapping(Morphism):
             True
 
         Image computed by means of spherical coordinates::
-        
+
             sage: rot.add_expr(c_spher, c_spher, (r, ph+pi/3)) # now rot is known in terms of c_spher
             sage: p2 = M.point((sqrt(5), arctan(2)), chart=c_spher)
             sage: q2 = rot(p2) # computation on c_spher
@@ -612,7 +612,7 @@ class DiffMapping(Morphism):
         """
         # NB: checking that ``point`` belongs to the mapping's domain has been
         # already performed by Map.__call__(); this check is therefore not
-        # repeated here. 
+        # repeated here.
         from manifold import RealLine
         if self._is_identity:
             return point
@@ -637,7 +637,7 @@ class DiffMapping(Morphism):
                 if chart1 is not None:
                     break
             else:
-                raise ValueError("no pair of charts has been found to " + 
+                raise ValueError("no pair of charts has been found to " +
                   "compute the action of the {} on the {}".format(self, point))
         coord_map = self._coord_expression[(chart1, chart2)]
         y = coord_map(*(point._coordinates[chart1]))
@@ -686,7 +686,7 @@ class DiffMapping(Morphism):
 
         Of course, if the codomain of ``self`` does not coincide with its
         domain, the outcome is ``False``::
-        
+
             sage: N = Manifold(2, 'N')
             sage: Y.<u,v> = N.chart()
             sage: a = M.diff_mapping(N, {(X,Y): (x, y)})
@@ -734,10 +734,10 @@ class DiffMapping(Morphism):
           :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
 
         """
-        # This method is invoked by Map._composition (single underscore), 
+        # This method is invoked by Map._composition (single underscore),
         # which is itself invoked by Map.__mul__ . The latter performs the
         # check other._codomain == self._domain. There is therefore no need
-        # to perform it here. 
+        # to perform it here.
         if self._is_identity:
             return other
         if other._is_identity:
@@ -943,7 +943,7 @@ class DiffMapping(Morphism):
             Phi: S^2 --> R^3
             on U: (x, y) |--> (X, Y, Z) = (2*x/(x^2 + y^2 + 1), 2*y/(x^2 + y^2 + 1), (x^2 + y^2 - 1)/(x^2 + y^2 + 1))
             on V: (u, v) |--> (X, Y, Z) = (2*u/(u^2 + v^2 + 1), 2*v/(u^2 + v^2 + 1), -(u^2 + v^2 - 1)/(u^2 + v^2 + 1))
-        
+
         """
         from sage.misc.latex import latex
         from sage.tensor.modules.format_utilities import FormattedExpansion
@@ -1856,25 +1856,25 @@ class DiffMapping(Morphism):
     def differential(self, point):
         r"""
         Return the differential of ``self`` at a given point.
-    
+
         If ``self`` is the differentiable mapping
-        
+
         .. MATH::
-    
+
             \Phi: U\subset M \longrightarrow N
-    
+
         where `M` and `N` are differentiable manifolds and `U` is an open
         subset of `M`, the *differential* of `\Phi` at a point `p\in U` is the
         tangent space linear map:
-        
+
         .. MATH::
-    
+
             \mathrm{d}\Phi_p: T_p M \longrightarrow T_{\Phi(p)} N
-    
+
         defined by
-        
+
         .. MATH::
-    
+
             \begin{array}{rccc}
             \forall v\in T_p M,\quad \mathrm{d}\Phi_p(v) : & C^\infty(N) &
                                                 \longrightarrow & \mathbb{R} \\
@@ -1921,7 +1921,7 @@ class DiffMapping(Morphism):
             [ 1 -2]
             [-1  2]
             [ 4 -3]
-        
+
         """
         image_point = self(point)
         tsp_image = image_point.tangent_space()
@@ -1983,33 +1983,33 @@ class DiffMapping(Morphism):
     def differential_functions(self, chart1=None, chart2=None):
         r"""
         Return the coordinate expression of the differential of ``self``
-        w.r.t. a pair of charts. 
+        w.r.t. a pair of charts.
 
         If ``self`` is the differentiable mapping
-        
+
         .. MATH::
-    
+
             \Phi: U\subset M \longrightarrow V\subset N
-    
+
         where `U` and `V` are two open subsets of the differentiable manifolds
         `M` and `N`, the *differential* of `\Phi` at a point `p\in U` is the
         tangent space linear map:
-        
+
         .. MATH::
-    
+
             \mathrm{d}\Phi_p: T_p M \longrightarrow T_{\Phi(p)} N
-    
+
         defined by
-        
+
         .. MATH::
-    
+
             \begin{array}{rccc}
             \forall v\in T_p M,\quad \mathrm{d}\Phi_p(v) : & C^\infty(N) &
                                                 \longrightarrow & \mathbb{R} \\
                                 & f & \longmapsto & v(f\circ \Phi)
             \end{array}
 
-        If the coordinate expression of `\Phi` is 
+        If the coordinate expression of `\Phi` is
 
         .. MATH::
 
@@ -2018,7 +2018,7 @@ class DiffMapping(Morphism):
         where $(x^1,\ldots,x^n)$ are coordinates of a chart on `U` and
         $(y^1,\ldots,y^m)$ are coordinates of a chart on `V`, the expression
         of the differential of `\Phi` w.r.t to these coordinates is
-        
+
         .. MATH::
 
             J_{ij} = \frac{\partial Y^i}{\partial x^j} \quad 1\leq i \leq m,
@@ -2027,13 +2027,13 @@ class DiffMapping(Morphism):
         `\left. J_{ij} \right|_p` is then the matrix of the linear map
         `\mathrm{d}\Phi_p` with respect to the bases of `T_p M` and
         `T_{\Phi(p)} N` associated to the above charts:
-        
+
         .. MATH::
 
             \mathrm{d}\Phi_p\left(  \left. \frac{\partial}{\partial x^j} \right| _p
-                    \right) = \left. J_{ij} \right|_p \; 
+                    \right) = \left. J_{ij} \right|_p \;
              \left. \frac{\partial}{\partial y^i} \right| _{\Phi(p)}
- 
+
         INPUT:
 
         - ``chart1`` -- (default: ``None``) chart on the domain of ``self``
@@ -2050,7 +2050,7 @@ class DiffMapping(Morphism):
           :class:`~sage.geometry.manifolds.chart.FunctionChart`.
           To get symbolic expressions, use the method
           :meth:`jacobian_matrix` instead.
-        
+
         EXAMPLES:
 
         Differential functions of a mapping between a 2-dimensional manifold
@@ -2087,7 +2087,7 @@ class DiffMapping(Morphism):
             <type 'sage.symbolic.expression.Expression'>
             sage: bool( JJ[2,0] == J[2][0].expr() )
             True
-        
+
         """
         dom1 = self._domain; dom2 = self._codomain
         if chart1 is None:
@@ -2102,7 +2102,7 @@ class DiffMapping(Morphism):
             self._diff[(chart1, chart2)] = [[funct[i].diff(j) for j in
                                            manif1.irange()] for i in range(n2)]
         return self._diff[(chart1, chart2)]
-    
+
     def jacobian_matrix(self, chart1=None, chart2=None):
         r"""
         Return the Jacobian matrix resulting from the coordinate expression of
@@ -2118,14 +2118,14 @@ class DiffMapping(Morphism):
         domain of ``self`` and $(y^1,\ldots,y^m)$ are coordinates of a chart
         `Y` on the codomain of ``self``, the *Jacobian matrix* of the
         differentiable mapping ``self`` w.r.t. to charts `X` and `Y` is
-        
+
         .. MATH::
 
             J = \left( \frac{\partial Y^i}{\partial x^j}
-              \right) _{{1\leq i \leq m\atop 1\leq j \leq n}}, 
+              \right) _{{1\leq i \leq m\atop 1\leq j \leq n}},
 
         where `i` is the row index and `j` the column one.
-        
+
         INPUT:
 
         - ``chart1`` -- (default: ``None``) chart `X` on the domain of
@@ -2136,7 +2136,7 @@ class DiffMapping(Morphism):
 
         OUTPUT:
 
-        - the matrix `J` defined above 
+        - the matrix `J` defined above
 
         EXAMPLES:
 
@@ -2166,4 +2166,3 @@ class DiffMapping(Morphism):
         n2 = self._codomain._manifold.dim()
         return matrix( [[diff_funct[i][j].expr() for j in range(n1)]
                                                           for i in range(n2)] )
-

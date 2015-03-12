@@ -11,7 +11,7 @@ the module `\mathcal{X}(U,\Phi)` of vector fields along `U` with values in
 Note that `\mathcal{X}(U,\Phi)` is a module over
 `C^\infty(U)`, the algebra of smooth scalar fields on `U`.
 Elements of `\mathrm{GL}(\mathcal{X}(U,\Phi))` are fields along `U` of
-automorphisms of the tangent spaces to `M`. 
+automorphisms of the tangent spaces to `M`.
 
 Two classes implement `\mathrm{GL}(\mathcal{X}(U,\Phi))` depending whether
 `V` is parallelizable or not:
@@ -62,7 +62,7 @@ class AutomorphismFieldGroup(UniqueRepresentation, Parent):
     Note that `\mathcal{X}(U,\Phi)` is a module over
     `C^\infty(U)`, the algebra of smooth scalar fields on `U`.
     Elements of `\mathrm{GL}(\mathcal{X}(U,\Phi))` are fields along `U` of
-    automorphisms of the tangent spaces to `M`. 
+    automorphisms of the tangent spaces to `M`.
 
     If `V` is parallelizable, the class
     :class:`AutomorphismFieldParalGroup` must be used instead.
@@ -104,7 +104,7 @@ class AutomorphismFieldGroup(UniqueRepresentation, Parent):
         True
 
     ``G`` is a non-abelian group::
-    
+
         sage: G.category()
         Category of groups
         sage: G in Groups()
@@ -145,13 +145,13 @@ class AutomorphismFieldGroup(UniqueRepresentation, Parent):
         TESTS::
 
             sage: M = Manifold(2, 'M')
-            sage: U = M.open_subset('U') ; V = M.open_subset('V') 
+            sage: U = M.open_subset('U') ; V = M.open_subset('V')
             sage: M.declare_union(U,V)   # M is the union of U and V
             sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
             sage: transf = c_xy.transition_map(c_uv, (x+y, x-y),
             ....:  intersection_name='W', restrictions1= x>0,
             ....:  restrictions2= u+v>0)
-            sage: inv = transf.inverse()        
+            sage: inv = transf.inverse()
             sage: from sage.geometry.manifolds.automorphismfield_group import \
             ....:                                        AutomorphismFieldGroup
             sage: G = AutomorphismFieldGroup(M.vector_field_module()) ; G
@@ -172,7 +172,7 @@ class AutomorphismFieldGroup(UniqueRepresentation, Parent):
     def _element_constructor_(self, comp=[], frame=None, name=None,
                               latex_name=None):
         r"""
-        Construct a field of tangent-space automorphisms. 
+        Construct a field of tangent-space automorphisms.
 
         OUTPUT:
 
@@ -191,7 +191,7 @@ class AutomorphismFieldGroup(UniqueRepresentation, Parent):
 
     def _an_element_(self):
         r"""
-        Construct some specific field of tangent-space automorphisms. 
+        Construct some specific field of tangent-space automorphisms.
 
         OUTPUT:
 
@@ -212,7 +212,7 @@ class AutomorphismFieldGroup(UniqueRepresentation, Parent):
         r"""
         Return the group identity element of ``self``.
 
-        The group identity element is the field of tangent-space identity maps. 
+        The group identity element is the field of tangent-space identity maps.
 
         OUTPUT:
 
@@ -221,10 +221,10 @@ class AutomorphismFieldGroup(UniqueRepresentation, Parent):
           representing the identity element.
 
         EXAMPLE:
-    
+
         Identity element of the group of tangent-space automorphism fields of
         the 2-sphere::
-    
+
             sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
             sage: U = M.open_subset('U') # complement of the North pole
             sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
@@ -282,10 +282,10 @@ class AutomorphismFieldGroup(UniqueRepresentation, Parent):
           :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`
 
         EXAMPLE:
-    
+
         Base module of the group of tangent-space automorphism fields of
         the 2-sphere::
-    
+
             sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
             sage: U = M.open_subset('U') # complement of the North pole
             sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
@@ -325,7 +325,7 @@ class AutomorphismFieldParalGroup(FreeModuleLinearGroup):
     Note that `\mathcal{X}(U,\Phi)` is a module over
     `C^\infty(U)`, the algebra of smooth scalar fields on `U`.
     Elements of `\mathrm{GL}(\mathcal{X}(U,\Phi))` are fields along `U` of
-    automorphisms of the tangent spaces to `M`. 
+    automorphisms of the tangent spaces to `M`.
 
     If `V` is not parallelizable, the class
     :class:`AutomorphismFieldGroup` must be used instead.
@@ -358,17 +358,17 @@ class AutomorphismFieldParalGroup(FreeModuleLinearGroup):
         \mathrm{GL}\left( \mathcal{X}\left(M\right) \right)
         sage: type(G)
         <class 'sage.geometry.manifolds.automorphismfield_group.AutomorphismFieldParalGroup_with_category'>
-    
+
     Instead of importing ``AutomorphismFieldParalGroup`` in the global name
     space, it is recommended to use the method
     :meth:`~sage.geometry.manifolds.domain.ManifoldOpenSubset.automorphism_field_group`::
-    
+
         sage: G = M.automorphism_field_group() ; G
         General linear group of the free module X(M) of vector fields on the
          2-dimensional manifold 'M'
 
     There is a unique instance of this group::
-    
+
         sage: G is M.automorphism_field_group()
         True
 
@@ -401,7 +401,7 @@ class AutomorphismFieldParalGroup(FreeModuleLinearGroup):
 
     As automorphisms of `\mathcal{X}(M)`, the elements of ``G`` map a vector
     field to a vector field::
-    
+
         sage: v = XM.an_element() ; v
         vector field on the 2-dimensional manifold 'M'
         sage: v.display()
@@ -416,7 +416,7 @@ class AutomorphismFieldParalGroup(FreeModuleLinearGroup):
 
         sage: a[X.frame(),:]
         [ 1  0]
-        [ 0 -1]    
+        [ 0 -1]
 
     The elements of ``G`` can also be considered as tensor fields of
     type (1,1)::
@@ -429,7 +429,7 @@ class AutomorphismFieldParalGroup(FreeModuleLinearGroup):
         2-dimensional manifold 'M'
         sage: a.display()
         d/dx*dx - d/dy*dy
-        
+
     The identity element of the group ``G`` is::
 
         sage: id = G.one() ; id
@@ -533,7 +533,7 @@ class AutomorphismFieldParalGroup(FreeModuleLinearGroup):
             General linear group of the free module X(M) of vector fields on
              the 2-dimensional manifold 'M'
             sage: TestSuite(G).run()
-        
+
         """
         if not isinstance(vector_field_module, VectorFieldFreeModule):
             raise TypeError("{} is not a free module of vector fields".format(

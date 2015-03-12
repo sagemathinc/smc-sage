@@ -635,7 +635,7 @@ class Chart(UniqueRepresentation, SageObject):
             x: (-oo, +oo); y: (-oo, +oo)
             sage: X.coord_range(x)
             x: (-oo, +oo)
-            sage: U = M.open_subset('U', coord_def={X: [x>1, y<pi]}) 
+            sage: U = M.open_subset('U', coord_def={X: [x>1, y<pi]})
             sage: XU = X.restrict(U)  # restriction of chart X to U
             sage: XU.coord_range()
             x: (1, +oo); y: (-oo, pi)
@@ -676,12 +676,12 @@ class Chart(UniqueRepresentation, SageObject):
         - ``rtxt`` -- string; initial state for the text version of the range
         - ``rlatex`` -- string; initial state for the LaTeX version of the
           range
-          
+
         OUTPUT:
-        
+
         - tuple of 2 strings containing the final state for the text and
           LaTeX versions of the range
-        
+
         """
         ind = self._xx.index(xx)
         bounds = self._bounds[ind]
@@ -820,7 +820,7 @@ class Chart(UniqueRepresentation, SageObject):
                 # if restrict has not been used to set a coordinate bound
                 # it is maintained in the list of restrictions:
                 new_restrictions.append(restrict)
-        self._bounds = tuple(bounds) 
+        self._bounds = tuple(bounds)
         self._restrictions = new_restrictions
 
 
@@ -901,7 +901,7 @@ class Chart(UniqueRepresentation, SageObject):
             res._restrictions.extend(self._restrictions)
             # The coordinate restrictions are added to the result chart and
             # possibly transformed into coordinate bounds:
-            if restrictions is not None: 
+            if restrictions is not None:
                 res.add_restrictions(restrictions)
             # Update of supercharts and subcharts:
             res._supercharts.update(self._supercharts)

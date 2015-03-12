@@ -3,8 +3,8 @@ Tangent spaces
 
 The class :class:`TangentSpace` implements vector spaces tangent to a
 differentiable manifold and the class :class:`TangentVector` implements the
-corresponding tangent vectors. 
- 
+corresponding tangent vectors.
+
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2014): initial version
@@ -33,14 +33,14 @@ from sage.tensor.modules.free_module_tensor import FiniteRankFreeModuleElement
 class TangentVector(FiniteRankFreeModuleElement):
     r"""
     Tangent vector to a differentiable manifold at a given point.
-    
+
     This is a Sage *element* class, the corresponding *parent* class being
     :class:`~sage.geometry.manifolds.tangentspace.TangentSpace`.
     It inherits from
     :class:`~sage.tensor.modules.free_module_tensor.FiniteRankFreeModuleElement`
     since :class:`~sage.geometry.manifolds.tangentspace.TangentSpace`
     inherits from
-    :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`. 
+    :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`.
 
     INPUT:
 
@@ -96,7 +96,7 @@ class TangentSpace(FiniteRankFreeModule):
     from
     :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`,
     which implements free modules of finite rank (hence vector spaces of finite
-    dimension) without any distinguished basis. 
+    dimension) without any distinguished basis.
 
     This is a Sage *parent* class, the corresponding *element* class being
     :class:`~sage.geometry.manifolds.tangentspace.TangentVector`.
