@@ -1046,6 +1046,8 @@ class OpenInterval(ManifoldOpenSubset):
 
         sage: I = R.open_interval(0, pi) ; I
         Real interval (0, pi)
+        sage: latex(I)
+        \left( 0 , \pi \right)
 
     The result is cached (unique representation property)::
 
@@ -1152,11 +1154,12 @@ class OpenInterval(ManifoldOpenSubset):
             sage: TestSuite(J).run()
 
         """
+        from sage.misc.latex import latex
         if not isinstance(real_line, RealLine):
             raise TypeError("{} is not an instance of RealLine".format(
                                                                     real_line))
         name = "({}, {})".format(lower, upper)
-        latex_name = r"\left(" + str(lower) + ", " + str(upper) + r"\right)"
+        latex_name = r"\left(" + latex(lower) + ", " + latex(upper) + r"\right)"
         ManifoldOpenSubset.__init__(self, real_line, name,
                                     latex_name=latex_name)
         t = real_line.canonical_coordinate()
