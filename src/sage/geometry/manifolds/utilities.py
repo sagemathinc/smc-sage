@@ -277,7 +277,9 @@ def simplify_chain(expr):
     expr = simplify_abs_trig(expr)
     # In Sage 6.5, simplify_radical() has been renamed canonicalize_radical()
     #  (cf. http://trac.sagemath.org/11912):
-    if version == '6.5':
+    ver_pieces = version.split('.')
+    mversion = float(ver_pieces[0] + '.' + ver_pieces[1])
+    if mversion >= 6.5:
         expr = expr.canonicalize_radical()
     else:
         expr = expr.simplify_radical()
