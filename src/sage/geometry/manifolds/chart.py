@@ -395,22 +395,11 @@ class Chart(UniqueRepresentation, SageObject):
         r"""
         LaTeX representation of the object.
         """
-        description = '(' + latex(self._domain).strip() + ',('
+        description = r'\left(' + latex(self._domain).strip() + ',('
         n = len(self._xx)
         for i in range(n-1):
             description += latex(self._xx[i]).strip() + ', '
-        description += latex(self._xx[n-1]).strip() + '))'
-        return description
-
-    def _latex_coordinates(self):
-        r"""
-        Return a LaTeX representation of the coordinates only.
-        """
-        description = '('
-        n = len(self._xx)
-        for i in range(n-1):
-            description += latex(self._xx[i]).strip() + ', '
-        description += latex(self._xx[n-1]).strip() + ')'
+        description += latex(self._xx[n-1]).strip() + r')\right)'
         return description
 
     def _first_ngens(self, n):
@@ -1488,16 +1477,11 @@ class Chart(UniqueRepresentation, SageObject):
                     raise TypeError("The domain of " + str(ambient_chart) +
                                     " is not included in the codomain of " +
                                     str(mapping))
-                for chart_pair in mapping._coord_expression:
-                    if chart_pair == (self, ambient_chart):
-                        transf = mapping._coord_expression[chart_pair]
-                        break
-                else:
-                    # Search for a subchart
-                    for chart_pair in mapping._coord_expression:
-                        for schart in ambient_chart._subcharts:
-                            if chart_pair == (self, schart):
-                                transf = mapping._coord_expression[chart_pair]
+                try:
+                    transf = mapping.multi_function_chart(chart1=self,
+                                                          chart2=ambient_chart)
+                except ValueError:
+                    pass
             if transf is None:
                 raise ValueError("No relation has been found between " +
                                  str(self) + " and " + str(ambient_chart))
@@ -1871,7 +1855,7 @@ class FunctionChart(SageObject):
             sage: f.display()
             (x, y) |--> x^2 + 3*y + 1
             sage: latex(f.display())
-            (x, y) \mapsto x^{2} + 3 \, y + 1
+             \left(x, y\right) \mapsto x^{2} + 3 \, y + 1
 
         A shortcut is ``disp()``::
 
@@ -1881,7 +1865,7 @@ class FunctionChart(SageObject):
         """
         from sage.tensor.modules.format_utilities import FormattedExpansion
         resu_txt = repr((self._chart)[:]) + ' |--> ' + repr(self._express)
-        resu_latex = self._chart._latex_coordinates() + r' \mapsto' + \
+        resu_latex = latex(self._chart[:]) + r' \mapsto' + \
                      latex(self._express)
         return FormattedExpansion(resu_txt, resu_latex)
 
@@ -3183,14 +3167,15 @@ class CoordChange(SageObject):
 
     Change from spherical to Cartesian coordinates on `\RR^3`::
 
-        sage: M = Manifold(3, 'R3', r'\mathcal{M}')
+        sage: M = Manifold(3, 'R3', r'\mathbb{R}^3')
         sage: c_spher.<r,th,ph> = M.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
         sage: c_cart.<x,y,z> = M.chart()
         sage: ch = c_spher.coord_change(c_cart, r*sin(th)*cos(ph), r*sin(th)*sin(ph), r*cos(th))
         sage: ch
         coordinate change from chart (R3, (r, th, ph)) to chart (R3, (x, y, z))
         sage: latex(ch)
-        (r, {\theta}, {\phi}) \mapsto (x, y, z)
+        \left(\mathbb{R}^3,(r, {\theta}, {\phi})\right) \rightarrow
+         \left(\mathbb{R}^3,(x, y, z)\right)
         sage: type(ch)
         <class 'sage.geometry.manifolds.chart.CoordChange'>
 
@@ -3295,8 +3280,7 @@ class CoordChange(SageObject):
         r"""
         Special Sage function for the LaTeX representation of the object.
         """
-        return self._chart1._latex_coordinates() + r' \mapsto ' + \
-                self._chart2._latex_coordinates()
+        return latex(self._chart1) + r' \rightarrow ' + latex(self._chart2)
 
     def __call__(self, *old_coords):
         r"""

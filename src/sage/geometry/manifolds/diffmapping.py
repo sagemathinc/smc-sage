@@ -963,11 +963,11 @@ class DiffMapping(Morphism):
                        latex(self._codomain) + r"\\"
         if chart1 is None:
             if chart2 is None:
-                for ch1 in self._domain._atlas:
+                for ch1 in self._domain._top_charts:
                     for ch2 in self._codomain._atlas:
                         self._display_expression(ch1, ch2, result)
             else:
-                for ch1 in self._domain._atlas:
+                for ch1 in self._domain._top_charts:
                     self._display_expression(ch1, chart2, result)
         else:
             if chart2 is None:
@@ -1048,7 +1048,7 @@ class DiffMapping(Morphism):
             sage: type(Phi.multi_function_chart())
             <class 'sage.geometry.manifolds.chart.MultiFunctionChart'>
 
-        Representation in other charts::
+        Coordinate representation in other charts::
 
             sage: c_UV.<U,V> = M.chart()  # new chart on M
             sage: ch_uv_UV = c_uv.coord_change(c_UV, u-v, u+v)
@@ -1065,6 +1065,27 @@ class DiffMapping(Morphism):
             sage: Phi.multi_function_chart(c_UV, c_XYZ)
             functions (-1/2*(U^3 - (U - 2)*V^2 + V^3 - (U^2 + 2*U + 6)*V - 6*U)/(U - V), 1/4*(U^3 - (U + 4)*V^2 + V^3 - (U^2 - 4*U + 4)*V - 4*U)/(U - V), 1/4*(U^3 - (U - 4)*V^2 + V^3 - (U^2 + 4*U + 8)*V - 8*U)/(U - V)) on the chart (M, (U, V))
 
+        Coordinate representation w.r.t. a subchart in the domain::
+
+            sage: A = M.open_subset('A', coord_def={c_uv: u>0})
+            sage: Phi.multi_function_chart(c_uv.restrict(A), c_xyz)
+            functions (u*v, u/v, u + v) on the chart (A, (u, v))
+
+        Coordinate representation w.r.t. a superchart in the codomain::
+
+            sage: B = N.open_subset('B', coord_def={c_xyz: x<0})
+            sage: c_xyz_B = c_xyz.restrict(B)
+            sage: Phi1 = M.diff_mapping(B, {(c_uv, c_xyz_B): (u*v, u/v, u+v)})
+            sage: Phi1.multi_function_chart(c_uv, c_xyz_B) # definition charts
+            functions (u*v, u/v, u + v) on the chart (M, (u, v))
+            sage: Phi1.multi_function_chart(c_uv, c_xyz) # c_xyz = superchart of c_xyz_B
+            functions (u*v, u/v, u + v) on the chart (M, (u, v))
+
+        Coordinate representation w.r.t. a pair (subchart, superchart)::
+
+            sage: Phi1.multi_function_chart(c_uv.restrict(A), c_xyz) 
+            functions (u*v, u/v, u + v) on the chart (A, (u, v))
+
         """
         dom1 = self._domain; dom2 = self._codomain
         def_chart1 = dom1._def_chart; def_chart2 = dom2._def_chart
@@ -1073,9 +1094,18 @@ class DiffMapping(Morphism):
         if chart2 is None:
             chart2 = def_chart2
         if (chart1, chart2) not in self._coord_expression:
-            # Some computation must be performed
+            # Check whether (chart1, chart2) are (subchart, superchart) of
+            # a pair of charts where the expression of self is known:
+            for (ochart1, ochart2) in self._coord_expression:
+                if chart1 in ochart1._subcharts and \
+                                                  ochart2 in chart2._subcharts:
+                    coord_functions = \
+                        self._coord_expression[(ochart1, ochart2)].expr()
+                    self._coord_expression[(chart1, chart2)] = \
+                                   MultiFunctionChart(chart1, *coord_functions)
+                    return self._coord_expression[(chart1, chart2)]
+            # Special case of the identity in a single chart:
             if self._is_identity and chart1 == chart2:
-                # special case of the identity in a single chart:
                 coord_functions = chart1[:]
                 self._coord_expression[(chart1, chart1)] = \
                                    MultiFunctionChart(chart1, *coord_functions)
