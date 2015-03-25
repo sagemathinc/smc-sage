@@ -454,6 +454,41 @@ class ManifoldCurve(DiffMapping):
             sage: vp.display()
             c' = -d/dy
 
+        Tangent vector field to a curve in a non-parallelizable manifold (the
+        2-sphere `S^2`): first, we introduce the 2-sphere::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
+            sage: U = M.open_subset('U') # complement of the North pole
+            sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+            sage: V = M.open_subset('V') # complement of the South pole
+            sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+            sage: M.declare_union(U,V)   # S^2 is the union of U and V
+            sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)),
+            ....:                   intersection_name='W', restrictions1= x^2+y^2!=0,
+            ....:                   restrictions2= u^2+v^2!=0)
+            sage: uv_to_xy = xy_to_uv.inverse()
+            sage: W = U.intersection(V)
+            sage: A = W.open_subset('A', coord_def={c_xy.restrict(W): (y!=0, x<0)})
+            sage: c_spher.<th,ph> = A.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi') # spherical coordinates
+            sage: spher_to_xy = c_spher.transition_map(c_xy.restrict(A),
+            ....:           (sin(th)*cos(ph)/(1-cos(th)), sin(th)*sin(ph)/(1-cos(th))) )
+            sage: spher_to_xy.set_inverse(2*atan(1/sqrt(x^2+y^2)), atan2(y, x), check=False)
+
+        Then we define a curve (a loxodrome) by its expression in terms of
+        spherical coordinates and evaluate the tangent vector field::
+
+            sage: R.<t> = RealLine()
+            sage: c = M.curve({c_spher: [2*atan(exp(-t/10)), t]}, (t, -oo, +oo), name='c') ; c
+            Curve 'c' in the 2-dimensional manifold 'M'
+            sage: vc = c.tangent_vector_field() ; vc
+            vector field 'c'' along the field R of real numbers with values on
+             the 2-dimensional manifold 'M'
+            sage: vc.parent()
+            module X(R,c) of vector fields along the field R of real numbers
+             mapped into the 2-dimensional manifold 'M'
+            sage: vc.display(c_spher.frame().along(c.restrict(R,A)))
+            c' = -1/5*e^(1/10*t)/(e^(1/5*t) + 1) d/dth + d/dph
 
         """
         vmodule = self._domain.vector_field_module(dest_map=self)
@@ -473,11 +508,17 @@ class ManifoldCurve(DiffMapping):
         for chart in codom_top_charts:
             try:
                 jacob = self.differential_functions(canon_chart, chart)
-            except ValueError:
-                continue
-            frame = vmodule.basis(from_frame=chart.frame())
-            resu.add_comp(frame)[:, canon_chart] = [jacob[i][0]
+                restrict = self.restrict(canon_chart.domain(),
+                                     subcodomain=chart.domain())
+                fmodule = restrict._domain.vector_field_module(dest_map=
+                                                                      restrict)
+                frame = fmodule.basis(from_frame=chart.frame())
+                resu_rest = resu.restrict(canon_chart.domain(), dest_map=
+                                                                      restrict)
+                resu_rest.add_comp(frame)[:, canon_chart] = [jacob[i][0]
                                                           for i in range(dim)]
+            except ValueError:
+                pass
         return resu
 
 

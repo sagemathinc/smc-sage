@@ -791,6 +791,75 @@ class VectorFrame(FreeModuleBasis):
                     ts._basis_changes[(basis1, basis2)] = auto
         return basis
 
+    def along(self, mapping):
+        r"""
+        Return the vector frame deduced from ``self`` via a mapping, the
+        codomain of which is included in the domain of ``self``.
+
+        If ``self`` is the vector frame `e` on the open set `V` and if
+        `\Phi: U \rightarrow V` is a differentiable mapping from an open
+        set `U` of some manifold `M` to `V`, the returned object is
+        a vector frame `\tilde e` along `U` with values on `V` such that
+
+        .. MATH::
+
+           \forall p \in U,\  \tilde e(p) = e(\Phi(p)).
+
+        INPUT:
+
+        - ``mapping`` -- differentiable mapping `\Phi: U \rightarrow V`
+
+        OUTPUT:
+
+        - vector frame `\tilde e` along `U` defined above.
+
+        EXAMPLE:
+
+        Vector frame along a curve::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: R.<t> = RealLine()
+            sage: Phi = R.diff_mapping(M, {X: (cos(t), t)}, name='Phi',
+            ....:                      latex_name=r'\Phi') ; Phi
+            Curve 'Phi' in the 2-dimensional manifold 'M'
+            sage: e = X.frame() ; e
+            coordinate frame (M, (d/dx,d/dy))
+            sage: te = e.along(Phi) ; te
+            vector frame (R, (d/dx,d/dy)) with values on the 2-dimensional manifold 'M'
+
+
+        Check of the formula `\tilde e(p) = e(\Phi(p))`::
+
+            sage: p = R(pi) ; p
+            point on field R of real numbers
+            sage: te[0].at(p) == e[0].at(Phi(p))
+            True
+            sage: te[1].at(p) == e[1].at(Phi(p))
+            True
+
+        The result is cached::
+
+            sage: te is e.along(Phi)
+            True
+
+        """
+        dom = self._domain
+        if mapping.codomain().is_subset(dom):
+            rmapping = mapping
+        else:
+            rmapping = None
+            for doms, rest in mapping._restrictions.iteritems():
+                if doms[1].is_subset(dom):
+                    rmapping = rest
+                    break
+            else:
+                raise ValueError("the codomain of {} is not ".format(mapping)
+                             + "included in the domain of {}".format(self))
+        vmodule = rmapping.domain().vector_field_module(dest_map=rmapping)
+        return vmodule.basis(from_frame=self)
+
+
 #******************************************************************************
 
 class CoordFrame(VectorFrame):

@@ -594,7 +594,6 @@ class ManifoldCurveSet(ManifoldHomset):
         sage: E.one().display()
         Id_R: R --> R
            t |--> t
-        on (0, 1): t |--> t
 
     A ``typical element`` of the monoid::
 

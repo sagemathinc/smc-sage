@@ -669,7 +669,7 @@ class RealLine(Manifold):
         sage: latex(x)
         {\xi}
         sage: latex(R.canonical_chart())
-        (\RR,({\xi}))
+        \left(\RR,({\xi})\right)
 
     The LaTeX symbol of the real line itself can also be customized::
 

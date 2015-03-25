@@ -909,7 +909,8 @@ class TensorField(ModuleElement):
             True
 
         """
-        if subdomain == self._domain:
+        if subdomain == self._domain and \
+                    (dest_map is None or dest_map == self._vmodule._dest_map) :
             return self
         if subdomain not in self._restrictions:
             if not subdomain.is_subset(self._domain):
@@ -1212,7 +1213,16 @@ class TensorField(ModuleElement):
 
         """
         if basis is None:
-            basis = self._domain._def_frame
+            if self._vmodule._dest_map.is_identity():
+                basis = self._domain._def_frame
+            else:
+                for rst in self._restrictions.values():
+                    try:
+                        return rst.display()
+                    except ValueError:
+                        pass
+            if basis is None:  # should be "is still None" ;-)
+                raise ValueError("a frame must be provided for the display")
         rst = self.restrict(basis._domain, dest_map=basis._dest_map)
         return rst.display(basis, chart)
 
@@ -3282,7 +3292,8 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             True
 
         """
-        if subdomain == self._domain:
+        if subdomain == self._domain and \
+                    (dest_map is None or dest_map == self._vmodule._dest_map) :
             return self
         if subdomain not in self._restrictions:
             if not subdomain.is_subset(self._domain):

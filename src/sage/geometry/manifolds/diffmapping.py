@@ -1083,7 +1083,7 @@ class DiffMapping(Morphism):
 
         Coordinate representation w.r.t. a pair (subchart, superchart)::
 
-            sage: Phi1.multi_function_chart(c_uv.restrict(A), c_xyz) 
+            sage: Phi1.multi_function_chart(c_uv.restrict(A), c_xyz)
             functions (u*v, u/v, u + v) on the chart (A, (u, v))
 
         """
@@ -1545,15 +1545,25 @@ class DiffMapping(Morphism):
             sage: id.restrict(U) is U.identity_map()
             True
 
+        The codomain can be restricted (i.e. made tighter)::
+
+            sage: Phi = D.diff_mapping(M, [x/sqrt(1+x^2+y^2), y/sqrt(1+x^2+y^2)])
+            sage: Phi
+            differentiable mapping from the open subset 'D' of the
+             2-dimensional manifold 'R^2' to the 2-dimensional manifold 'R^2'
+            sage: Phi.restrict(D, subcodomain=D)
+            differentiable mapping from the open subset 'D' of the
+             2-dimensional manifold 'R^2' to itself
+
         """
         from sage.categories.homset import Hom
-        if subdomain == self._domain:
-            return self
         if subcodomain is None:
             if self._is_identity:
                 subcodomain = subdomain
             else:
                 subcodomain = self._codomain
+        if subdomain == self._domain and subcodomain == self._codomain:
+            return self
         if (subdomain, subcodomain) not in self._restrictions:
             if not subdomain.is_subset(self._domain):
                 raise ValueError("The specified domain is not a subset " +
