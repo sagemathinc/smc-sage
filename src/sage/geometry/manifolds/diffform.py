@@ -376,20 +376,6 @@ class DiffForm(TensorField):
         return self._tensor_rank
 
 
-    def base_module(self):
-        r"""
-        Return the vector field module on which ``self`` acts as an
-        alternating form.
-
-        OUTPUT:
-
-        - instance of
-          :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`
-          representing the module on which ``self`` is defined.
-
-        """
-        return self._vmodule
-
 #******************************************************************************
 
 class DiffFormParal(FreeModuleAltForm, TensorFieldParal):

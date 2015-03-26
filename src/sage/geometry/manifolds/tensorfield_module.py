@@ -105,6 +105,7 @@ class TensorFieldModule(UniqueRepresentation, Parent):
                                              intersection_name='W', restrictions1= x^2+y^2!=0, \
                                              restrictions2= u^2+v^2!=0)
         sage: uv_to_xy = xy_to_uv.inverse()
+        sage: W = U.intersection(V)
         sage: T20 = M.tensor_field_module((2,0)) ; T20
         module T^(2,0)(M) of type-(2,0) tensors fields on the 2-dimensional manifold 'M'
 
@@ -165,8 +166,49 @@ class TensorFieldModule(UniqueRepresentation, Parent):
           From: module T^(2,0)(M) of type-(2,0) tensors fields on the 2-dimensional manifold 'M'
           To:   free module T^(2,0)(U) of type-(2,0) tensors fields on the open subset 'U' of the 2-dimensional manifold 'M'
 
-    The conversion map is actually the *restriction* of tensor fields defined
-    on `M` to `U`.
+    The coercion map is actually the *restriction* of tensor fields defined
+    on `M` to `U`::
+
+        sage: t = M.tensor_field(2,0, name='t')
+        sage: eU = c_xy.frame() ; eV = c_uv.frame()
+        sage: t[eU,:] = [[2,0], [0,-3]]
+        sage: t.add_comp_by_continuation(eV, W, chart=c_uv)
+        sage: T20U(t)  # the conversion map in action
+        tensor field 't' of type (2,0) on the open subset 'U' of the
+         2-dimensional manifold 'M'
+        sage: T20U(t) is t.restrict(U)
+        True
+
+    There is also a coercion map from fields of tangent-space automorphisms to
+    tensor fields of type (1,1)::
+
+        sage: T11 = M.tensor_field_module((1,1)) ; T11
+        module T^(1,1)(M) of type-(1,1) tensors fields on the 2-dimensional
+         manifold 'M'
+        sage: GL = M.automorphism_field_group() ; GL
+        General linear group of the module X(M) of vector fields on the
+         2-dimensional manifold 'M'
+        sage: T11.has_coerce_map_from(GL)
+        True
+
+    Explicit call to the coercion map::
+
+        sage: a = GL.one() ; a
+        field of tangent-space identity maps on the 2-dimensional manifold 'M'
+        sage: a.parent()
+        General linear group of the module X(M) of vector fields on the
+         2-dimensional manifold 'M'
+        sage: ta = T11.coerce(a) ; ta
+        tensor field 'Id' of type (1,1) on the 2-dimensional manifold 'M'
+        sage: ta.parent()
+        module T^(1,1)(M) of type-(1,1) tensors fields on the 2-dimensional
+         manifold 'M'
+        sage: ta[eU,:]  # ta on U
+        [1 0]
+        [0 1]
+        sage: ta[eV,:]  # ta on V
+        [1 0]
+        [0 1]
 
     """
 
@@ -218,15 +260,6 @@ class TensorFieldModule(UniqueRepresentation, Parent):
                         self._zero_element.add_comp(frame)
                         # (since new components are initialized to zero)
             return self._zero_element
-        if isinstance(comp, TensorField) and not isinstance(comp, DiffForm):
-            # coercion by domain restriction
-            if self._tensor_type == comp._tensor_type and \
-               self._domain.is_subset(comp._domain) and \
-               self._ambient_domain.is_subset(comp._ambient_domain):
-                return comp.restrict(self._domain)
-            else:
-               raise TypeError("cannot coerce the {}".format(comp) +
-                                " to an element of {}".format(self))
         if isinstance(comp, DiffForm):
             # coercion of a p-form to a type-(0,p) tensor:
             form = comp # for readability
@@ -245,6 +278,28 @@ class TensorFieldModule(UniqueRepresentation, Parent):
             for dom, rst in form._restrictions.iteritems():
                 resu._restrictions[dom] = dom.tensor_field_module((0,p))(rst)
             return resu
+        if isinstance(comp, AutomorphismField):
+            # coercion of an automorphism to a type-(1,1) tensor:
+            autom = comp # for readability
+            if self._tensor_type != (1,1) or \
+                                          self._vmodule != autom.base_module():
+                raise TypeError("cannot coerce the {}".format(autom) +
+                                " to an element of {}".format(self))
+            resu = self.element_class(self._vmodule, (1,1), name=autom._name,
+                                      latex_name=autom._latex_name)
+            for dom, rest in autom._restrictions.iteritems():
+                resu._restrictions[dom] = dom.tensor_field_module((1,1))(rest)
+            return resu
+        if isinstance(comp, TensorField):
+            # coercion by domain restriction
+            if self._tensor_type == comp._tensor_type and \
+               self._domain.is_subset(comp._domain) and \
+               self._ambient_domain.is_subset(comp._ambient_domain):
+                return comp.restrict(self._domain)
+            else:
+               raise TypeError("cannot coerce the {}".format(comp) +
+                                " to an element of {}".format(self))
+
         # standard construction
         resu = self.element_class(self._vmodule, self._tensor_type, name=name,
                                   latex_name=latex_name, sym=sym,
@@ -267,7 +322,9 @@ class TensorFieldModule(UniqueRepresentation, Parent):
         Determine whether coercion to self exists from other parent.
 
         """
-        from diffform_module import DiffFormModule
+        from sage.geometry.manifolds.diffform_module import DiffFormModule
+        from sage.geometry.manifolds.automorphismfield_group import \
+                                                         AutomorphismFieldGroup
         if isinstance(other, (TensorFieldModule, TensorFieldFreeModule)):
             # coercion by domain restriction
             return self._tensor_type == other._tensor_type and \
@@ -277,6 +334,10 @@ class TensorFieldModule(UniqueRepresentation, Parent):
             # coercion of p-forms to type-(0,p) tensor fields
             return self._vmodule is other.base_module() and \
                                        self._tensor_type == (0, other.degree())
+        if isinstance(other, AutomorphismFieldGroup):
+            # coercion of automorphism fields to type-(1,1) tensor fields
+            return self._vmodule is other.base_module() and \
+                                                     self._tensor_type == (1,1)
         return False
 
     #### End of parent methods
@@ -440,7 +501,7 @@ class TensorFieldFreeModule(TensorFreeModule):
           From: free module T^(2,0)(R^3) of type-(2,0) tensors fields on the 3-dimensional manifold 'R^3'
           To:   free module T^(2,0)(U) of type-(2,0) tensors fields on the open subset 'U' of the 3-dimensional manifold 'R^3'
 
-    The conversion map is actually the *restriction* of tensor fields defined
+    The coercion map is actually the *restriction* of tensor fields defined
     on `\RR^3` to `U`.
 
     There is also a coercion map from fields of tangent-space automorphisms to
@@ -449,15 +510,15 @@ class TensorFieldFreeModule(TensorFreeModule):
         sage: T11 = M.tensor_field_module((1,1)) ; T11
         free module T^(1,1)(R^3) of type-(1,1) tensors fields on the
          3-dimensional manifold 'R^3'
-        sage: Aut = M.automorphism_field_group() ; Aut
+        sage: GL = M.automorphism_field_group() ; GL
         General linear group of the free module X(R^3) of vector fields on the
          3-dimensional manifold 'R^3'
-        sage: T11.has_coerce_map_from(Aut)
+        sage: T11.has_coerce_map_from(GL)
         True
 
     An explicit call to this coercion map is::
 
-        sage: id = Aut.one() ; id
+        sage: id = GL.one() ; id
         field of tangent-space identity maps on the 3-dimensional manifold 'R^3'
         sage: tid = T11(id) ; tid
         tensor field 'Id' of type (1,1) on the 3-dimensional manifold 'R^3'

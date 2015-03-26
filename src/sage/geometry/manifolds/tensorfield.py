@@ -721,6 +721,41 @@ class TensorField(ModuleElement):
         """
         return self._domain
 
+
+    def base_module(self):
+        r"""
+        Return the vector field module on which ``self`` acts as a tensor.
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`
+          representing the module on which ``self`` acts as a tensor.
+
+        EXAMPLES:
+
+        The module of vector fields on the 2-sphere as a "base module"::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'S^2') # the 2-dimensional sphere S^2
+            sage: U = M.open_subset('U') # complement of the North pole
+            sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+            sage: V = M.open_subset('V') # complement of the South pole
+            sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+            sage: M.declare_union(U,V)   # S^2 is the union of U and V
+            sage: t = M.tensor_field(0,2)
+            sage: t.base_module()
+            module X(S^2) of vector fields on the 2-dimensional manifold 'S^2'
+            sage: t.base_module() is M.vector_field_module()
+            True
+            sage: XM = M.vector_field_module()
+            sage: XM.an_element().base_module() is XM
+            True
+
+        """
+        return self._vmodule
+
+
     def tensor_type(self):
         r"""
         Return the tensor type of ``self``.
@@ -733,8 +768,12 @@ class TensorField(ModuleElement):
         EXAMPLES::
 
             sage: Manifold._clear_cache_() # for doctests only
-            sage: M = Manifold(2, 'M')
-            sage: c_xy.<x,y> = M.chart()
+            sage: M = Manifold(2, 'S^2') # the 2-dimensional sphere S^2
+            sage: U = M.open_subset('U') # complement of the North pole
+            sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+            sage: V = M.open_subset('V') # complement of the South pole
+            sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+            sage: M.declare_union(U,V)   # S^2 is the union of U and V
             sage: t = M.tensor_field(1,2)
             sage: t.tensor_type()
             (1, 2)
@@ -756,8 +795,13 @@ class TensorField(ModuleElement):
 
         EXAMPLES::
 
-            sage: M = Manifold(2, 'M')
-            sage: c_xy.<x,y> = M.chart()
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'S^2') # the 2-dimensional sphere S^2
+            sage: U = M.open_subset('U') # complement of the North pole
+            sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+            sage: V = M.open_subset('V') # complement of the South pole
+            sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+            sage: M.declare_union(U,V)   # S^2 is the union of U and V
             sage: t = M.tensor_field(1,2)
             sage: t.tensor_rank()
             3
@@ -772,9 +816,27 @@ class TensorField(ModuleElement):
         r"""
         Print the list of symmetries and antisymmetries.
 
-        See
-        :meth:`sage.tensor.modules.free_module_tensor.FreeModuleTensor.symmetries`
-        for examples.
+        EXAMPLES::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'S^2') # the 2-dimensional sphere S^2
+            sage: U = M.open_subset('U') # complement of the North pole
+            sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+            sage: V = M.open_subset('V') # complement of the South pole
+            sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+            sage: M.declare_union(U,V)   # S^2 is the union of U and V
+            sage: t = M.tensor_field(1,2)
+            sage: t.symmetries()
+            no symmetry;  no antisymmetry
+            sage: t = M.tensor_field(1,2, sym=(1,2))
+            sage: t.symmetries()
+            symmetry: (1, 2);  no antisymmetry
+            sage: t = M.tensor_field(2,2, sym=(0,1), antisym=(2,3))
+            sage: t.symmetries()
+            symmetry: (0, 1);  antisymmetry: (2, 3)
+            sage: t = M.tensor_field(2,2, antisym=[(0,1),(2,3)])
+            sage: t.symmetries()
+            no symmetry;  antisymmetries: [(0, 1), (2, 3)]
 
         """
         if len(self._sym) == 0:
