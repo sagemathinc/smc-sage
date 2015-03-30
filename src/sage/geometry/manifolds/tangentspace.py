@@ -170,6 +170,48 @@ class TangentVector(FiniteRankFreeModuleElement):
 
             sage: show(X.plot(X) + v.plot(color='green', scale=2, label='V'))
             sage: show(X.plot(X) + v.plot(print_label=False))
+            sage: show(X.plot(X) + v.plot(color='green', label_color='black',
+            ....:                         fontsize=20, label_offset=0.2))
+
+        Plot with extra options::
+
+            sage: show(X.plot(X) + v.plot(linestyle=':', width=4, arrowsize=8))
+
+        Vector tangent to a 4-dimensional manifold::
+
+            sage: M = Manifold(4, 'M')
+            sage: X.<t,x,y,z> = M.chart()
+            sage: p = M((0,1,2,3), name='p')
+            sage: Tp = p.tangent_space()
+            sage: v = Tp((5,4,3,2), name='v') ; v
+            tangent vector v at point 'p' on 4-dimensional manifold 'M'
+
+        We cannot make a 4D plot directly::
+
+            sage: v.plot()
+            Traceback (most recent call last):
+            ...
+            ValueError: The number of coordinates involved in the plot must be either 2 or 3, not 4
+
+        Rather, we have to select some chart coordinates for the plot, via
+        the argument ``plot_coords``. For instance, for a 2-dimensional plot
+        in terms of the coordinates `(x,y)`::
+
+            sage: v.plot(plot_coords=(x,y))
+            Graphics object consisting of 2 graphics primitives
+
+        This plot involves only the components `v^x` and `v^y` of `v`.
+        Similarly, for a 3-dimensional plot in terms of the coordinates
+        `(t,x,y)`::
+
+            sage: v.plot(plot_coords=(t,x,z))
+            Graphics3d Object
+
+        This plot involves only the components `v^t`,  `v^x` and `v^z` of `v`.
+        A nice 3D view atop the coordinate grid is obtained via::
+
+            sage: show(X.plot(X, ambient_coords=(t,x,z)) +
+            ....:      v.plot(plot_coords=(t,x,z), label_offset=0.5, width=6))
 
         An example of plot via a differential mapping: plot of a vector tangent
         to a 2-sphere viewed in `\RR^3`::
@@ -222,7 +264,8 @@ class TangentVector(FiniteRankFreeModuleElement):
             plot_coords = chart[:]  # all chart coordinates are used
         n_pc = len(plot_coords)
         if n_pc != 2 and n_pc !=3:
-            raise ValueError("Bad number of plot coordinates: {}".format(n_cp))
+            raise ValueError("The number of coordinates involved in the " +
+                             "plot must be either 2 or 3, not {}".format(n_pc))
         ind_pc = [chart[:].index(pc) for pc in plot_coords] # indices of plot
                                                             # coordinates
         #

@@ -670,7 +670,8 @@ class ManifoldCurve(DiffMapping):
             plot_coords = chart[:]  # all chart coordinates are used
         n_pc = len(plot_coords)
         if n_pc != 2 and n_pc !=3:
-            raise ValueError("Bad number of plot coordinates: {}".format(n_cp))
+            raise ValueError("The number of coordinates involved in the " +
+                             "plot must be either 2 or 3, not {}".format(n_pc))
         ind_pc = [chart[:].index(pc) for pc in plot_coords] # indices of plot
                                                             # coordinates
         #
