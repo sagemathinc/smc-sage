@@ -528,13 +528,18 @@ class ManifoldCurve(DiffMapping):
              thickness=1, plot_points=75, label_axes=True,
              aspect_ratio='automatic'):
         r"""
-        Plot of the curve in terms of a given chart of its codomain.
+        Graphic representation of the curve ``self`` in terms of a given chart.
+
+        The chart's domain must overlap with the curve's codomain or with
+        the codomain of the composite curve `\Phi\circ c`, where `c` is
+        ``self`` and `\Phi` some manifold differential mapping (argument
+        ``mapping`` below).
 
         INPUT:
 
         - ``chart`` -- (default: ``None``) the chart in terms of which the plot
           is performed; if ``None``, the default chart of the codomain of
-          curve (or of the curve composed by ``mapping``) is used
+          curve (or of the curve composed with `\Phi`) is used
         - ``prange`` -- (default: ``None``) range of the curve parameter for
           the plot; if ``None``, the entire parameter range declared during the
           curve construction is considered (with -Infinity
@@ -555,8 +560,9 @@ class ManifoldCurve(DiffMapping):
           coordinates of ``chart`` in terms of which the plot is
           performed; if ``None``, all the coordinates of ``chart`` are
           considered
-        - ``mapping`` -- (default: ``None``) differentiable mapping (instance
-          of :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
+        - ``mapping`` -- (default: ``None``) differentiable mapping `\Phi`
+          (instance of
+          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
           providing the link between ``self`` and the chart ``chart`` (cf.
           above); if ``None``, chart is supposed to be defined on the
           codomain of the curve ``self``.

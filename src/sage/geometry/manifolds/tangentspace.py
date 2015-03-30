@@ -89,19 +89,29 @@ class TangentVector(FiniteRankFreeModuleElement):
              label_offset=0.1, plot_coords=None,
              parameters=None, **extra_options):
         r"""
-        Graphic representation of the vector.
+        Graphic representation of the vector ``self`` in terms of a given
+        chart.
+
+        The vector's base point `p` (or its image `\Phi(p)` by some
+        differentiable mapping `\Phi`) must lie in the chart's domain.
+        If `\Phi` is different from the identity mapping, the vector
+        actually depicted is `\mathrm{d}\Phi_p(v)`, where `v` is ``self``
+        (see the example of a vector tangent to the 2-sphere below, where
+        `\Phi: S^2 \rightarrow \RR^3`).
 
         INPUT:
 
         - ``chart`` -- (default: ``None``) the chart in terms of which the plot
           is performed; if ``None``, it is set to the default chart of the
           open set containing the point at which the vector (or the vector
-          image via the differential of ``mapping``) is defined
-        - ``mapping`` -- (default: ``None``) differentiable mapping (instance
-          of :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
-          providing the link between the point `p` at which the vector is defined
-          and the chart ``chart``; if ``None``, `p` must lie in the domain of
-          ``chart``.
+          image via the differential `\mathrm{d}\Phi` of ``mapping``) is
+          defined
+        - ``mapping`` -- (default: ``None``) differentiable mapping `\Phi`
+          (instance of
+          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
+          providing the link between the point `p` at which the vector is
+          defined and the chart ``chart``: `\Phi(p)` must lie in the domain of
+          ``chart``
         - ``scale`` -- (default: 1) value by which the length of the arrow
           representing the vector is multiplied
         - ``color`` -- (default: 'blue') color of the arrow representing the
@@ -124,6 +134,9 @@ class TangentVector(FiniteRankFreeModuleElement):
         - ``parameters`` -- (default: ``None``) dictionary giving the numerical
           values of the parameters that may appear in the coordinate expression
           of ``self``
+        - ``**extra_options`` -- extra options for an arrow plot (see
+          :func:`~sage.plot.arrow.arrow2d` and
+          :func:`~sage.plot.plot3d.shapes.arrow3d`)
 
         OUTPUT:
 
@@ -134,6 +147,29 @@ class TangentVector(FiniteRankFreeModuleElement):
           based on 3 coordinates of ``chart``)
 
         EXAMPLES:
+
+        Vector tangent to a 2-dimensional manifold::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M((2,2), name='p')
+            sage: Tp = p.tangent_space()
+            sage: v = Tp((2, 1), name='v') ; v
+            tangent vector v at point 'p' on 2-dimensional manifold 'M'
+
+        Plot of the vector alone (arrow + label)::
+
+            sage: v.plot()
+            Graphics object consisting of 2 graphics primitives
+
+        Plot atop of the chart grid::
+
+            sage: show(X.plot(X) + v.plot())
+
+        Plots with various options::
+
+            sage: show(X.plot(X) + v.plot(color='green', scale=2, label='V'))
+            sage: show(X.plot(X) + v.plot(print_label=False))
 
         An example of plot via a differential mapping: plot of a vector tangent
         to a 2-sphere viewed in `\RR^3`::
@@ -148,9 +184,12 @@ class TangentVector(FiniteRankFreeModuleElement):
             sage: F.display() # the standard embedding of S^2 into R^3
             F: S^2 --> R^3
             on U: (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
-            sage: p = U.point((pi/4, pi/2), name='p')
+            sage: p = U.point((pi/4, pi/4), name='p')
             sage: v = XS.frame()[1].at(p) ; v
             tangent vector d/dph at point 'p' on 2-dimensional manifold 'S^2'
+            sage: graph_v = v.plot(mapping=F)
+            sage: graph_S2 = XS.plot(X3, mapping=F, nb_values=9)
+            sage: show(graph_v + graph_S2)
 
         """
         from sage.plot.arrow import arrow2d
@@ -209,9 +248,10 @@ class TangentVector(FiniteRankFreeModuleElement):
                           for i in ind_pc]
         if n_pc == 2:
             resu += arrow2d(tailpoint=coord_tail, headpoint=coord_head,
-                            **extra_options)
+                            color=color, **extra_options)
         else:
-            resu += arrow3d(coord_tail, coord_head, **extra_options)
+            resu += arrow3d(coord_tail, coord_head, color=color,
+                            **extra_options)
         #
         # The label
         #
@@ -494,6 +534,8 @@ class TangentSpace(FiniteRankFreeModule):
 
         EXAMPLE::
 
+            sage: from sage.geometry.manifolds.tangentspace import TangentSpace # for doctests only
+            sage: TangentSpace._clear_cache_() ; Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: p = M.point((1,-2), name='p')
