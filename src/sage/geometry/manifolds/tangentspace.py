@@ -7,7 +7,7 @@ corresponding tangent vectors.
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2014): initial version
+- Eric Gourgoulhon, Michal Bejger (2014-2015): initial version
 
 REFERENCES:
 
@@ -83,6 +83,155 @@ class TangentVector(FiniteRankFreeModuleElement):
             desc += " " + str(self._name)
         desc += " at " + str(self._point)
         return desc
+
+    def plot(self, chart=None, mapping=None, scale=1, color='blue',
+             print_label=True, label=None,  label_color=None, fontsize=10,
+             label_offset=0.1, plot_coords=None,
+             parameters=None, **extra_options):
+        r"""
+        Graphic representation of the vector.
+
+        INPUT:
+
+        - ``chart`` -- (default: ``None``) the chart in terms of which the plot
+          is performed; if ``None``, it is set to the default chart of the
+          open set containing the point at which the vector (or the vector
+          image via the differential of ``mapping``) is defined
+        - ``mapping`` -- (default: ``None``) differentiable mapping (instance
+          of :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
+          providing the link between the point `p` at which the vector is defined
+          and the chart ``chart``; if ``None``, `p` must lie in the domain of
+          ``chart``.
+        - ``scale`` -- (default: 1) value by which the length of the arrow
+          representing the vector is multiplied
+        - ``color`` -- (default: 'blue') color of the arrow representing the
+          vector
+        - ``print_label`` -- (default: ``True``) determines whether a label is
+          printed next to the arrow representing the vector
+        - ``label`` -- (string; default: ``None``) label printed next to the
+          arrow representing the vector; if ``None``, the vector's symbol is
+          used, if any
+        - ``label_color`` -- (default: ``None``) color to print the label;
+          if ``None``, the value of ``color`` is used
+        - ``fontsize`` -- (default: 10) size of the font used to print the
+          label
+        - ``label_offset`` -- (default: 0.1) determines the separation between
+          the vector arrow and the label
+        - ``plot_coords`` -- (default: ``None``) tuple containing the 2 or 3
+          coordinates of ``chart`` in terms of which the plot is
+          performed; if ``None``, all the coordinates of ``chart`` are
+          considered
+        - ``parameters`` -- (default: ``None``) dictionary giving the numerical
+          values of the parameters that may appear in the coordinate expression
+          of ``self``
+
+        OUTPUT:
+
+        - a graphic object, either an instance of
+          :class:`~sage.plot.graphics.Graphics` for a 2D plot (i.e. based on
+          2 coordinates of ``chart``) or an instance of
+          :class:`~sage.plot.plot3d.base.Graphics3d` for a 3D plot (i.e.
+          based on 3 coordinates of ``chart``)
+
+        EXAMPLES:
+
+        An example of plot via a differential mapping: plot of a vector tangent
+        to a 2-sphere viewed in `\RR^3`::
+
+            sage: S2 = Manifold(2, 'S^2')
+            sage: U = S2.open_subset('U') # the open set covered by spherical coord.
+            sage: XS.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: R3 = Manifold(3, 'R^3')
+            sage: X3.<x,y,z> = R3.chart()
+            sage: F = S2.diff_mapping(R3, {(XS, X3): [sin(th)*cos(ph),
+            ....:                     sin(th)*sin(ph), cos(th)]}, name='F')
+            sage: F.display() # the standard embedding of S^2 into R^3
+            F: S^2 --> R^3
+            on U: (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
+            sage: p = U.point((pi/4, pi/2), name='p')
+            sage: v = XS.frame()[1].at(p) ; v
+            tangent vector d/dph at point 'p' on 2-dimensional manifold 'S^2'
+
+        """
+        from sage.plot.arrow import arrow2d
+        from sage.plot.text import text
+        from sage.plot.graphics import Graphics
+        from sage.plot.plot3d.shapes import arrow3d
+        from sage.plot.plot3d.shapes2 import text3d
+        from sage.misc.functional import numerical_approx
+        from sage.geometry.manifolds.chart import Chart
+        #
+        # The "effective" vector to be plotted
+        #
+        if mapping is None:
+            eff_vector = self
+            base_point = self._point
+        else:
+            eff_vector = mapping.differential(self._point)(self)
+            base_point = mapping(self._point)
+        #
+        # The chart w.r.t. which the vector is plotted
+        #
+        if chart is None:
+            chart = base_point.containing_set().default_chart()
+        elif not isinstance(chart, Chart):
+            raise TypeError("{} is not a chart".format(chart))
+        #
+        # Coordinates of the above chart w.r.t. which the vector is plotted
+        #
+        if plot_coords is None:
+            plot_coords = chart[:]  # all chart coordinates are used
+        n_pc = len(plot_coords)
+        if n_pc != 2 and n_pc !=3:
+            raise ValueError("Bad number of plot coordinates: {}".format(n_cp))
+        ind_pc = [chart[:].index(pc) for pc in plot_coords] # indices of plot
+                                                            # coordinates
+        #
+        # Components of the vector w.r.t. the chart frame
+        #
+        basis = chart.frame().at(base_point)
+        vcomp = eff_vector.comp(basis=basis)[:]
+        xp = base_point.coord(chart=chart)
+        #
+        # The arrow
+        #
+        resu = Graphics()
+        if parameters is None:
+            coord_tail = [numerical_approx(xp[i]) for i in ind_pc]
+            coord_head = [numerical_approx(xp[i] + scale*vcomp[i])
+                          for i in ind_pc]
+        else:
+            coord_tail = [numerical_approx(
+                           xp[i].substitute(parameters))
+                          for i in ind_pc]
+            coord_head = [numerical_approx(
+                           (xp[i] + scale*vcomp[i]).substitute(parameters))
+                          for i in ind_pc]
+        if n_pc == 2:
+            resu += arrow2d(tailpoint=coord_tail, headpoint=coord_head,
+                            **extra_options)
+        else:
+            resu += arrow3d(coord_tail, coord_head, **extra_options)
+        #
+        # The label
+        #
+        if print_label:
+            if label is None:
+                if n_pc == 2 and self._latex_name is not None:
+                    label = r'$' + self._latex_name + r'$'
+                if n_pc == 3 and self._name is not None:
+                    label = self._name
+            if label is not None:
+                xlab = [xh + label_offset for xh in coord_head]
+                if label_color is None:
+                    label_color = color
+                if n_pc == 2:
+                    resu += text(label, xlab, fontsize=fontsize,
+                                 color=label_color)
+                else:
+                    resu += text3d(label, xlab, fontsize=fontsize,
+                                   color=label_color)
+        return resu
 
 #******************************************************************************
 
@@ -277,14 +426,35 @@ class TangentSpace(FiniteRankFreeModule):
     def _repr_(self):
         r"""
         String representation of the object.
-        """
 
-        description = "tangent space at " + str(self._point)
+        EXAMPLE::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M.point((3,-2), name='p')
+            sage: Tp = p.tangent_space()
+        sage: Tp._repr_()
+        "tangent space at point 'p' on 2-dimensional manifold 'M'"
+
+        """
+        description = "tangent space at {}".format(self._point)
         return description
 
     def _an_element_(self):
         r"""
         Construct some (unamed) vector in the tangent space
+
+        EXAMPLE::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M.point((3,-2), name='p')
+            sage: Tp = p.tangent_space()
+            sage: Tp._an_element_()
+            tangent vector at point 'p' on 2-dimensional manifold 'M'
+            sage: Tp._an_element_().display()
+            d/dx + 2 d/dy
+
         """
         resu = self.element_class(self)
         if self._def_basis is not None:
@@ -294,7 +464,46 @@ class TangentSpace(FiniteRankFreeModule):
     def dimension(self):
         r"""
         Return the vector space dimension of ``self``.
+
+        EXAMPLE::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M.point((1,-2), name='p')
+            sage: Tp = p.tangent_space()
+            sage: Tp.dimension()
+            2
+
+        A shortcut is ``dim()``::
+            sage: Tp.dim()
+            2
+
+        One can also use the global function ``dim``::
+
+            sage: dim(Tp)
+            2
+
         """
         return self._rank
+
+    dim = dimension
+
+    def base_point(self):
+        r"""
+        Return the manifold point at which ``self`` is defined.
+
+        EXAMPLE::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M.point((1,-2), name='p')
+            sage: Tp = p.tangent_space()
+            sage: Tp.base_point()
+            point 'p' on 2-dimensional manifold 'M'
+            sage: Tp.base_point() is p
+            True
+
+        """
+        return self._point
 
     dim = dimension

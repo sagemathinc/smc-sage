@@ -551,7 +551,7 @@ class ManifoldCurve(DiffMapping):
           +Infinity if the latter is the upper bound of the parameter range;
           similarly ``-max_value`` is the numerical valued substituted for
           -Infinity
-        - ``ambient_coords`` -- (default: ``None``) tuple containing the 2 or 3
+        - ``plot_coords`` -- (default: ``None``) tuple containing the 2 or 3
           coordinates of ``chart`` in terms of which the plot is
           performed; if ``None``, all the coordinates of ``chart`` are
           considered

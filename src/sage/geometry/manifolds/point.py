@@ -216,6 +216,12 @@ class ManifoldPoint(Element):
         else:
            return self._latex_name
 
+    def __hash__(self):
+        r"""
+        Return a hash value for the object.
+        """
+        return hash(str(self._coordinates))  #!# to be improved
+
     def containing_set(self):
         r"""
         Return a manifold subset that contains ``self``.
