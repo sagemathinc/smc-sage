@@ -110,8 +110,8 @@ class TangentVector(FiniteRankFreeModuleElement):
           (instance of
           :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
           providing the link between the point `p` at which the vector is
-          defined and the chart ``chart``: `\Phi(p)` must lie in the domain of
-          ``chart``
+          defined and the chart ``chart``: the domain of ``chart`` must
+          contain `\Phi(p)`; if ``None``, the identity mapping is assumed
         - ``scale`` -- (default: 1) value by which the length of the arrow
           representing the vector is multiplied
         - ``color`` -- (default: 'blue') color of the arrow representing the
@@ -133,8 +133,8 @@ class TangentVector(FiniteRankFreeModuleElement):
           considered
         - ``parameters`` -- (default: ``None``) dictionary giving the numerical
           values of the parameters that may appear in the coordinate expression
-          of ``self``
-        - ``**extra_options`` -- extra options for an arrow plot (see
+          of ``self`` (see example below)
+        - ``**extra_options`` -- extra options for the arrow plot (see
           :func:`~sage.plot.arrow.arrow2d` and
           :func:`~sage.plot.plot3d.shapes.arrow3d`)
 
@@ -176,6 +176,14 @@ class TangentVector(FiniteRankFreeModuleElement):
         Plot with extra options::
 
             sage: show(X.plot(X) + v.plot(linestyle=':', width=4, arrowsize=8))
+
+        Plot with specific values of some free parameters::
+
+            sage: var('a b')
+            (a, b)
+            sage: v = Tp((1+a, -b^2), name='v') ; v.display()
+            v = (a + 1) d/dx - b^2 d/dy
+            sage: show(X.plot(X) + v.plot(parameters={a: -2, b: 3}))
 
         Vector tangent to a 4-dimensional manifold::
 

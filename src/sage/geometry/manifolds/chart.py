@@ -83,7 +83,7 @@ class Chart(UniqueRepresentation, SageObject):
       If no interval range and no LaTeX spelling is to be set for any
       coordinate, the argument ``coordinates`` can be omitted when the
       shortcut operator ``<,>`` is used via Sage preparser (see examples below)
-    - ``names`` -- (default: None) unused argument, except if
+    - ``names`` -- (default: ``None``) unused argument, except if
       ``coordinates`` is not provided; it must then be a tuple containing
       the coordinate symbols (this is guaranted if the shortcut operator
       ``<,>`` is used).
@@ -830,7 +830,7 @@ class Chart(UniqueRepresentation, SageObject):
         - ``subset`` -- open subset `V` of the chart domain `U` (must
           be an instance of
           :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
-        - ``restrictions`` -- (default: None) list of coordinate restrictions
+        - ``restrictions`` -- (default: ``None``) list of coordinate restrictions
           defining the subset `V`.
           A restriction can be any symbolic equality or
           inequality involving the coordinates, such as x>y or x^2+y^2 != 0.
@@ -1008,9 +1008,9 @@ class Chart(UniqueRepresentation, SageObject):
         - ``transformations`` -- tuple (Y_1,...,Y_2), where Y_i is a symbolic
           expression expressing the coordinate `y^i` in terms of the
           coordinates `(x^1,\ldots,x^n)`
-        - ``intersection_name`` -- (default: None) name to be given to the
+        - ``intersection_name`` -- (default: ``None``) name to be given to the
           subset `U\cap V` if the latter differs from `U` or `V`
-        - ``restrictions1`` -- (default: None) list of conditions on the
+        - ``restrictions1`` -- (default: ``None``) list of conditions on the
           coordinates of the current chart that define `U\cap V` if the
           latter differs from `U`. ``restrictions1`` must be a list of
           of symbolic equalities or inequalities involving the
@@ -1023,7 +1023,7 @@ class Chart(UniqueRepresentation, SageObject):
           If the list ``restrictions1`` contains only one item, this item can
           be passed as such, i.e. writing x>y instead of the single element
           list [x>y].
-        - ``restrictions2`` -- (default: None) list of conditions on the
+        - ``restrictions2`` -- (default: ``None``) list of conditions on the
           coordinates of the other chart that define `U\cap V` if the latter
           differs from `V` (see ``restrictions1`` for the syntax)
 
@@ -1246,13 +1246,13 @@ class Chart(UniqueRepresentation, SageObject):
         INPUT:
 
         - ``ambient_chart`` -- the ambient chart (see above)
-        - ``fixed_coords`` -- (default: None) dictionary with keys the
+        - ``fixed_coords`` -- (default: ``None``) dictionary with keys the
           coordinates of ``self`` that are not drawn and with values the fixed
-          value of these coordinates; if None, all the coordinates of ``self``
+          value of these coordinates; if ``None``, all the coordinates of ``self``
           are drawn
-        - ``ranges`` -- (default: None) dictionary with keys the coordinates
+        - ``ranges`` -- (default: ``None``) dictionary with keys the coordinates
           to be drawn and values tuples ``(x_min,x_max)`` specifying the
-          coordinate range for the plot; if None, the entire coordinate range
+          coordinate range for the plot; if ``None``, the entire coordinate range
           declared during the chart construction is considered (with -Infinity
           replaced by ``-max_value`` and +Infinity by ``max_value``)
         - ``max_value`` -- (default: 8) numerical value substituted to
@@ -1261,29 +1261,29 @@ class Chart(UniqueRepresentation, SageObject):
           range (i.e. for which no specific plot range has been set in
           ``ranges``); similarly ``-max_value`` is the numerical valued
           substituted for -Infinity
-        - ``nb_values`` -- (default: None) either an integer or a dictionary
+        - ``nb_values`` -- (default: ``None``) either an integer or a dictionary
           with keys the coordinates to be drawn and values the number of
           constant values of the coordinate to be considered; if ``nb_values``
           is a single integer, it represents the number of constant values for all
           coordinates; if ``nb_values`` is None, it is set to 9 for a 2D plot
           and to 5 for a 3D plot
-        - ``steps`` -- (default: None) dictionary with keys the coordinates
+        - ``steps`` -- (default: ``None``) dictionary with keys the coordinates
           to be drawn and values the step between each constant value of
-          the coordinate; if None, the step is computed from the coordinate
+          the coordinate; if ``None``, the step is computed from the coordinate
           range (specified in ``ranges``) and ``nb_values``. On the contrary
           if the step is provided for some coordinate, the corresponding
           number of constant values is deduced from it and the coordinate range.
-        - ``ambient_coords`` -- (default: None) tuple containing the 2 or 3
+        - ``ambient_coords`` -- (default: ``None``) tuple containing the 2 or 3
           coordinates of the ambient chart in terms of which the plot is
-          performed; if None, all the coordinates of the ambient chart are
+          performed; if ``None``, all the coordinates of the ambient chart are
           considered
-        - ``mapping`` -- (default: None) differentiable mapping (instance
+        - ``mapping`` -- (default: ``None``) differentiable mapping (instance
           of :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
           providing the link between ``self`` and the ambient chart (cf.
-          above); if None, both charts are supposed to be defined on the same
+          above); if ``None``, both charts are supposed to be defined on the same
           manifold and related by some transition map (see
           :meth:`transition_map`)
-        - ``parameters`` -- (default: None) dictionary giving the numerical
+        - ``parameters`` -- (default: ``None``) dictionary giving the numerical
           values of the parameters that may appear in the relation between
           the two coordinate systems
         - ``color`` -- (default: 'red') either a single color or a dictionary
@@ -1306,7 +1306,7 @@ class Chart(UniqueRepresentation, SageObject):
           representing the number of points to plot the lines along which the
           coordinate varies, the other being kept constant; if ``plot_points``
           is a single integer, it is used for all coordinate lines
-        - ``label_axes`` -- (default: True) boolean determining whether the
+        - ``label_axes`` -- (default: ``True``) boolean determining whether the
           labels of the ambient coordinate axes shall be added to the graph;
           can be set to False if the graph is 3D and must be superposed with
           another graph.
@@ -2400,8 +2400,8 @@ class FunctionChart(SageObject):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the scalar field
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the scalar
+        - ``name`` -- (default: ``None``) name given to the scalar field
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the scalar
           field; if none is provided, the LaTeX symbol is set to ``name``
 
         OUTPUT:
@@ -2754,8 +2754,8 @@ class ZeroFunctionChart(FunctionChart):
 
         INPUT:
 
-        - ``name`` -- (default: None) unused
-        - ``latex_name`` -- (default: None) unused
+        - ``name`` -- (default: ``None``) unused
+        - ``latex_name`` -- (default: ``None``) unused
 
         OUTPUT:
 
