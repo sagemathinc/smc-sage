@@ -1225,15 +1225,16 @@ class Chart(UniqueRepresentation, SageObject):
         """
         return MultiFunctionChart(self, *expressions)
 
-    def plot(self, ambient_chart, fixed_coords=None, ranges=None, max_value=8,
+    def plot(self, chart=None, fixed_coords=None, ranges=None, max_value=8,
              nb_values=None, steps=None, ambient_coords=None, mapping=None,
              parameters=None, color='red',  style='-', thickness=1,
              plot_points=75, label_axes=True):
         r"""
-        Plot the chart (as a "grid") in terms of another one.
+        Plot the current chart (``self``) as a "grid" in a Cartesian graph
+        based on the coordinates of some ambient chart.
 
-        The "grid" is formed by lines along which a coordinate varies, the
-        other coordinates being kept fixed; it is drawn in terms of
+        The "grid" is formed by curves along which a coordinate of ``self``
+        varies, the other coordinates being kept fixed; it is drawn in terms of
         two (2D graphics) or three (3D graphics) coordinates of another chart,
         called hereafter the *ambient chart*.
 
@@ -1245,7 +1246,8 @@ class Chart(UniqueRepresentation, SageObject):
 
         INPUT:
 
-        - ``ambient_chart`` -- the ambient chart (see above)
+        - ``chart`` -- (default: ``None``) the ambient chart (see above); if
+          ``None``, the ambient chart is set to ``self``
         - ``fixed_coords`` -- (default: ``None``) dictionary with keys the
           coordinates of ``self`` that are not drawn and with values the fixed
           value of these coordinates; if ``None``, all the coordinates of ``self``
@@ -1346,7 +1348,7 @@ class Chart(UniqueRepresentation, SageObject):
 
         A chart can be plot in terms of itself, resulting in a rectangular grid::
 
-            sage: g = c_cart.plot(c_cart)
+            sage: g = c_cart.plot()  # equivalent to c_cart.plot(c_cart)
             sage: show(g) # a rectangular grid
 
         An example with the ambient chart given by the coordinate expression of
@@ -1408,7 +1410,7 @@ class Chart(UniqueRepresentation, SageObject):
         A 3-dimensional chart plotted in terms of itself results in a 3D
         rectangular grid::
 
-            sage: g = c_cart.plot(c_cart)
+            sage: g = c_cart.plot() # equivalent to c_cart.plot(c_cart)
             sage: show(g)  # a 3D mesh cube
 
         A 4-dimensional chart plotted in terms of itself (the plot is
@@ -1417,9 +1419,9 @@ class Chart(UniqueRepresentation, SageObject):
 
             sage: M = Manifold(4, 'M')
             sage: X.<t,x,y,z> = M.chart()
-            sage: g = X.plot(X, ambient_coords=(t,x,y))  # the coordinate z is not depicted
+            sage: g = X.plot(ambient_coords=(t,x,y))  # the coordinate z is not depicted
             sage: show(g)  # a 3D mesh cube
-            sage: g = X.plot(X, ambient_coords=(t,y)) # the coordinates x and z are not depicted
+            sage: g = X.plot(ambient_coords=(t,y)) # the coordinates x and z are not depicted
             sage: show(g)  # a 2D mesh square
 
         """
@@ -1428,63 +1430,63 @@ class Chart(UniqueRepresentation, SageObject):
         from sage.plot.line import line
         from diffmapping import DiffMapping
         from utilities import set_axes_labels
-        if not isinstance(ambient_chart, Chart):
-            raise TypeError("The first argument must be a chart.")
+        if chart is None:
+            chart = self
+        elif not isinstance(chart, Chart):
+            raise TypeError("the argument 'chart' must be a coordinate chart")
         #
-        # 1/ Determination of the relation between self and ambient_chart
+        # 1/ Determination of the relation between self and chart
         #    ------------------------------------------------------------
         nc = self._manifold._dim
-        if ambient_chart == self:
+        if chart is self:
             transf = self.multifunction(*(self._xx))
             if nc > 3:
                 if ambient_coords is None:
-                    raise TypeError("The argument 'ambient_coords' must be " +
-                                    "provided.")
+                    raise TypeError("the argument 'ambient_coords' must be " +
+                                    "provided")
                 if len(ambient_coords) > 3:
-                    raise ValueError("Too many ambient coordinates.")
+                    raise ValueError("too many ambient coordinates")
                 fixed_coords = {}
                 for coord in self._xx:
                     if coord not in ambient_coords:
                         fixed_coords[coord] = 0
         else:
             transf = None # to be the MultiFunctionChart relating self to
-                          # ambient_chart
+                          # the ambient chart
             if mapping is None:
-                if not self._domain.is_subset(ambient_chart._domain):
-                    raise TypeError("The domain of " + str(self) +
-                                    " is not included in that of " +
-                                    str(ambient_chart))
-                coord_changes = ambient_chart._domain._coord_changes
+                if not self._domain.is_subset(chart._domain):
+                    raise TypeError("the domain of {} is not ".format(self) +
+                                    "included in that of {}".format(chart))
+                coord_changes = chart._domain._coord_changes
                 for chart_pair in coord_changes:
-                    if chart_pair == (self, ambient_chart):
+                    if chart_pair == (self, chart):
                         transf = coord_changes[chart_pair]._transf
                         break
                 else:
                     # Search for a subchart
                     for chart_pair in coord_changes:
-                        for schart in ambient_chart._subcharts:
+                        for schart in chart._subcharts:
                             if chart_pair == (self, schart):
                                 transf = coord_changes[chart_pair]._transf
             else:
                 if not isinstance(mapping, DiffMapping):
-                    raise TypeError("The argument 'mapping' must be a " +
-                                    "differentiable mapping.")
+                    raise TypeError("the argument 'mapping' must be a " +
+                                    "differentiable mapping")
                 if not self._domain.is_subset(mapping._domain):
-                    raise TypeError("The domain of " + str(self) +
-                                    " is not included in that of " +
-                                    str(mapping))
-                if not ambient_chart._domain.is_subset(mapping._codomain):
-                    raise TypeError("The domain of " + str(ambient_chart) +
-                                    " is not included in the codomain of " +
-                                    str(mapping))
+                    raise TypeError("the domain of {} is not ".format(self) +
+                                    "included in that of {}".format(mapping))
+                if not chart._domain.is_subset(mapping._codomain):
+                    raise TypeError("the domain of {} is not ".format(chart) +
+                                    "included in the codomain of {}".format(
+                                                                      mapping))
                 try:
                     transf = mapping.multi_function_chart(chart1=self,
-                                                          chart2=ambient_chart)
+                                                          chart2=chart)
                 except ValueError:
                     pass
             if transf is None:
-                raise ValueError("No relation has been found between " +
-                                 str(self) + " and " + str(ambient_chart))
+                raise ValueError("no relation has been found between " +
+                                 "{} and {}".format(self, chart))
         #
         # 2/ Treatment of input parameters
         #    -----------------------------
@@ -1498,12 +1500,12 @@ class Chart(UniqueRepresentation, SageObject):
                     coords.append(coord)
             coords = tuple(coords)
         if ambient_coords is None:
-            ambient_coords = ambient_chart._xx
+            ambient_coords = chart._xx
         elif not isinstance(ambient_coords, tuple):
             ambient_coords = tuple(ambient_coords)
         nca = len(ambient_coords)
         if nca != 2 and nca !=3:
-            raise TypeError("Bad number of ambient coordinates: " + str(nca))
+            raise TypeError("bad number of ambient coordinates: {}".format(nca))
         if ranges is None:
             ranges = {}
         ranges0 = {}
@@ -1575,7 +1577,7 @@ class Chart(UniqueRepresentation, SageObject):
                 raise TypeError("Bad number of fixed coordinates.")
             for fc, val in fixed_coords.iteritems():
                 xx0[self._xx.index(fc)] = val
-        ind_a = [ambient_chart._xx.index(ac) for ac in ambient_coords]
+        ind_a = [chart._xx.index(ac) for ac in ambient_coords]
         resu = Graphics()
         for coord in coords:
             color_c, style_c = color[coord], style[coord]
