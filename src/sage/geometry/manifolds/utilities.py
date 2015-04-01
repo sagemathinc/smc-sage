@@ -327,3 +327,70 @@ def set_axes_labels(graph, xlabel, ylabel, zlabel, **kwds):
     graph += text3d('  ' + ylabel, (xmax1, y1, zmin1), **kwds)
     graph += text3d('  ' + zlabel, (xmin1, ymin1, z1), **kwds)
     return graph
+
+
+from sage.symbolic.expression import Expression
+
+class Expression_nice(Expression):
+
+    def __init__(self, ex): 
+        from sage.symbolic.ring import SR
+        self._parent = SR 
+        Expression.__init__(self, SR, x=ex)
+
+    def _repr_(self):
+        r"""
+        String representation of the object.
+
+        TODO - works for simple derivatives 
+
+        EXAMPLES::
+        
+            sage: var('x y')
+            (x, y)
+            sage: f = function('f', x, y)
+            sage: h = f.diff(y).diff(x)
+            sage: from sage.geometry.manifolds.utilities import Expression_nice
+            sage: Expression_nice(h)
+            D^2/DxDyf
+        """
+
+        d = self._parent._repr_element_(self)
+
+        import re
+        # Fix for proper coercion of types: 
+        # http://www.sagemath.org/doc/faq/faq-usage.html#i-have-type-issues-using-scipy-cvxopt-or-numpy-from-sage
+        Integer = int
+
+        m = re.match(r"(D\[.*?\])(\(.*?\))(\(.*?\))", d)
+
+        if m is not None: 
+
+            diffargs = re.sub("[D\[ \]]", "", m.group(1))
+            diffargs = map(int, diffargs.split(","))
+
+            funcname = re.sub("[()]", "", m.group(2))
+
+            variables = re.sub("[( )]", "", m.group(3))
+            variables = variables.split(",")
+
+            numargs = len(diffargs)
+            if numargs > 1:
+                numargs = "^" + str(numargs)
+            else:
+                numargs = ""
+
+            res = "D" + numargs + "/D" + "D".join([variables[i] for i in diffargs]) + funcname 
+            return res
+        else:
+            return d 
+
+
+    def _latex_(self):
+        r"""
+        LaTeX representation of the object.
+
+        TODO
+        """
+        
+        return self._parent._latex_element_(self)
