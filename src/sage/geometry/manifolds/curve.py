@@ -295,7 +295,7 @@ class ManifoldCurve(DiffMapping):
 
         INPUT:
 
-        - ``chart`` -- (default: None) chart on the curve's codomain; if
+        - ``chart`` -- (default: ``None``) chart on the curve's codomain; if
           ``None``, the codomain's default chart is assumed
 
         OUTPUT:
@@ -522,24 +522,36 @@ class ManifoldCurve(DiffMapping):
         return resu
 
 
-    def plot(self, chart=None, prange=None, include_end_point=(True, True),
-             end_point_offset=(0.001, 0.001), max_value=8, plot_coords=None,
-             mapping=None, parameters=None, color='red',  style='-',
+    def plot(self, chart=None, ambient_coords=None, mapping=None, prange=None,
+             include_end_point=(True, True), end_point_offset=(0.001, 0.001),
+             max_value=8, parameters=None, color='red',  style='-',
              thickness=1, plot_points=75, label_axes=True,
              aspect_ratio='automatic'):
         r"""
-        Graphic representation of the curve ``self`` in terms of a given chart.
+        Plot the current curve (``self``) in a Cartesian graph based on the
+        coordinates of some ambient chart.
 
-        The chart's domain must overlap with the curve's codomain or with
-        the codomain of the composite curve `\Phi\circ c`, where `c` is
+        The curve is drawn in terms of two (2D graphics) or three (3D graphics) coordinates of a given chart, called hereafter the *ambient chart*.
+        The ambient chart's domain must overlap with the curve's codomain or
+        with the codomain of the composite curve `\Phi\circ c`, where `c` is
         ``self`` and `\Phi` some manifold differential mapping (argument
         ``mapping`` below).
 
         INPUT:
 
-        - ``chart`` -- (default: ``None``) the chart in terms of which the plot
-          is performed; if ``None``, the default chart of the codomain of
-          curve (or of the curve composed with `\Phi`) is used
+        - ``chart`` -- (default: ``None``) the ambient chart (see above);
+          if ``None``, the default chart of the codomain of the curve (or of
+          the curve composed with `\Phi`) is used
+        - ``ambient_coords`` -- (default: ``None``) tuple containing the 2 or 3
+          coordinates of the ambient chart in terms of which the plot is
+          performed; if ``None``, all the coordinates of the ambient chart are
+          considered
+        - ``mapping`` -- (default: ``None``) differentiable mapping `\Phi`
+          (instance of
+          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
+          providing the link between ``self`` and the ambient chart ``chart``
+          (cf. above); if ``None``, the ambient chart is supposed to be defined
+          on the codomain of the curve ``self``.
         - ``prange`` -- (default: ``None``) range of the curve parameter for
           the plot; if ``None``, the entire parameter range declared during the
           curve construction is considered (with -Infinity
@@ -556,16 +568,6 @@ class ManifoldCurve(DiffMapping):
           +Infinity if the latter is the upper bound of the parameter range;
           similarly ``-max_value`` is the numerical valued substituted for
           -Infinity
-        - ``plot_coords`` -- (default: ``None``) tuple containing the 2 or 3
-          coordinates of ``chart`` in terms of which the plot is
-          performed; if ``None``, all the coordinates of ``chart`` are
-          considered
-        - ``mapping`` -- (default: ``None``) differentiable mapping `\Phi`
-          (instance of
-          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
-          providing the link between ``self`` and the chart ``chart`` (cf.
-          above); if ``None``, chart is supposed to be defined on the
-          codomain of the curve ``self``.
         - ``parameters`` -- (default: ``None``) dictionary giving the numerical
           values of the parameters that may appear in the coordinate expression
           of ``self``
@@ -666,13 +668,13 @@ class ManifoldCurve(DiffMapping):
         #
         # Coordinates of the above chart w.r.t. which the curve is plotted
         #
-        if plot_coords is None:
-            plot_coords = chart[:]  # all chart coordinates are used
-        n_pc = len(plot_coords)
+        if ambient_coords is None:
+            ambient_coords = chart[:]  # all chart coordinates are used
+        n_pc = len(ambient_coords)
         if n_pc != 2 and n_pc !=3:
             raise ValueError("The number of coordinates involved in the " +
                              "plot must be either 2 or 3, not {}".format(n_pc))
-        ind_pc = [chart[:].index(pc) for pc in plot_coords] # indices of plot
+        ind_pc = [chart[:].index(pc) for pc in ambient_coords] # indices of plot
                                                             # coordinates
         #
         # Parameter range for the plot
@@ -741,12 +743,12 @@ class ManifoldCurve(DiffMapping):
         if n_pc==2:  # 2D graphic
             resu.set_aspect_ratio(aspect_ratio)
             if label_axes:
-                resu.axes_labels([r'$'+latex(pc)+r'$' for pc in plot_coords])
+                resu.axes_labels([r'$'+latex(pc)+r'$' for pc in ambient_coords])
         else: # 3D graphic
             if aspect_ratio == 'automatic':
                 aspect_ratio = 1
             resu.aspect_ratio(aspect_ratio)
             if label_axes:
-                labels = [str(pc) for pc in plot_coords]
+                labels = [str(pc) for pc in ambient_coords]
                 resu = set_axes_labels(resu, *labels)
         return resu

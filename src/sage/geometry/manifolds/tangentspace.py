@@ -84,16 +84,16 @@ class TangentVector(FiniteRankFreeModuleElement):
         desc += " at " + str(self._point)
         return desc
 
-    def plot(self, chart=None, mapping=None, scale=1, color='blue',
-             print_label=True, label=None,  label_color=None, fontsize=10,
-             label_offset=0.1, plot_coords=None,
-             parameters=None, **extra_options):
+    def plot(self, chart=None, ambient_coords=None, mapping=None, scale=1,
+             color='blue', print_label=True, label=None,  label_color=None,
+             fontsize=10, label_offset=0.1, parameters=None, **extra_options):
         r"""
-        Graphic representation of the vector ``self`` in terms of a given
-        chart.
+        Plot the current vector (``self``) in a Cartesian graph based on the
+        coordinates of some ambient chart.
 
+        The vector is drawn in terms of two (2D graphics) or three (3D graphics) coordinates of a given chart, called hereafter the *ambient chart*.
         The vector's base point `p` (or its image `\Phi(p)` by some
-        differentiable mapping `\Phi`) must lie in the chart's domain.
+        differentiable mapping `\Phi`) must lie in the ambient chart's domain.
         If `\Phi` is different from the identity mapping, the vector
         actually depicted is `\mathrm{d}\Phi_p(v)`, where `v` is ``self``
         (see the example of a vector tangent to the 2-sphere below, where
@@ -101,23 +101,26 @@ class TangentVector(FiniteRankFreeModuleElement):
 
         INPUT:
 
-        - ``chart`` -- (default: ``None``) the chart in terms of which the plot
-          is performed; if ``None``, it is set to the default chart of the
-          open set containing the point at which the vector (or the vector
-          image via the differential `\mathrm{d}\Phi` of ``mapping``) is
-          defined
+        - ``chart`` -- (default: ``None``) the ambient chart (see above); if
+          ``None``, it is set to the default chart of the open set containing
+          the point at which the vector (or the vector image via the
+          differential `\mathrm{d}\Phi_p` of ``mapping``) is defined
+        - ``ambient_coords`` -- (default: ``None``) tuple containing the 2 or 3
+          coordinates of the ambient chart in terms of which the plot is
+          performed; if ``None``, all the coordinates of the ambient chart are
+          considered
         - ``mapping`` -- (default: ``None``) differentiable mapping `\Phi`
           (instance of
           :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
           providing the link between the point `p` at which the vector is
-          defined and the chart ``chart``: the domain of ``chart`` must
+          defined and the ambient chart ``chart``: the domain of ``chart`` must
           contain `\Phi(p)`; if ``None``, the identity mapping is assumed
         - ``scale`` -- (default: 1) value by which the length of the arrow
           representing the vector is multiplied
         - ``color`` -- (default: 'blue') color of the arrow representing the
           vector
-        - ``print_label`` -- (default: ``True``) determines whether a label is
-          printed next to the arrow representing the vector
+        - ``print_label`` -- (boolean; default: ``True``) determines whether a
+          label is printed next to the arrow representing the vector
         - ``label`` -- (string; default: ``None``) label printed next to the
           arrow representing the vector; if ``None``, the vector's symbol is
           used, if any
@@ -127,16 +130,13 @@ class TangentVector(FiniteRankFreeModuleElement):
           label
         - ``label_offset`` -- (default: 0.1) determines the separation between
           the vector arrow and the label
-        - ``plot_coords`` -- (default: ``None``) tuple containing the 2 or 3
-          coordinates of ``chart`` in terms of which the plot is
-          performed; if ``None``, all the coordinates of ``chart`` are
-          considered
         - ``parameters`` -- (default: ``None``) dictionary giving the numerical
           values of the parameters that may appear in the coordinate expression
           of ``self`` (see example below)
-        - ``**extra_options`` -- extra options for the arrow plot (see
+        - ``**extra_options`` -- extra options for the arrow plot, like
+          ``linestyle``, ``width`` or ``arrowsize`` (see
           :func:`~sage.plot.arrow.arrow2d` and
-          :func:`~sage.plot.plot3d.shapes.arrow3d`)
+          :func:`~sage.plot.plot3d.shapes.arrow3d` for details)
 
         OUTPUT:
 
@@ -202,24 +202,24 @@ class TangentVector(FiniteRankFreeModuleElement):
             ValueError: The number of coordinates involved in the plot must be either 2 or 3, not 4
 
         Rather, we have to select some chart coordinates for the plot, via
-        the argument ``plot_coords``. For instance, for a 2-dimensional plot
+        the argument ``ambient_coords``. For instance, for a 2-dimensional plot
         in terms of the coordinates `(x,y)`::
 
-            sage: v.plot(plot_coords=(x,y))
+            sage: v.plot(ambient_coords=(x,y))
             Graphics object consisting of 2 graphics primitives
 
         This plot involves only the components `v^x` and `v^y` of `v`.
         Similarly, for a 3-dimensional plot in terms of the coordinates
         `(t,x,y)`::
 
-            sage: v.plot(plot_coords=(t,x,z))
+            sage: v.plot(ambient_coords=(t,x,z))
             Graphics3d Object
 
         This plot involves only the components `v^t`,  `v^x` and `v^z` of `v`.
         A nice 3D view atop the coordinate grid is obtained via::
 
             sage: show(X.plot(X, ambient_coords=(t,x,z)) +
-            ....:      v.plot(plot_coords=(t,x,z), label_offset=0.5, width=6))
+            ....:      v.plot(ambient_coords=(t,x,z), label_offset=0.5, width=6))
 
         An example of plot via a differential mapping: plot of a vector tangent
         to a 2-sphere viewed in `\RR^3`::
@@ -268,14 +268,14 @@ class TangentVector(FiniteRankFreeModuleElement):
         #
         # Coordinates of the above chart w.r.t. which the vector is plotted
         #
-        if plot_coords is None:
-            plot_coords = chart[:]  # all chart coordinates are used
-        n_pc = len(plot_coords)
+        if ambient_coords is None:
+            ambient_coords = chart[:]  # all chart coordinates are used
+        n_pc = len(ambient_coords)
         if n_pc != 2 and n_pc !=3:
             raise ValueError("The number of coordinates involved in the " +
                              "plot must be either 2 or 3, not {}".format(n_pc))
-        ind_pc = [chart[:].index(pc) for pc in plot_coords] # indices of plot
-                                                            # coordinates
+        # indices coordinates involved in the plot:
+        ind_pc = [chart[:].index(pc) for pc in ambient_coords]
         #
         # Components of the vector w.r.t. the chart frame
         #
@@ -566,6 +566,7 @@ class TangentSpace(FiniteRankFreeModule):
             2
 
         A shortcut is ``dim()``::
+
             sage: Tp.dim()
             2
 

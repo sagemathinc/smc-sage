@@ -1225,9 +1225,9 @@ class Chart(UniqueRepresentation, SageObject):
         """
         return MultiFunctionChart(self, *expressions)
 
-    def plot(self, chart=None, fixed_coords=None, ranges=None, max_value=8,
-             nb_values=None, steps=None, ambient_coords=None, mapping=None,
-             parameters=None, color='red',  style='-', thickness=1,
+    def plot(self, chart=None, ambient_coords=None, mapping=None,
+             fixed_coords=None, ranges=None, max_value=8, nb_values=None,
+             steps=None, parameters=None, color='red',  style='-', thickness=1,
              plot_points=75, label_axes=True):
         r"""
         Plot the current chart (``self``) as a "grid" in a Cartesian graph
@@ -1248,6 +1248,16 @@ class Chart(UniqueRepresentation, SageObject):
 
         - ``chart`` -- (default: ``None``) the ambient chart (see above); if
           ``None``, the ambient chart is set to ``self``
+        - ``ambient_coords`` -- (default: ``None``) tuple containing the 2 or 3
+          coordinates of the ambient chart in terms of which the plot is
+          performed; if ``None``, all the coordinates of the ambient chart are
+          considered
+        - ``mapping`` -- (default: ``None``) differentiable mapping (instance
+          of :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
+          providing the link between ``self`` and the ambient chart (cf.
+          above); if ``None``, both charts are supposed to be defined on the same
+          manifold and related by some transition map (see
+          :meth:`transition_map`)
         - ``fixed_coords`` -- (default: ``None``) dictionary with keys the
           coordinates of ``self`` that are not drawn and with values the fixed
           value of these coordinates; if ``None``, all the coordinates of ``self``
@@ -1275,16 +1285,6 @@ class Chart(UniqueRepresentation, SageObject):
           range (specified in ``ranges``) and ``nb_values``. On the contrary
           if the step is provided for some coordinate, the corresponding
           number of constant values is deduced from it and the coordinate range.
-        - ``ambient_coords`` -- (default: ``None``) tuple containing the 2 or 3
-          coordinates of the ambient chart in terms of which the plot is
-          performed; if ``None``, all the coordinates of the ambient chart are
-          considered
-        - ``mapping`` -- (default: ``None``) differentiable mapping (instance
-          of :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
-          providing the link between ``self`` and the ambient chart (cf.
-          above); if ``None``, both charts are supposed to be defined on the same
-          manifold and related by some transition map (see
-          :meth:`transition_map`)
         - ``parameters`` -- (default: ``None``) dictionary giving the numerical
           values of the parameters that may appear in the relation between
           the two coordinate systems
