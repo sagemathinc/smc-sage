@@ -645,7 +645,8 @@ class ManifoldPoint(Element):
         Plot the current point (``self``) in a Cartesian graph based on the
         coordinates of some ambient chart.
 
-        The point is drawn in terms of two (2D graphics) or three (3D graphics) coordinates of a given chart, called hereafter the *ambient chart*.
+        The point is drawn in terms of two (2D graphics) or three (3D graphics)
+        coordinates of a given chart, called hereafter the *ambient chart*.
         The domain of the ambient chart must contain the point, or its image
         by a differentiable mapping `\Phi`.
 
@@ -667,10 +668,10 @@ class ManifoldPoint(Element):
         - ``size`` -- (default: 10) size of the point once drawn as a small
           disk or sphere
         - ``color`` -- (default: 'black') color of the point
-        - ``label`` -- (default: ``None``) label printed next to the point; if ``None``,
-          the point's name is used.
-        - ``label_color`` -- (default: ``None``) color to print the label; if ``None``,
-          the value of ``color`` is used
+        - ``label`` -- (default: ``None``) label printed next to the point;
+          if ``None``, the point's name is used.
+        - ``label_color`` -- (default: ``None``) color to print the label;
+          if ``None``, the value of ``color`` is used
         - ``fontsize`` -- (default: 10) size of the font used to print the
           label
         - ``label_offset`` -- (default: 0.1) determines the separation between

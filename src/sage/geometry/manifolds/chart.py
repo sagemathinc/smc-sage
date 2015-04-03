@@ -1277,8 +1277,8 @@ class Chart(UniqueRepresentation, SageObject):
           with keys the coordinates to be drawn and values the number of
           constant values of the coordinate to be considered; if ``nb_values``
           is a single integer, it represents the number of constant values for all
-          coordinates; if ``nb_values`` is None, it is set to 9 for a 2D plot
-          and to 5 for a 3D plot
+          coordinates; if ``nb_values`` is ``None``, it is set to 9 for a 2D
+          plot and to 5 for a 3D plot
         - ``steps`` -- (default: ``None``) dictionary with keys the coordinates
           to be drawn and values the step between each constant value of
           the coordinate; if ``None``, the step is computed from the coordinate
@@ -1574,7 +1574,7 @@ class Chart(UniqueRepresentation, SageObject):
         xx0 = [0] * nc
         if fixed_coords is not None:
             if len(fixed_coords) != nc - len(coords):
-                raise TypeError("Bad number of fixed coordinates.")
+                raise ValueError("Bad number of fixed coordinates.")
             for fc, val in fixed_coords.iteritems():
                 xx0[self._xx.index(fc)] = val
         ind_a = [chart._xx.index(ac) for ac in ambient_coords]

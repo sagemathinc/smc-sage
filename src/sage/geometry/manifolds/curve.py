@@ -531,7 +531,8 @@ class ManifoldCurve(DiffMapping):
         Plot the current curve (``self``) in a Cartesian graph based on the
         coordinates of some ambient chart.
 
-        The curve is drawn in terms of two (2D graphics) or three (3D graphics) coordinates of a given chart, called hereafter the *ambient chart*.
+        The curve is drawn in terms of two (2D graphics) or three (3D graphics)
+        coordinates of a given chart, called hereafter the *ambient chart*.
         The ambient chart's domain must overlap with the curve's codomain or
         with the codomain of the composite curve `\Phi\circ c`, where `c` is
         ``self`` and `\Phi` some manifold differential mapping (argument

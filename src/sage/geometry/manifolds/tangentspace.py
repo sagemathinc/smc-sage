@@ -91,7 +91,8 @@ class TangentVector(FiniteRankFreeModuleElement):
         Plot the current vector (``self``) in a Cartesian graph based on the
         coordinates of some ambient chart.
 
-        The vector is drawn in terms of two (2D graphics) or three (3D graphics) coordinates of a given chart, called hereafter the *ambient chart*.
+        The vector is drawn in terms of two (2D graphics) or three (3D graphics)
+        coordinates of a given chart, called hereafter the *ambient chart*.
         The vector's base point `p` (or its image `\Phi(p)` by some
         differentiable mapping `\Phi`) must lie in the ambient chart's domain.
         If `\Phi` is different from the identity mapping, the vector
