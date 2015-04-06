@@ -60,7 +60,8 @@ This other facility uses a simple
 #*****************************************************************************
 
 
-from IPython.core.formatters import PlainTextFormatter, warn_format_error
+from IPython.core.formatters import PlainTextFormatter, catch_format_error
+warn_format_error = catch_format_error
 from IPython.utils.py3compat import str_to_unicode, unicode_to_str
 
 from sage.repl.display.pretty_print import (
