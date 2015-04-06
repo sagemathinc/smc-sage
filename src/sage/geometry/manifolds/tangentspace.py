@@ -17,8 +17,8 @@ REFERENCES:
 """
 
 #******************************************************************************
-#       Copyright (C) 2014 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#       Copyright (C) 2014 Michal Bejger <bejger@camk.edu.pl>
+#       Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+#       Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
@@ -88,17 +88,17 @@ class TangentVector(FiniteRankFreeModuleElement):
              color='blue', print_label=True, label=None,  label_color=None,
              fontsize=10, label_offset=0.1, parameters=None, **extra_options):
         r"""
-        Plot the current vector (``self``) in a Cartesian graph based on the
-        coordinates of some ambient chart.
+        Plot the vector in a Cartesian graph based on the coordinates of some
+        ambient chart.
 
         The vector is drawn in terms of two (2D graphics) or three (3D graphics)
         coordinates of a given chart, called hereafter the *ambient chart*.
         The vector's base point `p` (or its image `\Phi(p)` by some
         differentiable mapping `\Phi`) must lie in the ambient chart's domain.
         If `\Phi` is different from the identity mapping, the vector
-        actually depicted is `\mathrm{d}\Phi_p(v)`, where `v` is ``self``
-        (see the example of a vector tangent to the 2-sphere below, where
-        `\Phi: S^2 \rightarrow \RR^3`).
+        actually depicted is `\mathrm{d}\Phi_p(v)`, where `v` is the current
+        vector (``self``) (see the example of a vector tangent to the
+        2-sphere below, where `\Phi: S^2 \rightarrow \RR^3`).
 
         INPUT:
 
@@ -186,6 +186,12 @@ class TangentVector(FiniteRankFreeModuleElement):
             v = (a + 1) d/dx - b^2 d/dy
             sage: show(X.plot() + v.plot(parameters={a: -2, b: 3}))
 
+        Special case of the zero vector::
+
+            sage: v = Tp.zero() ; v
+            tangent vector zero at point 'p' on 2-dimensional manifold 'M'
+            sage: show(X.plot() + v.plot())
+
         Vector tangent to a 4-dimensional manifold::
 
             sage: M = Manifold(4, 'M')
@@ -239,7 +245,7 @@ class TangentVector(FiniteRankFreeModuleElement):
             sage: v = XS.frame()[1].at(p) ; v
             tangent vector d/dph at point 'p' on 2-dimensional manifold 'S^2'
             sage: graph_v = v.plot(mapping=F)
-            sage: graph_S2 = XS.plot(X3, mapping=F, nb_values=9)
+            sage: graph_S2 = XS.plot(chart=X3, mapping=F, nb_values=9)
             sage: show(graph_v + graph_S2)
 
         """
@@ -298,12 +304,13 @@ class TangentVector(FiniteRankFreeModuleElement):
             coord_head = [numerical_approx(
                            (xp[i] + scale*vcomp[i]).substitute(parameters))
                           for i in ind_pc]
-        if n_pc == 2:
-            resu += arrow2d(tailpoint=coord_tail, headpoint=coord_head,
-                            color=color, **extra_options)
-        else:
-            resu += arrow3d(coord_tail, coord_head, color=color,
-                            **extra_options)
+        if coord_head != coord_tail:
+            if n_pc == 2:
+                resu += arrow2d(tailpoint=coord_tail, headpoint=coord_head,
+                                color=color, **extra_options)
+            else:
+                resu += arrow3d(coord_tail, coord_head, color=color,
+                                **extra_options)
         #
         # The label
         #

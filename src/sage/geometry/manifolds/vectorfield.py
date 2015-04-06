@@ -255,10 +255,10 @@ class VectorField(TensorField):
     def plot(self, chart=None, ambient_coords=None, mapping=None,
              chart_domain=None, fixed_coords=None, ranges=None, max_value=8,
              nb_values=None, steps=None,scale=1, color='blue', parameters=None,
-             **extra_options):
+             label_axes=True, **extra_options):
         r"""
-        Plot the current vector field (``self``) in a Cartesian graph based on
-        the coordinates of some ambient chart.
+        Plot the vector field in a Cartesian graph based on the coordinates
+        of some ambient chart.
 
         The vector field is drawn in terms of two (2D graphics) or three
         (3D graphics) coordinates of a given chart, called hereafter the
@@ -269,7 +269,7 @@ class VectorField(TensorField):
         INPUT:
 
         - ``chart`` -- (default: ``None``) the ambient chart (see above); if
-          ``None``, ...
+          ``None``, the default chart of the vector field's domain is used
         - ``ambient_coords`` -- (default: ``None``) tuple containing the 2 or 3
           coordinates of the ambient chart in terms of which the plot is
           performed; if ``None``, all the coordinates of the ambient chart are
@@ -277,13 +277,13 @@ class VectorField(TensorField):
         - ``mapping`` -- (default: ``None``) differentiable mapping `\Phi`
           (instance of
           :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
-          providing the link between the domain of ``self`` and
+          providing the link between the vector field's domain and
           the ambient chart ``chart``; if ``None``, the identity mapping is
           assumed
-        - ``chart_domain`` -- (default: ``None``) chart on the domain of
-          ``self`` to define the points at which vector arrows are to be
-          plotted; if ``None``, the default chart of the vector field domain is
-          used
+        - ``chart_domain`` -- (default: ``None``) chart on the vector
+          field's domain to define the points at which vector arrows are to be
+          plotted; if ``None``, the default chart of the vector field's domain
+          is used
         - ``fixed_coords`` -- (default: ``None``) dictionary with keys the
           coordinates of ``chart_domain`` that are kept fixed and with values
           the value of these coordinates; if ``None``, all the coordinates of
@@ -293,17 +293,18 @@ class VectorField(TensorField):
           tuples ``(x_min,x_max)`` specifying the
           coordinate range for the plot; if ``None``, the entire coordinate
           range declared during the construction of ``chart_domain`` is
-          considered (with -Infinity replaced by ``-max_value`` and +Infinity
-          by ``max_value``)
+          considered (with ``-Infinity`` replaced by ``-max_value`` and
+          ``+Infinity`` by ``max_value``)
         - ``max_value`` -- (default: 8) numerical value substituted to
-          +Infinity if the latter is the upper bound of the range of a
+          ``+Infinity`` if the latter is the upper bound of the range of a
           coordinate for which the plot is performed over the entire coordinate
           range (i.e. for which no specific plot range has been set in
           ``ranges``); similarly ``-max_value`` is the numerical valued
-          substituted for -Infinity
+          substituted for ``-Infinity``
         - ``nb_values`` -- (default: ``None``) either an integer or a dictionary
           with keys the coordinates of ``chart_domain`` to be used and values
-          the number of values of the coordinate to be considered; if
+          the number of values of the coordinate for sampling
+          the part of the vector field's domain involved in the plot ; if
           ``nb_values`` is a single integer, it represents the number of
           values for all coordinates; if ``nb_values`` is ``None``, it is set
           to 9 for a 2D plot and to 5 for a 3D plot
@@ -314,13 +315,17 @@ class VectorField(TensorField):
           On the contrary, if the step is provided for some coordinate, the
           corresponding number of values is deduced from it and the coordinate
           range.
-        - ``scale`` -- (default: 1) value by which the length of the arrows
+        - ``scale`` -- (default: 1) value by which the lengths of the arrows
           representing the vectors is multiplied
         - ``color`` -- (default: 'blue') color of the arrows representing the
           vectors
         - ``parameters`` -- (default: ``None``) dictionary giving the numerical
           values of the parameters that may appear in the coordinate expression
-          of ``self`` (see example below)
+          of the vector field (see example below)
+        - ``label_axes`` -- (default: ``True``) boolean determining whether the
+          labels of the coordinate axes of ``chart`` shall be added to the
+          graph; can be set to ``False`` if the graph is 3D and must be
+          superposed with another graph.
         - ``**extra_options`` -- extra options for the arrow plot, like
           ``linestyle``, ``width`` or ``arrowsize`` (see
           :func:`~sage.plot.arrow.arrow2d` and
@@ -336,11 +341,89 @@ class VectorField(TensorField):
 
         EXAMPLES:
 
+        Plot of a vector field on a 2-dimensional manifold::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: v = M.vector_field(name='v')
+            sage: v[:] = -y, x ; v.display()
+            v = -y d/dx + x d/dy
+            sage: v.plot()
+            Graphics object consisting of 80 graphics primitives
+
+        Plot with various options::
+
+            sage: v.plot(scale=0.5, color='green', linestyle='--', width=1, arrowsize=6)
+            Graphics object consisting of 80 graphics primitives
+            sage: v.plot(max_value=4, nb_values=5, scale=0.5)
+            Graphics object consisting of 24 graphics primitives
+
+        Plots along a line of fixed coordinate::
+
+            sage: v.plot(fixed_coords={x: -2})
+            Graphics object consisting of 9 graphics primitives
+            sage: v.plot(fixed_coords={y: 1})
+            Graphics object consisting of 9 graphics primitives
+
+        Let us now consider a vector field on a 4-dimensional manifold::
+
+            sage: Manifold._clear_cache_() # for doctests only
+            sage: M = Manifold(4, 'M')
+            sage: X.<t,x,y,z> = M.chart()
+            sage: v = M.vector_field(name='v')
+            sage: v[:] = (t/8)^2, -t*y/4, t*x/4, t*z/4 ; v.display()
+            v = 1/64*t^2 d/dt - 1/4*t*y d/dx + 1/4*t*x d/dy + 1/4*t*z d/dz
+
+        We cannot make a 4D plot directly::
+
+            sage: v.plot()
+            Traceback (most recent call last):
+            ...
+            ValueError: the number of ambient coordinates must be either 2 or 3, not 4
+
+        Rather, we have to select some coordinates for the plot, via
+        the argument ``ambient_coords``. For instance, for a 3D plot::
+
+            sage: v.plot(ambient_coords=(x, y, z), fixed_coords={t: 1})
+            Graphics3d Object
+            sage: v.plot(ambient_coords=(x, y, t), fixed_coords={z: 0},
+            ....:        ranges={x: (-2,2), y: (-2,2), t: (-1, 4)}, nb_values=4)
+            Graphics3d Object
+
+        or, for a 2D plot::
+
+            sage: v.plot(ambient_coords=(x, y), fixed_coords={t: 1, z: 0})
+            Graphics object consisting of 80 graphics primitives
+            sage: v.plot(ambient_coords=(x, t), fixed_coords={y: 1, z: 0})
+            Graphics object consisting of 72 graphics primitives
+
+        An example of plot via a differential mapping: plot of a vector field
+        tangent to a 2-sphere viewed in `\RR^3`::
+
+            sage: S2 = Manifold(2, 'S^2')
+            sage: U = S2.open_subset('U') # the open set covered by spherical coord.
+            sage: XS.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: R3 = Manifold(3, 'R^3')
+            sage: X3.<x,y,z> = R3.chart()
+            sage: F = S2.diff_mapping(R3, {(XS, X3): [sin(th)*cos(ph),
+            ....:                     sin(th)*sin(ph), cos(th)]}, name='F')
+            sage: F.display() # the standard embedding of S^2 into R^3
+            F: S^2 --> R^3
+            on U: (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
+            sage: v = XS.frame()[1] ; v
+            vector field 'd/dph' on the open subset 'U' of the 2-dimensional manifold 'S^2'
+            sage: graph_v = v.plot(chart=X3, mapping=F, label_axes=False)
+            sage: graph_S2 = XS.plot(chart=X3, mapping=F, nb_values=9)
+            sage: show(graph_v + graph_S2)
+
         """
         from sage.rings.infinity import Infinity
         from sage.misc.functional import numerical_approx
+        from sage.misc.latex import latex
         from sage.plot.graphics import Graphics
         from sage.geometry.manifolds.chart import Chart
+        from sage.geometry.manifolds.utilities import set_axes_labels
         #
         # 1/ Treatment of input parameters
         #    -----------------------------
@@ -370,7 +453,8 @@ class VectorField(TensorField):
             ambient_coords = tuple(ambient_coords)
         nca = len(ambient_coords)
         if nca != 2 and nca !=3:
-            raise TypeError("bad number of ambient coordinates: {}".format(nca))
+            raise ValueError("the number of ambient coordinates must be " +
+                             "either 2 or 3, not {}".format(nca))
         if ranges is None:
             ranges = {}
         ranges0 = {}
@@ -416,14 +500,58 @@ class VectorField(TensorField):
         #
         # 2/ Plots
         #    -----
-        xx0 = [0] * nc
+        dom = chart_domain.domain()
+        nc = len(chart_domain[:])
+        ncp = len(coords)
+        xx = [0] * nc
         if fixed_coords is not None:
-            if len(fixed_coords) != nc - len(coords):
+            if len(fixed_coords) != nc - ncp:
                 raise ValueError("Bad number of fixed coordinates.")
             for fc, val in fixed_coords.iteritems():
-                xx0[chart_domain._xx.index(fc)] = val
-        ind_a = [chart._xx.index(ac) for ac in ambient_coords]
+                xx[chart_domain[:].index(fc)] = val
+        index_p = [chart_domain[:].index(cd) for cd in coords]
         resu = Graphics()
+        ind = [0] * ncp
+        ind_max = [0] * ncp
+        ind_max[0] = nb_values[coords[0]]
+        xmin = [ranges[cd][0] for cd in coords]
+        step_tab = [steps[cd] for cd in coords]
+        while ind != ind_max:
+            for i in range(ncp):
+                xx[index_p[i]] = xmin[i] + ind[i]*step_tab[i]
+            if chart_domain.valid_coordinates(*xx, tolerance=1e-13,
+                                              parameters=parameters):
+                point = dom(xx, chart=chart_domain)
+                resu += self.at(point).plot(chart=chart,
+                                 ambient_coords=ambient_coords, mapping=mapping,
+                                 scale=scale, color=color, print_label=False,
+                                 parameters=parameters,
+                                 **extra_options)
+            # Next index:
+            ret = 1
+            for pos in range(ncp-1,-1,-1):
+                imax = nb_values[coords[pos]] - 1
+                if ind[pos] != imax:
+                    ind[pos] += ret
+                    ret = 0
+                elif ret == 1:
+                    if pos == 0:
+                        ind[pos] = imax + 1 # end point reached
+                    else:
+                        ind[pos] = 0
+                        ret = 1
+        if label_axes:
+            if nca==2:  # 2D graphic
+                # We update the dictionary _extra_kwds (options to be passed
+                # to show()), instead of using the method
+                # Graphics.axes_labels() since the latter is not robust w.r.t.
+                # graph addition
+                resu._extra_kwds['axes_labels'] = [r'$'+latex(ac)+r'$'
+                                                   for ac in ambient_coords]
+            else: # 3D graphic
+                labels = [str(ac) for ac in ambient_coords]
+                resu = set_axes_labels(resu, *labels)
+        return resu
 
 
 #******************************************************************************

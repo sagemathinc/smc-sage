@@ -1648,7 +1648,12 @@ class Chart(UniqueRepresentation, SageObject):
         if nca==2:  # 2D graphic
             resu.set_aspect_ratio(1)
             if label_axes:
-                resu.axes_labels([r'$'+latex(ac)+r'$' for ac in ambient_coords])
+                # We update the dictionary _extra_kwds (options to be passed
+                # to show()), instead of using the method
+                # Graphics.axes_labels() since the latter is not robust w.r.t.
+                # graph addition
+                resu._extra_kwds['axes_labels'] = [r'$'+latex(ac)+r'$'
+                                                   for ac in ambient_coords]
         else: # 3D graphic
             resu.aspect_ratio(1)
             if label_axes:

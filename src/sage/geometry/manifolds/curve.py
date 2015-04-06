@@ -744,7 +744,12 @@ class ManifoldCurve(DiffMapping):
         if n_pc==2:  # 2D graphic
             resu.set_aspect_ratio(aspect_ratio)
             if label_axes:
-                resu.axes_labels([r'$'+latex(pc)+r'$' for pc in ambient_coords])
+                # We update the dictionary _extra_kwds (options to be passed
+                # to show()), instead of using the method
+                # Graphics.axes_labels() since the latter is not robust w.r.t.
+                # graph addition
+                resu._extra_kwds['axes_labels'] = [r'$'+latex(pc)+r'$'
+                                                   for pc in ambient_coords]
         else: # 3D graphic
             if aspect_ratio == 'automatic':
                 aspect_ratio = 1
