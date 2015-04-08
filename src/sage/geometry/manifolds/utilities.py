@@ -345,14 +345,20 @@ class Expression_nice(Expression):
         TODO - works for simple derivatives 
 
         EXAMPLES::
-        
-            sage: var('x y')
-            (x, y)
+       
+            sage: var('x y z')
+            (x, y, z)
             sage: f = function('f', x, y)
-            sage: h = f.diff(y).diff(x)
+            sage: g = f.diff(y).diff(x)
+            sage: h = function('h', y, z)
+            sage: k = h.diff(z)
+            sage: fun = x*g + y*(k-z)^2
+            sage: fun
+            y*(z - D[1](h)(y, z))^2 + x*D[0, 1](f)(x, y)
             sage: from sage.geometry.manifolds.utilities import Expression_nice
-            sage: Expression_nice(h)
-            D^2/DxDyf
+            sage: Expression_nice(fun)
+            y*(z - D/Dzh)^2 + x*D^2/DxDyf
+ 
         """
 
         d = self._parent._repr_element_(self)
@@ -362,9 +368,9 @@ class Expression_nice(Expression):
         # http://www.sagemath.org/doc/faq/faq-usage.html#i-have-type-issues-using-scipy-cvxopt-or-numpy-from-sage
         Integer = int
 
-        m = re.match(r"(D\[.*?\])(\(.*?\))(\(.*?\))", d)
-
-        if m is not None: 
+        # find all occurences of diff 
+        it = re.finditer(r"(D\[.*?\])(\(.*?\))(\(.*?\))", d)
+        for m in it:
 
             diffargs = re.sub("[D\[ \]]", "", m.group(1))
             diffargs = map(int, diffargs.split(","))
@@ -375,15 +381,17 @@ class Expression_nice(Expression):
             variables = variables.split(",")
 
             numargs = len(diffargs)
+
             if numargs > 1:
                 numargs = "^" + str(numargs)
             else:
                 numargs = ""
 
-            res = "D" + numargs + "/D" + "D".join([variables[i] for i in diffargs]) + funcname 
-            return res
-        else:
-            return d 
+            res = "D" + numargs + "/D" + "D".join([variables[i] for i in diffargs]) + funcname
+
+            d = d.replace(m.group(0), res)
+
+        return d 
 
 
     def _latex_(self):
