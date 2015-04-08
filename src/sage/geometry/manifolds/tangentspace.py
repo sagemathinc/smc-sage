@@ -263,7 +263,9 @@ class TangentVector(FiniteRankFreeModuleElement):
             eff_vector = self
             base_point = self._point
         else:
-            eff_vector = mapping.differential(self._point)(self)
+            # For efficiency, the method FiniteRankFreeModuleMorphism._call_()
+            # is called instead of FiniteRankFreeModuleMorphism.__call__()
+            eff_vector = mapping.differential(self._point)._call_(self)
             base_point = mapping(self._point)
         #
         # The chart w.r.t. which the vector is plotted
@@ -449,7 +451,8 @@ class TangentSpace(FiniteRankFreeModule):
     def __init__(self, point):
         manif = point._manifold
         name = "T_" + str(point._name) + " " + str(manif._name)
-        latex_name = r"T_{" + str(point._name) + "}\," + str(manif._latex_name)
+        latex_name = r"T_{" + str(point._latex_name) + "}\," + \
+                     str(manif._latex_name)
         self._point = point
         self._manif = manif
         FiniteRankFreeModule.__init__(self, SR, manif._dim, name=name,

@@ -631,12 +631,10 @@ class ManifoldPoint(Element):
 
         """
         from tangentspace import TangentSpace
-        if self._tangent_space is not None:
-            return self._tangent_space
-        else:
-            res = TangentSpace(self)
-            (self._manifold)._tangent_spaces[self] = res
-            return res
+        if self._tangent_space is None:
+            self._tangent_space = TangentSpace(self)
+            (self._manifold)._tangent_spaces[self] = self._tangent_space
+        return self._tangent_space
 
     def plot(self, chart=None, ambient_coords=None, mapping=None, size=10,
              color='black', label=None, label_color=None, fontsize=10,
