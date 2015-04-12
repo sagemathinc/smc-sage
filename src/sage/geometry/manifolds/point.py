@@ -602,6 +602,25 @@ class ManifoldPoint(Element):
         return self._coordinates[common_chart] == \
                                               other._coordinates[common_chart]
 
+    def __ne__(self, other):
+        r"""
+        Non-equality operator.
+        """
+        return not self.__eq__(other)
+
+    def __cmp__(self, other):
+        r"""
+        Old-style (Python 2) comparison operator.
+
+        This is provisory, until migration to Python 3 is achieved.
+
+        """
+        if self.__eq__(other):
+            return 0
+        else:
+            return -1
+
+
     def tangent_space(self):
         r"""
         Return the tangent space to the manifold at ``self``.

@@ -658,7 +658,7 @@ class ManifoldCurve(DiffMapping):
         if mapping is None:
             eff_curve = self
         else:
-            eff_curve = mapping * self
+            eff_curve = mapping.restrict(self.codomain()) * self
         #
         # The chart w.r.t. which the curve is plotted
         #
