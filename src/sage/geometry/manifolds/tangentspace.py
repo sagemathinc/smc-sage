@@ -461,6 +461,9 @@ class TangentSpace(FiniteRankFreeModule):
                                       start_index=manif._sindex)
         # Initialization of bases of the tangent space from existing vector
         # frames around the point:
+        self._frame_bases = {} # dictionary of bases of the tangent vector
+                               # derived from vector frames (keys: vector
+                               # frames)
         for frame in point._subset._top_frames:
             if point in frame._domain:
                 basis = self.basis(symbol=frame._symbol,
@@ -490,29 +493,29 @@ class TangentSpace(FiniteRankFreeModule):
                 cobasis._latex_name = r"\left(" + \
                   ",".join([cobasis._form[i]._latex_name for i in range(n)])+ \
                   r"\right)"
-                point._frame_bases[frame] = basis
+                self._frame_bases[frame] = basis
         # The basis induced by the default frame of the manifold subset
         # in which the point has been created is declared the default
         # basis of self:
         def_frame = point._subset._def_frame
-        if def_frame in point._frame_bases:
-            self._def_basis = point._frame_bases[def_frame]
+        if def_frame in self._frame_bases:
+            self._def_basis = self._frame_bases[def_frame]
         # Initialization of the changes of bases from the existing changes of
         # frames around the point:
         for frame_pair, automorph in point._subset._frame_changes.iteritems():
             frame1 = frame_pair[0] ; frame2 = frame_pair[1]
             fr1, fr2 = None, None
-            for frame in point._frame_bases:
+            for frame in self._frame_bases:
                 if frame1 in frame._subframes:
                     fr1 = frame
                     break
-            for frame in point._frame_bases:
+            for frame in self._frame_bases:
                 if frame2 in frame._subframes:
                     fr2 = frame
                     break
             if fr1 is not None and fr2 is not None:
-                basis1 = point._frame_bases[fr1]
-                basis2 = point._frame_bases[fr2]
+                basis1 = self._frame_bases[fr1]
+                basis2 = self._frame_bases[fr2]
                 auto = self.automorphism()
                 for frame, comp in automorph._components.iteritems():
                     basis = None
@@ -588,6 +591,7 @@ class TangentSpace(FiniteRankFreeModule):
             2
 
         """
+        # The dimension is the rank of self as a free module:
         return self._rank
 
     dim = dimension

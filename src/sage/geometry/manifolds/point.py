@@ -193,9 +193,6 @@ class ManifoldPoint(Element):
             self._latex_name = latex_name
         self._tangent_space = None # tangent vector space at the point (not
                                    # constructed yet)
-        self._frame_bases = {} # dictionary of bases of the tangent vector
-                               # derived from vector frames (keys: vector
-                               # frames)
 
     def _repr_(self):
         r"""
@@ -215,12 +212,6 @@ class ManifoldPoint(Element):
             return r'\mbox{' + str(self) + r'}'
         else:
            return self._latex_name
-
-    def __hash__(self):
-        r"""
-        Return a hash value for the object.
-        """
-        return hash(str(self._coordinates))  #!# to be improved
 
     def containing_set(self):
         r"""
@@ -566,6 +557,8 @@ class ManifoldPoint(Element):
         """
         if not isinstance(other, ManifoldPoint):
             return False
+        if other._manifold != self._manifold:
+            return False
         # Search for a common chart to compare the coordinates
         common_chart = None
         # the subset's default chart is privileged:
@@ -597,8 +590,10 @@ class ManifoldPoint(Element):
                     except ValueError:
                         pass
         if common_chart is None:
-            raise ValueError("No common chart has been found to compare " +
-                             str(self) + " and " + str(other))
+            return False
+            #!# Another option would be:
+            # raise ValueError("No common chart has been found to compare " +
+            #                 str(self) + " and " + str(other))
         return self._coordinates[common_chart] == \
                                               other._coordinates[common_chart]
 
