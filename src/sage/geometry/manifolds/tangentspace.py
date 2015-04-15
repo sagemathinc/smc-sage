@@ -70,6 +70,21 @@ class TangentVector(FiniteRankFreeModuleElement):
 
     """
     def __init__(self, parent, name=None, latex_name=None):
+        r"""
+        Construct a tangent vector.
+
+        TEST::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M.point((1,-2), name='p')
+            sage: Tp = p.tangent_space()
+            sage: v = Tp.element_class(Tp, name='v') ; v
+            tangent vector v at point 'p' on 2-dimensional manifold 'M'
+            sage: v[:] = 5, -3/2
+            sage: TestSuite(v).run()
+
+        """
         FiniteRankFreeModuleElement.__init__(self, parent, name=name, latex_name=latex_name)
         # Extra data (with respect to FiniteRankFreeModuleElement):
         self._point = parent._point
@@ -445,11 +460,64 @@ class TangentSpace(FiniteRankFreeModule):
         sage: Tp.zero().parent()
         tangent space at point 'p' on 2-dimensional manifold 'M'
 
+    Tangent spaces are unique::
+
+        sage: p.tangent_space() is Tp
+        True
+        sage: p1 = M.point((-1,2))
+        sage: p1.tangent_space() is Tp
+        True
+
+    even if points are not::
+
+        sage: p1 is p
+        False
+
+    Actually ``p1`` and ``p`` share the same tangent space because they
+    compare equal::
+
+        sage: p1 == p
+        True
+
+    This results from the unique representation behavior of the class
+    :class:`TangentSpace`, which is inherited from
+    :class:`~sage.tensor.modules.finite_rank_free_module.FiniteRankFreeModule`::
+
+        sage: isinstance(Tp, UniqueRepresentation)
+        True
+
+    The tangent-space uniqueness holds even if the points are created in
+    different coordinate systems::
+
+        sage: xy_to_uv = c_xy.transition_map(c_uv, (x+y, x-y))
+        sage: uv_to_xv = xy_to_uv.inverse()
+        sage: p2 = M.point((1, -3), chart=c_uv, name='p_2')
+        sage: p2 is p
+        False
+        sage: p2.tangent_space() is Tp
+        True
+        sage: p2 == p
+        True
+
     """
 
     Element = TangentVector
 
     def __init__(self, point):
+        r"""
+        Construct the tangent space at a given point.
+
+        TESTS::
+
+            sage: from sage.geometry.manifolds.tangentspace import TangentSpace
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: p = M.point((1,-2), name='p')
+            sage: Tp = TangentSpace(p) ; Tp
+            tangent space at point 'p' on 2-dimensional manifold 'M'
+            sage: TestSuite(Tp).run()
+
+        """
         manif = point._manifold
         name = "T_" + str(point._name) + " " + str(manif._name)
         latex_name = r"T_{" + str(point._latex_name) + "}\," + \

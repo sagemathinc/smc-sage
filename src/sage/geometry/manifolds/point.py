@@ -615,6 +615,15 @@ class ManifoldPoint(Element):
         else:
             return -1
 
+    def __hash__(self):
+        r"""
+        This hash function is set to constant on a given manifold, to fulfill
+        Python's credo:
+        p == q  ==>  hash(p) == hash(q)
+        This is necessary since p and q may be created in different coordinate
+        systems and nevertheless be equal
+        """
+        return self._manifold.__hash__()
 
     def tangent_space(self):
         r"""
@@ -644,11 +653,12 @@ class ManifoldPoint(Element):
         for more examples.
 
         """
-        from tangentspace import TangentSpace
-        if self._tangent_space is None:
-            self._tangent_space = TangentSpace(self)
-            (self._manifold)._tangent_spaces[self] = self._tangent_space
-        return self._tangent_space
+        from sage.geometry.manifolds.tangentspace import TangentSpace
+        return TangentSpace(self)
+#        if self._tangent_space is None:
+#            self._tangent_space = TangentSpace(self)
+#            (self._manifold)._tangent_spaces[self] = self._tangent_space
+#        return self._tangent_space
 
     def plot(self, chart=None, ambient_coords=None, mapping=None, size=10,
              color='black', label=None, label_color=None, fontsize=10,
