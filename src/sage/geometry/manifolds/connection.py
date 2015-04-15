@@ -10,6 +10,7 @@ Levi-Civita connections associated to pseudo-Riemannian metrics.
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2013, 2014) : initial version
+- Marco Mancini (2015) : parallelization of some computations
 
 REFERENCES:
 
@@ -782,7 +783,7 @@ class AffConnection(SageObject):
             # parllel computation
             # !!!!! Seems to work only when a frame is chosen !!!!!!
 
-            nproc = TensorParallelCompute()._nproc 
+            nproc = TensorParallelCompute()._nproc
             lol = lambda lst, sz: [lst[i:i+sz] for i in range(0, len(lst), sz)]
 
             ind_list = list(resc.non_redundant_index_generator())
@@ -790,7 +791,7 @@ class AffConnection(SageObject):
             local_list = lol(ind_list,ind_step)
 
             # definition of the list of input parameters
-            listParalInput = [] 
+            listParalInput = []
             for ind_part in local_list:
                 listParalInput.append((ind_part,tc,gam,frame,n_con,tensor._tensor_rank,manif))
 
@@ -803,16 +804,16 @@ class AffConnection(SageObject):
                     ind0 = ind[:-1]
                     rsum = frame[p](tc[[ind0]])
                     # loop on contravariant indices:
-                    for k in range(n_con): 
+                    for k in range(n_con):
                         for i in manif.irange():
                             indk = list(ind0)
-                            indk[k] = i  
+                            indk[k] = i
                             rsum += gam[[ind0[k], i, p]] * tc[[indk]]
                     # loop on covariant indices:
-                    for k in range(n_con, rank): 
+                    for k in range(n_con, rank):
                         for i in manif.irange():
                             indk = list(ind0)
-                            indk[k] = i  
+                            indk[k] = i
                             rsum -= gam[[i, ind0[k], p]] * tc[[indk]]
                     partial.append([ind,rsum])
                 return partial
@@ -823,27 +824,27 @@ class AffConnection(SageObject):
                     resc[[jj[0]]] = jj[1]
 
         else:
-            # sequential 
+            # sequential
             for ind in resc.non_redundant_index_generator():
                 p = ind[-1]  # derivation index
                 ind0 = ind[:-1]
                 rsum = frame[p](tc[[ind0]])
                 # loop on contravariant indices:
-                for k in range(n_con): 
+                for k in range(n_con):
                     for i in manif.irange():
                         indk = list(ind0)
-                        indk[k] = i  
+                        indk[k] = i
                         rsum += gam[[ind0[k], i, p]] * tc[[indk]]
                 # loop on covariant indices:
-                for k in range(n_con, tensor._tensor_rank): 
+                for k in range(n_con, tensor._tensor_rank):
                     for i in manif.irange():
                         indk = list(ind0)
-                        indk[k] = i  
+                        indk[k] = i
                         rsum -= gam[[i, ind0[k], p]] * tc[[indk]]
                 resc[[ind]] = rsum
 
         #print "time cov derivative:",time.time()-marco_t0
-                
+
 
         # Resulting tensor field
         return tdom.vector_field_module().tensor_from_comp((n_con, n_cov+1),
@@ -1053,7 +1054,7 @@ class AffConnection(SageObject):
             sage: r.display(eV)
             (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/du*du*du*dv + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/du*du*dv*du + (1/32*u^3 - 1/32*u*v^2 + 3/32*v^3 - 1/32*(3*u^2 - 4)*v - 1/8*u + 1/4) d/du*dv*du*dv + (-1/32*u^3 + 1/32*u*v^2 - 3/32*v^3 + 1/32*(3*u^2 - 4)*v + 1/8*u - 1/4) d/du*dv*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 5/32*v^3 - 1/32*(5*u^2 + 4)*v + 1/8*u - 1/4) d/dv*du*du*dv + (1/32*u^3 - 1/32*u*v^2 - 5/32*v^3 + 1/32*(5*u^2 + 4)*v - 1/8*u + 1/4) d/dv*du*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/dv*dv*du*dv + (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/dv*dv*dv*du
 
-        Parallel computation::
+        The same computation parallelized on 2 cores::
 
             sage: set_nproc(2); print get_nproc()
             2
@@ -1073,7 +1074,7 @@ class AffConnection(SageObject):
             sage: r.display(eV)
             (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/du*du*du*dv + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/du*du*dv*du + (1/32*u^3 - 1/32*u*v^2 + 3/32*v^3 - 1/32*(3*u^2 - 4)*v - 1/8*u + 1/4) d/du*dv*du*dv + (-1/32*u^3 + 1/32*u*v^2 - 3/32*v^3 + 1/32*(3*u^2 - 4)*v + 1/8*u - 1/4) d/du*dv*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 5/32*v^3 - 1/32*(5*u^2 + 4)*v + 1/8*u - 1/4) d/dv*du*du*dv + (1/32*u^3 - 1/32*u*v^2 - 5/32*v^3 + 1/32*(5*u^2 + 4)*v - 1/8*u + 1/4) d/dv*du*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/dv*dv*du*dv + (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/dv*dv*dv*du
             sage: set_nproc(1)
-            
+
         """
         if self._riemann is None:
             manif = self._manifold
@@ -1106,7 +1107,7 @@ class AffConnection(SageObject):
                         local_list = lol(ind_list,ind_step)
 
                         # definition of the list of input parameters
-                        listParalInput = [] 
+                        listParalInput = []
                         for ind_part in local_list:
                             listParalInput.append((frame,gam,gam_gam,gam_sc,manif.irange,ind_part))
 
@@ -1130,14 +1131,14 @@ class AffConnection(SageObject):
                         for ii,val in make_Reim(listParalInput):
                             for jj in val:
                                 res[jj[0],jj[1],jj[2],jj[3]] = jj[4]
-                        
+
                     else:
-                        # sequential 
+                        # sequential
                         for i in manif.irange():
                             for j in manif.irange():
                                 for k in manif.irange():
-                                    # antisymmetry of the Riemann tensor taken into 
-                                    # account by l>k: 
+                                    # antisymmetry of the Riemann tensor taken into
+                                    # account by l>k:
                                     for l in manif.irange(start=k+1):
                                         res[i,j,k,l] = frame[k](gam[[i,j,l]]) - \
                                                        frame[l](gam[[i,j,k]]) + \
@@ -1146,10 +1147,10 @@ class AffConnection(SageObject):
                                                        gam_sc[[i,j,k,l]]
                     #print "time riemann :",time.time()-marco_t0
             self._riemann = resu
-            
-            
-        return self._riemann 
-        
+
+
+        return self._riemann
+
     def ricci(self):
         r"""
         Return the connection's Ricci tensor.
@@ -1389,7 +1390,7 @@ class AffConnection(SageObject):
         where the `\omega^i_{\ \, j}`'s are the connection 1-forms (cf.
         :meth:`connection_form`). Let us check it on the frame e::
 
-            sage: for i in M.irange():
+            sage: for i in M.irange():  # long time
             ...       nab.torsion_form(i, e) == ef[i].exterior_der() + sum(nab.connection_form(i,k,e).wedge(ef[k]) for k in M.irange())
             ...
             True
@@ -1455,9 +1456,9 @@ class AffConnection(SageObject):
             sage: nab[2,1,1], nab[2,1,2], nab[2,2,1] = z^2, x*y*z^2, -x^2
             sage: nab[2,3,1], nab[2,3,3], nab[3,1,2] = x^2+y^2+z^2, y^2-z^2, x*y+z^2
             sage: nab[3,2,1], nab[3,2,2], nab[3,3,3] = x*y+z, z^3 -y^2, x*z^2 - z*y^2
-            sage: nab.curvature_form(1,1)
+            sage: nab.curvature_form(1,1)  # long time
             2-form 'nabla curvature 2-form (1,1)' on the 3-dimensional manifold 'M'
-            sage: nab.curvature_form(1,1).display()
+            sage: nab.curvature_form(1,1).display()  # long time (if above is skipped)
             nabla curvature 2-form (1,1) = (y^2*z^3 + (x*y^3 - x)*z + 2*x) dx/\dy + (x^3*z^2 - x*y) dx/\dz + (x^4*y*z^2 - z) dy/\dz
 
         Curvature 2-forms w.r.t. a non-holonomic frame::
@@ -1470,9 +1471,9 @@ class AffConnection(SageObject):
             sage: ef = e.coframe()
             sage: ef[1].display(), ef[2].display(), ef[3].display()
             (e^1 = 1/y dx, e^2 = 1/z dy, e^3 = 1/x dz)
-            sage: nab.curvature_form(1,1,e)
+            sage: nab.curvature_form(1,1,e)  # long time
             2-form 'nabla curvature 2-form (1,1)' on the 3-dimensional manifold 'M'
-            sage: nab.curvature_form(1,1,e).display(e)
+            sage: nab.curvature_form(1,1,e).display(e)  # long time (if above is skipped)
             nabla curvature 2-form (1,1) = (y^3*z^4 + 2*x*y*z + (x*y^4 - x*y)*z^2) e^1/\e^2 + (x^4*y*z^2 - x^2*y^2) e^1/\e^3 + (x^5*y*z^3 - x*z^2) e^2/\e^3
 
         Cartan's second structure equation is
@@ -1486,12 +1487,12 @@ class AffConnection(SageObject):
 
             sage: omega = nab.connection_form
             sage: check = []
-            sage: for i in M.irange():
+            sage: for i in M.irange():  # long time
             ...       for j in M.irange():
             ...           check.append( nab.curvature_form(i,j,e) == omega(i,j,e).exterior_der() + \
             ...           sum( omega(i,k,e).wedge(omega(k,j,e)) for k in M.irange()) )
             ...
-            sage: check
+            sage: check  # long time
             [True, True, True, True, True, True, True, True, True]
 
         """
@@ -1857,7 +1858,7 @@ class LeviCivitaConnection(AffConnection):
                     ginv = self._metric.inverse().comp(frame)
 
                     marco_t0 = time.time()
-                    
+
                     if TensorParallelCompute()._use_paral :
                         # parallel computation
 
@@ -1872,7 +1873,7 @@ class LeviCivitaConnection(AffConnection):
                         local_list = lol(ind_list,ind_step)
 
                         # definition of the list of input parameters
-                        listParalInput = [] 
+                        listParalInput = []
                         for ind_part in local_list:
                             listParalInput.append((ind_part,chart,ginv,gg,manif))
 
@@ -1884,35 +1885,35 @@ class LeviCivitaConnection(AffConnection):
                                 rsum = 0
                                 for s in manif.irange():
                                     if ginv[i,s, chart]!=0:
-                                        rsum += ginv[i,s, chart] * ( 
+                                        rsum += ginv[i,s, chart] * (
                                                         gg[s,k, chart].diff(j)
                                                       + gg[j,s, chart].diff(k)
                                                       - gg[j,k, chart].diff(s) )
                                 partial.append([i,j,k,rsum / 2])
                             return partial
-                                
+
                         # Computation and Assignation of values
                         for ii, val in make_Connect(listParalInput):
                             for jj in val:
                                 gam[jj[0],jj[1],jj[2],ii[0][1]] = jj[3]
 
                     else:
-                        # sequential 
+                        # sequential
                         for ind in gam.non_redundant_index_generator():
                             i, j, k = ind
                             # The computation is performed at the FunctionChart level:
                             rsum = 0
                             for s in manif.irange():
-                                rsum += ginv[i,s, chart] * ( 
+                                rsum += ginv[i,s, chart] * (
                                                     gg[s,k, chart].diff(j)
                                                   + gg[j,s, chart].diff(k)
                                                   - gg[j,k, chart].diff(s) )
                             gam[i,j,k, chart] = rsum / 2
-                            
-                    # Assignation of results        
+
+                    # Assignation of results
                     self._coefficients[frame] = gam
                     #print "time connection :",time.time()-marco_t0
-                    
+
                 else:
                     # Computation from the formula defining the connection coef.
                     return AffConnection.coef(self, frame)
