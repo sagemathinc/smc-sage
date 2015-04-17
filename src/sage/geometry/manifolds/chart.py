@@ -905,8 +905,9 @@ class Chart(UniqueRepresentation, SageObject):
             # The subchart frame is not a "top frame" in the supersets
             # (including self._domain):
             for dom in self._domain._supersets:
-                dom._top_frames.remove(res._frame) # since it was added by the
-                                                   # Chart constructor above
+                if res._frame in dom._top_frames:
+                    # it was added by the Chart constructor above
+                    dom._top_frames.remove(res._frame)
             # Update of domain restrictions:
             self._dom_restrict[subset] = res
         return self._dom_restrict[subset]
