@@ -2438,6 +2438,76 @@ class FunctionChart(SageObject):
         result._express = {self._chart: self}
         return result
 
+    def exp(self):
+        r"""
+        Exponential of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x+y)
+            sage: f.exp()
+            e^(x + y)
+            sage: exp(f) # equivalent to f.exp()
+            e^(x + y)
+            sage: exp(f).display()
+            (x, y) |--> e^(x + y)
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.exp()))
+
+    def log(self, base=None):
+        r"""
+        Logarithm of the function.
+
+        INPUT:
+
+        - ``base`` -- (default: ``None``) base of the logarithm; if None, the
+          natural logarithm (i.e. logarithm to base e) is returned
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x+y)
+            sage: f.log()
+            log(x + y)
+            sage: log(f) # equivalent to f.log()
+            log(x + y)
+            sage: log(f).display()
+            (x, y) |--> log(x + y)
+            sage: f.log(2)
+            log(x + y)/log(2)
+            sage: log(f, 2)
+            log(x + y)/log(2)
+
+        """
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.log(base)))
+
+    def pow(self, exponent):
+        r"""
+        Power of the function.
+
+        INPUT:
+
+        - ``exponent`` -- the exponent
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x+y)
+            sage: f.pow(3)
+            x^3 + 3*x^2*y + 3*x*y^2 + y^3
+            sage: f.pow(3).display()
+            (x, y) |--> x^3 + 3*x^2*y + 3*x*y^2 + y^3
+
+        """
+        return FunctionChart(self._chart,
+                             simplify_chain(pow(self._express, exponent)))
+
 
 #*****************************************************************************
 

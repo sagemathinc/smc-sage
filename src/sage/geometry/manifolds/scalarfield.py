@@ -1710,6 +1710,169 @@ class ScalarField(CommutativeAlgebraElement):
         resu.set_name(name=resu_name, latex_name=resu_latex_name)
         return resu
 
+    def _function_name(self, func, func_latex):
+        r"""
+        Helper function to set the symbol of a function applied to the
+        scalar field.
+
+        TESTS::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x+y}, name='f', latex_name=r"\Phi")
+            sage: f._function_name("cos", r"\cos")
+            ('cos(f)', '\\cos\\left(\\Phi\\right)')
+            sage: f = M.scalar_field({X: x+y})  # no name given to f
+            sage: f._function_name("cos", r"\cos")
+            (None, None)
+
+        """
+        if self._name is None:
+            name = None
+        else:
+            name = func + "(" + self._name + ")"
+        if self._latex_name is None:
+            latex_name = None
+        else:
+            latex_name = func_latex + r"\left(" + self._latex_name + r"\right)"
+        return name, latex_name
+
+    def exp(self):
+        r"""
+        Exponential of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\exp f`, where `f` is the current scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x+y}, name='f', latex_name=r"\Phi")
+            sage: g = exp(f) ; g
+            scalar field 'exp(f)' on the 2-dimensional manifold 'M'
+            sage: g.display()
+            exp(f): M --> R
+               (x, y) |--> e^(x + y)
+            sage: latex(g)
+            \exp\left(\Phi\right)
+
+        Automatic simplifications occur::
+
+            sage: f = M.scalar_field({X: 2*ln(1+x^2)}, name='f')
+            sage: exp(f).display()
+            exp(f): M --> R
+               (x, y) |--> x^4 + 2*x^2 + 1
+
+        The inverse function is :meth:`log`::
+
+            sage: log(exp(f)) == f
+            True
+
+        """
+        name, latex_name = self._function_name("exp", r"\exp")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.exp()
+        return resu
+
+    def log(self):
+        r"""
+        Natural logarithm of the scalar field
+
+        OUTPUT:
+
+        - the scalar field `\ln f`, where `f` is the current scalar field
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x+y}, name='f', latex_name=r"\Phi")
+            sage: g = log(f) ; g
+            scalar field 'ln(f)' on the 2-dimensional manifold 'M'
+            sage: g.display()
+            ln(f): M --> R
+               (x, y) |--> log(x + y)
+            sage: latex(g)
+            \ln\left(\Phi\right)
+
+        The inverse function is :meth:`exp`::
+
+            sage: exp(log(f)) == f
+            True
+
+        """
+        name, latex_name = self._function_name("ln", r"\ln")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.log()
+        return resu
+
+    def pow(self, exponent):
+        r"""
+        The scalar field to a given power.
+
+        INPUT:
+
+        - ``exponent`` -- the exponent
+
+        OUTPUT:
+
+        - the scalar field `f^a`, where `f` is the current scalar field and
+          `a` the exponent
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x+y}, name='f', latex_name=r'\Phi')
+            sage: g = f.pow(pi) ; g
+            scalar field 'f^pi' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            {\Phi}^{ \pi }
+            sage: g.display()
+            f^pi: M --> R
+               (x, y) |--> (x + y)^pi
+
+        The global function ``pow`` can be used::
+
+            sage: pow(f, pi) == f.pow(pi)
+            True
+
+        Some checks::
+
+            sage: pow(f, 2) == f*f
+            True
+            sage: pow(pow(f, 1/2), 2) == f
+            True
+
+        """
+        from sage.misc.latex import latex
+        if self._name is None:
+            name = None
+        else:
+            name = self._name + "^{}".format(exponent)
+        if self._latex_name is None:
+            latex_name = None
+        else:
+            latex_name = r"{" + self._latex_name + r"}^{" + \
+                         latex(exponent) + r"}"
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.pow(exponent)
+        return resu
+
+    def __pow__(self, exponent):
+        r"""
+        The power function
+        """
+        from sage.structure.element import generic_power
+        if isinstance(exponent, (int, Integer)):
+            if exponent > -8 and exponent < 8:
+                return generic_power(self, exponent)
+        return self.pow(exponent)
 
 #******************************************************************************
 
