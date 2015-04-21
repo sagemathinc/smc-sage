@@ -393,7 +393,7 @@ class AffConnection(SageObject):
             sage: nab[1,1,2], nab[3,2,3] = x^2, y*z  # Gamma^1_{12} = x^2, Gamma^3_{23} = yz
             sage: nab.coef()
             3-indices components w.r.t. coordinate frame (M, (d/dx,d/dy,d/dz))
-            sage: print type(nab.coef())
+            sage: type(nab.coef())
             <class 'sage.tensor.modules.comp.Components'>
             sage: M.default_frame()
             coordinate frame (M, (d/dx,d/dy,d/dz))

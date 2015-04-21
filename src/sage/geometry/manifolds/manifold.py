@@ -354,12 +354,13 @@ class Manifold(ManifoldOpenSubset):
         sage: isinstance(p, sage.geometry.manifolds.point.ManifoldPoint)
         True
 
-    A manifold has a predefined zero scalar field, mapping all the points to 0;
-    it is an instance of
-    :class:`~sage.geometry.manifolds.scalarfield.ZeroScalarField`::
+    A manifold has a predefined zero scalar field, mapping all the points
+    to 0::
 
-        sage: M._zero_scalar_field
-        zero scalar field on the 4-dimensional manifold 'M'
+        sage: M.zero_scalar_field()
+        scalar field 'zero' on the 4-dimensional manifold 'M'
+        sage: M.zero_scalar_field()(p)
+        0
 
     The manifold passes all the tests of the test suite relative to the
     category of Sets::

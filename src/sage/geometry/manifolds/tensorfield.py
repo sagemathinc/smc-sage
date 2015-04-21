@@ -61,7 +61,7 @@ of the class :class:`~sage.tensor.modules.comp.Components`::
 
     sage: t.comp(c_xy.frame())
     2-indices components w.r.t. coordinate frame (M, (d/dx,d/dy))
-    sage: print type(t.comp(c_xy.frame()))
+    sage: type(t.comp(c_xy.frame()))
     <class 'sage.tensor.modules.comp.Components'>
 
 If no vector frame is mentionned in the argument of :meth:`comp`, it is
@@ -83,10 +83,10 @@ fields on the manifold, and therefore instances of the class
     M --> R
     (x, y) |--> x^2
     sage: t[[1,2]]
-    zero scalar field on the 2-dimensional manifold 'M'
+    scalar field 'zero' on the 2-dimensional manifold 'M'
     sage: t[[1,2]].display()
-    M --> R
-    (x, y) |--> 0
+    zero: M --> R
+       (x, y) |--> 0
 
 A direct access to the coordinate expression of some component is obtained
 via the single square brackets::
@@ -105,9 +105,9 @@ In other words, the single square brackets return an instance of
 coordinate function representing the component in some chart (by default,
 the manifold's default chart)::
 
-    sage: print type(t[1,1])    # single bracket --> FunctionChart
+    sage: type(t[1,1])    # single bracket --> FunctionChart
     <class 'sage.geometry.manifolds.chart.FunctionChart'>
-    sage: print type(t[[1,1]])  # double bracket --> ScalarField
+    sage: type(t[[1,1]])  # double bracket --> ScalarField
     <class 'sage.geometry.manifolds.scalarfield.ScalarFieldAlgebra_with_category.element_class'>
 
 Expressions in a chart different from the manifold's default one are
@@ -259,7 +259,7 @@ The components of a symmetric bilinear form are dealt by the subclass
 account the symmetry between the two indices::
 
     sage: q[1,1], q[1,2], q[2,2] = (0, -x, y) # no need to set the component (2,1)
-    sage: print type(q.comp())
+    sage: type(q.comp())
     <class 'sage.tensor.modules.comp.CompFullySym'>
     sage: q[:] # note that the component (2,1) is equal to the component (1,2)
     [ 0 -x]
@@ -2307,9 +2307,9 @@ class TensorField(ModuleElement):
             sage: b[eU,:] = [1+x, -y]
             sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
             sage: s = a.contract(b) ; s
-            zero scalar field on the 2-dimensional manifold 'M'
+            scalar field 'zero' on the 2-dimensional manifold 'M'
             sage: s.display()
-            M --> R
+            zero: M --> R
             on U: (x, y) |--> 0
             on V: (u, v) |--> 0
 

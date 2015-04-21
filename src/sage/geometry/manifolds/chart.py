@@ -157,7 +157,7 @@ class Chart(UniqueRepresentation, SageObject):
 
     Coordinates are some Sage symbolic variables::
 
-        sage: print type(th)
+        sage: type(th)
         <type 'sage.symbolic.expression.Expression'>
         sage: latex(th)
         {\theta}
@@ -266,15 +266,21 @@ class Chart(UniqueRepresentation, SageObject):
     Each constructed chart has its zero function, mapping the coordinates to 0;
     this zero function is an instance of :class:`ZeroFunctionChart`::
 
-        sage: c_spher._zero_function
+        sage: c_spher.zero_function()
         0
-        sage: print type(c_spher._zero_function)
+        sage: c_spher.zero_function().display()
+        (r, th, ph) |--> 0
+        sage: type(c_spher.zero_function())
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
-        sage: c_cart._zero_function
+        sage: c_cart.zero_function()
         0
-        sage: c_cart._zero_function == c_spher._zero_function
+        sage: c_cart.zero_function().display()
+        (x, y, z) |--> 0
+
+    Of course, zero function defined on different charts are not equal::
+
+        sage: c_cart.zero_function() == c_spher.zero_function()
         False
-        sage: # the result is False for the zero functions are not defined on the same chart
 
     Chart grids can be drawn in 2D or 3D graphics thanks to the method
     :meth:`plot`.
@@ -367,11 +373,6 @@ class Chart(UniqueRepresentation, SageObject):
                 sd._def_chart = self
         # The chart is added to the list of the domain's covering charts:
         self._domain._covering_charts.append(self)
-        # Construction of the coordinate frame associated to the chart:
-        self._frame = CoordFrame(self)
-        self._coframe = self._frame._coframe
-        # The null function of the coordinates:
-        self._zero_function = ZeroFunctionChart(self)
         # Initialization of the set of charts that are restrictions of the
         # current chart to subsets of the chart domain:
         self._subcharts = set([self])
@@ -382,6 +383,17 @@ class Chart(UniqueRepresentation, SageObject):
         self._dom_restrict = {} # dict. of the restrictions of self to
                                 # subsets of self._domain, with the
                                 # subsets as keys
+        # The null function of the coordinates:
+        self._zero_function = ZeroFunctionChart(self)
+        # Construction of the coordinate frame associated to the chart:
+        self._frame = CoordFrame(self)
+        self._coframe = self._frame._coframe
+        # Expression in self of the zero scalar fields of open sets containing
+        # the domain of self:
+        for dom in self._domain._supersets:
+            if hasattr(dom, '_zero_scalar_field'):
+                # dom is an open set
+                dom._zero_scalar_field._express[self] = self._zero_function
 
     def _repr_(self):
         r"""
@@ -1180,6 +1192,35 @@ class Chart(UniqueRepresentation, SageObject):
         """
         return FunctionChart(self, expression)
 
+    def zero_function(self):
+        r"""
+        Return the zero function defined on the chart.
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.geometry.manifolds.chart.ZeroFunctionChart`
+          representing the zero function of the chart coordinates.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: X.zero_function()
+            0
+            sage: X.zero_function().display()
+            (x, y) |--> 0
+            sage: type(X.zero_function())
+            <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
+
+        The result is cached::
+
+            sage: X.zero_function() is X.zero_function()
+            True
+
+        """
+        return self._zero_function
+
     def multifunction(self, *expressions):
         r"""
         Return a `\RR^m`-valued function of the coordinates.
@@ -1802,9 +1843,6 @@ class FunctionChart(SageObject):
         r"""
         Return the expression of the image of the function.
 
-        This method actually provides the access to the attribute
-        :attr:`express` that stores the coordinate expression of the function.
-
         OUTPUT:
 
         - symbolic expression, involving the chart coordinates.
@@ -1820,7 +1858,7 @@ class FunctionChart(SageObject):
             x^2 + 3*y + 1
             sage: f.expr()
             x^2 + 3*y + 1
-            sage: print type(f.expr())
+            sage: type(f.expr())
             <type 'sage.symbolic.expression.Expression'>
             sage: f.expr() is f._express
             True
@@ -1828,7 +1866,8 @@ class FunctionChart(SageObject):
         The method :meth:`expr` is useful for accessing to all the
         symbolic expression functionalities in Sage; for instance::
 
-            sage: a = var('a')
+            sage: var('a')
+            a
             sage: f = c_xy.function(a*x*y)
             sage: f.expr()
             a*x*y
@@ -1924,7 +1963,7 @@ class FunctionChart(SageObject):
             sage: c_xy.<x,y> = M.chart()
             sage: f = c_xy.function(x^2+3*y+1)
             sage: g = f.copy()
-            sage: print type(g)
+            sage: type(g)
             <class 'sage.geometry.manifolds.chart.FunctionChart'>
             sage: g
             x^2 + 3*y + 1
@@ -2000,7 +2039,7 @@ class FunctionChart(SageObject):
         The partial derivatives are instances of the class
         :class:`FunctionChart`::
 
-            sage: print type(f.diff(x))
+            sage: type(f.diff(x))
             <class 'sage.geometry.manifolds.chart.FunctionChart'>
 
         An index can be used instead of the coordinate symbol::
@@ -2453,6 +2492,8 @@ class FunctionChart(SageObject):
             e^(x + y)
             sage: exp(f).display()
             (x, y) |--> e^(x + y)
+            sage: exp(X.zero_function())
+            1
 
         """
         return FunctionChart(self._chart, simplify_chain(self._express.exp()))
@@ -2486,7 +2527,7 @@ class FunctionChart(SageObject):
         return FunctionChart(self._chart,
                              simplify_chain(self._express.log(base)))
 
-    def pow(self, exponent):
+    def __pow__(self, exponent):
         r"""
         Power of the function.
 
@@ -2499,15 +2540,20 @@ class FunctionChart(SageObject):
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: f = X.function(x+y)
-            sage: f.pow(3)
+            sage: f.__pow__(3)
             x^3 + 3*x^2*y + 3*x*y^2 + y^3
-            sage: f.pow(3).display()
+            sage: f.__pow__(3).display()
             (x, y) |--> x^3 + 3*x^2*y + 3*x*y^2 + y^3
+            sage: pow(f,3).display()
+            (x, y) |--> x^3 + 3*x^2*y + 3*x*y^2 + y^3
+            sage: (f^3).display()
+            (x, y) |--> x^3 + 3*x^2*y + 3*x*y^2 + y^3
+            sage: pow(X.zero_function(), 3).display()
+            (x, y) |--> 0
 
         """
         return FunctionChart(self._chart,
                              simplify_chain(pow(self._express, exponent)))
-
 
 #*****************************************************************************
 
@@ -2553,26 +2599,26 @@ class ZeroFunctionChart(FunctionChart):
 
     Each chart is equipped with its zero function::
 
-        sage: c_xy._zero_function
+        sage: c_xy.zero_function()
         0
-        sage: print type(c_xy._zero_function)
+        sage: type(c_xy.zero_function())
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
-        sage: f == c_xy._zero_function
+        sage: f == c_xy.zero_function()
         True
 
     Arithmetics between instances of :class:`ZeroFunctionChart`::
 
         sage: g = ZeroFunctionChart(c_xy)
-        sage: s = f+g ; print type(s) ; s
+        sage: s = f+g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = f-g ; print type(s) ; s
+        sage: s = f-g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = f*g ; print type(s) ; s
+        sage: s = f*g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = f/g ; print type(s) ; s
+        sage: s = f/g ; type(s) ; s
         Traceback (most recent call last):
         ...
         ZeroDivisionError: Division of a ZeroFunctionChart by zero.
@@ -2580,53 +2626,53 @@ class ZeroFunctionChart(FunctionChart):
     Arithmetics with a nonzero instance of :class:`FunctionChart`::
 
         sage: g = c_xy.function(x+y)
-        sage: s = f+g ; print type(s) ; s
+        sage: s = f+g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         x + y
-        sage: s = g+f ; print type(s) ; s
+        sage: s = g+f ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         x + y
-        sage: s = f-g ; print type(s) ; s
+        sage: s = f-g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         -x - y
-        sage: s = g-f ; print type(s) ; s
+        sage: s = g-f ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         x + y
-        sage: s = f*g ; print type(s) ; s
+        sage: s = f*g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = g*f ; print type(s) ; s
+        sage: s = g*f ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = f/g ; print type(s) ; s
+        sage: s = f/g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = g/f ; print type(s) ; s
+        sage: s = g/f ; type(s) ; s
         Traceback (most recent call last):
         ...
         ZeroDivisionError: Division of a FunctionChart by zero.
 
     Arithmetics with a symbolic expression::
 
-        sage: s = f+x ; print type(s) ; s
+        sage: s = f+x ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         x
-        sage: s = x+f ; print type(s) ; s
+        sage: s = x+f ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         x
-        sage: s = f-x ; print type(s) ; s
+        sage: s = f-x ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         -x
-        sage: s = x-f ; print type(s) ; s
+        sage: s = x-f ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         x
-        sage: s = f*x ; print type(s) ; s
+        sage: s = f*x ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = x*f ; print type(s) ; s
+        sage: s = x*f ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = f/x ; print type(s) ; s
+        sage: s = f/x ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
 
@@ -2846,11 +2892,13 @@ class ZeroFunctionChart(FunctionChart):
 
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart()
-            sage: fc = c_xy._zero_function
+            sage: fc = c_xy.zero_function()
             sage: f = fc.scalar_field() ; f
-            zero scalar field on the 2-dimensional manifold 'M'
-            sage: f.expr()
-            0
+            scalar field 'zero' on the 2-dimensional manifold 'M'
+            sage: f.display()
+            zero: M --> R
+               (x, y) |--> 0
+
         """
         return self._chart._domain._zero_scalar_field
 

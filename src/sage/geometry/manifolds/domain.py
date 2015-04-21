@@ -1413,6 +1413,8 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         """
         from scalarfield import ZeroScalarField
+        from sage.geometry.manifolds.scalarfield_algebra import \
+                                                             ScalarFieldAlgebra
         ManifoldSubset.__init__(self, manifold, name, latex_name)
         # list of charts that individually cover self, i.e. whose
         # domains are self (if non-empty, self is a coordinate domain):
@@ -1421,9 +1423,9 @@ class ManifoldOpenSubset(ManifoldSubset):
         # domains are self (if non-empty, self is parallelizable):
         self._covering_frames = []
         # algebra of scalar fields defined on self (not contructed yet)
-        self._scalar_field_algebra = None
+        self._scalar_field_algebra = ScalarFieldAlgebra(self)
         # The zero scalar field is constructed:
-        self._zero_scalar_field = ZeroScalarField(self)
+        self._zero_scalar_field = self._scalar_field_algebra.zero()
         # dict. of vector field modules along self
         # (keys = diff. mapping from self to an open set (possibly the identity
         #  map))
@@ -1720,12 +1722,9 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: CU.category()
             Category of commutative algebras over Symbolic Ring
             sage: CU.zero()
-            zero scalar field on the open subset 'U' of the 3-dimensional manifold 'M'
+            scalar field 'zero' on the open subset 'U' of the 3-dimensional manifold 'M'
 
         """
-        from scalarfield_algebra import ScalarFieldAlgebra
-        if self._scalar_field_algebra is None:
-            self._scalar_field_algebra = ScalarFieldAlgebra(self)
         return self._scalar_field_algebra
 
     def vector_field_module(self, dest_map=None, force_free=False):
@@ -1969,7 +1968,7 @@ class ManifoldOpenSubset(ManifoldSubset):
     def scalar_field(self, coord_expression=None, chart=None, name=None,
                      latex_name=None):
         r"""
-        Define a scalar field on ``self``.
+        Define a scalar field on the open set.
 
         See :class:`~sage.geometry.manifolds.scalarfield.ScalarField` for a
         complete documentation.
@@ -2030,6 +2029,26 @@ class ManifoldOpenSubset(ManifoldSubset):
                                             coord_expression=coord_expression,
                                             name=name, latex_name=latex_name)
 
+    def zero_scalar_field(self):
+        r"""
+        Return the zero scalar field defined on the open subset.
+
+        EXAMPLE::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.zero_scalar_field() ; f
+            scalar field 'zero' on the 2-dimensional manifold 'M'
+            sage: f.display()
+            zero: M --> R
+               (x, y) |--> 0
+            sage: f.parent()
+            algebra of scalar fields on the 2-dimensional manifold 'M'
+            sage: f is M.scalar_field_algebra().zero()
+            True
+
+        """
+        return self._zero_scalar_field
 
     def vector_field(self, name=None, latex_name=None, dest_map=None):
         r"""

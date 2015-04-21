@@ -645,7 +645,7 @@ class Metric(TensorField):
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
             sage: Gam = g.christoffel_symbols() ; Gam
             3-indices components w.r.t. coordinate frame (U, (d/dr,d/dth,d/dph)), with symmetry on the index positions (1, 2)
-            sage: print type(Gam)
+            sage: type(Gam)
             <class 'sage.tensor.modules.comp.CompWithSym'>
             sage: Gam[:]
             [[[0, 0, 0], [0, -r, 0], [0, 0, -r*sin(th)^2]],
