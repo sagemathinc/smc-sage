@@ -2472,10 +2472,9 @@ class FunctionChart(SageObject):
             True
 
         """
-        result = self._chart._domain.scalar_field_algebra().element_class(
-                         self._chart._domain, name=name, latex_name=latex_name)
-        result._express = {self._chart: self}
-        return result
+        return self._chart._domain.scalar_field_algebra().element_class(
+                     self._chart._domain, coord_expression={self._chart: self},
+                     name=name, latex_name=latex_name)
 
     def exp(self):
         r"""
@@ -2883,8 +2882,8 @@ class ZeroFunctionChart(FunctionChart):
 
         OUTPUT:
 
-        - instance of class
-          :class:`~sage.geometry.manifolds.scalarfield.ZeroScalarField`
+        - zero instance of class
+          :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
 
         EXAMPLES:
 

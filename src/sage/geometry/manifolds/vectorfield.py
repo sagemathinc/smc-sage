@@ -218,7 +218,6 @@ class VectorField(TensorField):
           field, i.e. `v^i \frac{\partial f}{\partial x^i}`
 
         """
-        from scalarfield import ZeroScalarField
         if scalar._tensor_type == (0,1):
             # This is actually the action of the vector field on a 1-form,
             # as a tensor field of type (1,0):
@@ -231,8 +230,8 @@ class VectorField(TensorField):
         dom_resu = self._domain.intersection(scalar._domain)
         self_r = self.restrict(dom_resu)
         scalar_r = scalar.restrict(dom_resu)
-        if isinstance(scalar_r, ZeroScalarField):
-            return scalar_r
+        if scalar_r._is_zero:
+            return dom_resu._zero_scalar_field
         if isinstance(self_r, VectorFieldParal):
             return self_r(scalar_r)
         # Creation of the result:
@@ -787,7 +786,7 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal,
             2*x^2*y - y^3
 
         """
-        from scalarfield import ScalarField, ZeroScalarField
+        from scalarfield import ScalarField
         from vectorframe import CoordFrame
         if scalar._tensor_type == (0,1):
             # This is actually the action of the vector field on a 1-form,
@@ -801,8 +800,8 @@ class VectorFieldParal(FiniteRankFreeModuleElement, TensorFieldParal,
         dom_resu = self._domain.intersection(scalar._domain)
         self_r = self.restrict(dom_resu)
         scalar_r = scalar.restrict(dom_resu)
-        if isinstance(scalar_r, ZeroScalarField):
-            return scalar_r
+        if scalar_r._is_zero:
+            return dom_resu._zero_scalar_field
         # Creation of the result:
         if self._name is not None and scalar._name is not None:
             resu_name = self._name + "(" + scalar._name + ")"

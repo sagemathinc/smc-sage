@@ -41,7 +41,7 @@ from sage.categories.commutative_algebras import CommutativeAlgebras
 from sage.rings.integer_ring import ZZ
 from sage.rings.rational_field import QQ
 from sage.symbolic.ring import SR
-from sage.geometry.manifolds.scalarfield import ScalarField, ZeroScalarField
+from sage.geometry.manifolds.scalarfield import ScalarField
 
 class ScalarFieldAlgebra(UniqueRepresentation, Parent):
     r"""
@@ -184,7 +184,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         algebra of scalar fields on the 2-dimensional manifold 'M'
         sage: f1 == f
         True
-        sage: M.scalar_field(0) is CM.zero()
+        sage: M.scalar_field(0, chart='all') is CM.zero()
         True
 
     The algebra `C^\infty(M)` coerces to `C^\infty(W)` since `W` is an open

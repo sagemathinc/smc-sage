@@ -108,7 +108,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
     - ``manifold`` -- manifold on which the subset is defined
     - ``name`` -- string; name (symbol) given to the subset
-    - ``latex_name`` --  (default: None) string: LaTeX symbol to denote the
+    - ``latex_name`` --  (default: ``None``) string: LaTeX symbol to denote the
       subset; if none is provided, it is set to ``name``
 
     EXAMPLES:
@@ -554,7 +554,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         INPUT:
 
         - ``name`` -- name given to the subset
-        - ``latex_name`` --  (default: None) LaTeX symbol to denote the
+        - ``latex_name`` --  (default: ``None``) LaTeX symbol to denote the
           subset; if none is provided, it is set to ``name``
         - ``is_open`` -- (default: False) if True, the created subset is
           assumed to be open with respect to the manifold's topology
@@ -615,7 +615,7 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         INPUT:
 
         - ``name`` -- name given to the superset
-        - ``latex_name`` --  (default: None) LaTeX symbol to denote the
+        - ``latex_name`` --  (default: ``None``) LaTeX symbol to denote the
           superset; if none is provided, it is set to ``name``
         - ``is_open`` -- (default: False) if True, the created subset is
           assumed to be open with respect to the manifold's topology
@@ -682,10 +682,10 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         INPUT:
 
         - ``other`` -- another subset of the same manifold
-        - ``name`` -- (default: None) name given to the intersection in the
+        - ``name`` -- (default: ``None``) name given to the intersection in the
           case the latter has to be created; the default is
           ``self._name`` inter ``other._name``
-        - ``latex_name`` --  (default: None) LaTeX symbol to denote the
+        - ``latex_name`` --  (default: ``None``) LaTeX symbol to denote the
           intersection in the case the latter has to be created; the default
           is built upon the symbol `\cap`
 
@@ -779,10 +779,10 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         INPUT:
 
         - ``other`` -- another subset of the same manifold
-        - ``name`` -- (default: None) name given to the union in the
+        - ``name`` -- (default: ``None``) name given to the union in the
           case the latter has to be created; the default is
           ``self._name`` union ``other._name``
-        - ``latex_name`` --  (default: None) LaTeX symbol to denote the
+        - ``latex_name`` --  (default: ``None``) LaTeX symbol to denote the
           union in the case the latter has to be created; the default
           is built upon the symbol `\cup`
 
@@ -976,11 +976,11 @@ class ManifoldSubset(UniqueRepresentation, Parent):
 
         - ``coords`` -- the point coordinates (as a tuple or a list) in the
           chart specified by ``chart``
-        - ``chart`` -- (default: None) chart in which the point coordinates are
+        - ``chart`` -- (default: ``None``) chart in which the point coordinates are
           given; if none is provided, the coordinates are assumed to refer to
           the default chart of ``self``
-        - ``name`` -- (default: None) name given to the point
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the point;
+        - ``name`` -- (default: ``None``) name given to the point
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the point;
           if none is provided, the LaTeX symbol is set to ``name``
 
         OUTPUT:
@@ -1294,7 +1294,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
     - ``manifold`` -- manifold on which the open subset is defined
     - ``name`` -- string; name (symbol) given to the open subset
-    - ``latex_name`` -- (default: None) string; LaTeX symbol to denote the open
+    - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to denote the open
       subset; if none is provided, it is set to ``name``
 
     EXAMPLES:
@@ -1412,7 +1412,6 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: TestSuite(U).run()
 
         """
-        from scalarfield import ZeroScalarField
         from sage.geometry.manifolds.scalarfield_algebra import \
                                                              ScalarFieldAlgebra
         ManifoldSubset.__init__(self, manifold, name, latex_name)
@@ -1449,7 +1448,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         INPUT:
 
         - ``name`` -- name given to the open subset
-        - ``latex_name`` --  (default: None) LaTeX symbol to denote the
+        - ``latex_name`` --  (default: ``None``) LaTeX symbol to denote the
           subset; if none is provided, it is set to ``name``
         - ``coord_def`` -- (default: {}) definition of the subset in
           terms of coordinates; ``coord_def`` must a be dictionary with keys
@@ -1558,7 +1557,7 @@ class ManifoldOpenSubset(ManifoldSubset):
           If no interval range and no LaTeX spelling is to be provided for any
           coordinate, the argument ``coordinates`` can be omitted when the
           shortcut operator <,> is used via Sage preparser (see examples below)
-        - ``names`` -- (default: None) unused argument, except if
+        - ``names`` -- (default: ``None``) unused argument, except if
           ``coordinates`` is not provided; it must then be a tuple containing
           the coordinate symbols (this is guaranted if the shortcut operator <,>
           is used).
@@ -1641,17 +1640,17 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         INPUT:
 
-        - ``symbol`` -- (default: None) a letter (of a few letters) to denote a
+        - ``symbol`` -- (default: ``None``) a letter (of a few letters) to denote a
           generic vector of the frame; can be set to None if the parameter
           ``from_frame`` is filled.
-        - ``latex_symbol`` -- (default: None) symbol to denote a generic vector
+        - ``latex_symbol`` -- (default: ``None``) symbol to denote a generic vector
           of the frame; if None, the value of ``symbol`` is used.
-        - ``dest_map`` -- (default: None) destination map
+        - ``dest_map`` -- (default: ``None``) destination map
           `\Phi:\ U \rightarrow V`
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`);
           if none is provided, the identity is assumed (case of a vector frame
           *on* `U`)
-        - ``from_frame`` -- (default: None) vector frame `\tilde e` on the
+        - ``from_frame`` -- (default: ``None``) vector frame `\tilde e` on the
           codomain `V` of the destination map `\Phi`; the returned frame `e` is
           then such that `\forall p \in U, e(p) = \tilde e(\Phi(p))`
 
@@ -1738,7 +1737,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         INPUT:
 
-        - ``dest_map`` -- (default: None) destination map
+        - ``dest_map`` -- (default: ``None``) destination map
           `\Phi:\ U \rightarrow V`, where `U` is ``self``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`);
           if none is provided, the identity map is assumed (case of vector
@@ -1838,7 +1837,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant
           rank and `l` the covariant rank
-        - ``dest_map`` -- (default: None) destination map
+        - ``dest_map`` -- (default: ``None``) destination map
           `\Phi:\ U \rightarrow V`, where `U` is ``self``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`);
           if none is provided, the identity map is assumed (case of tensor
@@ -1889,7 +1888,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         INPUT:
 
         - ``degree`` -- positive integer; the degree `p` of the differential forms
-        - ``dest_map`` -- (default: None) destination map
+        - ``dest_map`` -- (default: ``None``) destination map
           `\Phi:\ U \rightarrow V`, where `U` is ``self``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`);
           if none is provided, the identity map is assumed (case of
@@ -1923,7 +1922,7 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         INPUT:
 
-        - ``dest_map`` -- (default: None) destination map
+        - ``dest_map`` -- (default: ``None``) destination map
           `\Phi:\ U \rightarrow V`, where `U` is ``self``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`);
           if none is provided, the identity map is assumed
@@ -1975,13 +1974,28 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         INPUT:
 
-        - ``coord_expression`` -- (default: None) coordinate expression of the
-          scalar field
-        - ``chart`` -- (default:None) chart defining the coordinates used in
-          ``coord_expression``; if none is provided and a coordinate expression
-          is given, the default chart of ``self`` is assumed.
-        - ``name`` -- (default: None) name given to the scalar field
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the scalar
+        - ``coord_expression`` -- (default: ``None``) coordinate expression(s)
+          of the scalar field; this can be either
+
+          - a single coordinate expression; if the argument ``chart`` is
+            ``'all'``, this expression is set to all the charts defined
+            on the open set; otherwise, the expression is set in the
+            specific chart provided by the argument ``chart``
+          - a dictionary of coordinate expressions, with the charts as keys.
+
+          If ``coord_expression`` is ``None`` or does not fully specified the
+          scalar field, other coordinate expressions can be added subsequently
+          by means of the methods
+          :meth:`~sage.geometry.manifolds.scalarfield.ScalarField.add_expr`,
+          :meth:`~sage.geometry.manifolds.scalarfield.ScalarField.add_expr_by_continuation`,
+          or :meth:`~sage.geometry.manifolds.scalarfield.ScalarField.set_expr`
+        - ``chart`` -- (default: ``None``) chart defining the coordinates used
+          in ``coord_expression`` when the latter is a single coordinate
+          expression; if none is provided (default), the default chart of the
+          open set is assumed. If ``chart=='all'``, ``coord_expression`` is
+          assumed to be independent of the chart (constant scalar field).
+        - ``name`` -- (default: ``None``) name given to the scalar field
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the scalar
           field; if none is provided, the LaTeX symbol is set to ``name``
 
         OUTPUT:
@@ -1989,9 +2003,10 @@ class ManifoldOpenSubset(ManifoldSubset):
         - instance of :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
           representing the defined scalar field.
 
-        EXAMPLE:
+        EXAMPLES:
 
-        A scalar field defined by its coordinate expression::
+        A scalar field defined by its coordinate expression in the open
+        set's default chart::
 
             sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(3, 'M')
@@ -2007,24 +2022,36 @@ class ManifoldOpenSubset(ManifoldSubset):
             sage: f in U.scalar_field_algebra()
             True
 
+        Equivalent definition with the chart specified::
+
+            sage: f = U.scalar_field(sin(x)*cos(y) + z, chart=c_xyz, name='F')
+            sage: f.display()
+            F: U --> R
+               (x, y, z) |--> cos(y)*sin(x) + z
+
+        Equivalent definition with a dictionary of coordinate expression(s)::
+
+            sage: f = U.scalar_field({c_xyz: sin(x)*cos(y) + z}, name='F')
+            sage: f.display()
+            F: U --> R
+               (x, y, z) |--> cos(y)*sin(x) + z
+
         See the documentation of class
         :class:`~sage.geometry.manifolds.scalarfield.ScalarField` for more
         examples.
 
         """
-        from sage.symbolic.expression import Expression
         if isinstance(coord_expression, dict):
             # check validity of entry
             for chart in coord_expression:
                 if not chart._domain.is_subset(self):
                     raise ValueError("The " + str(chart) + " is not defined " +
                                      "on some subset of the " + str(self))
-        elif isinstance(coord_expression, Expression):
-            if coord_expression.variables() != ():
-                # the expression is not a constant
-                if chart is None:
-                    chart = self._def_chart
-                coord_expression = {chart: coord_expression}
+        elif coord_expression is not None and chart != 'all':
+            # coord_expression is valid only in a specific chart
+            if chart is None:
+                chart = self._def_chart
+            coord_expression = {chart: coord_expression}
         return self.scalar_field_algebra()._element_constructor_(
                                             coord_expression=coord_expression,
                                             name=name, latex_name=latex_name)
@@ -2059,10 +2086,10 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the vector field
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the vector
+        - ``name`` -- (default: ``None``) name given to the vector field
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the vector
           field; if none is provided, the LaTeX symbol is set to ``name``
-        - ``dest_map`` -- (default: None) instance of
+        - ``dest_map`` -- (default: ``None``) instance of
           class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
           representing the destination map `\Phi:\ U \rightarrow V`, where `U`
           is ``self``; if none is provided, the identity map is assumed (case
@@ -2112,10 +2139,10 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         - ``k`` -- the contravariant rank, the tensor type being (k,l)
         - ``l`` -- the covariant rank, the tensor type being (k,l)
-        - ``name`` -- (default: None) name given to the tensor field
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the tensor
+        - ``name`` -- (default: ``None``) name given to the tensor field
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the tensor
           field; if none is provided, the LaTeX symbol is set to ``name``
-        - ``sym`` -- (default: None) a symmetry or a list of symmetries among
+        - ``sym`` -- (default: ``None``) a symmetry or a list of symmetries among
           the tensor arguments: each symmetry is described by a tuple containing
           the positions of the involved arguments, with the convention position=0
           for the first argument. For instance:
@@ -2124,9 +2151,9 @@ class ManifoldOpenSubset(ManifoldSubset):
           * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
             arguments and a symmetry between the 2nd, 4th and 5th arguments.
 
-        - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries
+        - ``antisym`` -- (default: ``None``) antisymmetry or list of antisymmetries
           among the arguments, with the same convention as for ``sym``.
-        - ``dest_map`` -- (default: None) instance of
+        - ``dest_map`` -- (default: ``None``) instance of
           class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
           representing the destination map `\Phi:\ U \rightarrow V`, where `U`
           is ``self``; if none is provided, the identity map is assumed (case
@@ -2172,10 +2199,10 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the field
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
+        - ``name`` -- (default: ``None``) name given to the field
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the field;
           if none is provided, the LaTeX symbol is set to ``name``
-        - ``dest_map`` -- (default: None) instance of
+        - ``dest_map`` -- (default: ``None``) instance of
           class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
           representing the destination map `\Phi:\ U \rightarrow V`, where `U`
           is ``self``; if none is provided, the identity map is assumed (case
@@ -2303,10 +2330,10 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the field
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
+        - ``name`` -- (default: ``None``) name given to the field
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the field;
           if none is provided, the LaTeX symbol is set to ``name``
-        - ``dest_map`` -- (default: None) instance of
+        - ``dest_map`` -- (default: ``None``) instance of
           class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
           representing the destination map `\Phi:\ U \rightarrow V`, where `U`
           is ``self``; if none is provided, the identity map is assumed (case
@@ -2355,7 +2382,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote
           the field of identity map; if none is provided, the LaTeX symbol is
           set to '\mathrm{Id}' if ``name`` is 'Id' and to ``name`` otherwise
-        - ``dest_map`` -- (default: None) instance of
+        - ``dest_map`` -- (default: ``None``) instance of
           class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
           representing the destination map `\Phi:\ U \rightarrow V`, where `U`
           is ``self``; if none is provided, the identity map is assumed (case
@@ -2494,14 +2521,14 @@ class ManifoldOpenSubset(ManifoldSubset):
         INPUT:
 
         - ``name`` -- name given to the metric
-        - ``signature`` -- (default: None) signature `S` of the metric as a single
+        - ``signature`` -- (default: ``None``) signature `S` of the metric as a single
           integer: `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of
           positive terms (resp. number of negative terms) in any diagonal writing
           of the metric components; if ``signature`` is not provided, `S` is set to
           the manifold's dimension (Riemannian signature)
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
           none, it is formed from ``name``
-        - ``dest_map`` -- (default: None) instance of
+        - ``dest_map`` -- (default: ``None``) instance of
           class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
           representing the destination map `\Phi:\ U \rightarrow V`, where `U`
           is ``self``; if none is provided, the identity map is assumed (case
@@ -2542,9 +2569,9 @@ class ManifoldOpenSubset(ManifoldSubset):
         INPUT:
 
         - ``name`` -- name given to the metric
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
           none, it is formed from ``name``
-        - ``dest_map`` -- (default: None) instance of
+        - ``dest_map`` -- (default: ``None``) instance of
           class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
           representing the destination map `\Phi:\ U \rightarrow V`, where `U`
           is ``self``; if none is provided, the identity map is assumed (case
@@ -2598,9 +2625,9 @@ class ManifoldOpenSubset(ManifoldSubset):
             dimension, i.e. `(-,+,\cdots,+)`
           * if set to 'negative', the signature is -n+2, i.e. `(+,-,\cdots,-)`
 
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
           none, it is formed from ``name``
-        - ``dest_map`` -- (default: None) instance of
+        - ``dest_map`` -- (default: ``None``) instance of
           class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
           representing the destination map `\Phi:\ U \rightarrow V`, where `U`
           is ``self``; if none is provided, the identity map is assumed (case
@@ -2647,10 +2674,10 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         - ``degree`` -- the degree `p` of the differential form (i.e. its
           tensor rank)
-        - ``name`` -- (default: None) name given to the differential form
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``name`` -- (default: ``None``) name given to the differential form
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           differential form; if none is provided, the LaTeX symbol is set to ``name``
-        - ``dest_map`` -- (default: None) instance of
+        - ``dest_map`` -- (default: ``None``) instance of
           class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
           representing the destination map `\Phi:\ U \rightarrow V`, where `U`
           is ``self``; if none is provided, the identity map is assumed (case
@@ -2690,10 +2717,10 @@ class ManifoldOpenSubset(ManifoldSubset):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the 1-form
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the 1-form;
+        - ``name`` -- (default: ``None``) name given to the 1-form
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the 1-form;
           if none is provided, the LaTeX symbol is set to ``name``
-        - ``dest_map`` -- (default: None) instance of
+        - ``dest_map`` -- (default: ``None``) instance of
           class :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`
           representing the destination map `\Phi:\ U \rightarrow V`, where `U`
           is ``self``; if none is provided, the identity map is assumed (case
@@ -2940,7 +2967,7 @@ class ManifoldOpenSubset(ManifoldSubset):
         INPUT:
 
         - ``name`` -- name given to the affine connection
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the affine
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the affine
           connection
 
         OUTPUT:
