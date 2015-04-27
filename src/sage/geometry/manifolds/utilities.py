@@ -329,6 +329,7 @@ def set_axes_labels(graph, xlabel, ylabel, zlabel, **kwds):
     return graph
 
 
+
 from sage.symbolic.expression import Expression
 
 class Expression_nice(Expression):
@@ -342,10 +343,6 @@ class Expression_nice(Expression):
         r"""
         String representation of the object.
 
-        TODO - take into account a situation 
-        when function variables are functions too
-        ( e.g. D[0](f)(x, g(x,y)) )
-
         EXAMPLES::
        
             sage: var('x y z')
@@ -359,7 +356,21 @@ class Expression_nice(Expression):
             y*(z - D[1](h)(y, z))^2 + x*D[0, 1](f)(x, y)
             sage: from sage.geometry.manifolds.utilities import Expression_nice
             sage: Expression_nice(fun)
-            y*(z - D/Dzh)^2 + x*D^2/DxDyf
+            y*(z - d(h)/dz)^2 + x*d^2(f)/dxdy
+
+        A check for a case when function variables are functions too: 
+        D[1](f)(x, g(x,y)) should render as d/dg(f)
+
+            sage: var('x y')
+            (x, y)
+            sage: f = function('f', x, y)
+            sage: g = function('g', x, f)
+            sage: fun = (g.diff(x))*x - x^2*f.diff(x,y)
+            sage: fun
+            -x^2*D[0, 1](f)(x, y) + (D[0](f)(x, y)*D[1](g)(x, f(x, y)) + D[0](g)(x, f(x, y)))*x
+            sage: from sage.geometry.manifolds.utilities import Expression_nice
+            sage: Expression_nice(fun)
+            -x^2*d^2(f)/dxdy + (d(f)/dx*d(g)/df + d(g)/dx)*x 
  
         """
 
@@ -371,17 +382,13 @@ class Expression_nice(Expression):
         Integer = int
 
         # find all occurences of diff 
-        it = re.finditer(r"(D\[.*?\])(\(.*?\))(\(.*?\))", d)
-        for m in it:
+        list_derivs = [] 
+        expression_tree(self, list_derivs) 
 
-            diffargs = re.sub("[D\[ \]]", "", m.group(1))
-            diffargs = map(int, diffargs.split(","))
+        for m in list_derivs: 
 
-            funcname = re.sub("[()]", "", m.group(2))
-
-            variables = re.sub("[( )]", "", m.group(3))
-            variables = variables.split(",")
-
+            funcname = m[1]
+            diffargs = m[2] 
             numargs = len(diffargs)
 
             if numargs > 1:
@@ -389,9 +396,12 @@ class Expression_nice(Expression):
             else:
                 numargs = ""
 
-            res = "D" + numargs + "/D" + "D".join([variables[i] for i in diffargs]) + funcname
+            variables = m[3] 
 
-            d = d.replace(m.group(0), res)
+            # re.sub for removing the brackets of possible composite variables 
+            res = "d" + str(numargs) + "(" + str(funcname) + ")/d" + "d".join([re.sub("\(.*?\)","", str(variables[i])) for i in diffargs]) 
+
+            d = d.replace(m[0], res)
 
         return d 
 
@@ -399,10 +409,6 @@ class Expression_nice(Expression):
     def _latex_(self):
         r"""
         LaTeX representation of the object.
-
-        TODO - take into account a situation 
-        when function variables are functions too
-        ( e.g. D[0](f)(x, g(x,y)) )
 
         EXAMPLES::
 
@@ -417,11 +423,29 @@ class Expression_nice(Expression):
             y*(z - D[1](h)(y, z))^2 + x*D[0, 1](f)(x, y)
             sage: from sage.geometry.manifolds.utilities import Expression_nice
             sage: Expression_nice(fun)
-            y*(z - D/Dzh)^2 + x*D^2/DxDyf
+            y*(z - d(h)/dz)^2 + x*d^2(f)/dxdy
             sage: latex(Expression_nice(fun))
             y {\left(z - \frac{\partial\,h}{\partial z}\right)}^{2} + x \frac{\partial^2\,f}{\partial x\partial y}
 
+        A check for a case when function variables are functions too:   
+        D[1](f)(x, g(x,y)) should render as \frac{\partial\,f}{\partial g}  
+
+            sage: var('x y')
+            (x, y)
+            sage: f = function('f', x, y)
+            sage: g = function('g', x, f)
+            sage: fun = (g.diff(x))*x - x^2*f.diff(x,y)
+            sage: fun
+            -x^2*D[0, 1](f)(x, y) + (D[0](f)(x, y)*D[1](g)(x, f(x, y)) + D[0](g)(x, f(x, y)))*x
+            sage: from sage.geometry.manifolds.utilities import Expression_nice
+            sage: Expression_nice(fun)
+            -x^2*d^2(f)/dxdy + (d(f)/dx*d(g)/df + d(g)/dx)*x
+            sage: latex(Expression_nice(fun))
+            -x^{2} \frac{\partial^2\,f}{\partial x\partial y} + {\left(\frac{\partial\,f}{\partial x} \frac{\partial\,g}{\partial f } + \frac{\partial\,g}{\partial x}\right)} x
+
         """
+
+        d = self._parent._latex_element_(self)
 
         import re
         # Fix for proper coercion of types: 
@@ -429,20 +453,13 @@ class Expression_nice(Expression):
         Integer = int
 
         # find all occurences of diff 
-       
-        d = self._parent._latex_element_(self)
+        list_derivs = [] 
+        expression_tree(self, list_derivs) 
 
-        it = re.finditer(r"(D\[.*?\])(\\left\(.*?\\right\))(\\left\(.*?\\right\))", d)
-        for m in it:
+        for m in list_derivs: 
 
-            diffargs = re.sub("[D\[ \]]", "", m.group(1))
-            diffargs = map(int, diffargs.split(","))
-
-            funcname = m.group(2).replace("\left(","").replace("\\right)","")
-
-            variables = m.group(3).replace("\left(","").replace("\\right)","")
-            variables = variables.split(", ")
-
+            funcname = m[1]
+            diffargs = m[2] 
             numargs = len(diffargs)
 
             if numargs > 1:
@@ -450,9 +467,43 @@ class Expression_nice(Expression):
             else:
                 numargs = ""
 
-            res = "\\frac{\partial" + numargs + "\," + funcname + "}{\partial " + "\partial ".join([variables[i] for i in diffargs]) + "}"
+            variables = m[3] 
 
-            d = d.replace(m.group(0), res)
+            # operator with LaTeX \left( and \right) brackets 
+            latex_op = m[0].replace("(","\left(").replace(")","\\right)")    
+
+            res = "\\frac{\partial" + numargs + "\," + str(funcname) + "}{\partial " + "\partial ".join([re.sub("\(.*?\)", " ", str(variables[i])) for i in diffargs]) + "}"
+
+            d = d.replace(latex_op, res)
 
         return d 
+
+
+def expression_tree(s, list_derivs, k=0):
+    """
+    Function to find the occurences of FDerivativeOperator in the expression; 
+    inspired by 
+    http://ask.sagemath.org/question/10256/how-can-extract-different-terms-from-a-symbolic-expression/?answer=26136#post-id-26136
+    """
+
+    op = s.operator()
+    operands = s.operands()
+    from sage.symbolic.operators import FDerivativeOperator
+
+    if op:
+        if isinstance(op, FDerivativeOperator):          
+            
+            parameter_set = op.parameter_set()
+            function = op.function()
+  
+            d = str(op) + str(tuple(operands))
+            if len(operands) == 1: 
+                d = d.replace(",","")
+
+            list_derivs.append((d, function, parameter_set, operands))
+
+        k += 1
+            
+        for operand in operands:
+            expression_tree(operand, list_derivs, k)
 
