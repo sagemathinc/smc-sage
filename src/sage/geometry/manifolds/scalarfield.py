@@ -1101,7 +1101,7 @@ class ScalarField(CommutativeAlgebraElement):
         """
         from sage.misc.latex import latex
         try:
-            expression = self.expr(chart)
+            expression = self.function_chart(chart)
             coords = chart[:]
             if len(coords) == 1:
                 coords = coords[0]

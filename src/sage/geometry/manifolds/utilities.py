@@ -334,9 +334,9 @@ from sage.symbolic.expression import Expression
 
 class Expression_nice(Expression):
 
-    def __init__(self, ex): 
+    def __init__(self, ex):
         from sage.symbolic.ring import SR
-        self._parent = SR 
+        self._parent = SR
         Expression.__init__(self, SR, x=ex)
 
     def _repr_(self):
@@ -344,7 +344,7 @@ class Expression_nice(Expression):
         String representation of the object.
 
         EXAMPLES::
-       
+
             sage: var('x y z')
             (x, y, z)
             sage: f = function('f', x, y)
@@ -358,7 +358,7 @@ class Expression_nice(Expression):
             sage: Expression_nice(fun)
             y*(z - d(h)/dz)^2 + x*d^2(f)/dxdy
 
-        A check for a case when function variables are functions too: 
+        A check for a case when function variables are functions too:
         D[1](f)(x, g(x,y)) should render as d/dg(f)
 
             sage: var('x y')
@@ -370,25 +370,25 @@ class Expression_nice(Expression):
             -x^2*D[0, 1](f)(x, y) + (D[0](f)(x, y)*D[1](g)(x, f(x, y)) + D[0](g)(x, f(x, y)))*x
             sage: from sage.geometry.manifolds.utilities import Expression_nice
             sage: Expression_nice(fun)
-            -x^2*d^2(f)/dxdy + (d(f)/dx*d(g)/df + d(g)/dx)*x 
- 
+            -x^2*d^2(f)/dxdy + (d(f)/dx*d(g)/df + d(g)/dx)*x
+
         """
 
         d = self._parent._repr_element_(self)
 
         import re
-        # Fix for proper coercion of types: 
+        # Fix for proper coercion of types:
         # http://www.sagemath.org/doc/faq/faq-usage.html#i-have-type-issues-using-scipy-cvxopt-or-numpy-from-sage
         Integer = int
 
-        # find all occurences of diff 
-        list_derivs = [] 
-        expression_tree(self, list_derivs) 
+        # find all occurences of diff
+        list_derivs = []
+        expression_tree(self, list_derivs)
 
-        for m in list_derivs: 
+        for m in list_derivs:
 
             funcname = m[1]
-            diffargs = m[2] 
+            diffargs = m[2]
             numargs = len(diffargs)
 
             if numargs > 1:
@@ -396,14 +396,14 @@ class Expression_nice(Expression):
             else:
                 numargs = ""
 
-            variables = m[3] 
+            variables = m[3]
 
-            # re.sub for removing the brackets of possible composite variables 
-            res = "d" + str(numargs) + "(" + str(funcname) + ")/d" + "d".join([re.sub("\(.*?\)","", str(variables[i])) for i in diffargs]) 
+            # re.sub for removing the brackets of possible composite variables
+            res = "d" + str(numargs) + "(" + str(funcname) + ")/d" + "d".join([re.sub("\(.*?\)","", str(variables[i])) for i in diffargs])
 
             d = d.replace(m[0], res)
 
-        return d 
+        return d
 
 
     def _latex_(self):
@@ -427,8 +427,8 @@ class Expression_nice(Expression):
             sage: latex(Expression_nice(fun))
             y {\left(z - \frac{\partial\,h}{\partial z}\right)}^{2} + x \frac{\partial^2\,f}{\partial x\partial y}
 
-        A check for a case when function variables are functions too:   
-        D[1](f)(x, g(x,y)) should render as \frac{\partial\,f}{\partial g}  
+        A check for a case when function variables are functions too:
+        D[1](f)(x, g(x,y)) should render as \frac{\partial\,f}{\partial g}
 
             sage: var('x y')
             (x, y)
@@ -448,18 +448,18 @@ class Expression_nice(Expression):
         d = self._parent._latex_element_(self)
 
         import re
-        # Fix for proper coercion of types: 
+        # Fix for proper coercion of types:
         # http://www.sagemath.org/doc/faq/faq-usage.html#i-have-type-issues-using-scipy-cvxopt-or-numpy-from-sage
         Integer = int
 
-        # find all occurences of diff 
-        list_derivs = [] 
-        expression_tree(self, list_derivs) 
+        # find all occurences of diff
+        list_derivs = []
+        expression_tree(self, list_derivs)
 
-        for m in list_derivs: 
+        for m in list_derivs:
 
             funcname = m[1]
-            diffargs = m[2] 
+            diffargs = m[2]
             numargs = len(diffargs)
 
             if numargs > 1:
@@ -467,22 +467,22 @@ class Expression_nice(Expression):
             else:
                 numargs = ""
 
-            variables = m[3] 
+            variables = m[3]
 
-            # operator with LaTeX \left( and \right) brackets 
-            latex_op = m[0].replace("(","\left(").replace(")","\\right)")    
+            # operator with LaTeX \left( and \right) brackets
+            latex_op = m[0].replace("(","\left(").replace(")","\\right)")
 
             res = "\\frac{\partial" + numargs + "\," + str(funcname) + "}{\partial " + "\partial ".join([re.sub("\(.*?\)", " ", str(variables[i])) for i in diffargs]) + "}"
 
             d = d.replace(latex_op, res)
 
-        return d 
+        return d
 
 
 def expression_tree(s, list_derivs, k=0):
     """
-    Function to find the occurences of FDerivativeOperator in the expression; 
-    inspired by 
+    Function to find the occurences of FDerivativeOperator in the expression;
+    inspired by
     http://ask.sagemath.org/question/10256/how-can-extract-different-terms-from-a-symbolic-expression/?answer=26136#post-id-26136
     """
 
@@ -491,19 +491,70 @@ def expression_tree(s, list_derivs, k=0):
     from sage.symbolic.operators import FDerivativeOperator
 
     if op:
-        if isinstance(op, FDerivativeOperator):          
-            
+        if isinstance(op, FDerivativeOperator):
+
             parameter_set = op.parameter_set()
             function = op.function()
-  
+
             d = str(op) + str(tuple(operands))
-            if len(operands) == 1: 
+            if len(operands) == 1:
                 d = d.replace(",","")
 
             list_derivs.append((d, function, parameter_set, operands))
 
         k += 1
-            
+
         for operand in operands:
             expression_tree(operand, list_derivs, k)
+
+def nice_derivatives(status):
+    r"""
+    Set the display mode of partial derivatives.
+
+    INPUT:
+
+    - ``status`` -- boolean specifying the type of display:
+
+      - ``True``: nice (textbook) display
+      - ``False``: standard Pynac notation
+
+    EXAMPLES::
+
+        sage: M = Manifold(2, 'M')
+        sage: X.<x,y> = M.chart()
+        sage: f = M.scalar_field(function('F', x, y), name='f')
+        sage: f.display()
+        f: M --> R
+           (x, y) |--> F(x, y)
+        sage: df = f.differential()
+        sage: df.display()  # the default is the nice display
+        df = d(F)/dx dx + d(F)/dy dy
+        sage: latex(df.display())
+        \mathrm{d}f = \frac{\partial\,F}{\partial x} \mathrm{d} x + \frac{\partial\,F}{\partial y} \mathrm{d} y
+
+    Standard Pynac display of partial derivatives::
+
+        sage: nice_derivatives(False)
+        sage: df.display()
+        df = D[0](F)(x, y) dx + D[1](F)(x, y) dy
+        sage: latex(df.display())
+        \mathrm{d}f = D[0]\left(F\right)\left(x, y\right) \mathrm{d} x + D[1]\left(F\right)\left(x, y\right) \mathrm{d} y
+
+    Let us revert to nice display::
+
+        sage: nice_derivatives(True)
+        sage: df.display()
+        df = d(F)/dx dx + d(F)/dy dy
+        sage: latex(df.display())
+        \mathrm{d}f = \frac{\partial\,F}{\partial x} \mathrm{d} x + \frac{\partial\,F}{\partial y} \mathrm{d} y
+
+    """
+    from sage.geometry.manifolds.chart import FunctionChart
+    if not isinstance(status, bool):
+        raise TypeError("the argument must be a boolean")
+    FunctionChart.nice_output = status
+
+
+
+
 

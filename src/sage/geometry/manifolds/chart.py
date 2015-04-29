@@ -39,7 +39,7 @@ from sage.rings.integer import Integer
 from sage.rings.infinity import Infinity
 from sage.misc.latex import latex
 from sage.geometry.manifolds.domain import ManifoldOpenSubset
-from sage.geometry.manifolds.utilities import simplify_chain
+from sage.geometry.manifolds.utilities import simplify_chain, Expression_nice
 
 class Chart(UniqueRepresentation, SageObject):
     r"""
@@ -1819,6 +1819,10 @@ class FunctionChart(SageObject):
         True
 
     """
+
+    nice_output = True # static flag for textbook-like output instead of the
+                       # Pynac output for derivatives
+
     def __init__(self, chart, expression):
         from sage.symbolic.ring import SR
         self._chart = chart
@@ -1829,15 +1833,21 @@ class FunctionChart(SageObject):
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
-        return str(self._express)
+        if FunctionChart.nice_output:
+            return str(Expression_nice(self._express))
+        else:
+            return str(self._express)
 
     def _latex_(self):
         r"""
-        Special Sage function for the LaTeX representation of the object.
+        LaTeX representation of the object.
         """
-        return latex(self._express)
+        if FunctionChart.nice_output:
+            return latex(Expression_nice(self._express))
+        else:
+            return latex(self._express)
 
     def expr(self):
         r"""
