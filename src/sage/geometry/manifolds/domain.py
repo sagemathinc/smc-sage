@@ -2040,6 +2040,10 @@ class ManifoldOpenSubset(ManifoldSubset):
         :class:`~sage.geometry.manifolds.scalarfield.ScalarField` for more
         examples.
 
+        .. SEEALSO::
+
+            :meth:`constant_scalar_field`, :meth:`zero_scalar_field`
+
         """
         if isinstance(coord_expression, dict):
             # check validity of entry
@@ -2056,12 +2060,67 @@ class ManifoldOpenSubset(ManifoldSubset):
                                             coord_expression=coord_expression,
                                             name=name, latex_name=latex_name)
 
+    def constant_scalar_field(self, value, name=None, latex_name=None):
+        r"""
+        Define a constant scalar field on the open set.
+
+        INPUT:
+
+        - ``value`` -- constant value of the scalar field, either a numerical
+          value or a symbolic expression not involving any chart coordinates
+        - ``name`` -- (default: ``None``) name given to the scalar field
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the scalar
+          field; if none is provided, the LaTeX symbol is set to ``name``
+
+        OUTPUT:
+
+        - instance of :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
+          representing the scalar field whose constant value is ``value``
+
+        EXAMPLES:
+
+        A constant scalar field on the 2-sphere::
+
+            sage: M = Manifold(2, 'M') # the 2-dimensional sphere S^2
+            sage: U = M.open_subset('U') # complement of the North pole
+            sage: c_xy.<x,y> = U.chart() # stereographic coordinates from the North pole
+            sage: V = M.open_subset('V') # complement of the South pole
+            sage: c_uv.<u,v> = V.chart() # stereographic coordinates from the South pole
+            sage: M.declare_union(U,V)   # S^2 is the union of U and V
+            sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)),
+            ....:                                intersection_name='W',
+            ....:                                restrictions1= x^2+y^2!=0,
+            ....:                                restrictions2= u^2+v^2!=0)
+            sage: uv_to_xy = xy_to_uv.inverse()
+            sage: f = M.constant_scalar_field(1) ; f
+            scalar field on the 2-dimensional manifold 'M'
+            sage: f.display()
+            M --> R
+            on U: (x, y) |--> 1
+            on V: (u, v) |--> 1
+
+        We have::
+
+            sage: f.restrict(U) == U.constant_scalar_field(1)
+            True
+            sage: M.constant_scalar_field(0) is M.zero_scalar_field()
+            True
+
+        .. SEEALSO::
+
+            :meth:`zero_scalar_field`
+        """
+        return self.scalar_field_algebra()._element_constructor_(
+                                              coord_expression=value,
+                                              name=name, latex_name=latex_name)
+
     def zero_scalar_field(self):
         r"""
-        Return the zero scalar field defined on the open subset.
+        Return the zero scalar field defined on the open set.
 
         EXAMPLE::
 
+            sage: Manifold._clear_cache_() # for doctests only
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
             sage: f = M.zero_scalar_field() ; f

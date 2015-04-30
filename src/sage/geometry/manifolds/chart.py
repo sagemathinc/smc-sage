@@ -2551,6 +2551,8 @@ class FunctionChart(SageObject):
             sage: f = X.function(x+y)
             sage: f.__pow__(3)
             x^3 + 3*x^2*y + 3*x*y^2 + y^3
+            sage: f^3  # equivalent to f.__pow__(3)
+            x^3 + 3*x^2*y + 3*x*y^2 + y^3
             sage: f.__pow__(3).display()
             (x, y) |--> x^3 + 3*x^2*y + 3*x*y^2 + y^3
             sage: pow(f,3).display()
@@ -2563,6 +2565,159 @@ class FunctionChart(SageObject):
         """
         return FunctionChart(self._chart,
                              simplify_chain(pow(self._express, exponent)))
+
+    def sqrt(self):
+        r"""
+        Square root of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x+y)
+            sage: f.sqrt()
+            sqrt(x + y)
+            sage: sqrt(f)  # equivalent to f.sqrt()
+            sqrt(x + y)
+            sage: sqrt(f).display()
+            (x, y) |--> sqrt(x + y)
+            sage: sqrt(X.zero_function()).display()
+            (x, y) |--> 0
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.sqrt()))
+
+    def cos(self):
+        r"""
+        Cosine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.cos()
+            cos(x*y)
+            sage: cos(f)  # equivalent to f.cos()
+            cos(x*y)
+            sage: cos(f).display()
+            (x, y) |--> cos(x*y)
+            sage: cos(X.zero_function()).display()
+            (x, y) |--> 1
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.cos()))
+
+    def sin(self):
+        r"""
+        Sine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.sin()
+            sin(x*y)
+            sage: sin(f)  # equivalent to f.sin()
+            sin(x*y)
+            sage: sin(f).display()
+            (x, y) |--> sin(x*y)
+            sage: sin(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.sin()))
+
+    def tan(self):
+        r"""
+        Tangent of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.tan()
+            sin(x*y)/cos(x*y)
+            sage: tan(f)  # equivalent to f.tan()
+            sin(x*y)/cos(x*y)
+            sage: tan(f).display()
+            (x, y) |--> sin(x*y)/cos(x*y)
+            sage: tan(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.tan()))
+
+    def arccos(self):
+        r"""
+        Arc cosine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.arccos()
+            arccos(x*y)
+            sage: arccos(f)  # equivalent to f.arccos()
+            arccos(x*y)
+            sage: acos(f)  # equivalent to f.arccos()
+            arccos(x*y)
+            sage: arccos(f).display()
+            (x, y) |--> arccos(x*y)
+            sage: arccos(X.zero_function()).display()
+            (x, y) |--> 1/2*pi
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.arccos()))
+
+    def arcsin(self):
+        r"""
+        Arc sine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.arcsin()
+            arcsin(x*y)
+            sage: arcsin(f)  # equivalent to f.arcsin()
+            arcsin(x*y)
+            sage: asin(f)  # equivalent to f.arcsin()
+            arcsin(x*y)
+            sage: arcsin(f).display()
+            (x, y) |--> arcsin(x*y)
+            sage: arcsin(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.arcsin()))
+
+    def arctan(self):
+        r"""
+        Arc tangent of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.arctan()
+            arctan(x*y)
+            sage: arctan(f)  # equivalent to f.arctan()
+            arctan(x*y)
+            sage: atan(f)  # equivalent to f.arctan()
+            arctan(x*y)
+            sage: arctan(f).display()
+            (x, y) |--> arctan(x*y)
+            sage: arctan(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.arctan()))
 
 #*****************************************************************************
 

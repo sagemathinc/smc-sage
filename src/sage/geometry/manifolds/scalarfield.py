@@ -53,8 +53,8 @@ class ScalarField(CommutativeAlgebraElement):
     where `U` is an open subset of the differentiable manifold `M`.
 
     The class :class:`ScalarField`  inherits from the class  :class:`~sage.structure.element.CommutativeAlgebraElement`, a scalar field
-    on `U` being an element of the commutative algebra `C^\infty(U)`, see
-    :class:`~sage.geometry.manifolds.scalarfield_algebra.ScalarFieldAlgebra`.
+    on `U` being an element of the commutative algebra `C^\infty(U)` (see
+    :class:`~sage.geometry.manifolds.scalarfield_algebra.ScalarFieldAlgebra`).
 
     INPUT:
 
@@ -219,11 +219,17 @@ class ScalarField(CommutativeAlgebraElement):
         on U: (x, y) |--> 2
         on V: (u, v) |--> 2
 
+    A shortcut is to use the method
+    :meth:`~sage.geometry.manifolds.domain.ManifoldOpenSubset.constant_scalar_field`::
+
+        sage: c == M.constant_scalar_field(2)
+        True
+
     The constant value can be some unspecified parameter::
 
         sage: var('a')
         a
-        sage: c = M.scalar_field(a, chart='all', name='c') ; c
+        sage: c = M.constant_scalar_field(a, name='c') ; c
         scalar field 'c' on the 2-dimensional manifold 'M'
         sage: c.display()
         c: M --> R
@@ -232,7 +238,7 @@ class ScalarField(CommutativeAlgebraElement):
 
     A special case of constant field is the zero scalar field::
 
-        sage: zer = M.scalar_field(0, chart='all') ; zer
+        sage: zer = M.constant_scalar_field(0) ; zer
         scalar field 'zero' on the 2-dimensional manifold 'M'
         sage: zer.display()
         zero: M --> R
@@ -245,8 +251,8 @@ class ScalarField(CommutativeAlgebraElement):
         sage: zer is M.zero_scalar_field()
         True
 
-    A third way is to get the zero scalar field as the zero element of the
-    algebra `C^\infty(M)` of scalar fields on `M` (see below)::
+    A third way is to get it as the zero element of the algebra `C^\infty(M)`
+    of scalar fields on `M` (see below)::
 
         sage: zer is M.scalar_field_algebra().zero()
         True
@@ -295,6 +301,24 @@ class ScalarField(CommutativeAlgebraElement):
 
         sage: f == M
         False
+
+    Standard mathematical functions are implemented::
+
+        sage: sqrt(f)
+        scalar field 'sqrt(f)' on the 2-dimensional manifold 'M'
+        sage: sqrt(f).display()
+        sqrt(f): M --> R
+        on U: (x, y) |--> 1/sqrt(x^2 + y^2 + 1)
+        on V: (u, v) |--> sqrt(u^2 + v^2)/sqrt(u^2 + v^2 + 1)
+
+    ::
+
+        sage: tan(f)
+        scalar field 'tan(f)' on the 2-dimensional manifold 'M'
+        sage: tan(f).display()
+        tan(f): M --> R
+        on U: (x, y) |--> sin(1/(x^2 + y^2 + 1))/cos(1/(x^2 + y^2 + 1))
+        on V: (u, v) |--> sin((u^2 + v^2)/(u^2 + v^2 + 1))/cos((u^2 + v^2)/(u^2 + v^2 + 1))
 
     .. RUBRIC:: Arithmetics of scalar fields
 
@@ -512,9 +536,31 @@ class ScalarField(CommutativeAlgebraElement):
         (x, y) |--> 1/y
         on W: (u, v) |--> (u^2 + v^2)/v
 
+    The test suite is passed::
+
+        sage: TestSuite(f).run()
+        sage: TestSuite(zer).run()
+
     """
     def __init__(self, domain, coord_expression=None, name=None,
                  latex_name=None):
+        r"""
+        Construct a scalar field.
+
+        TEST::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x+y}, name='f') ; f
+            scalar field 'f' on the 2-dimensional manifold 'M'
+            sage: from sage.geometry.manifolds.scalarfield import ScalarField
+            sage: isinstance(f, ScalarField)
+            True
+            sage: f.parent()
+            algebra of scalar fields on the 2-dimensional manifold 'M'
+            sage: TestSuite(f).run()
+
+        """
         CommutativeAlgebraElement.__init__(self, domain.scalar_field_algebra())
         self._manifold = domain._manifold
         self._domain = domain
@@ -1911,7 +1957,7 @@ class ScalarField(CommutativeAlgebraElement):
         resu.set_name(name=resu_name, latex_name=resu_latex_name)
         return resu
 
-    def _function_name(self, func, func_latex):
+    def _function_name(self, func, func_latex, parentheses=True):
         r"""
         Helper function to set the symbol of a function applied to the
         scalar field.
@@ -1923,6 +1969,8 @@ class ScalarField(CommutativeAlgebraElement):
             sage: f = M.scalar_field({X: x+y}, name='f', latex_name=r"\Phi")
             sage: f._function_name("cos", r"\cos")
             ('cos(f)', '\\cos\\left(\\Phi\\right)')
+            sage: f._function_name("sqrt", r"\sqrt", parentheses=False)
+            ('sqrt(f)', '\\sqrt{\\Phi}')
             sage: f = M.scalar_field({X: x+y})  # no name given to f
             sage: f._function_name("cos", r"\cos")
             (None, None)
@@ -1935,7 +1983,11 @@ class ScalarField(CommutativeAlgebraElement):
         if self._latex_name is None:
             latex_name = None
         else:
-            latex_name = func_latex + r"\left(" + self._latex_name + r"\right)"
+            if parentheses:
+                latex_name = func_latex + r"\left(" + self._latex_name + \
+                             r"\right)"
+            else:
+                latex_name = func_latex + r"{" + self._latex_name + r"}"
         return name, latex_name
 
     def exp(self):
@@ -1969,6 +2021,13 @@ class ScalarField(CommutativeAlgebraElement):
         The inverse function is :meth:`log`::
 
             sage: log(exp(f)) == f
+            True
+
+        Some tests::
+
+            sage: exp(M.zero_scalar_field()) == M.constant_scalar_field(1)
+            True
+            sage: exp(M.constant_scalar_field(1)) == M.constant_scalar_field(e)
             True
 
         """
@@ -2068,4 +2127,279 @@ class ScalarField(CommutativeAlgebraElement):
         resu = self.__class__(self._domain, name=name, latex_name=latex_name)
         for chart, func in self._express.iteritems():
             resu._express[chart] = func.__pow__(exponent)
+        return resu
+
+    def sqrt(self):
+        r"""
+        Square root of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\sqrt f`, where `f` is the current scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: 1+x^2+y^2}, name='f', latex_name=r"\Phi")
+            sage: g = sqrt(f) ; g
+            scalar field 'sqrt(f)' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            \sqrt{\Phi}
+            sage: g.display()
+            sqrt(f): M --> R
+               (x, y) |--> sqrt(x^2 + y^2 + 1)
+
+        Some tests::
+
+            sage: g^2 == f
+            True
+            sage: sqrt(M.zero_scalar_field()) == M.zero_scalar_field()
+            True
+
+        """
+        name, latex_name = self._function_name("sqrt", r"\sqrt",
+                                               parentheses=False)
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.sqrt()
+        return resu
+
+    def cos(self):
+        r"""
+        Cosine of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\cos f`, where `f` is the current scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x*y}, name='f', latex_name=r"\Phi")
+            sage: g = cos(f) ; g
+            scalar field 'cos(f)' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            \cos\left(\Phi\right)
+            sage: g.display()
+            cos(f): M --> R
+               (x, y) |--> cos(x*y)
+
+        Some tests::
+
+            sage: cos(M.zero_scalar_field()) == M.constant_scalar_field(1)
+            True
+            sage: cos(M.constant_scalar_field(pi/2)) == M.zero_scalar_field()
+            True
+
+        """
+        name, latex_name = self._function_name("cos", r"\cos")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.cos()
+        return resu
+
+    def sin(self):
+        r"""
+        Sine of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\sin f`, where `f` is the current scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x*y}, name='f', latex_name=r"\Phi")
+            sage: g = sin(f) ; g
+            scalar field 'sin(f)' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            \sin\left(\Phi\right)
+            sage: g.display()
+            sin(f): M --> R
+               (x, y) |--> sin(x*y)
+
+        Some tests::
+
+            sage: sin(M.zero_scalar_field()) == M.zero_scalar_field()
+            True
+            sage: sin(M.constant_scalar_field(pi/2)) == M.constant_scalar_field(1)
+            True
+
+        """
+        name, latex_name = self._function_name("sin", r"\sin")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.sin()
+        return resu
+
+    def tan(self):
+        r"""
+        Tangent of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\tan f`, where `f` is the current scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x*y}, name='f', latex_name=r"\Phi")
+            sage: g = tan(f) ; g
+            scalar field 'tan(f)' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            \tan\left(\Phi\right)
+            sage: g.display()
+            tan(f): M --> R
+               (x, y) |--> sin(x*y)/cos(x*y)
+
+        Some tests::
+
+            sage: tan(f) == sin(f) / cos(f)
+            True
+            sage: tan(M.zero_scalar_field()) == M.zero_scalar_field()
+            True
+            sage: tan(M.constant_scalar_field(pi/4)) == M.constant_scalar_field(1)
+            True
+
+        """
+        name, latex_name = self._function_name("tan", r"\tan")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.tan()
+        return resu
+
+    def arccos(self):
+        r"""
+        Arc cosine of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\arccos f`, where `f` is the current scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x*y}, name='f', latex_name=r"\Phi")
+            sage: g = arccos(f) ; g
+            scalar field 'arccos(f)' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            \arccos\left(\Phi\right)
+            sage: g.display()
+            arccos(f): M --> R
+               (x, y) |--> arccos(x*y)
+
+        The notation ``acos`` can be used as well::
+
+            sage: acos(f)
+            scalar field 'arccos(f)' on the 2-dimensional manifold 'M'
+            sage: acos(f) == g
+            True
+
+        Some tests::
+
+            sage: cos(g) == f
+            True
+            sage: arccos(M.constant_scalar_field(1)) == M.zero_scalar_field()
+            True
+            sage: arccos(M.zero_scalar_field()) == M.constant_scalar_field(pi/2)
+            True
+
+        """
+        name, latex_name = self._function_name("arccos", r"\arccos")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.arccos()
+        return resu
+
+    def arcsin(self):
+        r"""
+        Arc sine of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\arcsin f`, where `f` is the current scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x*y}, name='f', latex_name=r"\Phi")
+            sage: g = arcsin(f) ; g
+            scalar field 'arcsin(f)' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            \arcsin\left(\Phi\right)
+            sage: g.display()
+            arcsin(f): M --> R
+               (x, y) |--> arcsin(x*y)
+
+        The notation ``asin`` can be used as well::
+
+            sage: asin(f)
+            scalar field 'arcsin(f)' on the 2-dimensional manifold 'M'
+            sage: asin(f) == g
+            True
+
+        Some tests::
+
+            sage: sin(g) == f
+            True
+            sage: arcsin(M.zero_scalar_field()) == M.zero_scalar_field()
+            True
+            sage: arcsin(M.constant_scalar_field(1)) == M.constant_scalar_field(pi/2)
+            True
+
+        """
+        name, latex_name = self._function_name("arcsin", r"\arcsin")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.arcsin()
+        return resu
+
+    def arctan(self):
+        r"""
+        Arc tangent of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\arctan f`, where `f` is the current scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x*y}, name='f', latex_name=r"\Phi")
+            sage: g = arctan(f) ; g
+            scalar field 'arctan(f)' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            \arctan\left(\Phi\right)
+            sage: g.display()
+            arctan(f): M --> R
+               (x, y) |--> arctan(x*y)
+
+        The notation ``atan`` can be used as well::
+
+            sage: atan(f)
+            scalar field 'arctan(f)' on the 2-dimensional manifold 'M'
+            sage: atan(f) == g
+            True
+
+        Some tests::
+
+            sage: tan(g) == f
+            True
+            sage: arctan(M.zero_scalar_field()) == M.zero_scalar_field()
+            True
+            sage: arctan(M.constant_scalar_field(1)) == M.constant_scalar_field(pi/4)
+            True
+
+        """
+        name, latex_name = self._function_name("arctan", r"\arctan")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.arctan()
         return resu
