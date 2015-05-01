@@ -1769,6 +1769,8 @@ class ScalarField(CommutativeAlgebraElement):
             df = -z^3*sin(x) dx + z^2*e^y dy + (3*z^2*cos(x) + 2*z*e^y) dz
             sage: latex(df)
             \mathrm{d}f
+            sage: df.parent()
+            Free module /\^1(M) of 1-forms on the 3-dimensional manifold 'M'
 
         Since the exterior derivative of a scalar field (considered a 0-form)
         is nothing but its differential, ``exterior_der()`` is an alias of
@@ -2402,4 +2404,236 @@ class ScalarField(CommutativeAlgebraElement):
         resu = self.__class__(self._domain, name=name, latex_name=latex_name)
         for chart, func in self._express.iteritems():
             resu._express[chart] = func.arctan()
+        return resu
+
+    def cosh(self):
+        r"""
+        Hyperbolic cosine of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\cosh f`, where `f` is the current scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x*y}, name='f', latex_name=r"\Phi")
+            sage: g = cosh(f) ; g
+            scalar field 'cosh(f)' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            \cosh\left(\Phi\right)
+            sage: g.display()
+            cosh(f): M --> R
+               (x, y) |--> cosh(x*y)
+
+        Some test::
+
+            sage: cosh(M.zero_scalar_field()) == M.constant_scalar_field(1)
+            True
+
+        """
+        name, latex_name = self._function_name("cosh", r"\cosh")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.cosh()
+        return resu
+
+    def sinh(self):
+        r"""
+        Hyperbolic sine of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\sinh f`, where `f` is the current scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x*y}, name='f', latex_name=r"\Phi")
+            sage: g = sinh(f) ; g
+            scalar field 'sinh(f)' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            \sinh\left(\Phi\right)
+            sage: g.display()
+            sinh(f): M --> R
+               (x, y) |--> sinh(x*y)
+
+        Some test::
+
+            sage: sinh(M.zero_scalar_field()) == M.zero_scalar_field()
+            True
+
+        """
+        name, latex_name = self._function_name("sinh", r"\sinh")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.sinh()
+        return resu
+
+    def tanh(self):
+        r"""
+        Hyperbolic tangent of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\tanh f`, where `f` is the current scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x*y}, name='f', latex_name=r"\Phi")
+            sage: g = tanh(f) ; g
+            scalar field 'tanh(f)' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            \tanh\left(\Phi\right)
+            sage: g.display()
+            tanh(f): M --> R
+               (x, y) |--> sinh(x*y)/cosh(x*y)
+
+        Some tests::
+
+            sage: tanh(f) == sinh(f) / cosh(f)
+            True
+            sage: tanh(M.zero_scalar_field()) == M.zero_scalar_field()
+            True
+
+        """
+        name, latex_name = self._function_name("tanh", r"\tanh")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.tanh()
+        return resu
+
+    def arccosh(self):
+        r"""
+        Inverse hyperbolic cosine of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\mathrm{arcosh}\, f`, where `f` is the current
+          scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x*y}, name='f', latex_name=r"\Phi")
+            sage: g = arccosh(f) ; g
+            scalar field 'arccosh(f)' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            \,\mathrm{arcosh}\left(\Phi\right)
+            sage: g.display()
+            arccosh(f): M --> R
+               (x, y) |--> arccosh(x*y)
+
+        The notation ``acosh`` can be used as well::
+
+            sage: acosh(f)
+            scalar field 'arccosh(f)' on the 2-dimensional manifold 'M'
+            sage: acosh(f) == g
+            True
+
+        Some tests::
+
+            sage: cosh(g) == f
+            True
+            sage: arccosh(M.constant_scalar_field(1)) == M.zero_scalar_field()
+            True
+
+        """
+        name, latex_name = self._function_name("arccosh", r"\,\mathrm{arcosh}")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.arccosh()
+        return resu
+
+    def arcsinh(self):
+        r"""
+        Inverse hyperbolic sine of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\mathrm{arsinh}\, f`, where `f` is the current
+          scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x*y}, name='f', latex_name=r"\Phi")
+            sage: g = arcsinh(f) ; g
+            scalar field 'arcsinh(f)' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            \,\mathrm{arsinh}\left(\Phi\right)
+            sage: g.display()
+            arcsinh(f): M --> R
+               (x, y) |--> arcsinh(x*y)
+
+        The notation ``asinh`` can be used as well::
+
+            sage: asinh(f)
+            scalar field 'arcsinh(f)' on the 2-dimensional manifold 'M'
+            sage: asinh(f) == g
+            True
+
+        Some tests::
+
+            sage: sinh(g) == f
+            True
+            sage: arcsinh(M.zero_scalar_field()) == M.zero_scalar_field()
+            True
+
+        """
+        name, latex_name = self._function_name("arcsinh", r"\,\mathrm{arsinh}")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.arcsinh()
+        return resu
+
+    def arctanh(self):
+        r"""
+        Inverse hyperbolic tangent of the scalar field.
+
+        OUTPUT:
+
+        - the scalar field `\mathrm{artanh}\, f`, where `f` is the current
+          scalar field.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = M.scalar_field({X: x*y}, name='f', latex_name=r"\Phi")
+            sage: g = arctanh(f) ; g
+            scalar field 'arctanh(f)' on the 2-dimensional manifold 'M'
+            sage: latex(g)
+            \,\mathrm{artanh}\left(\Phi\right)
+            sage: g.display()
+            arctanh(f): M --> R
+               (x, y) |--> arctanh(x*y)
+
+        The notation ``atanh`` can be used as well::
+
+            sage: atanh(f)
+            scalar field 'arctanh(f)' on the 2-dimensional manifold 'M'
+            sage: atanh(f) == g
+            True
+
+        Some tests::
+
+            sage: tanh(g) == f
+            True
+            sage: arctanh(M.zero_scalar_field()) == M.zero_scalar_field()
+            True
+            sage: arctanh(M.constant_scalar_field(1/2)) == M.constant_scalar_field(log(3)/2)
+            True
+
+        """
+        name, latex_name = self._function_name("arctanh", r"\,\mathrm{artanh}")
+        resu = self.__class__(self._domain, name=name, latex_name=latex_name)
+        for chart, func in self._express.iteritems():
+            resu._express[chart] = func.arctanh()
         return resu

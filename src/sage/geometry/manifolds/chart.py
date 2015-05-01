@@ -2671,7 +2671,8 @@ class FunctionChart(SageObject):
             (x, y) |--> 1/2*pi
 
         """
-        return FunctionChart(self._chart, simplify_chain(self._express.arccos()))
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.arccos()))
 
     def arcsin(self):
         r"""
@@ -2694,7 +2695,8 @@ class FunctionChart(SageObject):
             True
 
         """
-        return FunctionChart(self._chart, simplify_chain(self._express.arcsin()))
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.arcsin()))
 
     def arctan(self):
         r"""
@@ -2717,7 +2719,144 @@ class FunctionChart(SageObject):
             True
 
         """
-        return FunctionChart(self._chart, simplify_chain(self._express.arctan()))
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.arctan()))
+
+    def cosh(self):
+        r"""
+        Hyperbolic cosine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.cosh()
+            cosh(x*y)
+            sage: cosh(f)  # equivalent to f.cosh()
+            cosh(x*y)
+            sage: cosh(f).display()
+            (x, y) |--> cosh(x*y)
+            sage: cosh(X.zero_function()).display()
+            (x, y) |--> 1
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.cosh()))
+
+    def sinh(self):
+        r"""
+        Hyperbolic sine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.sinh()
+            sinh(x*y)
+            sage: sinh(f)  # equivalent to f.sinh()
+            sinh(x*y)
+            sage: sinh(f).display()
+            (x, y) |--> sinh(x*y)
+            sage: sinh(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.sinh()))
+
+    def tanh(self):
+        r"""
+        Hyperbolic tangent of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.tanh()
+            sinh(x*y)/cosh(x*y)
+            sage: tanh(f)  # equivalent to f.tanh()
+            sinh(x*y)/cosh(x*y)
+            sage: tanh(f).display()
+            (x, y) |--> sinh(x*y)/cosh(x*y)
+            sage: tanh(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.tanh()))
+
+    def arccosh(self):
+        r"""
+        Inverse hyperbolic cosine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.arccosh()
+            arccosh(x*y)
+            sage: arccosh(f)  # equivalent to f.arccosh()
+            arccosh(x*y)
+            sage: acosh(f)  # equivalent to f.arccosh()
+            arccosh(x*y)
+            sage: arccosh(f).display()
+            (x, y) |--> arccosh(x*y)
+            sage: arccosh(X.function(1)) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.arccosh()))
+
+    def arcsinh(self):
+        r"""
+        Inverse hyperbolic sine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.arcsinh()
+            arcsinh(x*y)
+            sage: arcsinh(f)  # equivalent to f.arcsinh()
+            arcsinh(x*y)
+            sage: asinh(f)  # equivalent to f.arcsinh()
+            arcsinh(x*y)
+            sage: arcsinh(f).display()
+            (x, y) |--> arcsinh(x*y)
+            sage: arcsinh(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.arcsinh()))
+
+    def arctanh(self):
+        r"""
+        Inverse hyperbolic tangent of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.arctanh()
+            arctanh(x*y)
+            sage: arctanh(f)  # equivalent to f.arctanh()
+            arctanh(x*y)
+            sage: atanh(f)  # equivalent to f.arctanh()
+            arctanh(x*y)
+            sage: arctanh(f).display()
+            (x, y) |--> arctanh(x*y)
+            sage: arctanh(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.arctanh()))
+
 
 #*****************************************************************************
 
