@@ -1009,6 +1009,201 @@ class Components(SageObject):
             for i in range(si, nsi):
                 self._set_value_list(ind + [i], format_type, val[i-si])
 
+    def display(self, symbol, latex_symbol=None, index_positions=None,
+                index_symbols=None, index_latex_symbols=None,
+                only_nonzero=True, only_nonredundant=False):
+        r"""
+        Display all the components, one per line.
+
+        The output is either text-formatted (console mode) or LaTeX-formatted
+        (notebook mode).
+
+        INPUT:
+
+        - ``symbol`` -- string (typically a single letter) specifying the
+          symbol for the components
+        - ``latex_symbol`` -- (default: ``None``) string specifying the LaTeX
+          symbol for the components; if ``None``, ``symbol`` is used
+        - ``index_positions`` -- (default: ``None``) string of length the
+          number of indices of the components and composed of characters 'd'
+          (for "down") or 'u' (for "up") to specify the position of each index:
+          'd' corresponds to a subscript and 'u' to a superscript. If
+          ``index_positions`` is ``None``, all indices are printed as
+          subscripts
+        - ``index_symbols`` -- (default: ``None``) list of symbols for each of
+          the individual indices within the index range defined at the
+          construction of the object; if ``None``, integers symbols are used
+        - ``index_latex_symbols`` -- (default: ``None``) list of LaTeX symbols
+          for each of the individual indices within the index range defined at
+          the construction of the object; if ``None``, integers symbols are
+          used
+        - ``only_nonzero`` -- (default: ``True``) boolean; if ``True``, only
+          nonzero components are displayed
+        - ``only_nonredundant`` -- (default: ``False``) boolean; if ``True``,
+          only nonredundant components are displayed in case of symmetries
+
+        EXAMPLES:
+
+        Display of 3-indices components w.r.t. to the canonical basis of the
+        free module `\ZZ^2` over the integer ring::
+
+            sage: from sage.tensor.modules.comp import Components
+            sage: c = Components(ZZ, (ZZ^2).basis(), 3)
+            sage: c[0,1,0], c[1,0,1], c[1,1,1] = -2, 5, 3
+            sage: c.display('c')
+            c_010 = -2
+            c_101 = 5
+            c_111 = 3
+
+        By default, only nonzero components are shown; to display all the
+        components, it suffices to set the parameter ``only_nonzero`` to
+        ``False``::
+
+            sage: c.display('c', only_nonzero=False)
+            c_000 = 0
+            c_001 = 0
+            c_010 = -2
+            c_011 = 0
+            c_100 = 0
+            c_101 = 5
+            c_110 = 0
+            c_111 = 3
+
+        By default, all indices are printed as subscripts, but any index
+        position can be specifed::
+
+            sage: c.display('c', index_positions='udd')
+            c^0_10 = -2
+            c^1_01 = 5
+            c^1_11 = 3
+            sage: c.display('c', index_positions='udu')
+            c^0_1^0 = -2
+            c^1_0^1 = 5
+            c^1_1^1 = 3
+            sage: c.display('c', index_positions='ddu')
+            c_01^0 = -2
+            c_10^1 = 5
+            c_11^1 = 3
+
+        The LaTeX output is performed as an array, with the symbol adjustable
+        if it differs from the text symbol::
+
+            sage: latex(c.display('c', latex_symbol=r'\Gamma', index_positions='udd'))
+            \begin{array}{lcl} \Gamma_{\phantom{\, 0}\,1\,0}^{\,0\phantom{\, 1}\phantom{\, 0}} & = & -2 \\ \Gamma_{\phantom{\, 1}\,0\,1}^{\,1\phantom{\, 0}\phantom{\, 1}} & = & 5 \\ \Gamma_{\phantom{\, 1}\,1\,1}^{\,1\phantom{\, 1}\phantom{\, 1}} & = & 3 \end{array}
+
+        The symbols for the indices can differ from integers::
+
+            sage: c.display('c', index_symbols=['x','y'])
+            c_xyx = -2
+            c_yxy = 5
+            c_yyy = 3
+
+        If the index symbols are longer than a single character, they are
+        separated by a comma::
+
+            sage: c.display('c', index_symbols=['r', 'th'])
+            c_r,th,r = -2
+            c_th,r,th = 5
+            c_th,th,th = 3
+
+        The LaTeX symbols for the indices can be specified if they differ
+        from the text ones::
+
+            sage: c.display('c', index_symbols=['r', 'th'],
+            ....:           index_latex_symbols=['r', r'\theta'])
+            c_r,th,r = -2
+            c_th,r,th = 5
+            c_th,th,th = 3
+
+        The display of components with symmetries is governed by the parameter
+        ``only_nonredundant``::
+
+            sage: from sage.tensor.modules.comp import CompWithSym
+            sage: c = CompWithSym(ZZ, (ZZ^2).basis(), 3, sym=(1,2)) ; c
+            3-indices components w.r.t. [
+            (1, 0),
+            (0, 1)
+            ], with symmetry on the index positions (1, 2)
+            sage: c[0,0,1] = 2
+            sage: c.display('c')
+            c_001 = 2
+            c_010 = 2
+            sage: c.display('c', only_nonredundant=True)
+            c_001 = 2
+
+        """
+        from sage.misc.latex import latex
+        from sage.tensor.modules.format_utilities import FormattedExpansion
+        si = self._sindex
+        nsi = si + self._dim
+        if latex_symbol is None:
+            latex_symbol = symbol
+        if index_positions is None:
+            index_positions = self._nid * 'd'
+        elif len(index_positions) != self._nid:
+            raise ValueError("the argument 'index_positions' must contain " +
+                             "{} characters".format(self._nid))
+        if index_symbols is None:
+            index_symbols = [str(i) for i in range(si, nsi)]
+        elif len(index_symbols) != self._dim:
+            raise ValueError("the argument 'index_symbols' must contain " +
+                             "{} items".format(self._dim))
+        # Index separator:
+        max_len_symbols = max([len(s) for s in index_symbols])
+        if max_len_symbols==1:
+            sep = ''
+        else:
+            sep = ','
+        if index_latex_symbols is None:
+            index_latex_symbols = index_symbols
+        elif len(index_latex_symbols) != self._dim:
+            raise ValueError("the argument 'index_latex_symbols' must " +
+                             "contain {} items".format(self._dim))
+        if only_nonredundant:
+            generator = self.non_redundant_index_generator()
+        else:
+            generator = self.index_generator()
+        rtxt = ''
+        rlatex = r'\begin{array}{lcl}'
+        for ind in generator:
+            val = self[ind]
+            if val != 0 or not only_nonzero:
+                indices = ''  # text indices
+                d_indices = '' # LaTeX down indices
+                u_indices = '' # LaTeX up indices
+                previous = None  # position of previous index
+                for k in range(self._nid):
+                    i = ind[k] - si
+                    if index_positions[k]=='d':
+                        if previous == 'd':
+                            indices += sep + index_symbols[i]
+                        else:
+                            indices += '_' + index_symbols[i]
+                        d_indices += r'\,' + index_latex_symbols[i]
+                        u_indices += r'\phantom{\, ' + index_latex_symbols[i] + \
+                                     r'}'
+                        previous = 'd'
+                    else:
+                        if previous == 'u':
+                            indices += sep + index_symbols[i]
+                        else:
+                            indices += '^' + index_symbols[i]
+                        d_indices += r'\phantom{\, ' + index_latex_symbols[i] + \
+                                     r'}'
+                        u_indices += r'\,' + index_latex_symbols[i]
+                        previous = 'u'
+                rtxt += symbol + indices + ' = {} \n'.format(val)
+                rlatex += latex_symbol + r'_{' + d_indices + r'}^{' + \
+                              u_indices + r'} & = & ' + latex(val) + r'\\'
+        if rtxt == '':
+            # no component has been displayed
+            rlatex = ''
+        else:
+            # closing the display
+            rtxt = rtxt[:-1]  # remove the last new line
+            rlatex = rlatex[:-2] + r'\end{array}'
+        return FormattedExpansion(rtxt, rlatex)
+
     def swap_adjacent_indices(self, pos1, pos2, pos3):
         r"""
         Swap two adjacent sets of indices.
