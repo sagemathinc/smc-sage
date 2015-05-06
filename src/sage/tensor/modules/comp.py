@@ -1010,7 +1010,7 @@ class Components(SageObject):
                 self._set_value_list(ind + [i], format_type, val[i-si])
 
     def display(self, symbol, latex_symbol=None, index_positions=None,
-                index_symbols=None, index_latex_symbols=None,
+                index_labels=None, index_latex_labels=None,
                 only_nonzero=True, only_nonredundant=False):
         r"""
         Display all the components, one per line.
@@ -1030,13 +1030,14 @@ class Components(SageObject):
           'd' corresponds to a subscript and 'u' to a superscript. If
           ``index_positions`` is ``None``, all indices are printed as
           subscripts
-        - ``index_symbols`` -- (default: ``None``) list of symbols for each of
-          the individual indices within the index range defined at the
-          construction of the object; if ``None``, integers symbols are used
-        - ``index_latex_symbols`` -- (default: ``None``) list of LaTeX symbols
-          for each of the individual indices within the index range defined at
-          the construction of the object; if ``None``, integers symbols are
-          used
+        - ``index_labels`` -- (default: ``None``) list of strings representing
+          the labels of each of the individual indices within the index range
+          defined at the construction of the object; if ``None``, integer
+          labels are used
+        - ``index_latex_labels`` -- (default: ``None``) list of strings
+          representing the LaTeX labels of each of the individual indices
+          within the index range defined at the construction of the object; if
+          ``None``, integers labels are used
         - ``only_nonzero`` -- (default: ``True``) boolean; if ``True``, only
           nonzero components are displayed
         - ``only_nonredundant`` -- (default: ``False``) boolean; if ``True``,
@@ -1091,26 +1092,26 @@ class Components(SageObject):
             sage: latex(c.display('c', latex_symbol=r'\Gamma', index_positions='udd'))
             \begin{array}{lcl} \Gamma_{\phantom{\, 0}\,1\,0}^{\,0\phantom{\, 1}\phantom{\, 0}} & = & -2 \\ \Gamma_{\phantom{\, 1}\,0\,1}^{\,1\phantom{\, 0}\phantom{\, 1}} & = & 5 \\ \Gamma_{\phantom{\, 1}\,1\,1}^{\,1\phantom{\, 1}\phantom{\, 1}} & = & 3 \end{array}
 
-        The symbols for the indices can differ from integers::
+        The index labels can differ from integers::
 
-            sage: c.display('c', index_symbols=['x','y'])
+            sage: c.display('c', index_labels=['x','y'])
             c_xyx = -2
             c_yxy = 5
             c_yyy = 3
 
-        If the index symbols are longer than a single character, they are
+        If the index labels are longer than a single character, they are
         separated by a comma::
 
-            sage: c.display('c', index_symbols=['r', 'th'])
+            sage: c.display('c', index_labels=['r', 'th'])
             c_r,th,r = -2
             c_th,r,th = 5
             c_th,th,th = 3
 
-        The LaTeX symbols for the indices can be specified if they differ
+        The LaTeX labels for the indices can be specified if they differ
         from the text ones::
 
-            sage: c.display('c', index_symbols=['r', 'th'],
-            ....:           index_latex_symbols=['r', r'\theta'])
+            sage: c.display('c', index_labels=['r', 'th'],
+            ....:           index_latex_labels=['r', r'\theta'])
             c_r,th,r = -2
             c_th,r,th = 5
             c_th,th,th = 3
@@ -1143,21 +1144,21 @@ class Components(SageObject):
         elif len(index_positions) != self._nid:
             raise ValueError("the argument 'index_positions' must contain " +
                              "{} characters".format(self._nid))
-        if index_symbols is None:
-            index_symbols = [str(i) for i in range(si, nsi)]
-        elif len(index_symbols) != self._dim:
-            raise ValueError("the argument 'index_symbols' must contain " +
+        if index_labels is None:
+            index_labels = [str(i) for i in range(si, nsi)]
+        elif len(index_labels) != self._dim:
+            raise ValueError("the argument 'index_labels' must contain " +
                              "{} items".format(self._dim))
         # Index separator:
-        max_len_symbols = max([len(s) for s in index_symbols])
+        max_len_symbols = max([len(s) for s in index_labels])
         if max_len_symbols==1:
             sep = ''
         else:
             sep = ','
-        if index_latex_symbols is None:
-            index_latex_symbols = index_symbols
-        elif len(index_latex_symbols) != self._dim:
-            raise ValueError("the argument 'index_latex_symbols' must " +
+        if index_latex_labels is None:
+            index_latex_labels = index_labels
+        elif len(index_latex_labels) != self._dim:
+            raise ValueError("the argument 'index_latex_labels' must " +
                              "contain {} items".format(self._dim))
         if only_nonredundant:
             generator = self.non_redundant_index_generator()
@@ -1176,21 +1177,21 @@ class Components(SageObject):
                     i = ind[k] - si
                     if index_positions[k]=='d':
                         if previous == 'd':
-                            indices += sep + index_symbols[i]
+                            indices += sep + index_labels[i]
                         else:
-                            indices += '_' + index_symbols[i]
-                        d_indices += r'\,' + index_latex_symbols[i]
-                        u_indices += r'\phantom{\, ' + index_latex_symbols[i] + \
+                            indices += '_' + index_labels[i]
+                        d_indices += r'\,' + index_latex_labels[i]
+                        u_indices += r'\phantom{\, ' + index_latex_labels[i] + \
                                      r'}'
                         previous = 'd'
                     else:
                         if previous == 'u':
-                            indices += sep + index_symbols[i]
+                            indices += sep + index_labels[i]
                         else:
-                            indices += '^' + index_symbols[i]
-                        d_indices += r'\phantom{\, ' + index_latex_symbols[i] + \
+                            indices += '^' + index_labels[i]
+                        d_indices += r'\phantom{\, ' + index_latex_labels[i] + \
                                      r'}'
-                        u_indices += r'\,' + index_latex_symbols[i]
+                        u_indices += r'\,' + index_latex_labels[i]
                         previous = 'u'
                 rtxt += symbol + indices + ' = {} \n'.format(val)
                 rlatex += latex_symbol + r'_{' + d_indices + r'}^{' + \

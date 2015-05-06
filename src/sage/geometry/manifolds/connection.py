@@ -556,6 +556,141 @@ class AffConnection(SageObject):
         """
         self.set_coef()[indices] = value
 
+    def display(self, frame=None, symbol=None, latex_symbol=None,
+                index_labels=None, index_latex_labels=None,
+                coordinate_labels=True, only_nonzero=True,
+                only_nonredundant=False):
+        r"""
+        Display all the connection coefficients w.r.t. to a given frame, one
+        per line.
+
+        The output is either text-formatted (console mode) or LaTeX-formatted
+        (notebook mode).
+
+        INPUT:
+
+        - ``frame`` -- (default: None) vector frame relative to which the
+          connection coefficients are defined; if none is provided, the
+          domain's default frame is assumed
+        - ``symbol`` -- (default: ``None``) string specifying the
+          symbol of the connection coefficients; if ``None``, 'Gam' is used
+        - ``latex_symbol`` -- (default: ``None``) string specifying the LaTeX
+          symbol for the components; if ``None``, '\\Gamma' is used
+        - ``index_labels`` -- (default: ``None``) list of strings representing
+          the labels of each index; if ``None``, integer labels are used,
+          except if ``frame`` is a coordinate frame and ``coordinate_symbols``
+          is set to ``False``, in which case the coordinate symbols are used
+        - ``index_latex_labels`` -- (default: ``None``) list of strings
+          representing the LaTeX labels of each index; if ``None``, integer
+          labels are used, except if ``frame`` is a coordinate frame and
+          ``coordinate_symbols`` is set to ``False``, in which case the
+          coordinate LaTeX symbols are used
+        - ``coordinate_labels`` -- (default: ``True``) boolean; if ``True``,
+          coordinate symbols are used by default (instead of integers) as
+          index labels whenever ``frame`` is a coordinate frame
+        - ``only_nonzero`` -- (default: ``True``) boolean; if ``True``, only
+          nonzero connection coefficients are displayed
+        - ``only_nonredundant`` -- (default: ``False``) boolean; if ``True``,
+          only nonredundant connection coefficients are displayed in case of
+          symmetries
+
+        EXAMPLES:
+
+        Coefficients of a connection on a 3-dimensional manifold::
+
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_xyz.<x,y,z> = M.chart()
+            sage: nab = M.aff_connection('nabla', r'\nabla')
+            sage: nab[1,1,2], nab[3,2,3] = x^2, y*z
+
+        By default, only the nonzero connection coefficients are displayed::
+
+            sage: nab.display()
+            Gam^x_xy = x^2
+            Gam^z_yz = y*z
+            sage: latex(nab.display())
+            \begin{array}{lcl} \Gamma_{ \phantom{\, x } \, x \, y }^{ \, x \phantom{\, x } \phantom{\, y } } & = & x^{2} \\ \Gamma_{ \phantom{\, z } \, y \, z }^{ \, z \phantom{\, y } \phantom{\, z } } & = & y z \end{array}
+
+        By default, the displayed connection coefficients are those w.r.t.
+        to the default frame of the connection's domain, so the above is
+        equivalent to::
+
+            sage: nab.display(frame=M.default_frame())
+            Gam^x_xy = x^2
+            Gam^z_yz = y*z
+
+        Since the default frame is a coordinate frame, coordinate symbols are
+        used to label the indices, but one may ask for integers instead::
+
+            sage: M.default_frame() is c_xyz.frame()
+            True
+            sage: nab.display(coordinate_labels=False)
+            Gam^1_12 = x^2
+            Gam^3_23 = y*z
+
+        The index labels can also be customized::
+
+            sage: nab.display(index_labels=['(1)', '(2)', '(3)'])
+            Gam^(1)_(1),(2) = x^2
+            Gam^(3)_(2),(3) = y*z
+
+        The symbol 'Gam' can be changed::
+
+            sage: nab.display(symbol='C', latex_symbol='C')
+            C^x_xy = x^2
+            C^z_yz = y*z
+            sage: latex(nab.display(symbol='C', latex_symbol='C'))
+            \begin{array}{lcl} C_{ \phantom{\, x } \, x \, y }^{ \, x \phantom{\, x } \phantom{\, y } } & = & x^{2} \\ C_{ \phantom{\, z } \, y \, z }^{ \, z \phantom{\, y } \phantom{\, z } } & = & y z \end{array}
+
+        Display of Christoffel symbols, skeeping the redundancy associated
+        with the symmetry of the last two indices::
+
+            sage: M = Manifold(3, 'R^3', start_index=1)
+            sage: c_spher.<r,th,ph> = M.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: g = M.metric('g')
+            sage: g[1,1], g[2,2], g[3,3] = 1, r^2 , (r*sin(th))^2
+            sage: g.display()
+            g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
+            sage: g.connection().display(only_nonredundant=True)
+            Gam^r_th,th = -r
+            Gam^r_ph,ph = -r*sin(th)^2
+            Gam^th_r,th = 1/r
+            Gam^th_ph,ph = -cos(th)*sin(th)
+            Gam^ph_r,ph = 1/r
+            Gam^ph_th,ph = cos(th)/sin(th)
+
+        By default, the parameter ``only_nonredundant`` is set to ``False``::
+
+            sage: g.connection().display()
+            Gam^r_th,th = -r
+            Gam^r_ph,ph = -r*sin(th)^2
+            Gam^th_r,th = 1/r
+            Gam^th_th,r = 1/r
+            Gam^th_ph,ph = -cos(th)*sin(th)
+            Gam^ph_r,ph = 1/r
+            Gam^ph_th,ph = cos(th)/sin(th)
+            Gam^ph_ph,r = 1/r
+            Gam^ph_ph,th = cos(th)/sin(th)
+
+        """
+        from sage.misc.latex import latex
+        from sage.geometry.manifolds.vectorframe import CoordFrame
+        if frame is None:
+            frame = self._manifold.default_frame()
+        if symbol is None:
+            symbol = 'Gam'
+        if latex_symbol is None:
+            latex_symbol = r'\Gamma'
+        if index_labels is None and isinstance(frame, CoordFrame) and \
+          coordinate_labels:
+            chart = frame.chart()
+            index_labels = map(str, chart[:])
+            index_latex_labels = map(latex, chart[:])
+        return self.coef(frame=frame).display(symbol,
+          latex_symbol=latex_symbol, index_positions='udd',
+          index_labels=index_labels, index_latex_labels=index_latex_labels,
+          only_nonzero=only_nonzero, only_nonredundant=only_nonredundant)
+
     def restrict(self, subdomain):
         r"""
         Return the restriction of ``self`` to some subdomain.
@@ -1607,6 +1742,8 @@ class LeviCivitaConnection(AffConnection):
     Levi-Civita connection associated with the Euclidean metric on `\RR^3`
     expressed in spherical coordinates::
 
+        sage: Manifold._clear_cache_() # for doctests only
+        sage: forget() # for doctests only
         sage: M = Manifold(3, 'R^3', start_index=1)
         sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
         sage: g = M.metric('g')
@@ -1766,7 +1903,7 @@ class LeviCivitaConnection(AffConnection):
         If the connection coefficients are not known already, they are computed
 
          * as Christoffel symbols if the frame `(e_i)` is a coordinate frame
-         * frome the above formula otherwise
+         * from the above formula otherwise
 
         INPUT:
 

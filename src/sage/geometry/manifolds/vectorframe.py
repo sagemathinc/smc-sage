@@ -944,12 +944,18 @@ class CoordFrame(VectorFrame):
 
     ###### End of methods redefined by derived classes ######
 
+    def chart(self):
+        r"""
+        Return the chart defining this coordinate frame.
+        """
+        return self._chart
+
     def structure_coef(self):
         r"""
-        Returns the structure coefficients associated to the vector frame.
+        Returns the structure coefficients associated to the coordinate frame.
 
         `n` being the manifold's dimension, the structure coefficients of the
-        vector frame `(e_i)` are the `n^3` scalar fields `C^k_{\ \, ij}`
+        frame `(e_i)` are the `n^3` scalar fields `C^k_{\ \, ij}`
         defined by
 
         .. MATH::
