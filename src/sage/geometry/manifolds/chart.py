@@ -39,7 +39,7 @@ from sage.rings.integer import Integer
 from sage.rings.infinity import Infinity
 from sage.misc.latex import latex
 from sage.geometry.manifolds.domain import ManifoldOpenSubset
-from sage.geometry.manifolds.utilities import simplify_chain, Expression_nice
+from sage.geometry.manifolds.utilities import simplify_chain, ExpressionNice
 
 class Chart(UniqueRepresentation, SageObject):
     r"""
@@ -1836,7 +1836,7 @@ class FunctionChart(SageObject):
         String representation of the object.
         """
         if FunctionChart.nice_output:
-            return str(Expression_nice(self._express))
+            return str(ExpressionNice(self._express))
         else:
             return str(self._express)
 
@@ -1845,7 +1845,7 @@ class FunctionChart(SageObject):
         LaTeX representation of the object.
         """
         if FunctionChart.nice_output:
-            return latex(Expression_nice(self._express))
+            return latex(ExpressionNice(self._express))
         else:
             return latex(self._express)
 

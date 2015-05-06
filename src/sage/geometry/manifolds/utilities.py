@@ -332,7 +332,20 @@ def set_axes_labels(graph, xlabel, ylabel, zlabel, **kwds):
 
 from sage.symbolic.expression import Expression
 
-class Expression_nice(Expression):
+class ExpressionNice(Expression):
+    r"""
+    Modification of the Expression class for a ''human-friendly'' 
+    display of derivatives.
+
+    INPUT:
+
+    - ``ex`` -- symbolic expression
+
+    OUTPUT: 
+
+    - modified string or LaTeX representation of the expression.
+    
+    """
 
     def __init__(self, ex):
         from sage.symbolic.ring import SR
@@ -354,12 +367,12 @@ class Expression_nice(Expression):
             sage: fun = x*g + y*(k-z)^2
             sage: fun
             y*(z - D[1](h)(y, z))^2 + x*D[0, 1](f)(x, y)
-            sage: from sage.geometry.manifolds.utilities import Expression_nice
-            sage: Expression_nice(fun)
+            sage: from sage.geometry.manifolds.utilities import ExpressionNice
+            sage: ExpressionNice(fun)
             y*(z - d(h)/dz)^2 + x*d^2(f)/dxdy
 
         A check for a case when function variables are functions too:
-        D[1](f)(x, g(x,y)) should render as d/dg(f)
+        D[1](f)(x, g(x,y)) should render as d(f)/dg
 
             sage: var('x y')
             (x, y)
@@ -368,13 +381,39 @@ class Expression_nice(Expression):
             sage: fun = (g.diff(x))*x - x^2*f.diff(x,y)
             sage: fun
             -x^2*D[0, 1](f)(x, y) + (D[0](f)(x, y)*D[1](g)(x, f(x, y)) + D[0](g)(x, f(x, y)))*x
-            sage: from sage.geometry.manifolds.utilities import Expression_nice
-            sage: Expression_nice(fun)
+            sage: from sage.geometry.manifolds.utilities import ExpressionNice
+            sage: ExpressionNice(fun)
             -x^2*d^2(f)/dxdy + (d(f)/dx*d(g)/df + d(g)/dx)*x
+
+        Multiple differentiation over the same variable is grouped for brevity: 
+        D[0, 0](f)(x) should render as d^2(f)/dx^2 
+
+            sage: var('x y')
+            (x, y)
+            sage: f = function('f', x, y)
+            sage: fun = f.diff(x,x,y,y,x)*x
+            sage: fun
+            x*D[0, 0, 0, 1, 1](f)(x, y)
+            sage: from sage.geometry.manifolds.utilities import ExpressionNice
+            sage: ExpressionNice(fun)
+            x*d^5(f)/dx^3dy^2
+
+        If diff operator is raised to some power, put brackets around: 
+        D[1](f)(x, y)^2 should render as (d(f)/dy)^2
+
+            sage: var('x y')
+            (x, y)
+            sage: f = function('f', x, y)
+            sage: fun = f.diff(y)^2
+            sage: fun
+            D[1](f)(x, y)^2
+            sage: from sage.geometry.manifolds.utilities import ExpressionNice
+            sage: ExpressionNice(fun)
+            (d(f)/dy)^2
 
         """
 
-        d = self._parent._repr_element_(self)
+        d = self._parent._repr_element_(self)   
 
         import re
         # Fix for proper coercion of types:
@@ -385,6 +424,7 @@ class Expression_nice(Expression):
         list_derivs = []
         expression_tree(self, list_derivs)
 
+        # process the list 
         for m in list_derivs:
 
             funcname = m[1]
@@ -398,10 +438,23 @@ class Expression_nice(Expression):
 
             variables = m[3]
 
-            # re.sub for removing the brackets of possible composite variables
-            res = "d" + str(numargs) + "(" + str(funcname) + ")/d" + "d".join([re.sub("\(.*?\)","", str(variables[i])) for i in diffargs])
+            # dictionary to group multiple occurences of differentiation: d/dxdx -> d/dx^2 etc.
+            occ = dict((i, str(variables[i]) + "^" + str(diffargs.count(i)) if(diffargs.count(i)>1) else str(variables[i])) for i in diffargs)
 
-            d = d.replace(m[0], res)
+            # re.sub for removing the brackets of possible composite variables
+            res = "d" + str(numargs) + "(" + str(funcname) + ")/d" + "d".join([re.sub("\(.*?\)","", i) for i in occ.values()])
+
+            # str representation of the operator 
+            s = self._parent._repr_element_(m[0]) 
+
+            # if diff operator is raised to some power (m[4]), put brackets around 
+            if m[4]:
+                res = "(" + res + ")^" + str(m[4])
+                o = s + "^" + str(m[4])
+            else: 
+                o = s 
+
+            d = d.replace(o, res)
 
         return d
 
@@ -421,10 +474,10 @@ class Expression_nice(Expression):
             sage: fun = x*g + y*(k-z)^2
             sage: fun
             y*(z - D[1](h)(y, z))^2 + x*D[0, 1](f)(x, y)
-            sage: from sage.geometry.manifolds.utilities import Expression_nice
-            sage: Expression_nice(fun)
+            sage: from sage.geometry.manifolds.utilities import ExpressionNice
+            sage: ExpressionNice(fun)
             y*(z - d(h)/dz)^2 + x*d^2(f)/dxdy
-            sage: latex(Expression_nice(fun))
+            sage: latex(ExpressionNice(fun))
             y {\left(z - \frac{\partial\,h}{\partial z}\right)}^{2} + x \frac{\partial^2\,f}{\partial x\partial y}
 
         A check for a case when function variables are functions too:
@@ -437,16 +490,47 @@ class Expression_nice(Expression):
             sage: fun = (g.diff(x))*x - x^2*f.diff(x,y)
             sage: fun
             -x^2*D[0, 1](f)(x, y) + (D[0](f)(x, y)*D[1](g)(x, f(x, y)) + D[0](g)(x, f(x, y)))*x
-            sage: from sage.geometry.manifolds.utilities import Expression_nice
-            sage: Expression_nice(fun)
+            sage: from sage.geometry.manifolds.utilities import ExpressionNice
+            sage: ExpressionNice(fun)
             -x^2*d^2(f)/dxdy + (d(f)/dx*d(g)/df + d(g)/dx)*x
-            sage: latex(Expression_nice(fun))
+            sage: latex(ExpressionNice(fun))
             -x^{2} \frac{\partial^2\,f}{\partial x\partial y} + {\left(\frac{\partial\,f}{\partial x} \frac{\partial\,g}{\partial f } + \frac{\partial\,g}{\partial x}\right)} x
+
+
+        Multiple differentiation over the same variable is grouped for brevity: 
+        D[0, 0](f)(x) should render as \frac{\partial^2\,f}{\partial x^2} 
+
+            sage: var('x y')
+            (x, y)
+            sage: f = function('f', x, y)
+            sage: fun = f.diff(x,x,y,y,x)*x
+            sage: fun
+            x*D[0, 0, 0, 1, 1](f)(x, y)
+            sage: from sage.geometry.manifolds.utilities import ExpressionNice
+            sage: ExpressionNice(fun)
+            x*d^5(f)/dx^3dy^2
+            sage: latex(ExpressionNice(fun))
+            x \frac{\partial^5\,f}{\partial x^3\partial y^2}
+
+        If diff operator is raised to some power, put brackets around: 
+        D[1](f)(x, y)^2 should render as (d(f)/dy)^2
+
+            sage: var('x y')
+            (x, y)
+            sage: f = function('f', x, y)
+            sage: fun = f.diff(y)^2
+            sage: fun
+            D[1](f)(x, y)^2
+            sage: from sage.geometry.manifolds.utilities import ExpressionNice
+            sage: ExpressionNice(fun)
+            (d(f)/dy)^2
+            sage: latex(ExpressionNice(fun))
+            \left(\frac{\partial\,f}{\partial y}\right)^{2}
 
         """
 
         d = self._parent._latex_element_(self)
-
+ 
         import re
         # Fix for proper coercion of types:
         # http://www.sagemath.org/doc/faq/faq-usage.html#i-have-type-issues-using-scipy-cvxopt-or-numpy-from-sage
@@ -469,43 +553,73 @@ class Expression_nice(Expression):
 
             variables = m[3]
 
+            # dictionary to group multiple occurences of differentiation: d/dxdx -> d/dx^2 etc. 
+            occ = dict((i, str(variables[i]) + "^" + str(diffargs.count(i)) if(diffargs.count(i)>1) else str(variables[i])) for i in diffargs)
+
+            res = "\\frac{\partial" + numargs + "\," + str(funcname) + "}{\partial " + "\partial ".join([re.sub("\(.*?\)", " ", i) for i in occ.values()]) + "}"
+
+            # representation of the operator 
+            s = self._parent._repr_element_(m[0]) 
             # operator with LaTeX \left( and \right) brackets
-            latex_op = m[0].replace("(","\left(").replace(")","\\right)")
+            s = s.replace("(","\left(").replace(")","\\right)")
 
-            res = "\\frac{\partial" + numargs + "\," + str(funcname) + "}{\partial " + "\partial ".join([re.sub("\(.*?\)", " ", str(variables[i])) for i in diffargs]) + "}"
+            # if diff operator is raised to some power (m[4]), put brackets around 
+            if m[4]:
+                res = "\left(" + res + "\\right)^{" + str(m[4]) + "}"
+                o = s + "^{" + str(m[4]) + "}"
+            else: 
+                o = s 
 
-            d = d.replace(latex_op, res)
+            print 
+            d = d.replace(o, res)
 
         return d
 
 
-def expression_tree(s, list_derivs, k=0):
-    """
+def expression_tree(s, list_derivs, exponent=0):
+    r"""
     Function to find the occurences of FDerivativeOperator in the expression;
-    inspired by
-    http://ask.sagemath.org/question/10256/how-can-extract-different-terms-from-a-symbolic-expression/?answer=26136#post-id-26136
+    inspired by http://ask.sagemath.org/question/10256/how-can-extract-different-terms-from-a-symbolic-expression/?answer=26136#post-id-26136
+
+    INPUT:
+
+    - ``s`` -- symbolic expression to be analyzed 
+    - ``exponent`` -- (optional) exponent of FDerivativeOperator, passed to a next level in the expression tree  
+
+    OUTPUT:
+
+    - ``list_derivs`` -- tuple containing the details of FDerivativeOperator found, in a following order: 
+
+    1. operator 
+    2. function 
+    3. parameter set 
+    4. operands 
+    5. exponent (if found, else 0)  
+    
     """
+
+    from sage.symbolic.operators import FDerivativeOperator
+    import operator 
 
     op = s.operator()
     operands = s.operands()
-    from sage.symbolic.operators import FDerivativeOperator
 
     if op:
+        
+        if op is operator.pow: 
+            if isinstance(operands[0].operator(), FDerivativeOperator): 
+                exponent = operands[1]
+
         if isinstance(op, FDerivativeOperator):
 
             parameter_set = op.parameter_set()
             function = op.function()
-
-            d = str(op) + str(tuple(operands))
-            if len(operands) == 1:
-                d = d.replace(",","")
-
-            list_derivs.append((d, function, parameter_set, operands))
-
-        k += 1
-
+            
+            list_derivs.append((s, function, parameter_set, operands, exponent))
+ 
         for operand in operands:
-            expression_tree(operand, list_derivs, k)
+            expression_tree(operand, list_derivs, exponent)
+
 
 def nice_derivatives(status):
     r"""
