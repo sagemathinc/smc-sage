@@ -3690,12 +3690,16 @@ class CoordChange(SageObject):
             ch_basis.add_comp(frame1)[:, chart1] = self._jacobian
             ch_basis.add_comp(frame2)[:, chart1] = self._jacobian
             vf_module._basis_changes[(frame2, frame1)] = ch_basis
-            vf_module._basis_changes[(frame1, frame2)] = ch_basis.inverse()
             for sdom in domain._supersets:
                 sdom._frame_changes[(frame2, frame1)] = ch_basis
-            if (frame1, frame2) not in domain._frame_changes:
+            # The inverse is computed only if it does not exist already
+            # (because if it exists it may a simpler expression than that
+            #  obtained from the matrix inverse)
+            if (frame1, frame2) not in vf_module._basis_changes:
+                ch_basis_inv = ch_basis.inverse()
+                vf_module._basis_changes[(frame1, frame2)] = ch_basis_inv
                 for sdom in domain._supersets:
-                    sdom._frame_changes[(frame1, frame2)] = ch_basis.inverse()
+                    sdom._frame_changes[(frame1, frame2)] = ch_basis_inv
 
     def _repr_(self):
         r"""
@@ -3770,7 +3774,11 @@ class CoordChange(SageObject):
                                                            for i in range(n2) ]
         equations = [ xp2[i] == self._transf._functions[i]._express
                                                            for i in range(n2) ]
-        solutions = solve(equations, *x1, solution_dict=True)
+        try:
+            solutions = solve(equations, *x1, solution_dict=True)
+        except RuntimeError:
+            raise RuntimeError("The system could not be solved; use " +
+                               "set_inverse() to set the inverse manually.")
         #!# This should be the Python 2.7 form:
         #           substitutions = {xp2[i]: x2[i] for i in range(n2)}
         # Here we use a form compatible with Python 2.6:
@@ -3788,8 +3796,8 @@ class CoordChange(SageObject):
             for sol in solutions:
                 if x2[0] in sol:
                     raise ValueError("The system could not be solved; use " +
-                                     "CoordChange.set_inverse to set the " +
-                                     "inverse manually.")
+                                     "set_inverse() to set the inverse " +
+                                     "manually.")
                 x2_to_x1 = [sol[x1[i]].subs(substitutions) for i in range(n1)]
                 for transf in x2_to_x1:
                     try:
@@ -3799,26 +3807,25 @@ class CoordChange(SageObject):
                 if self._chart1.valid_coordinates(*x2_to_x1):
                     list_x2_to_x1.append(x2_to_x1)
             if len(list_x2_to_x1) == 0:
-                raise ValueError("No solution found; use " +
-                                 "CoordChange.set_inverse to set the " +
-                                 "inverse manually.")
+                raise ValueError("No solution found; use set_inverse() to " +
+                                 "set the inverse manually.")
             if len(list_x2_to_x1) > 1:
                 print "Multiple solutions found: "
                 print list_x2_to_x1
                 raise ValueError(
                    "Non-unique solution to the inverse coordinate " +
-                   "transformation;  use CoordChange.set_inverse to set the " +
-                   "inverse manually.")
+                   "transformation; use set_inverse() to set the inverse " +
+                   "manually.")
             x2_to_x1 = list_x2_to_x1[0]
         self._inverse = CoordChange(self._chart2, self._chart1, *x2_to_x1)
         #
-        # Update of chart expressions of the frame changes:
+        # Update of chart expressions of the changes of frames:
         if self._chart1._domain == self._chart2._domain:
-            domain = self._chart1._domain
+            vf_module = self._chart1._domain.vector_field_module()
             frame1 = self._chart1._frame
             frame2 = self._chart2._frame
-            fr_change12 = domain._frame_changes[(frame1,frame2)]
-            fr_change21 = domain._frame_changes[(frame2,frame1)]
+            fr_change12 = vf_module._basis_changes[(frame1,frame2)]
+            fr_change21 = vf_module._basis_changes[(frame2,frame1)]
             for comp in fr_change12._components[frame1]._comp.itervalues():
                 comp.function_chart(self._chart1, from_chart=self._chart2)
             for comp in fr_change12._components[frame2]._comp.itervalues():
@@ -3895,13 +3902,13 @@ class CoordChange(SageObject):
                 print "  ", x1[i], '==' , self._inverse(*(self(*x1)))[i]
             for i in range(n1):
                 print "  ", x2[i], '==', self(*(self._inverse(*x2)))[i]
-        # Update of chart expressions of the frame changes:
+        # Update of chart expressions of the changes of frames:
         if self._chart1._domain == self._chart2._domain:
-            domain = self._chart1._domain
+            vf_module = self._chart1._domain.vector_field_module()
             frame1 = self._chart1._frame
             frame2 = self._chart2._frame
-            fr_change12 = domain._frame_changes[(frame1,frame2)]
-            fr_change21 = domain._frame_changes[(frame2,frame1)]
+            fr_change12 = vf_module._basis_changes[(frame1,frame2)]
+            fr_change21 = vf_module._basis_changes[(frame2,frame1)]
             for comp in fr_change12._components[frame1]._comp.itervalues():
                 comp.function_chart(self._chart1, from_chart=self._chart2)
             for comp in fr_change12._components[frame2]._comp.itervalues():

@@ -1195,13 +1195,13 @@ class ScalarField(CommutativeAlgebraElement):
             f: M --> R
                (x, y) |--> sqrt(x + 1)
             sage: latex(f.display())
-            \begin{array}{llcl} f:& M & \longrightarrow & \RR \\ & \left(x, y\right) & \longmapsto & \sqrt{x + 1} \end{array}
+            \begin{array}{llcl} f:& M & \longrightarrow & \mathbb{R} \\ & \left(x, y\right) & \longmapsto & \sqrt{x + 1} \end{array}
             sage: g = M.scalar_field(function('G', x, y), name='g')
             sage: g.display()
             g: M --> R
                (x, y) |--> G(x, y)
             sage: latex(g.display())
-            \begin{array}{llcl} g:& M & \longrightarrow & \RR \\ & \left(x, y\right) & \longmapsto & G\left(x, y\right) \end{array}
+            \begin{array}{llcl} g:& M & \longrightarrow & \mathbb{R} \\ & \left(x, y\right) & \longmapsto & G\left(x, y\right) \end{array}
 
         A shortcut of ``display()`` is ``disp()``::
 
@@ -1223,7 +1223,7 @@ class ScalarField(CommutativeAlgebraElement):
         else:
             symbol = self._latex_name + ":"
         result._latex = r"\begin{array}{llcl} " + symbol + r"&" + \
-                       latex(self._domain) + r"& \longrightarrow & \RR \\"
+                     latex(self._domain) + r"& \longrightarrow & \mathbb{R} \\"
         if chart is None:
             for ch in self._domain._top_charts:
                 self._display_expression(ch, result)
