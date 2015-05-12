@@ -624,7 +624,7 @@ class Metric(TensorField):
 
         - ``chart`` -- (default: None) chart with respect to which the
           Christoffel symbolds are required; if none is provided, the
-          manifold's default chart is assumed.
+          default chart of the metric's domain is assumed.
 
         OUTPUT:
 
@@ -662,12 +662,137 @@ class Metric(TensorField):
             sage: Gam[2,3,3]
             -cos(th)*sin(th)
 
+        Note that a better display of the Christoffel symbols is provided by
+        the method :meth:`christoffel_symbols_display`::
+
+            sage: g.christoffel_symbols_display()
+            Gam^r_th,th = -r
+            Gam^r_ph,ph = -r*sin(th)^2
+            Gam^th_r,th = 1/r
+            Gam^th_ph,ph = -cos(th)*sin(th)
+            Gam^ph_r,ph = 1/r
+            Gam^ph_th,ph = cos(th)/sin(th)
+
+
         """
         if chart is None:
             frame = self._domain._def_chart._frame
         else:
             frame = chart._frame
         return self.connection().coef(frame)
+
+
+    def christoffel_symbols_display(self, chart=None, symbol=None,
+                latex_symbol=None, index_labels=None, index_latex_labels=None,
+                coordinate_labels=True, only_nonzero=True,
+                only_nonredundant=True):
+        r"""
+        Display the Christoffel symbols w.r.t. to a given chart, one
+        per line.
+
+        The output is either text-formatted (console mode) or LaTeX-formatted
+        (notebook mode).
+
+        INPUT:
+
+        - ``chart`` -- (default: None) chart with respect to which the
+          Christoffel symbolds are defined; if none is provided, the
+          default chart of the metric's domain is assumed.
+        - ``symbol`` -- (default: ``None``) string specifying the
+          symbol of the connection coefficients; if ``None``, 'Gam' is used
+        - ``latex_symbol`` -- (default: ``None``) string specifying the LaTeX
+          symbol for the components; if ``None``, '\\Gamma' is used
+        - ``index_labels`` -- (default: ``None``) list of strings representing
+          the labels of each index; if ``None``, coordinate symbols are used
+          except if ``coordinate_symbols`` is set to ``False``, in which case
+          integer labels are used
+        - ``index_latex_labels`` -- (default: ``None``) list of strings
+          representing the LaTeX labels of each index; if ``None``, coordinate
+          LaTeX symbols are used, except if ``coordinate_symbols`` is set to
+          ``False``, in which case integer labels are used
+        - ``coordinate_labels`` -- (default: ``True``) boolean; if ``True``,
+          coordinate symbols are used by default (instead of integers)
+        - ``only_nonzero`` -- (default: ``True``) boolean; if ``True``, only
+          nonzero connection coefficients are displayed
+        - ``only_nonredundant`` -- (default: ``True``) boolean; if ``True``,
+          only nonredundant (w.r.t. the symmetry of the last two indices)
+          connection coefficients are displayed
+
+        EXAMPLES:
+
+        Christoffel symbols of the flat metric on `\RR^3` with respect to
+        spherical coordinates::
+
+            sage: M = Manifold(3, 'R3', r'\RR^3', start_index=1)
+            sage: U = M.open_subset('U') # the complement of the half-plane (y=0, x>=0)
+            sage: X.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: g = U.metric('g')
+            sage: g[1,1], g[2,2], g[3,3] = 1, r^2, r^2*sin(th)^2
+            sage: g.display()  # the standard flat metric expressed in spherical coordinates
+            g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
+            sage: g.christoffel_symbols_display()
+            Gam^r_th,th = -r
+            Gam^r_ph,ph = -r*sin(th)^2
+            Gam^th_r,th = 1/r
+            Gam^th_ph,ph = -cos(th)*sin(th)
+            Gam^ph_r,ph = 1/r
+            Gam^ph_th,ph = cos(th)/sin(th)
+
+        To list all nonzero Christoffel symbols, including those that can be
+        deduced by symmetry, use ``only_nonredundant=False``::
+
+            sage: g.christoffel_symbols_display(only_nonredundant=False)
+            Gam^r_th,th = -r
+            Gam^r_ph,ph = -r*sin(th)^2
+            Gam^th_r,th = 1/r
+            Gam^th_th,r = 1/r
+            Gam^th_ph,ph = -cos(th)*sin(th)
+            Gam^ph_r,ph = 1/r
+            Gam^ph_th,ph = cos(th)/sin(th)
+            Gam^ph_ph,r = 1/r
+            Gam^ph_ph,th = cos(th)/sin(th)
+
+        Listing all Christoffel symbols (except those that can be deduced by
+        symmetry), including the vanishing one::
+
+            sage: g.christoffel_symbols_display(only_nonzero=False)
+            Gam^r_r,r = 0
+            Gam^r_r,th = 0
+            Gam^r_r,ph = 0
+            Gam^r_th,th = -r
+            Gam^r_th,ph = 0
+            Gam^r_ph,ph = -r*sin(th)^2
+            Gam^th_r,r = 0
+            Gam^th_r,th = 1/r
+            Gam^th_r,ph = 0
+            Gam^th_th,th = 0
+            Gam^th_th,ph = 0
+            Gam^th_ph,ph = -cos(th)*sin(th)
+            Gam^ph_r,r = 0
+            Gam^ph_r,th = 0
+            Gam^ph_r,ph = 1/r
+            Gam^ph_th,th = 0
+            Gam^ph_th,ph = cos(th)/sin(th)
+            Gam^ph_ph,ph = 0
+
+        Using integer labels::
+
+            sage: g.christoffel_symbols_display(coordinate_labels=False)
+            Gam^1_22 = -r
+            Gam^1_33 = -r*sin(th)^2
+            Gam^2_12 = 1/r
+            Gam^2_33 = -cos(th)*sin(th)
+            Gam^3_13 = 1/r
+            Gam^3_23 = cos(th)/sin(th)
+
+        """
+        if chart is None:
+            chart = self._domain.default_chart()
+        return self.connection().display(frame=chart.frame(), symbol=symbol,
+                latex_symbol=latex_symbol, index_labels=index_labels,
+                index_latex_labels=index_latex_labels,
+                coordinate_labels=coordinate_labels,
+                only_nonzero=only_nonzero, only_nonredundant=only_nonredundant)
 
     def riemann(self, name=None, latex_name=None):
         r"""

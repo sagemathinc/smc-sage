@@ -1011,7 +1011,7 @@ class Components(SageObject):
 
     def display(self, symbol, latex_symbol=None, index_positions=None,
                 index_labels=None, index_latex_labels=None,
-                only_nonzero=True, only_nonredundant=False):
+                format_spec=None, only_nonzero=True, only_nonredundant=False):
         r"""
         Display all the components, one per line.
 
@@ -1038,6 +1038,8 @@ class Components(SageObject):
           representing the LaTeX labels of each of the individual indices
           within the index range defined at the construction of the object; if
           ``None``, integers labels are used
+        - ``format_spec`` -- (default: ``None``) format specification passed
+          to the output formatter declared at the construction of the object
         - ``only_nonzero`` -- (default: ``True``) boolean; if ``True``, only
           nonzero components are displayed
         - ``only_nonredundant`` -- (default: ``False``) boolean; if ``True``,
@@ -1132,6 +1134,20 @@ class Components(SageObject):
             sage: c.display('c', only_nonredundant=True)
             c_001 = 2
 
+        If some nontrivial output formatter has been set, the format can be
+        specified by means of the argument ``format_spec``::
+
+            sage: c = Components(QQ, (QQ^3).basis(), 2,
+            ....:                output_formatter=Rational.numerical_approx)
+            sage: c[0,1] = 1/3
+            sage: c[2,1] = 2/7
+            sage: c.display('C')  # default format (53 bits of precision)
+            C_01 = 0.333333333333333
+            C_21 = 0.285714285714286
+            sage: c.display('C', format_spec=10)  # 10 bits of precision
+            C_01 = 0.33
+            C_21 = 0.29
+
         """
         from sage.misc.latex import latex
         from sage.tensor.modules.format_utilities import FormattedExpansion
@@ -1167,7 +1183,8 @@ class Components(SageObject):
         rtxt = ''
         rlatex = r'\begin{array}{lcl}'
         for ind in generator:
-            val = self[ind]
+            ind_arg = ind + (format_spec,)
+            val = self[ind_arg]
             if val != 0 or not only_nonzero:
                 indices = ''  # text indices
                 d_indices = '' # LaTeX down indices

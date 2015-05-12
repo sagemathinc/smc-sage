@@ -3595,3 +3595,143 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
             for ind, val in comp._comp.iteritems():
                 comp_resu._comp[ind] = val(point)
         return resu
+
+    def display_comp(self, frame=None, chart=None, coordinate_labels=True,
+                     only_nonzero=True, only_nonredundant=False):
+        r"""
+        Display the tensor components w.r.t. a given frame, one per
+        line.
+
+        The output is either text-formatted (console mode) or LaTeX-formatted
+        (notebook mode).
+
+        INPUT:
+
+        - ``frame`` -- (default: ``None``) vector frame with respect to which
+          the tensor field components are defined; if ``None``, then
+
+          - if ``chart`` is not ``None``, the coordinate frame associated to
+            ``chart`` is used
+          - otherwise, the default basis of the vector field module on which
+            the tensor field is defined is used
+
+        - ``chart`` -- (default: ``None``) chart specifying the coordinate
+          expression of the components; if ``None``, the default chart of the
+          tensor field domain is used
+        - ``coordinate_labels`` -- (default: ``True``) boolean; if ``True``,
+          coordinate symbols are used by default (instead of integers) as
+          index labels whenever ``frame`` is a coordinate frame
+        - ``only_nonzero`` -- (default: ``True``) boolean; if ``True``, only
+          nonzero components are displayed
+        - ``only_nonredundant`` -- (default: ``False``) boolean; if ``True``,
+          only nonredundant components are displayed in case of symmetries
+
+        EXAMPLES:
+
+        Display of the components of a type-(2,1) tensor field on a
+        2-dimensional manifold::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: t = M.tensor_field(2, 1, name='t', sym=(0,1))
+            sage: t[0,0,0], t[0,1,0], t[1,1,1] = x+y, x*y, -3
+            sage: t.display_comp()
+            t^xx_x = x + y
+            t^xy_x = x*y
+            t^yx_x = x*y
+            t^yy_y = -3
+
+        By default, only the non-vanishing components are displayed; to see
+        all the components, the argument ``only_nonzero`` must be set to
+        ``False``::
+
+            sage: t.display_comp(only_nonzero=False)
+            t^xx_x = x + y
+            t^xx_y = 0
+            t^xy_x = x*y
+            t^xy_y = 0
+            t^yx_x = x*y
+            t^yx_y = 0
+            t^yy_x = 0
+            t^yy_y = -3
+
+        ``t`` being symmetric w.r.t. to its first two indices, one may ask to
+        skip the components that can be deduced by symmetry::
+
+            sage: t.display_comp(only_nonredundant=True)
+            t^xx_x = x + y
+            t^xy_x = x*y
+            t^yy_y = -3
+
+        Instead of coordinate labels, one may ask for integers::
+
+            sage: t.display_comp(coordinate_labels=False)
+            t^00_0 = x + y
+            t^01_0 = x*y
+            t^10_0 = x*y
+            t^11_1 = -3
+
+        Display in a frame different from the default one (note that since
+        ``f`` is not a coordinate frame, integer are used to label the
+        indices)::
+
+            sage: a = M.automorphism_field()
+            sage: a[:] = [[1+y^2, 0], [0, 2+x^2]]
+            sage: f = X.frame().new_frame(a, 'f')
+            sage: t.display_comp(frame=f)
+            t^00_0 = (x + y)/(y^2 + 1)
+            t^01_0 = x*y/(x^2 + 2)
+            t^10_0 = x*y/(x^2 + 2)
+            t^11_1 = -3/(x^2 + 2)
+
+        Display with respect to a chart different from the default one::
+
+            sage: Y.<u,v> = M.chart()
+            sage: X_to_Y = X.transition_map(Y, [x+y, x-y])
+            sage: Y_to_X = X_to_Y.inverse()
+            sage: t.display_comp(chart=Y)
+            t^uu_u = 1/4*u^2 - 1/4*v^2 + 1/2*u - 3/2
+            t^uu_v = 1/4*u^2 - 1/4*v^2 + 1/2*u + 3/2
+            t^uv_u = 1/2*u + 3/2
+            t^uv_v = 1/2*u - 3/2
+            t^vu_u = 1/2*u + 3/2
+            t^vu_v = 1/2*u - 3/2
+            t^vv_u = -1/4*u^2 + 1/4*v^2 + 1/2*u - 3/2
+            t^vv_v = -1/4*u^2 + 1/4*v^2 + 1/2*u + 3/2
+
+        Note that the frame defining the components is the coordinate frame
+        associated with chart ``Y``, i.e. we have::
+
+            sage: str(t.display_comp(chart=Y)) == str(t.display_comp(frame=Y.frame(), chart=Y))
+            True
+
+        Display of the components with respect to a specific frame, expressed
+        in terms of a specific chart::
+
+            sage: t.display_comp(frame=f, chart=Y)
+            t^00_0 = 4*u/(u^2 - 2*u*v + v^2 + 4)
+            t^01_0 = (u^2 - v^2)/(u^2 + 2*u*v + v^2 + 8)
+            t^10_0 = (u^2 - v^2)/(u^2 + 2*u*v + v^2 + 8)
+            t^11_1 = -12/(u^2 + 2*u*v + v^2 + 8)
+
+        """
+        from sage.misc.latex import latex
+        from sage.geometry.manifolds.vectorframe import CoordFrame
+        if frame is None:
+            if chart is not None:
+                frame = chart.frame()
+            else:
+                frame = self._fmodule.default_basis()
+        if chart is None:
+            chart = self._domain.default_chart()
+        index_labels = None
+        index_latex_labels = None
+        if isinstance(frame, CoordFrame) and coordinate_labels:
+            if frame.chart() == chart:
+                index_labels = map(str, chart[:])
+                index_latex_labels = map(latex, chart[:])
+        return FreeModuleTensor.display_comp(self, basis=frame,
+                                  format_spec=chart, index_labels=index_labels,
+                                  index_latex_labels=index_latex_labels,
+                                  only_nonzero=only_nonzero,
+                                  only_nonredundant=only_nonredundant)

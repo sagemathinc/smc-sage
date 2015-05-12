@@ -579,11 +579,11 @@ class AffConnection(SageObject):
         - ``index_labels`` -- (default: ``None``) list of strings representing
           the labels of each index; if ``None``, integer labels are used,
           except if ``frame`` is a coordinate frame and ``coordinate_symbols``
-          is set to ``False``, in which case the coordinate symbols are used
+          is set to ``True``, in which case the coordinate symbols are used
         - ``index_latex_labels`` -- (default: ``None``) list of strings
           representing the LaTeX labels of each index; if ``None``, integer
           labels are used, except if ``frame`` is a coordinate frame and
-          ``coordinate_symbols`` is set to ``False``, in which case the
+          ``coordinate_symbols`` is set to ``True``, in which case the
           coordinate LaTeX symbols are used
         - ``coordinate_labels`` -- (default: ``True``) boolean; if ``True``,
           coordinate symbols are used by default (instead of integers) as
