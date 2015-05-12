@@ -556,7 +556,7 @@ class AffConnection(SageObject):
         """
         self.set_coef()[indices] = value
 
-    def display(self, frame=None, symbol=None, latex_symbol=None,
+    def display(self, frame=None, chart=None, symbol=None, latex_symbol=None,
                 index_labels=None, index_latex_labels=None,
                 coordinate_labels=True, only_nonzero=True,
                 only_nonredundant=False):
@@ -569,9 +569,12 @@ class AffConnection(SageObject):
 
         INPUT:
 
-        - ``frame`` -- (default: None) vector frame relative to which the
-          connection coefficients are defined; if none is provided, the
-          domain's default frame is assumed
+        - ``frame`` -- (default: ``None``) vector frame relative to which the
+          connection coefficients are defined; if ``None``, the
+          default frame of the connection's domain is used
+        - ``chart`` -- (default: ``None``) chart specifying the coordinate
+          expression of the connection coefficients; if ``None``,
+          the default chart of the connection's domain is used
         - ``symbol`` -- (default: ``None``) string specifying the
           symbol of the connection coefficients; if ``None``, 'Gam' is used
         - ``latex_symbol`` -- (default: ``None``) string specifying the LaTeX
@@ -676,20 +679,23 @@ class AffConnection(SageObject):
         from sage.misc.latex import latex
         from sage.geometry.manifolds.vectorframe import CoordFrame
         if frame is None:
-            frame = self._manifold.default_frame()
+            frame = self._domain.default_frame()
+        if chart is None:
+            chart = self._domain.default_chart()
         if symbol is None:
             symbol = 'Gam'
         if latex_symbol is None:
             latex_symbol = r'\Gamma'
         if index_labels is None and isinstance(frame, CoordFrame) and \
           coordinate_labels:
-            chart = frame.chart()
-            index_labels = map(str, chart[:])
-            index_latex_labels = map(latex, chart[:])
+            ch = frame.chart()
+            index_labels = map(str, ch[:])
+            index_latex_labels = map(latex, ch[:])
         return self.coef(frame=frame).display(symbol,
-          latex_symbol=latex_symbol, index_positions='udd',
-          index_labels=index_labels, index_latex_labels=index_latex_labels,
-          only_nonzero=only_nonzero, only_nonredundant=only_nonredundant)
+              latex_symbol=latex_symbol, index_positions='udd',
+              index_labels=index_labels, index_latex_labels=index_latex_labels,
+              format_spec=chart, only_nonzero=only_nonzero,
+              only_nonredundant=only_nonredundant)
 
     def restrict(self, subdomain):
         r"""

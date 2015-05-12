@@ -788,11 +788,11 @@ class Metric(TensorField):
         """
         if chart is None:
             chart = self._domain.default_chart()
-        return self.connection().display(frame=chart.frame(), symbol=symbol,
-                latex_symbol=latex_symbol, index_labels=index_labels,
-                index_latex_labels=index_latex_labels,
-                coordinate_labels=coordinate_labels,
-                only_nonzero=only_nonzero, only_nonredundant=only_nonredundant)
+        return self.connection().display(frame=chart.frame(), chart=chart,
+              symbol=symbol, latex_symbol=latex_symbol,
+              index_labels=index_labels, index_latex_labels=index_latex_labels,
+              coordinate_labels=coordinate_labels, only_nonzero=only_nonzero,
+              only_nonredundant=only_nonredundant)
 
     def riemann(self, name=None, latex_name=None):
         r"""

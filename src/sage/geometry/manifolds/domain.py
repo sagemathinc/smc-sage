@@ -468,6 +468,36 @@ class ManifoldSubset(UniqueRepresentation, Parent):
         """
         return self._atlas
 
+    def top_charts(self):
+        r"""
+        Return the list of charts defined on subsets of the current set
+        that are not subcharts of charts on larger subsets.
+
+        OUTPUT:
+
+        - list of charts defined on open subsets of ``self`` but not on
+          larger subsets
+
+        EXAMPLES:
+
+        Charts on a 2-dimensional manifold::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: U = M.open_subset('U', coord_def={X: x>0})
+            sage: Y.<u,v> = U.chart()
+            sage: M.top_charts()
+            [chart (M, (x, y)), chart (U, (u, v))]
+
+        Note that the (user) atlas contains one more chart: (U, (x,y)), which
+        is not a "top" chart::
+
+            sage: M.atlas()
+            [chart (M, (x, y)), chart (U, (x, y)), chart (U, (u, v))]
+
+        """
+        return self._top_charts
+
     def frames(self):
         r"""
         Return the list of vector frames defined on subsets of ``self``.
