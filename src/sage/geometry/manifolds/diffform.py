@@ -89,8 +89,8 @@ class DiffForm(TensorField):
     - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
       fields along `U` associated with the mapping `\Phi: U \rightarrow V`.
     - ``degree`` -- the degree of the differential form (i.e. its tensor rank)
-    - ``name`` -- (default: None) name given to the differential form
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the differential
+    - ``name`` -- (default: ``None``) name given to the differential form
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the differential
       form; if none is provided, the LaTeX symbol is set to ``name``
 
     EXAMPLES:
@@ -404,8 +404,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
     - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
       fields along `U` associated with the mapping `\Phi: U \rightarrow V`.
     - ``degree`` -- the degree of the differential form (i.e. its tensor rank)
-    - ``name`` -- (default: None) name given to the differential form
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the differential
+    - ``name`` -- (default: ``None``) name given to the differential form
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the differential
       form; if none is provided, the LaTeX symbol is set to ``name``
 
     EXAMPLES:

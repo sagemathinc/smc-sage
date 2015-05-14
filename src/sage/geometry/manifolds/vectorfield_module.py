@@ -85,7 +85,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
     INPUT:
 
     - ``domain`` -- open subset `U` on which the vector fields are defined
-    - ``dest_map`` -- (default: None) destination map `\Phi:\ U \rightarrow V`
+    - ``dest_map`` -- (default: ``None``) destination map `\Phi:\ U \rightarrow V`
       (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`);
       if none is provided, the identity is assumed (case of vector fields *on*
       `U`)
@@ -390,10 +390,10 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         - ``tensor_type`` -- pair (k,l) with k being the contravariant rank
           and l the covariant rank
-        - ``name`` -- (string; default: None) name given to the tensor
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
+        - ``name`` -- (string; default: ``None``) name given to the tensor
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the
           tensor; if none is provided, the LaTeX symbol is set to ``name``
-        - ``sym`` -- (default: None) a symmetry or a list of symmetries among
+        - ``sym`` -- (default: ``None``) a symmetry or a list of symmetries among
           the tensor arguments: each symmetry is described by a tuple
           containing the positions of the involved arguments, with the
           convention position=0 for the first argument. For instance:
@@ -402,9 +402,9 @@ class VectorFieldModule(UniqueRepresentation, Parent):
           * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
             arguments and a symmetry between the 2nd, 4th and 5th arguments.
 
-        - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries
+        - ``antisym`` -- (default: ``None``) antisymmetry or list of antisymmetries
           among the arguments, with the same convention as for ``sym``.
-        - ``specific_type`` -- (default: None) specific subclass of
+        - ``specific_type`` -- (default: ``None``) specific subclass of
           :class:`~sage.geometry.manifolds.tensorfield.TensorField` for the
           output
 
@@ -465,9 +465,9 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         INPUT:
 
         - ``degree`` -- the degree of the alternating form (i.e. its tensor rank)
-        - ``name`` -- (string; default: None) name given to the alternating
+        - ``name`` -- (string; default: ``None``) name given to the alternating
           form
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the
           alternating form; if none is provided, the LaTeX symbol is set to
           ``name``
 
@@ -494,9 +494,9 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         INPUT:
 
-        - ``name`` -- (string; default: None) name given to the linear
+        - ``name`` -- (string; default: ``None``) name given to the linear
           form
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the
           linear form; if none is provided, the LaTeX symbol is set to
           ``name``
 
@@ -524,8 +524,8 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         INPUT:
 
-        - ``name`` -- (string; default: None) name given to the automorphism
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
+        - ``name`` -- (string; default: ``None``) name given to the automorphism
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the
           automorphism; if none is provided, the LaTeX symbol is set to
           ``name``
 
@@ -553,7 +553,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         INPUT:
 
         - ``name`` -- (string; default: 'Id') name given to the identity map
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the
           identity map;  if none is provided, the LaTeX symbol is set to
           '\mathrm{Id}' if ``name`` is 'Id' and to ``name`` otherwise
 
@@ -583,12 +583,12 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         INPUT:
 
         - ``name`` -- (string) name given to the metric
-        - ``signature`` -- (integer; default: None) signature `S` of the
+        - ``signature`` -- (integer; default: ``None``) signature `S` of the
           metric: `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of
           positive terms (resp. number of negative terms) in any diagonal writing
           of the metric components; if ``signature`` is not provided, `S` is set to
           the manifold's dimension (Riemannian signature)
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the
           metric; if none, it is formed from ``name``
 
         OUTPUT:
@@ -615,7 +615,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         INPUT:
 
         - ``name`` -- (string) name given to the metric
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the
           metric; if none, it is formed from ``name``
 
         OUTPUT:
@@ -651,7 +651,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
             dimension, i.e. `(-,+,\cdots,+)`
           * if set to 'negative', the signature is -n+2, i.e. `(+,-,\cdots,-)`
 
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the
           metric; if none, it is formed from ``name``
 
         OUTPUT:
@@ -712,7 +712,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
     INPUT:
 
     - ``domain`` -- open subset `U` on which the vector fields are defined
-    - ``dest_map`` -- (default: None) destination map `\Phi:\ U \rightarrow V`
+    - ``dest_map`` -- (default: ``None``) destination map `\Phi:\ U \rightarrow V`
       (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`);
       if none is provided, the identity is assumed (case of vector fields *on*
       `U`)
@@ -1076,13 +1076,13 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
         INPUT:
 
-        - ``symbol`` -- (string; default: None) a letter (of a few letters) to
-          denote a generic element of the basis; if None and ``from_frame=None``
+        - ``symbol`` -- (string; default: ``None``) a letter (of a few letters) to
+          denote a generic element of the basis; if ``None`` and ``from_frame=None``
           the module's default basis is returned.
-        - ``latex_symbol`` -- (string; default: None) symbol to denote a
-          generic element of the basis; if None, the value of ``symbol`` is
+        - ``latex_symbol`` -- (string; default: ``None``) symbol to denote a
+          generic element of the basis; if ``None``, the value of ``symbol`` is
           used.
-        - ``from_frame`` -- (default: None) vector frame `\tilde e` on the
+        - ``from_frame`` -- (default: ``None``) vector frame `\tilde e` on the
           codomain `V` of the destination map `\Phi` of ``self``; the returned
           basis `e` is then such that
           `\forall p \in U, e(p) = \tilde e(\Phi(p))`
@@ -1120,10 +1120,10 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
         - ``tensor_type`` -- pair (k,l) with k being the contravariant rank
           and l the covariant rank
-        - ``name`` -- (string; default: None) name given to the tensor
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
+        - ``name`` -- (string; default: ``None``) name given to the tensor
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the
           tensor; if none is provided, the LaTeX symbol is set to ``name``
-        - ``sym`` -- (default: None) a symmetry or a list of symmetries among
+        - ``sym`` -- (default: ``None``) a symmetry or a list of symmetries among
           the tensor arguments: each symmetry is described by a tuple
           containing the positions of the involved arguments, with the
           convention position=0 for the first argument. For instance:
@@ -1132,9 +1132,9 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
           * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
             arguments and a symmetry between the 2nd, 4th and 5th arguments.
 
-        - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries
+        - ``antisym`` -- (default: ``None``) antisymmetry or list of antisymmetries
           among the arguments, with the same convention as for ``sym``.
-        - ``specific_type`` -- (default: None) specific subclass of
+        - ``specific_type`` -- (default: ``None``) specific subclass of
           :class:`~sage.geometry.manifolds.tensorfield.TensorFieldParal` for the
           output
 
@@ -1206,8 +1206,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
           the covariant rank
         - ``comp`` -- instance of :class:`~sage.tensor.modules.comp.Components`
           representing the tensor components in a given basis
-        - ``name`` -- (string; default: None) name given to the tensor
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the tensor;
+        - ``name`` -- (string; default: ``None``) name given to the tensor
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the tensor;
           if none is provided, the LaTeX symbol is set to ``name``
 
         OUTPUT:
@@ -1266,8 +1266,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
         INPUT:
 
-        - ``name`` -- (string; default: None) name given to the automorphism
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
+        - ``name`` -- (string; default: ``None``) name given to the automorphism
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the
           automorphism; if none is provided, the LaTeX symbol is set to
           ``name``
 
@@ -1294,12 +1294,12 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         INPUT:
 
         - ``name`` -- (string) name given to the metric
-        - ``signature`` -- (integer; default: None) signature `S` of the
+        - ``signature`` -- (integer; default: ``None``) signature `S` of the
           metric: `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of
           positive terms (resp. number of negative terms) in any diagonal writing
           of the metric components; if ``signature`` is not provided, `S` is set to
           the manifold's dimension (Riemannian signature)
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the
           metric; if none, it is formed from ``name``
 
         OUTPUT:
@@ -1327,7 +1327,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         INPUT:
 
         - ``name`` -- (string) name given to the metric
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the
           metric; if none, it is formed from ``name``
 
         OUTPUT:
@@ -1363,7 +1363,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
             dimension, i.e. `(-,+,\cdots,+)`
           * if set to 'negative', the signature is -n+2, i.e. `(+,-,\cdots,-)`
 
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote the
           metric; if none, it is formed from ``name``
 
         OUTPUT:

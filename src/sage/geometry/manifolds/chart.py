@@ -1762,14 +1762,12 @@ class FunctionChart(SageObject):
         sage: f = c_xy.function(x^2+3*y+1)
         sage: type(f)
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
-        sage: f._chart
-        chart (M, (x, y))
         sage: f.display()
         (x, y) |--> x^2 + 3*y + 1
         sage: f(x,y)
         x^2 + 3*y + 1
 
-    The symbolic expression is also returned when asking the direct display of
+    The symbolic expression is returned when asking the direct display of
     the function::
 
         sage: f
@@ -1817,6 +1815,86 @@ class FunctionChart(SageObject):
         sage: h = c_xy.function(x^2+3*y+1)
         sage: f == h
         True
+
+    .. RUBRIC:: Differences between ``FunctionChart`` and callable symbolic
+      expressions
+
+    Callable symbolic expressions are defined directly from symbolic
+    expressions of the coordinates::
+
+        sage: f0(x,y) = x^2 + 3*y + 1
+        sage: type(f0)
+        <type 'sage.symbolic.expression.Expression'>
+        sage: f0
+        (x, y) |--> x^2 + 3*y + 1
+        sage: f0(x,y)
+        x^2 + 3*y + 1
+
+    To get an output similar to that of ``f0`` for the chart function ``f``,
+    we must use the method :meth:`display`::
+
+        sage: f
+        x^2 + 3*y + 1
+        sage: f.display()
+        (x, y) |--> x^2 + 3*y + 1
+        sage: f(x,y)
+        x^2 + 3*y + 1
+
+    More importantly, instances of :class:`FunctionChart` differ from
+    callable symbolic expression by the automatic simplifications in all
+    operations. For instance, adding the two callable symbolic expressions::
+
+        sage: f0(x,y,z) = cos(x)^2 ; g0(x,y,z) = sin(x)^2
+
+    results in::
+
+        sage: f0 + g0
+        (x, y, z) |--> cos(x)^2 + sin(x)^2
+
+    To get 1,  one has to call
+    :meth:`~sage.symbolic.expression.Expression.simplify_trig`::
+
+        sage: (f0 + g0).simplify_trig()
+        (x, y, z) |--> 1
+
+    On the contrary, the sum of the corresponding :class:`FunctionChart`
+    instances is automatically simplified (see
+    :func:`~sage.geometry.manifolds.utilities.simplify_chain` for details)::
+
+        sage: f = c_xy.function(cos(x)^2) ; g = c_xy.function(sin(x)^2)
+        sage: f + g
+        1
+
+    Another difference regards the display of partial derivatives: for callable
+    symbolic functions, it relies on Pynac notation ``D[0]``, ``D[1]``, etc.::
+
+        sage: g = function('g', x, y)
+        sage: f0(x,y) = diff(g, x) + diff(g, y)
+        sage: f0
+        (x, y) |--> D[0](g)(x, y) + D[1](g)(x, y)
+
+    while for chart functions, the display is more "textbook" like::
+
+        sage: f = c_xy.function(diff(g, x) + diff(g, y))
+        sage: f
+        d(g)/dx + d(g)/dy
+
+    The difference is even more dramatic on LaTeX outputs::
+
+        sage: latex(f0)
+        \left( x, y \right) \ {\mapsto} \ D[0]\left(g\right)\left(x, y\right) + D[1]\left(g\right)\left(x, y\right)
+        sage: latex(f)
+        \frac{\partial\,g}{\partial x} + \frac{\partial\,g}{\partial y}
+
+    One can switch to Pynac notation via the command
+    :func:`~sage.geometry.manifolds.utilities.nice_derivatives`::
+
+        sage: nice_derivatives(False)
+        sage: latex(f)
+        D[0]\left(g\right)\left(x, y\right) + D[1]\left(g\right)\left(x, y\right)
+        sage: nice_derivatives(True)
+        sage: latex(f)
+        \frac{\partial\,g}{\partial x} + \frac{\partial\,g}{\partial y}
 
     """
 

@@ -734,9 +734,9 @@ class ScalarField(CommutativeAlgebraElement):
 
         INPUT:
 
-        - ``name`` -- (string; default: None) name given to the scalar field
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote
-          the scalar field; if None while ``name`` is provided, the LaTeX
+        - ``name`` -- (string; default: ``None``) name given to the scalar field
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote
+          the scalar field; if ``None`` while ``name`` is provided, the LaTeX
           symbol is set to ``name``.
 
         """
@@ -829,12 +829,12 @@ class ScalarField(CommutativeAlgebraElement):
 
         INPUT:
 
-        - ``chart`` -- (default: None) chart with respect to which the
-          coordinate expression is to be returned; if None, the
+        - ``chart`` -- (default: ``None``) chart with respect to which the
+          coordinate expression is to be returned; if ``None``, the
           default chart of the domain of ``self`` will be used
-        - ``from_chart`` -- (default: None) chart from which the
+        - ``from_chart`` -- (default: ``None``) chart from which the
           required expression is computed if it is not known already in the
-          chart ``chart``; if None, a chart is picked in ``self._express``
+          chart ``chart``; if ``None``, a chart is picked in ``self._express``
 
         OUTPUT:
 
@@ -941,12 +941,12 @@ class ScalarField(CommutativeAlgebraElement):
 
         INPUT:
 
-        - ``chart`` -- (default: None) chart with respect to which the
-          coordinate expression is required; if None, the default
+        - ``chart`` -- (default: ``None``) chart with respect to which the
+          coordinate expression is required; if ``None``, the default
           chart of the domain of ``self`` will be used
-        - ``from_chart`` -- (default: None) chart from which the
+        - ``from_chart`` -- (default: ``None``) chart from which the
           required expression is computed if it is not known already in the
-          chart ``chart``; if None, a chart is picked in ``self._express``
+          chart ``chart``; if ``None``, a chart is picked in ``self._express``
 
         OUTPUT:
 
@@ -995,8 +995,8 @@ class ScalarField(CommutativeAlgebraElement):
         INPUT:
 
         - ``coord_expression`` -- coordinate expression of the scalar field
-        - ``chart`` -- (default: None) chart in which ``coord_expression`` is
-          defined; if None, the default chart of the domain of ``self`` is
+        - ``chart`` -- (default: ``None``) chart in which ``coord_expression`` is
+          defined; if ``None``, the default chart of the domain of ``self`` is
           assumed
 
         EXAMPLES:
@@ -1038,8 +1038,8 @@ class ScalarField(CommutativeAlgebraElement):
         INPUT:
 
         - ``coord_expression`` -- coordinate expression of the scalar field
-        - ``chart`` -- (default: None) chart in which ``coord_expression``
-          is defined; if None, the default chart of the domain of ``self`` is
+        - ``chart`` -- (default: ``None``) chart in which ``coord_expression``
+          is defined; if ``None``, the default chart of the domain of ``self`` is
           assumed
 
         .. WARNING::
@@ -1175,8 +1175,8 @@ class ScalarField(CommutativeAlgebraElement):
 
         INPUT:
 
-        - ``chart`` -- (default: None) chart with respect to which the
-          coordinate expression is to be displayed; if None, the display is
+        - ``chart`` -- (default: ``None``) chart with respect to which the
+          coordinate expression is to be displayed; if ``None``, the display is
           performed in all the top charts in which the coordinate expression is
           known.
 
@@ -1472,7 +1472,7 @@ class ScalarField(CommutativeAlgebraElement):
 
         - ``p`` -- point in the scalar field's domain (type:
           :class:`~sage.geometry.manifolds.point.ManifoldPoint`)
-        - ``chart`` -- (default: None) chart in which the coordinates of p
+        - ``chart`` -- (default: ``None``) chart in which the coordinates of p
           are to be considered; if none is provided, a chart in which both p's
           coordinates and the expression of ``self`` are known is searched,
           starting from the default chart of self._domain

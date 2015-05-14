@@ -80,12 +80,12 @@ class Metric(TensorField):
     - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
       fields along `U` with values on `\Phi(U)\subset V \subset M`
     - ``name`` -- name given to the metric
-    - ``signature`` -- (default: None) signature `S` of the metric as a single
+    - ``signature`` -- (default: ``None``) signature `S` of the metric as a single
       integer: `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of
       positive terms (resp. number of negative terms) in any diagonal writing
       of the metric components; if ``signature`` is not provided, `S` is set to
       the dimension of manifold `M` (Riemannian signature)
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``
 
     EXAMPLES:
@@ -428,7 +428,7 @@ class Metric(TensorField):
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
           instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
-        - ``dest_map`` -- (default: None) destination map
+        - ``dest_map`` -- (default: ``None``) destination map
           `\Phi:\ U \rightarrow V`, where `V` is a subdomain of
           ``self._codomain``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
@@ -561,10 +561,10 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Levi-Civita connection;
-          if None, it is formed from the metric name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
-          Levi-Civita connection; if None, it is set to ``name``, or if the
+        - ``name`` -- (default: ``None``) name given to the Levi-Civita connection;
+          if ``None``, it is formed from the metric name
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
+          Levi-Civita connection; if ``None``, it is set to ``name``, or if the
           latter is None as well, it formed from the symbol `\nabla` and the
           metric symbol
 
@@ -622,7 +622,7 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``chart`` -- (default: None) chart with respect to which the
+        - ``chart`` -- (default: ``None``) chart with respect to which the
           Christoffel symbolds are required; if none is provided, the
           default chart of the metric's domain is assumed.
 
@@ -695,7 +695,7 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``chart`` -- (default: None) chart with respect to which the
+        - ``chart`` -- (default: ``None``) chart with respect to which the
           Christoffel symbolds are defined; if none is provided, the
           default chart of the metric's domain is assumed.
         - ``symbol`` -- (default: ``None``) string specifying the
@@ -812,9 +812,9 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Riemann tensor;
+        - ``name`` -- (default: ``None``) name given to the Riemann tensor;
           if none, it is set to "Riem(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Riemann tensor; if none, it is set to "\\mathrm{Riem}(g)", where "g"
           is the metric's name
 
@@ -878,9 +878,9 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Ricci tensor;
+        - ``name`` -- (default: ``None``) name given to the Ricci tensor;
           if none, it is set to "Ric(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Ricci tensor; if none, it is set to "\\mathrm{Ric}(g)", where "g"
           is the metric's name
 
@@ -927,9 +927,9 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Ricci scalar;
+        - ``name`` -- (default: ``None``) name given to the Ricci scalar;
           if none, it is set to "r(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Ricci scalar; if none, it is set to "\\mathrm{r}(g)", where "g"
           is the metric's name
 
@@ -979,9 +979,9 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Weyl conformal tensor;
+        - ``name`` -- (default: ``None``) name given to the Weyl conformal tensor;
           if none, it is set to "C(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Weyl conformal tensor; if none, it is set to "\\mathrm{C}(g)", where
           "g" is the metric's name
 
@@ -1036,9 +1036,9 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``frame`` -- (default: None) vector frame with
+        - ``frame`` -- (default: ``None``) vector frame with
           respect to which the components `g_{ij}` of ``self`` are defined;
-          if None, the default frame of the metric's domain is used. If a
+          if ``None``, the default frame of the metric's domain is used. If a
           chart is provided instead of a frame, the associated coordinate
           frame is used
 
@@ -1119,9 +1119,9 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``frame`` -- (default: None) vector frame with
+        - ``frame`` -- (default: ``None``) vector frame with
           respect to which the components `g_{ij}` of ``self`` are defined;
-          if None, the domain's default frame is used. If a chart is
+          if ``None``, the domain's default frame is used. If a chart is
           provided, the associated coordinate frame is used
 
         OUTPUT:
@@ -1337,7 +1337,7 @@ class RiemannMetric(Metric):
     - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
       fields along `U` with values on `\Phi(U)\subset V \subset M`
     - ``name`` -- name given to the metric
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``
 
     """
@@ -1382,7 +1382,7 @@ class LorentzMetric(Metric):
         * if set to 'positive', the signature is n-2, where n is the manifold's
           dimension, i.e. `(-,+,\cdots,+)`
         * if set to 'negative', the signature is -n+2, i.e. `(+,-,\cdots,-)`
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``
 
     """
@@ -1452,12 +1452,12 @@ class MetricParal(Metric, TensorFieldParal):
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector
       fields along `U` with values on `\Phi(U)\subset V \subset M`
     - ``name`` -- name given to the metric
-    - ``signature`` -- (default: None) signature `S` of the metric as a single
+    - ``signature`` -- (default: ``None``) signature `S` of the metric as a single
       integer: `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of
       positive terms (resp. number of negative terms) in any diagonal writing
       of the metric components; if ``signature`` is not provided, `S` is set to
       the dimension of manifold `M` (Riemannian signature)
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``
 
     EXAMPLES:
@@ -1588,7 +1588,7 @@ class MetricParal(Metric, TensorFieldParal):
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
           instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
-        - ``dest_map`` -- (default: None) destination map
+        - ``dest_map`` -- (default: ``None``) destination map
           `\Phi:\ U \rightarrow V`, where `V` is a subdomain of
           ``self._codomain``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
@@ -1735,9 +1735,9 @@ class MetricParal(Metric, TensorFieldParal):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Ricci scalar;
+        - ``name`` -- (default: ``None``) name given to the Ricci scalar;
           if none, it is set to "r(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Ricci scalar; if none, it is set to "\\mathrm{r}(g)", where "g"
           is the metric's name
 
@@ -1809,7 +1809,7 @@ class RiemannMetricParal(MetricParal):
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector
       fields along `U` with values on `\Phi(U)\subset V \subset M`
     - ``name`` -- name given to the metric
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``
 
     EXAMPLE:
@@ -1877,7 +1877,7 @@ class LorentzMetricParal(MetricParal):
         * if set to 'positive', the signature is n-2, where n is the manifold's
           dimension, i.e. `(-,+,\cdots,+)`
         * if set to 'negative', the signature is -n+2, i.e. `(+,-,\cdots,-)`
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``
 
     EXAMPLE:

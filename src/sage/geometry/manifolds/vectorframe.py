@@ -189,9 +189,9 @@ class VectorFrame(FreeModuleBasis):
     - ``symbol`` -- a letter (of a few letters) to denote a
       generic vector of the frame; can be set to None if the parameter
       ``from_frame`` is filled.
-    - ``latex_symbol`` -- (default: None) symbol to denote a generic vector of
-      the frame; if None, the value of ``symbol`` is used.
-    - ``from_frame`` -- (default: None) vector frame `\tilde e` on the codomain
+    - ``latex_symbol`` -- (default: ``None``) symbol to denote a generic vector of
+      the frame; if ``None``, the value of ``symbol`` is used.
+    - ``from_frame`` -- (default: ``None``) vector frame `\tilde e` on the codomain
       `V` of the destination map `\Phi`; the frame `e` = ``self`` is then
       constructed so that `\forall p \in U, e(p) = \tilde e(\Phi(p))`
 
@@ -358,8 +358,8 @@ class VectorFrame(FreeModuleBasis):
 
         - ``symbol`` -- (string) a letter (of a few letters) to denote a
           generic element of the vector frame
-        - ``latex_symbol`` -- (string; default: None) symbol to denote a
-          generic element of the vector frame; if None, the value of
+        - ``latex_symbol`` -- (string; default: ``None``) symbol to denote a
+          generic element of the vector frame; if ``None``, the value of
           ``symbol`` is used.
 
         OUTPUT:
@@ -399,8 +399,8 @@ class VectorFrame(FreeModuleBasis):
           to `n_i = P(e_i)`
         - ``symbol`` -- a letter (of a few letters) to denote a generic vector
           of the frame
-        - ``latex_symbol`` -- (default: None) symbol to denote a generic vector
-          of the frame; if None, the value of ``symbol`` is used.
+        - ``latex_symbol`` -- (default: ``None``) symbol to denote a generic vector
+          of the frame; if ``None``, the value of ``symbol`` is used.
 
         OUTPUT:
 
@@ -1019,8 +1019,8 @@ class CoFrame(FreeModuleCoBasis):
     - ``frame`` -- the vector frame dual to the coframe
     - ``symbol`` -- a letter (of a few letters) to denote a generic 1-form in
       the coframe
-    - ``latex_symbol`` -- (default: None) symbol to denote a generic 1-form in
-      the coframe; if None, the value of ``symbol`` is used.
+    - ``latex_symbol`` -- (default: ``None``) symbol to denote a generic 1-form in
+      the coframe; if ``None``, the value of ``symbol`` is used.
 
     EXAMPLES:
 

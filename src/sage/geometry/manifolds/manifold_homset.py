@@ -271,16 +271,16 @@ class ManifoldHomset(Homset, UniqueRepresentation):
           In both cases, if the dimension of the arrival manifold is 1,
           a single coordinate expression is expected (not a list or tuple with a
           single element)
-        - ``chart1`` -- (default: None; used only in case (ii) above) chart on
+        - ``chart1`` -- (default: ``None``; used only in case (ii) above) chart on
           domain `U` defining the start coordinates involved in ``coord_functions``
           for case (ii); if none is provided, the coordinates are assumed to
           refer to `U`'s default chart
-        - ``chart2`` -- (default: None; used only in case (ii) above) chart on the
+        - ``chart2`` -- (default: ``None``; used only in case (ii) above) chart on the
           codomain defining the arrival coordinates involved in ``coord_functions``
           for case (ii); if none is provided, the coordinates are assumed to
           refer to the codomain's default chart
-        - ``name`` -- (default: None) name given to the differentiable mapping
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``name`` -- (default: ``None``) name given to the differentiable mapping
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           differentiable mapping; if none is provided, the LaTeX symbol is set to
           ``name``
         - ``is_diffeomorphism`` -- (default: ``False``) determines whether the

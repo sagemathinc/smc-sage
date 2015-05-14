@@ -347,10 +347,10 @@ class TensorField(ModuleElement):
       :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldModule`)
     - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank
       and `l` the covariant rank
-    - ``name`` -- (default: None) name given to the tensor field
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the tensor field;
+    - ``name`` -- (default: ``None``) name given to the tensor field
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the tensor field;
       if none is provided, the LaTeX symbol is set to ``name``
-    - ``sym`` -- (default: None) a symmetry or a list of symmetries among the
+    - ``sym`` -- (default: ``None``) a symmetry or a list of symmetries among the
       tensor arguments: each symmetry is described by a tuple containing
       the positions of the involved arguments, with the convention position=0
       for the first argument. For instance:
@@ -359,7 +359,7 @@ class TensorField(ModuleElement):
       * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
         arguments and a symmetry between the 2nd, 4th and 5th arguments.
 
-    - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries
+    - ``antisym`` -- (default: ``None``) antisymmetry or list of antisymmetries
       among the arguments, with the same convention as for ``sym``.
     - ``parent`` -- (default: ``None``) some specific parent (e.g. exterior
       power for differential forms); if ``None``,
@@ -643,9 +643,9 @@ class TensorField(ModuleElement):
 
         INPUT:
 
-        - ``name`` -- (string; default: None) name given to the tensor field
-        - ``latex_name`` -- (string; default: None) LaTeX symbol to denote
-          the tensor field; if None while ``name`` is provided, the LaTeX
+        - ``name`` -- (string; default: ``None``) name given to the tensor field
+        - ``latex_name`` -- (string; default: ``None``) LaTeX symbol to denote
+          the tensor field; if ``None`` while ``name`` is provided, the LaTeX
           symbol is set to ``name``.
 
         """
@@ -902,7 +902,7 @@ class TensorField(ModuleElement):
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
           instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
-        - ``dest_map`` -- (default: None) destination map
+        - ``dest_map`` -- (default: ``None``) destination map
           `\Phi:\ U \rightarrow V`, where `V` is a subdomain of
           ``self._codomain``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
@@ -1010,7 +1010,7 @@ class TensorField(ModuleElement):
 
         INPUT:
 
-        - ``basis`` -- (default: None) vector frame in which the components are
+        - ``basis`` -- (default: ``None``) vector frame in which the components are
           defined; if none is provided, the components are assumed to refer to
           the tensor field domain's default frame.
 
@@ -1038,7 +1038,7 @@ class TensorField(ModuleElement):
 
         INPUT:
 
-        - ``basis`` -- (default: None) vector frame in which the components are
+        - ``basis`` -- (default: ``None``) vector frame in which the components are
           defined; if none is provided, the components are assumed to refer to
           the tensor field domain's default frame.
 
@@ -1069,9 +1069,10 @@ class TensorField(ModuleElement):
         - ``frame`` -- vector frame `e` in which the components are to be set
         - ``subdomain`` -- open subset of `e`'s domain in which the
           components are known or can be evaluated from other components
-        - ``chart`` -- (default: None) coordinate chart on `e`'s domain in
+        - ``chart`` -- (default: ``None``) coordinate chart on `e`'s domain in
           which the extension of the expression of the components is to be
-          performed; if None, the default's chart of `e`'s domain is assumed
+          performed; if ``None``, the default's chart of `e`'s domain is
+          assumed
 
         EXAMPLES:
 
@@ -1139,10 +1140,10 @@ class TensorField(ModuleElement):
 
         INPUT:
 
-        - ``basis`` -- (default: None) vector frame in which the components are
+        - ``basis`` -- (default: ``None``) vector frame in which the components are
           required; if none is provided, the components are assumed to refer to
           the tensor field domain's default frame
-        - ``from_basis`` -- (default: None) vector frame from which the
+        - ``from_basis`` -- (default: ``None``) vector frame from which the
           required components are computed, via the tensor change-of-basis
           formula, if they are not known already in the basis ``basis``
 
@@ -1215,10 +1216,10 @@ class TensorField(ModuleElement):
 
         INPUT:
 
-        - ``basis`` -- (default: None) vector frame with respect to
+        - ``basis`` -- (default: ``None``) vector frame with respect to
           which the tensor is expanded; if none is provided, the default frame
           of the domain of definition of the tensor field is assumed.
-        - ``chart`` -- (default: None) chart with respect to which the
+        - ``chart`` -- (default: ``None``) chart with respect to which the
           components of the tensor field in the selected frame are expressed;
           if none is provided, the default chart of the vector frame domain
           is assumed.
@@ -1289,6 +1290,94 @@ class TensorField(ModuleElement):
         return rst.display(basis, chart)
 
     disp = display
+
+    def display_comp(self, frame=None, chart=None, coordinate_labels=True,
+                     only_nonzero=True, only_nonredundant=False):
+        r"""
+        Display the tensor components w.r.t. a given frame, one per
+        line.
+
+        The output is either text-formatted (console mode) or LaTeX-formatted
+        (notebook mode).
+
+        INPUT:
+
+        - ``frame`` -- (default: ``None``) vector frame with respect to which
+          the tensor field components are defined; if ``None``, then
+
+          - if ``chart`` is not ``None``, the coordinate frame associated to
+            ``chart`` is used
+          - otherwise, the default basis of the vector field module on which
+            the tensor field is defined is used
+
+        - ``chart`` -- (default: ``None``) chart specifying the coordinate
+          expression of the components; if ``None``, the default chart of the
+          tensor field domain is used
+        - ``coordinate_labels`` -- (default: ``True``) boolean; if ``True``,
+          coordinate symbols are used by default (instead of integers) as
+          index labels whenever ``frame`` is a coordinate frame
+        - ``only_nonzero`` -- (default: ``True``) boolean; if ``True``, only
+          nonzero components are displayed
+        - ``only_nonredundant`` -- (default: ``False``) boolean; if ``True``,
+          only nonredundant components are displayed in case of symmetries
+
+        EXAMPLES:
+
+        Display of the components of a type-(1,1) tensor field defined on two
+        open subsets::
+
+            sage: M = Manifold(2, 'M')
+            sage: U = M.open_subset('U')
+            sage: c_xy.<x, y> = U.chart()
+            sage: e = U.default_frame()
+            sage: V = M.open_subset('V')
+            sage: c_uv.<u, v> = V.chart()
+            sage: f = V.default_frame()
+            sage: M.declare_union(U,V)   # M is the union of U and V
+            sage: t = M.tensor_field(1,1, name='t')
+            sage: t[e,0,0] = - x + y^3
+            sage: t[e,0,1] = 2+x
+            sage: t[f,1,1] = - u*v
+            sage: t.display_comp(e)
+            t^x_x = y^3 - x
+            t^x_y = x + 2
+            sage: t.display_comp(f)
+            t^v_v = -u*v
+
+        Components in a chart frame::
+
+            sage: t.display_comp(chart=c_xy)
+            t^x_x = y^3 - x
+            t^x_y = x + 2
+            sage: t.display_comp(chart=c_uv)
+            t^v_v = -u*v
+
+        See documentation of :meth:`TensorFieldParal.display_comp` for more
+        options.
+
+        """
+        if frame is None:
+            if chart is not None:
+                frame = chart.frame()
+            else:
+                if self._vmodule._dest_map.is_identity():
+                    frame = self._domain.default_frame()
+                else:
+                    for rst in self._restrictions.values():
+                        try:
+                            return rst.display_comp(chart=chart,
+                                       coordinate_labels=coordinate_labels,
+                                       only_nonzero=only_nonzero,
+                                       only_nonredundant=only_nonredundant)
+                        except ValueError:
+                            pass
+                if frame is None:  # should be "is still None" ;-)
+                    raise ValueError("a frame must be provided for the display")
+        rst = self.restrict(frame.domain(), dest_map=frame._dest_map)
+        return rst.display_comp(frame=frame, chart=chart,
+                                coordinate_labels=coordinate_labels,
+                                only_nonzero=only_nonzero,
+                                only_nonredundant=only_nonredundant)
 
     def view(self, basis=None, chart=None):
         r"""
@@ -1654,7 +1743,7 @@ class TensorField(ModuleElement):
 
         - ``metric`` -- metric `g`, as an instance of
           :class:`~sage.geometry.manifolds.metric.Metric`
-        - ``pos`` -- (default: None) position of the index (with the
+        - ``pos`` -- (default: ``None``) position of the index (with the
           convention ``pos=0`` for the first index); if none, the raising is
           performed over all the covariant indices, starting from the first one
 
@@ -1789,7 +1878,7 @@ class TensorField(ModuleElement):
 
         - ``metric`` -- metric `g`, as an instance of
           :class:`~sage.geometry.manifolds.metric.Metric`
-        - ``pos`` -- (default: None) position of the index (with the
+        - ``pos`` -- (default: ``None``) position of the index (with the
           convention ``pos=0`` for the first index); if none, the lowering is
           performed over all the contravariant indices, starting from the last
           one
@@ -2395,7 +2484,7 @@ class TensorField(ModuleElement):
 
         INPUT:
 
-        - ``pos`` -- (default: None) list of argument positions involved in the
+        - ``pos`` -- (default: ``None``) list of argument positions involved in the
           symmetrization (with the convention position=0 for the first
           argument); if none, the symmetrization is performed over all the
           arguments
@@ -2454,7 +2543,7 @@ class TensorField(ModuleElement):
 
         INPUT:
 
-        - ``pos`` -- (default: None) list of argument positions involved in the
+        - ``pos`` -- (default: ``None``) list of argument positions involved in the
           antisymmetrization (with the convention position=0 for the first
           argument); if none, the antisymmetrization is performed over all the
           arguments
@@ -2661,10 +2750,10 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
       :class:`~sage.geometry.manifolds.vectorfield_module.VectorFieldFreeModule`)
     - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank
       and `l` the covariant rank
-    - ``name`` -- (default: None) name given to the tensor field
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the tensor field;
+    - ``name`` -- (default: ``None``) name given to the tensor field
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the tensor field;
       if none is provided, the LaTeX symbol is set to ``name``
-    - ``sym`` -- (default: None) a symmetry or a list of symmetries among the
+    - ``sym`` -- (default: ``None``) a symmetry or a list of symmetries among the
       tensor arguments: each symmetry is described by a tuple containing
       the positions of the involved arguments, with the convention position=0
       for the first argument. For instance:
@@ -2673,7 +2762,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
       * sym=[(0,2),(1,3,4)] for a symmetry between the 1st and 3rd
         arguments and a symmetry between the 2nd, 4th and 5th arguments.
 
-    - ``antisym`` -- (default: None) antisymmetry or list of antisymmetries
+    - ``antisym`` -- (default: ``None``) antisymmetry or list of antisymmetries
       among the arguments, with the same convention as for ``sym``.
 
 
@@ -2951,7 +3040,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
         INPUT:
 
-        - ``del_restrictions`` -- (default: True) determines whether the
+        - ``del_restrictions`` -- (default: ``True``) determines whether the
           restrictions of ``self`` to subdomains are deleted.
 
         """
@@ -2971,7 +3060,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
         INPUT:
 
-        - ``basis`` -- (default: None) vector frame in which the components are
+        - ``basis`` -- (default: ``None``) vector frame in which the components are
           defined; if none is provided, the components are assumed to refer to
           the tensor field domain's default frame.
 
@@ -3012,7 +3101,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
         INPUT:
 
-        - ``basis`` -- (default: None) vector frame in which the components are
+        - ``basis`` -- (default: ``None``) vector frame in which the components are
           defined; if none is provided, the components are assumed to refer to
           the tensor field domain's default frame.
 
@@ -3048,10 +3137,10 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
         INPUT:
 
-        - ``basis`` -- (default: None) vector frame in which the components are
+        - ``basis`` -- (default: ``None``) vector frame in which the components are
           required; if none is provided, the components are assumed to refer to
           the tensor field domain's default frame
-        - ``from_basis`` -- (default: None) vector frame from which the
+        - ``from_basis`` -- (default: ``None``) vector frame from which the
           required components are computed, via the tensor change-of-basis
           formula, if they are not known already in the basis ``basis``
 
@@ -3303,7 +3392,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
           instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
-        - ``dest_map`` -- (default: None) destination map
+        - ``dest_map`` -- (default: ``None``) destination map
           `\Phi:\ U \rightarrow V`, where `V` is a subset of
           ``self._codomain``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)

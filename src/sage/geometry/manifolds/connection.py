@@ -108,8 +108,8 @@ class AffConnection(SageObject):
       (must be an instance of class
       :class:`~sage.geometry.manifolds.domain.ManifoldSubset`)
     - ``name`` -- name given to the affine connection
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the affine
-      connection; if None, it is set to ``name``.
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the affine
+      connection; if ``None``, it is set to ``name``.
 
     EXAMPLES:
 
@@ -372,7 +372,7 @@ class AffConnection(SageObject):
 
         INPUT:
 
-        - ``frame`` -- (default: None) vector frame relative to which the
+        - ``frame`` -- (default: ``None``) vector frame relative to which the
           connection coefficients are required; if none is provided, the
           domain's default frame is assumed
 
@@ -447,7 +447,7 @@ class AffConnection(SageObject):
 
         INPUT:
 
-        - ``frame`` -- (default: None) vector frame in which the connection
+        - ``frame`` -- (default: ``None``) vector frame in which the connection
           coefficients are defined; if none is provided, the domain's default
           frame is assumed.
 
@@ -485,7 +485,7 @@ class AffConnection(SageObject):
 
         INPUT:
 
-        - ``frame`` -- (default: None) vector frame in which the connection
+        - ``frame`` -- (default: ``None``) vector frame in which the connection
           coefficients are defined; if none is provided, the domain's default
           frame is assumed.
 
@@ -1359,7 +1359,7 @@ class AffConnection(SageObject):
         INPUT:
 
         - ``i``, ``j`` -- indices identifying the 1-form `\omega^i_{\ \, j}`
-        - ``frame`` -- (default: None) vector frame relative to which the
+        - ``frame`` -- (default: ``None``) vector frame relative to which the
           connection 1-forms are defined; if none is provided, the default
           frame of the connection's domain is assumed.
 
@@ -1477,7 +1477,7 @@ class AffConnection(SageObject):
         INPUT:
 
         - ``i`` -- index identifying the 2-form `\theta^i`
-        - ``frame`` -- (default: None) vector frame relative to which the
+        - ``frame`` -- (default: ``None``) vector frame relative to which the
           torsion 2-forms are defined; if none is provided, the default frame
           of the connection's domain is assumed.
 
@@ -1576,7 +1576,7 @@ class AffConnection(SageObject):
         INPUT:
 
         - ``i``, ``j`` -- indices identifying the 2-form `\Omega^i_{\ \, j}`
-        - ``frame`` -- (default: None) vector frame relative to which the
+        - ``frame`` -- (default: ``None``) vector frame relative to which the
           curvature 2-forms are defined; if none is provided, the default frame
           of the connection's domain is assumed.
 
@@ -1737,7 +1737,7 @@ class LeviCivitaConnection(AffConnection):
     - ``metric`` -- the metric `g` defining the Levi-Civita connection, as an
       instance of class :class:`~sage.geometry.manifolds.metric.Metric`
     - ``name`` -- name given to the connection
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
       connection
     - ``init_coef`` -- (default: True) determines whether the Chrsitoffel
       symbols are initialized (in the top charts on the domain, i.e.
@@ -1913,7 +1913,7 @@ class LeviCivitaConnection(AffConnection):
 
         INPUT:
 
-        - ``frame`` -- (default: None) vector frame relative to which the
+        - ``frame`` -- (default: ``None``) vector frame relative to which the
           connection coefficients are required; if none is provided, the
           domain's default frame is assumed
 
@@ -2104,9 +2104,9 @@ class LeviCivitaConnection(AffConnection):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Riemann tensor;
+        - ``name`` -- (default: ``None``) name given to the Riemann tensor;
           if none, it is set to "Riem(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Riemann tensor; if none, it is set to "\\mathrm{Riem}(g)", where "g"
           is the metric's name
 
@@ -2152,9 +2152,9 @@ class LeviCivitaConnection(AffConnection):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Ricci tensor;
+        - ``name`` -- (default: ``None``) name given to the Ricci tensor;
           if none, it is set to "Ric(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Ricci tensor; if none, it is set to "\\mathrm{Ric}(g)", where "g"
           is the metric's name
 
