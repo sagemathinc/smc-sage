@@ -348,6 +348,22 @@ class ExpressionNice(Expression):
     """
 
     def __init__(self, ex):
+        r""" 
+        Construct an instance of ExpressionNice using expression. 
+
+        TESTS:: 
+
+        sage: f = function('f', x)
+        sage: df = f.diff(x) 
+        sage: df 
+        D[0](f)(x)
+        sage: from sage.geometry.manifolds.utilities import ExpressionNice
+        sage: df_nice = ExpressionNice(df)
+        sage: df_nice 
+        d(f)/dx 
+
+        """
+        
         from sage.symbolic.ring import SR
         self._parent = SR
         Expression.__init__(self, SR, x=ex)
@@ -554,8 +570,6 @@ class ExpressionNice(Expression):
         list_derivs = []
         expression_tree(self, list_derivs)
 
-        from sage.misc.latex import latex
-
         for m in list_derivs:
 
             funcname = m[2]
@@ -613,6 +627,16 @@ def expression_tree(s, list_derivs, exponent=0):
     4. parameter set 
     5. operands 
     6. exponent (if found, else 0)  
+    
+    TESTS:: 
+
+    sage: f = function('f_x', x)
+    sage: df = f.diff(x)^2
+    sage: from sage.geometry.manifolds.utilities import expression_tree
+    sage: list_derivs = []
+    sage: expression_tree(df, list_derivs) 
+    sage: list_derivs 
+    [(D[0](f_x)(x), f_x, 'f_{x}', [0], [x], 2)]
     
     """
 
