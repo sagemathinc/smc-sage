@@ -3816,9 +3816,9 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         index_labels = None
         index_latex_labels = None
         if isinstance(frame, CoordFrame) and coordinate_labels:
-            if frame.chart() == chart:
-                index_labels = map(str, chart[:])
-                index_latex_labels = map(latex, chart[:])
+            ch = frame.chart()
+            index_labels = map(str, ch[:])
+            index_latex_labels = map(latex, ch[:])
         return FreeModuleTensor.display_comp(self, basis=frame,
                                   format_spec=chart, index_labels=index_labels,
                                   index_latex_labels=index_latex_labels,
