@@ -428,7 +428,7 @@ class ExpressionNice(Expression):
         for m in list_derivs:
 
             funcname = m[1]
-            diffargs = m[2]
+            diffargs = m[3]
             numargs = len(diffargs)
 
             if numargs > 1:
@@ -436,7 +436,7 @@ class ExpressionNice(Expression):
             else:
                 numargs = ""
 
-            variables = m[3]
+            variables = m[4]
 
             # dictionary to group multiple occurences of differentiation: d/dxdx -> d/dx^2 etc.
             occ = dict((i, str(variables[i]) + "^" + str(diffargs.count(i)) if(diffargs.count(i)>1) else str(variables[i])) for i in diffargs)
@@ -448,9 +448,9 @@ class ExpressionNice(Expression):
             s = self._parent._repr_element_(m[0]) 
 
             # if diff operator is raised to some power (m[4]), put brackets around 
-            if m[4]:
-                res = "(" + res + ")^" + str(m[4])
-                o = s + "^" + str(m[4])
+            if m[5]:
+                res = "(" + res + ")^" + str(m[5])
+                o = s + "^" + str(m[5])
             else: 
                 o = s 
 
@@ -527,6 +527,20 @@ class ExpressionNice(Expression):
             sage: latex(ExpressionNice(fun))
             \left(\frac{\partial\,f}{\partial y}\right)^{2}
 
+        A test using Lie derivative from SageManifolds: 
+            
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: h = M.scalar_field(function('H', x, y), name='h')
+            sage: dh = h.differential()
+            sage: dh.display()
+            dh = d(H)/dx dx + d(H)/dy dy
+            sage: u = M.vector_field(name='u')
+            sage: u[:] = [function('u_x', x,y), function('u_y', x,y)]
+            sage: lu_dh = dh.lie_der(u)
+            sage: latex(lu_dh.display())
+            \left( u_{x}\left(x, y\right) \frac{\partial^2\,H}{\partial x^2} + u_{y}\left(x, y\right) \frac{\partial^2\,H}{\partial x\partial y} + \frac{\partial\,H}{\partial x} \frac{\partial\,u_{x}}{\partial x} + \frac{\partial\,H}{\partial y} \frac{\partial\,u_{y}}{\partial x} \right) \mathrm{d} x + \left( u_{x}\left(x, y\right) \frac{\partial^2\,H}{\partial x\partial y} + u_{y}\left(x, y\right) \frac{\partial^2\,H}{\partial y^2} + \frac{\partial\,H}{\partial x} \frac{\partial\,u_{x}}{\partial y} + \frac{\partial\,H}{\partial y} \frac{\partial\,u_{y}}{\partial y} \right) \mathrm{d} y
+
         """
 
         d = self._parent._latex_element_(self)
@@ -540,10 +554,12 @@ class ExpressionNice(Expression):
         list_derivs = []
         expression_tree(self, list_derivs)
 
+        from sage.misc.latex import latex
+
         for m in list_derivs:
 
-            funcname = m[1]
-            diffargs = m[2]
+            funcname = m[2]
+            diffargs = m[3]
             numargs = len(diffargs)
 
             if numargs > 1:
@@ -551,12 +567,12 @@ class ExpressionNice(Expression):
             else:
                 numargs = ""
 
-            variables = m[3]
+            variables = m[4]
 
             # dictionary to group multiple occurences of differentiation: d/dxdx -> d/dx^2 etc. 
             occ = dict((i, str(variables[i]) + "^" + str(diffargs.count(i)) if(diffargs.count(i)>1) else str(variables[i])) for i in diffargs)
 
-            res = "\\frac{\partial" + numargs + "\," + str(funcname) + "}{\partial " + "\partial ".join([re.sub("\(.*?\)", " ", i) for i in occ.values()]) + "}"
+            res = "\\frac{\partial" + numargs + "\," + funcname + "}{\partial " + "\partial ".join([re.sub("\(.*?\)", " ", i) for i in occ.values()]) + "}"
 
             # representation of the operator 
             s = self._parent._repr_element_(m[0]) 
@@ -564,13 +580,14 @@ class ExpressionNice(Expression):
             s = s.replace("(","\left(").replace(")","\\right)")
 
             # if diff operator is raised to some power (m[4]), put brackets around 
-            if m[4]:
-                res = "\left(" + res + "\\right)^{" + str(m[4]) + "}"
-                o = s + "^{" + str(m[4]) + "}"
+            if m[5]:
+                res = "\left(" + res + "\\right)^{" + str(m[5]) + "}"
+                o = s + "^{" + str(m[5]) + "}"
             else: 
                 o = s 
 
-            print 
+            o = o.replace(str(m[1]), funcname)             
+
             d = d.replace(o, res)
 
         return d
@@ -592,20 +609,22 @@ def expression_tree(s, list_derivs, exponent=0):
 
     1. operator 
     2. function 
-    3. parameter set 
-    4. operands 
-    5. exponent (if found, else 0)  
+    3. LaTeX function name string 
+    4. parameter set 
+    5. operands 
+    6. exponent (if found, else 0)  
     
     """
 
     from sage.symbolic.operators import FDerivativeOperator
+    from sage.misc.latex import latex_variable_name
     import operator 
 
     op = s.operator()
     operands = s.operands()
 
     if op:
-        
+
         if op is operator.pow: 
             if isinstance(operands[0].operator(), FDerivativeOperator): 
                 exponent = operands[1]
@@ -614,8 +633,9 @@ def expression_tree(s, list_derivs, exponent=0):
 
             parameter_set = op.parameter_set()
             function = op.function()
-            
-            list_derivs.append((s, function, parameter_set, operands, exponent))
+            latex_function = latex_variable_name(str(function))
+           
+            list_derivs.append((s, function, latex_function, parameter_set, operands, exponent))
  
         for operand in operands:
             expression_tree(operand, list_derivs, exponent)
