@@ -3683,6 +3683,10 @@ class CoordChange(SageObject):
         sage: latex(ch)
         \left(\mathbb{R}^3,(r, {\theta}, {\phi})\right) \rightarrow
          \left(\mathbb{R}^3,(x, y, z)\right)
+        sage: ch.display()
+        x = r*cos(ph)*sin(th)
+        y = r*sin(ph)*sin(th)
+        z = r*cos(th)
         sage: type(ch)
         <class 'sage.geometry.manifolds.chart.CoordChange'>
 
@@ -3722,8 +3726,8 @@ class CoordChange(SageObject):
         sage: ch._jacobian_det  # Jacobian determinant
         r^2*sin(th)
 
-    Two successive change of coordinates can be composed by means of the operator \*,
-    which in the present context stands for `\circ`::
+    Two successive change of coordinates can be composed by means of the
+    operator \*, which in the present context stands for `\circ`::
 
         sage: c_cart2.<u,v,w> = M.chart()
         sage: ch2 = c_cart.coord_change(c_cart2, x+y, x-y, z-x-y)
@@ -3934,7 +3938,7 @@ class CoordChange(SageObject):
 
         EXAMPLES:
 
-        From Cartesian to spherical coordinates in the plane::
+        From spherical coordinates to Cartesian ones in the plane::
 
             sage: M = Manifold(2, 'R^2')
             sage: U = M.open_subset('U') # the complement of the half line {y=0, x>= 0}
@@ -4010,7 +4014,7 @@ class CoordChange(SageObject):
         - the change of coordinates X_1 --> X_3, where X_1 is the initial
           chart of ``other`` and X_3 is the final chart of ``self``
 
-        EXAMPLE:
+        EXAMPLE::
 
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
@@ -4043,3 +4047,51 @@ class CoordChange(SageObject):
         return CoordChange(self._chart1.restrict(dom1),
                            self._chart2.restrict(dom2),
                            *(self._transf.expr()))
+
+    def display(self):
+        r"""
+        Display of the coordinate transformation.
+
+        The output is either text-formatted (console mode) or LaTeX-formatted
+        (notebook mode).
+
+        EXAMPLE:
+
+        From spherical coordinates to Cartesian ones in the plane::
+
+            sage: M = Manifold(2, 'R^2')
+            sage: U = M.open_subset('U') # the complement of the half line {y=0, x>= 0}
+            sage: c_cart.<x,y> = U.chart()
+            sage: c_spher.<r,ph> = U.chart(r'r:(0,+oo) ph:(0,2*pi):\phi')
+            sage: spher_to_cart = c_spher.coord_change(c_cart, r*cos(ph), r*sin(ph))
+            sage: spher_to_cart.display()
+            x = r*cos(ph)
+            y = r*sin(ph)
+            sage: latex(spher_to_cart.display())
+            \left\{\begin{array}{lcl} x & = & r \cos\left({\phi}\right) \\
+             y & = & r \sin\left({\phi}\right) \end{array}\right.
+
+        """
+        from sage.misc.latex import latex
+        from sage.tensor.modules.format_utilities import FormattedExpansion
+        coords2 = self._chart2[:]
+        n2 = len(coords2)
+        expr = self._transf.expr()
+        rtxt = ""
+        if n2 == 1:
+            rlatex = r"\begin{array}{lcl}"
+        else:
+            rlatex = r"\left\{\begin{array}{lcl}"
+        for i in range(n2):
+            x2 = coords2[i]
+            x2f = expr[i]
+            rtxt += repr(x2) + " = " + repr(x2f) + "\n"
+            rlatex += latex(x2) + r" & = & " + latex(x2f) + r"\\"
+        rtxt = rtxt[:-1]  # remove the last new line
+        rlatex = rlatex[:-2] + r"\end{array}"
+        if n2 > 1:
+            rlatex += r"\right."
+        return FormattedExpansion(rtxt, rlatex)
+
+
+
