@@ -24,7 +24,6 @@ def get_remote_file(filename, verbose=True):
     """
     if verbose:
         print("Attempting to load remote file: " + filename)
-
     from sage.misc.temporary_file import tmp_filename
     temp_name = tmp_filename() + '.' + os.path.splitext(filename)[1][1:]
     # IMPORTANT -- urllib takes a long time to load,
