@@ -1130,7 +1130,7 @@ class AffConnection(SageObject):
 
         .. MATH::
 
-            R(\omega, u, v, w) = \left\langle \omega, \nabla_u \nabla_v w
+            R(\omega, w, u, v) = \left\langle \omega, \nabla_u \nabla_v w
                 - \nabla_v \nabla_u w - \nabla_{[u, v]} w \right\rangle
 
         for any 1-form  `\omega`  and any vector fields `u`, `v` and `w`.
@@ -1153,8 +1153,17 @@ class AffConnection(SageObject):
             tensor field of type (1,3) on the 3-dimensional manifold 'M'
             sage: r.parent()
             free module T^(1,3)(M) of type-(1,3) tensors fields on the 3-dimensional manifold 'M'
+
+        By construction, the Riemann tensor is antisymmetric with respect to
+        its last two arguments (denoted `u` and `v` in the definition above),
+        which are at positions 2 and 3 (the first argument being at position
+        0)::
+
             sage: r.symmetries()
             no symmetry;  antisymmetry: (2, 3)
+
+        The components::
+
             sage: r[:]
             [[[[0, 2*x, 0], [-2*x, 0, 0], [0, 0, 0]],
             [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
@@ -1197,8 +1206,7 @@ class AffConnection(SageObject):
 
         The same computation parallelized on 2 cores::
 
-            sage: set_nproc(2); print get_nproc()
-            2
+            sage: set_nproc(2)
             sage: nab = M.aff_connection('nabla', r'\nabla')
             sage: nab[0,0,0], nab[0,1,0], nab[1,0,1] = x, x-y, x*y
             sage: for i in M.irange():
@@ -1214,7 +1222,7 @@ class AffConnection(SageObject):
             (x^2*y - x*y^2) d/dx*dx*dx*dy + (-x^2*y + x*y^2) d/dx*dx*dy*dx + d/dx*dy*dx*dy - d/dx*dy*dy*dx - (x^2 - 1)*y d/dy*dx*dx*dy + (x^2 - 1)*y d/dy*dx*dy*dx + (-x^2*y + x*y^2) d/dy*dy*dx*dy + (x^2*y - x*y^2) d/dy*dy*dy*dx
             sage: r.display(eV)
             (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/du*du*du*dv + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/du*du*dv*du + (1/32*u^3 - 1/32*u*v^2 + 3/32*v^3 - 1/32*(3*u^2 - 4)*v - 1/8*u + 1/4) d/du*dv*du*dv + (-1/32*u^3 + 1/32*u*v^2 - 3/32*v^3 + 1/32*(3*u^2 - 4)*v + 1/8*u - 1/4) d/du*dv*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 5/32*v^3 - 1/32*(5*u^2 + 4)*v + 1/8*u - 1/4) d/dv*du*du*dv + (1/32*u^3 - 1/32*u*v^2 - 5/32*v^3 + 1/32*(5*u^2 + 4)*v - 1/8*u + 1/4) d/dv*du*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/dv*dv*du*dv + (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/dv*dv*dv*du
-            sage: set_nproc(1)
+            sage: set_nproc(1) # revert to a single core
 
         """
         if self._riemann is None:
@@ -1567,7 +1575,7 @@ class AffConnection(SageObject):
 
         .. MATH::
 
-            \Omega^i_{\ \, j}(u,v) = R(e^i, u, v, e_j)
+            \Omega^i_{\ \, j}(u,v) = R(e^i, e_j, u, v)
 
         where `R` is the connection's Riemann curvature tensor (cf.
         :meth:`riemann`), `(e^i)` is the coframe dual to `(e_i)` and `(u,v)` is a
@@ -2097,7 +2105,7 @@ class LeviCivitaConnection(AffConnection):
 
         .. MATH::
 
-            R(\omega, u, v, w) = \left\langle \omega, \nabla_u \nabla_v w
+            R(\omega, w, u, v) = \left\langle \omega, \nabla_u \nabla_v w
                 - \nabla_v \nabla_u w - \nabla_{[u, v]} w \right\rangle
 
         for any 1-form  `\omega`  and any vector fields `u`, `v` and `w`.
