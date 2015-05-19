@@ -39,7 +39,7 @@ from sage.rings.integer import Integer
 from sage.rings.infinity import Infinity
 from sage.misc.latex import latex
 from sage.geometry.manifolds.domain import ManifoldOpenSubset
-from sage.geometry.manifolds.utilities import simplify_chain
+from sage.geometry.manifolds.utilities import simplify_chain, ExpressionNice
 
 class Chart(UniqueRepresentation, SageObject):
     r"""
@@ -83,7 +83,7 @@ class Chart(UniqueRepresentation, SageObject):
       If no interval range and no LaTeX spelling is to be set for any
       coordinate, the argument ``coordinates`` can be omitted when the
       shortcut operator ``<,>`` is used via Sage preparser (see examples below)
-    - ``names`` -- (default: None) unused argument, except if
+    - ``names`` -- (default: ``None``) unused argument, except if
       ``coordinates`` is not provided; it must then be a tuple containing
       the coordinate symbols (this is guaranted if the shortcut operator
       ``<,>`` is used).
@@ -157,7 +157,7 @@ class Chart(UniqueRepresentation, SageObject):
 
     Coordinates are some Sage symbolic variables::
 
-        sage: print type(th)
+        sage: type(th)
         <type 'sage.symbolic.expression.Expression'>
         sage: latex(th)
         {\theta}
@@ -266,15 +266,21 @@ class Chart(UniqueRepresentation, SageObject):
     Each constructed chart has its zero function, mapping the coordinates to 0;
     this zero function is an instance of :class:`ZeroFunctionChart`::
 
-        sage: c_spher._zero_function
+        sage: c_spher.zero_function()
         0
-        sage: print type(c_spher._zero_function)
+        sage: c_spher.zero_function().display()
+        (r, th, ph) |--> 0
+        sage: type(c_spher.zero_function())
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
-        sage: c_cart._zero_function
+        sage: c_cart.zero_function()
         0
-        sage: c_cart._zero_function == c_spher._zero_function
+        sage: c_cart.zero_function().display()
+        (x, y, z) |--> 0
+
+    Of course, zero function defined on different charts are not equal::
+
+        sage: c_cart.zero_function() == c_spher.zero_function()
         False
-        sage: # the result is False for the zero functions are not defined on the same chart
 
     Chart grids can be drawn in 2D or 3D graphics thanks to the method
     :meth:`plot`.
@@ -367,11 +373,6 @@ class Chart(UniqueRepresentation, SageObject):
                 sd._def_chart = self
         # The chart is added to the list of the domain's covering charts:
         self._domain._covering_charts.append(self)
-        # Construction of the coordinate frame associated to the chart:
-        self._frame = CoordFrame(self)
-        self._coframe = self._frame._coframe
-        # The null function of the coordinates:
-        self._zero_function = ZeroFunctionChart(self)
         # Initialization of the set of charts that are restrictions of the
         # current chart to subsets of the chart domain:
         self._subcharts = set([self])
@@ -382,6 +383,17 @@ class Chart(UniqueRepresentation, SageObject):
         self._dom_restrict = {} # dict. of the restrictions of self to
                                 # subsets of self._domain, with the
                                 # subsets as keys
+        # The null function of the coordinates:
+        self._zero_function = ZeroFunctionChart(self)
+        # Construction of the coordinate frame associated to the chart:
+        self._frame = CoordFrame(self)
+        self._coframe = self._frame._coframe
+        # Expression in self of the zero scalar fields of open sets containing
+        # the domain of self:
+        for dom in self._domain._supersets:
+            if hasattr(dom, '_zero_scalar_field'):
+                # dom is an open set
+                dom._zero_scalar_field._express[self] = self._zero_function
 
     def _repr_(self):
         r"""
@@ -830,7 +842,7 @@ class Chart(UniqueRepresentation, SageObject):
         - ``subset`` -- open subset `V` of the chart domain `U` (must
           be an instance of
           :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
-        - ``restrictions`` -- (default: None) list of coordinate restrictions
+        - ``restrictions`` -- (default: ``None``) list of coordinate restrictions
           defining the subset `V`.
           A restriction can be any symbolic equality or
           inequality involving the coordinates, such as x>y or x^2+y^2 != 0.
@@ -905,8 +917,9 @@ class Chart(UniqueRepresentation, SageObject):
             # The subchart frame is not a "top frame" in the supersets
             # (including self._domain):
             for dom in self._domain._supersets:
-                dom._top_frames.remove(res._frame) # since it was added by the
-                                                   # Chart constructor above
+                if res._frame in dom._top_frames:
+                    # it was added by the Chart constructor above
+                    dom._top_frames.remove(res._frame)
             # Update of domain restrictions:
             self._dom_restrict[subset] = res
         return self._dom_restrict[subset]
@@ -1008,9 +1021,9 @@ class Chart(UniqueRepresentation, SageObject):
         - ``transformations`` -- tuple (Y_1,...,Y_2), where Y_i is a symbolic
           expression expressing the coordinate `y^i` in terms of the
           coordinates `(x^1,\ldots,x^n)`
-        - ``intersection_name`` -- (default: None) name to be given to the
+        - ``intersection_name`` -- (default: ``None``) name to be given to the
           subset `U\cap V` if the latter differs from `U` or `V`
-        - ``restrictions1`` -- (default: None) list of conditions on the
+        - ``restrictions1`` -- (default: ``None``) list of conditions on the
           coordinates of the current chart that define `U\cap V` if the
           latter differs from `U`. ``restrictions1`` must be a list of
           of symbolic equalities or inequalities involving the
@@ -1023,7 +1036,7 @@ class Chart(UniqueRepresentation, SageObject):
           If the list ``restrictions1`` contains only one item, this item can
           be passed as such, i.e. writing x>y instead of the single element
           list [x>y].
-        - ``restrictions2`` -- (default: None) list of conditions on the
+        - ``restrictions2`` -- (default: ``None``) list of conditions on the
           coordinates of the other chart that define `U\cap V` if the latter
           differs from `V` (see ``restrictions1`` for the syntax)
 
@@ -1179,6 +1192,35 @@ class Chart(UniqueRepresentation, SageObject):
         """
         return FunctionChart(self, expression)
 
+    def zero_function(self):
+        r"""
+        Return the zero function defined on the chart.
+
+        OUTPUT:
+
+        - instance of
+          :class:`~sage.geometry.manifolds.chart.ZeroFunctionChart`
+          representing the zero function of the chart coordinates.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: X.zero_function()
+            0
+            sage: X.zero_function().display()
+            (x, y) |--> 0
+            sage: type(X.zero_function())
+            <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
+
+        The result is cached::
+
+            sage: X.zero_function() is X.zero_function()
+            True
+
+        """
+        return self._zero_function
+
     def multifunction(self, *expressions):
         r"""
         Return a `\RR^m`-valued function of the coordinates.
@@ -1225,15 +1267,16 @@ class Chart(UniqueRepresentation, SageObject):
         """
         return MultiFunctionChart(self, *expressions)
 
-    def plot(self, ambient_chart, fixed_coords=None, ranges=None, max_value=8,
-             nb_values=None, steps=None, ambient_coords=None, mapping=None,
-             parameters=None, color='red',  style='-', thickness=1,
+    def plot(self, chart=None, ambient_coords=None, mapping=None,
+             fixed_coords=None, ranges=None, max_value=8, nb_values=None,
+             steps=None, parameters=None, color='red',  style='-', thickness=1,
              plot_points=75, label_axes=True):
         r"""
-        Plot the chart (as a "grid") in terms of another one.
+        Plot the current chart (``self``) as a "grid" in a Cartesian graph
+        based on the coordinates of some ambient chart.
 
-        The "grid" is formed by lines along which a coordinate varies, the
-        other coordinates being kept fixed; it is drawn in terms of
+        The "grid" is formed by curves along which a coordinate of ``self``
+        varies, the other coordinates being kept fixed; it is drawn in terms of
         two (2D graphics) or three (3D graphics) coordinates of another chart,
         called hereafter the *ambient chart*.
 
@@ -1245,14 +1288,25 @@ class Chart(UniqueRepresentation, SageObject):
 
         INPUT:
 
-        - ``ambient_chart`` -- the ambient chart (see above)
-        - ``fixed_coords`` -- (default: None) dictionary with keys the
+        - ``chart`` -- (default: ``None``) the ambient chart (see above); if
+          ``None``, the ambient chart is set to ``self``
+        - ``ambient_coords`` -- (default: ``None``) tuple containing the 2 or 3
+          coordinates of the ambient chart in terms of which the plot is
+          performed; if ``None``, all the coordinates of the ambient chart are
+          considered
+        - ``mapping`` -- (default: ``None``) differentiable mapping (instance
+          of :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
+          providing the link between ``self`` and the ambient chart (cf.
+          above); if ``None``, both charts are supposed to be defined on the same
+          manifold and related by some transition map (see
+          :meth:`transition_map`)
+        - ``fixed_coords`` -- (default: ``None``) dictionary with keys the
           coordinates of ``self`` that are not drawn and with values the fixed
-          value of these coordinates; if None, all the coordinates of ``self``
+          value of these coordinates; if ``None``, all the coordinates of ``self``
           are drawn
-        - ``ranges`` -- (default: None) dictionary with keys the coordinates
+        - ``ranges`` -- (default: ``None``) dictionary with keys the coordinates
           to be drawn and values tuples ``(x_min,x_max)`` specifying the
-          coordinate range for the plot; if None, the entire coordinate range
+          coordinate range for the plot; if ``None``, the entire coordinate range
           declared during the chart construction is considered (with -Infinity
           replaced by ``-max_value`` and +Infinity by ``max_value``)
         - ``max_value`` -- (default: 8) numerical value substituted to
@@ -1261,29 +1315,19 @@ class Chart(UniqueRepresentation, SageObject):
           range (i.e. for which no specific plot range has been set in
           ``ranges``); similarly ``-max_value`` is the numerical valued
           substituted for -Infinity
-        - ``nb_values`` -- (default: None) either an integer or a dictionary
+        - ``nb_values`` -- (default: ``None``) either an integer or a dictionary
           with keys the coordinates to be drawn and values the number of
           constant values of the coordinate to be considered; if ``nb_values``
           is a single integer, it represents the number of constant values for all
-          coordinates; if ``nb_values`` is None, it is set to 9 for a 2D plot
-          and to 5 for a 3D plot
-        - ``steps`` -- (default: None) dictionary with keys the coordinates
+          coordinates; if ``nb_values`` is ``None``, it is set to 9 for a 2D
+          plot and to 5 for a 3D plot
+        - ``steps`` -- (default: ``None``) dictionary with keys the coordinates
           to be drawn and values the step between each constant value of
-          the coordinate; if None, the step is computed from the coordinate
+          the coordinate; if ``None``, the step is computed from the coordinate
           range (specified in ``ranges``) and ``nb_values``. On the contrary
           if the step is provided for some coordinate, the corresponding
           number of constant values is deduced from it and the coordinate range.
-        - ``ambient_coords`` -- (default: None) tuple containing the 2 or 3
-          coordinates of the ambient chart in terms of which the plot is
-          performed; if None, all the coordinates of the ambient chart are
-          considered
-        - ``mapping`` -- (default: None) differentiable mapping (instance
-          of :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
-          providing the link between ``self`` and the ambient chart (cf.
-          above); if None, both charts are supposed to be defined on the same
-          manifold and related by some transition map (see
-          :meth:`transition_map`)
-        - ``parameters`` -- (default: None) dictionary giving the numerical
+        - ``parameters`` -- (default: ``None``) dictionary giving the numerical
           values of the parameters that may appear in the relation between
           the two coordinate systems
         - ``color`` -- (default: 'red') either a single color or a dictionary
@@ -1306,7 +1350,7 @@ class Chart(UniqueRepresentation, SageObject):
           representing the number of points to plot the lines along which the
           coordinate varies, the other being kept constant; if ``plot_points``
           is a single integer, it is used for all coordinate lines
-        - ``label_axes`` -- (default: True) boolean determining whether the
+        - ``label_axes`` -- (default: ``True``) boolean determining whether the
           labels of the ambient coordinate axes shall be added to the graph;
           can be set to False if the graph is 3D and must be superposed with
           another graph.
@@ -1346,7 +1390,7 @@ class Chart(UniqueRepresentation, SageObject):
 
         A chart can be plot in terms of itself, resulting in a rectangular grid::
 
-            sage: g = c_cart.plot(c_cart)
+            sage: g = c_cart.plot()  # equivalent to c_cart.plot(c_cart)
             sage: show(g) # a rectangular grid
 
         An example with the ambient chart given by the coordinate expression of
@@ -1408,7 +1452,7 @@ class Chart(UniqueRepresentation, SageObject):
         A 3-dimensional chart plotted in terms of itself results in a 3D
         rectangular grid::
 
-            sage: g = c_cart.plot(c_cart)
+            sage: g = c_cart.plot() # equivalent to c_cart.plot(c_cart)
             sage: show(g)  # a 3D mesh cube
 
         A 4-dimensional chart plotted in terms of itself (the plot is
@@ -1417,9 +1461,9 @@ class Chart(UniqueRepresentation, SageObject):
 
             sage: M = Manifold(4, 'M')
             sage: X.<t,x,y,z> = M.chart()
-            sage: g = X.plot(X, ambient_coords=(t,x,y))  # the coordinate z is not depicted
+            sage: g = X.plot(ambient_coords=(t,x,y))  # the coordinate z is not depicted
             sage: show(g)  # a 3D mesh cube
-            sage: g = X.plot(X, ambient_coords=(t,y)) # the coordinates x and z are not depicted
+            sage: g = X.plot(ambient_coords=(t,y)) # the coordinates x and z are not depicted
             sage: show(g)  # a 2D mesh square
 
         """
@@ -1428,63 +1472,63 @@ class Chart(UniqueRepresentation, SageObject):
         from sage.plot.line import line
         from diffmapping import DiffMapping
         from utilities import set_axes_labels
-        if not isinstance(ambient_chart, Chart):
-            raise TypeError("The first argument must be a chart.")
+        if chart is None:
+            chart = self
+        elif not isinstance(chart, Chart):
+            raise TypeError("the argument 'chart' must be a coordinate chart")
         #
-        # 1/ Determination of the relation between self and ambient_chart
+        # 1/ Determination of the relation between self and chart
         #    ------------------------------------------------------------
         nc = self._manifold._dim
-        if ambient_chart == self:
+        if chart is self:
             transf = self.multifunction(*(self._xx))
             if nc > 3:
                 if ambient_coords is None:
-                    raise TypeError("The argument 'ambient_coords' must be " +
-                                    "provided.")
+                    raise TypeError("the argument 'ambient_coords' must be " +
+                                    "provided")
                 if len(ambient_coords) > 3:
-                    raise ValueError("Too many ambient coordinates.")
+                    raise ValueError("too many ambient coordinates")
                 fixed_coords = {}
                 for coord in self._xx:
                     if coord not in ambient_coords:
                         fixed_coords[coord] = 0
         else:
             transf = None # to be the MultiFunctionChart relating self to
-                          # ambient_chart
+                          # the ambient chart
             if mapping is None:
-                if not self._domain.is_subset(ambient_chart._domain):
-                    raise TypeError("The domain of " + str(self) +
-                                    " is not included in that of " +
-                                    str(ambient_chart))
-                coord_changes = ambient_chart._domain._coord_changes
+                if not self._domain.is_subset(chart._domain):
+                    raise TypeError("the domain of {} is not ".format(self) +
+                                    "included in that of {}".format(chart))
+                coord_changes = chart._domain._coord_changes
                 for chart_pair in coord_changes:
-                    if chart_pair == (self, ambient_chart):
+                    if chart_pair == (self, chart):
                         transf = coord_changes[chart_pair]._transf
                         break
                 else:
                     # Search for a subchart
                     for chart_pair in coord_changes:
-                        for schart in ambient_chart._subcharts:
+                        for schart in chart._subcharts:
                             if chart_pair == (self, schart):
                                 transf = coord_changes[chart_pair]._transf
             else:
                 if not isinstance(mapping, DiffMapping):
-                    raise TypeError("The argument 'mapping' must be a " +
-                                    "differentiable mapping.")
+                    raise TypeError("the argument 'mapping' must be a " +
+                                    "differentiable mapping")
                 if not self._domain.is_subset(mapping._domain):
-                    raise TypeError("The domain of " + str(self) +
-                                    " is not included in that of " +
-                                    str(mapping))
-                if not ambient_chart._domain.is_subset(mapping._codomain):
-                    raise TypeError("The domain of " + str(ambient_chart) +
-                                    " is not included in the codomain of " +
-                                    str(mapping))
+                    raise TypeError("the domain of {} is not ".format(self) +
+                                    "included in that of {}".format(mapping))
+                if not chart._domain.is_subset(mapping._codomain):
+                    raise TypeError("the domain of {} is not ".format(chart) +
+                                    "included in the codomain of {}".format(
+                                                                      mapping))
                 try:
                     transf = mapping.multi_function_chart(chart1=self,
-                                                          chart2=ambient_chart)
+                                                          chart2=chart)
                 except ValueError:
                     pass
             if transf is None:
-                raise ValueError("No relation has been found between " +
-                                 str(self) + " and " + str(ambient_chart))
+                raise ValueError("no relation has been found between " +
+                                 "{} and {}".format(self, chart))
         #
         # 2/ Treatment of input parameters
         #    -----------------------------
@@ -1498,12 +1542,12 @@ class Chart(UniqueRepresentation, SageObject):
                     coords.append(coord)
             coords = tuple(coords)
         if ambient_coords is None:
-            ambient_coords = ambient_chart._xx
+            ambient_coords = chart._xx
         elif not isinstance(ambient_coords, tuple):
             ambient_coords = tuple(ambient_coords)
         nca = len(ambient_coords)
         if nca != 2 and nca !=3:
-            raise TypeError("Bad number of ambient coordinates: " + str(nca))
+            raise TypeError("bad number of ambient coordinates: {}".format(nca))
         if ranges is None:
             ranges = {}
         ranges0 = {}
@@ -1572,10 +1616,10 @@ class Chart(UniqueRepresentation, SageObject):
         xx0 = [0] * nc
         if fixed_coords is not None:
             if len(fixed_coords) != nc - len(coords):
-                raise TypeError("Bad number of fixed coordinates.")
+                raise ValueError("Bad number of fixed coordinates.")
             for fc, val in fixed_coords.iteritems():
                 xx0[self._xx.index(fc)] = val
-        ind_a = [ambient_chart._xx.index(ac) for ac in ambient_coords]
+        ind_a = [chart._xx.index(ac) for ac in ambient_coords]
         resu = Graphics()
         for coord in coords:
             color_c, style_c = color[coord], style[coord]
@@ -1646,7 +1690,12 @@ class Chart(UniqueRepresentation, SageObject):
         if nca==2:  # 2D graphic
             resu.set_aspect_ratio(1)
             if label_axes:
-                resu.axes_labels([r'$'+latex(ac)+r'$' for ac in ambient_coords])
+                # We update the dictionary _extra_kwds (options to be passed
+                # to show()), instead of using the method
+                # Graphics.axes_labels() since the latter is not robust w.r.t.
+                # graph addition
+                resu._extra_kwds['axes_labels'] = [r'$'+latex(ac)+r'$'
+                                                   for ac in ambient_coords]
         else: # 3D graphic
             resu.aspect_ratio(1)
             if label_axes:
@@ -1713,14 +1762,12 @@ class FunctionChart(SageObject):
         sage: f = c_xy.function(x^2+3*y+1)
         sage: type(f)
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
-        sage: f._chart
-        chart (M, (x, y))
         sage: f.display()
         (x, y) |--> x^2 + 3*y + 1
         sage: f(x,y)
         x^2 + 3*y + 1
 
-    The symbolic expression is also returned when asking the direct display of
+    The symbolic expression is returned when asking the direct display of
     the function::
 
         sage: f
@@ -1769,7 +1816,91 @@ class FunctionChart(SageObject):
         sage: f == h
         True
 
+    .. RUBRIC:: Differences between ``FunctionChart`` and callable symbolic
+      expressions
+
+    Callable symbolic expressions are defined directly from symbolic
+    expressions of the coordinates::
+
+        sage: f0(x,y) = x^2 + 3*y + 1
+        sage: type(f0)
+        <type 'sage.symbolic.expression.Expression'>
+        sage: f0
+        (x, y) |--> x^2 + 3*y + 1
+        sage: f0(x,y)
+        x^2 + 3*y + 1
+
+    To get an output similar to that of ``f0`` for the chart function ``f``,
+    we must use the method :meth:`display`::
+
+        sage: f
+        x^2 + 3*y + 1
+        sage: f.display()
+        (x, y) |--> x^2 + 3*y + 1
+        sage: f(x,y)
+        x^2 + 3*y + 1
+
+    More importantly, instances of :class:`FunctionChart` differ from
+    callable symbolic expression by the automatic simplifications in all
+    operations. For instance, adding the two callable symbolic expressions::
+
+        sage: f0(x,y,z) = cos(x)^2 ; g0(x,y,z) = sin(x)^2
+
+    results in::
+
+        sage: f0 + g0
+        (x, y, z) |--> cos(x)^2 + sin(x)^2
+
+    To get 1,  one has to call
+    :meth:`~sage.symbolic.expression.Expression.simplify_trig`::
+
+        sage: (f0 + g0).simplify_trig()
+        (x, y, z) |--> 1
+
+    On the contrary, the sum of the corresponding :class:`FunctionChart`
+    instances is automatically simplified (see
+    :func:`~sage.geometry.manifolds.utilities.simplify_chain` for details)::
+
+        sage: f = c_xy.function(cos(x)^2) ; g = c_xy.function(sin(x)^2)
+        sage: f + g
+        1
+
+    Another difference regards the display of partial derivatives: for callable
+    symbolic functions, it relies on Pynac notation ``D[0]``, ``D[1]``, etc.::
+
+        sage: g = function('g', x, y)
+        sage: f0(x,y) = diff(g, x) + diff(g, y)
+        sage: f0
+        (x, y) |--> D[0](g)(x, y) + D[1](g)(x, y)
+
+    while for chart functions, the display is more "textbook" like::
+
+        sage: f = c_xy.function(diff(g, x) + diff(g, y))
+        sage: f
+        d(g)/dx + d(g)/dy
+
+    The difference is even more dramatic on LaTeX outputs::
+
+        sage: latex(f0)
+        \left( x, y \right) \ {\mapsto} \ D[0]\left(g\right)\left(x, y\right) + D[1]\left(g\right)\left(x, y\right)
+        sage: latex(f)
+        \frac{\partial\,g}{\partial x} + \frac{\partial\,g}{\partial y}
+
+    One can switch to Pynac notation via the command
+    :func:`~sage.geometry.manifolds.utilities.nice_derivatives`::
+
+        sage: nice_derivatives(False)
+        sage: latex(f)
+        D[0]\left(g\right)\left(x, y\right) + D[1]\left(g\right)\left(x, y\right)
+        sage: nice_derivatives(True)
+        sage: latex(f)
+        \frac{\partial\,g}{\partial x} + \frac{\partial\,g}{\partial y}
+
     """
+
+    nice_output = True # static flag for textbook-like output instead of the
+                       # Pynac output for derivatives
+
     def __init__(self, chart, expression):
         from sage.symbolic.ring import SR
         self._chart = chart
@@ -1780,22 +1911,25 @@ class FunctionChart(SageObject):
 
     def _repr_(self):
         r"""
-        Special Sage function for the string representation of the object.
+        String representation of the object.
         """
-        return str(self._express)
+        if FunctionChart.nice_output:
+            return str(ExpressionNice(self._express))
+        else:
+            return str(self._express)
 
     def _latex_(self):
         r"""
-        Special Sage function for the LaTeX representation of the object.
+        LaTeX representation of the object.
         """
-        return latex(self._express)
+        if FunctionChart.nice_output:
+            return latex(ExpressionNice(self._express))
+        else:
+            return latex(self._express)
 
     def expr(self):
         r"""
         Return the expression of the image of the function.
-
-        This method actually provides the access to the attribute
-        :attr:`express` that stores the coordinate expression of the function.
 
         OUTPUT:
 
@@ -1812,7 +1946,7 @@ class FunctionChart(SageObject):
             x^2 + 3*y + 1
             sage: f.expr()
             x^2 + 3*y + 1
-            sage: print type(f.expr())
+            sage: type(f.expr())
             <type 'sage.symbolic.expression.Expression'>
             sage: f.expr() is f._express
             True
@@ -1820,7 +1954,8 @@ class FunctionChart(SageObject):
         The method :meth:`expr` is useful for accessing to all the
         symbolic expression functionalities in Sage; for instance::
 
-            sage: a = var('a')
+            sage: var('a')
+            a
             sage: f = c_xy.function(a*x*y)
             sage: f.expr()
             a*x*y
@@ -1916,7 +2051,7 @@ class FunctionChart(SageObject):
             sage: c_xy.<x,y> = M.chart()
             sage: f = c_xy.function(x^2+3*y+1)
             sage: g = f.copy()
-            sage: print type(g)
+            sage: type(g)
             <class 'sage.geometry.manifolds.chart.FunctionChart'>
             sage: g
             x^2 + 3*y + 1
@@ -1992,7 +2127,7 @@ class FunctionChart(SageObject):
         The partial derivatives are instances of the class
         :class:`FunctionChart`::
 
-            sage: print type(f.diff(x))
+            sage: type(f.diff(x))
             <class 'sage.geometry.manifolds.chart.FunctionChart'>
 
         An index can be used instead of the coordinate symbol::
@@ -2400,8 +2535,8 @@ class FunctionChart(SageObject):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the scalar field
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the scalar
+        - ``name`` -- (default: ``None``) name given to the scalar field
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the scalar
           field; if none is provided, the LaTeX symbol is set to ``name``
 
         OUTPUT:
@@ -2425,10 +2560,380 @@ class FunctionChart(SageObject):
             True
 
         """
-        result = self._chart._domain.scalar_field_algebra().element_class(
-                         self._chart._domain, name=name, latex_name=latex_name)
-        result._express = {self._chart: self}
-        return result
+        return self._chart._domain.scalar_field_algebra().element_class(
+                     self._chart._domain, coord_expression={self._chart: self},
+                     name=name, latex_name=latex_name)
+
+    def exp(self):
+        r"""
+        Exponential of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x+y)
+            sage: f.exp()
+            e^(x + y)
+            sage: exp(f) # equivalent to f.exp()
+            e^(x + y)
+            sage: exp(f).display()
+            (x, y) |--> e^(x + y)
+            sage: exp(X.zero_function())
+            1
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.exp()))
+
+    def log(self, base=None):
+        r"""
+        Logarithm of the function.
+
+        INPUT:
+
+        - ``base`` -- (default: ``None``) base of the logarithm; if None, the
+          natural logarithm (i.e. logarithm to base e) is returned
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x+y)
+            sage: f.log()
+            log(x + y)
+            sage: log(f) # equivalent to f.log()
+            log(x + y)
+            sage: log(f).display()
+            (x, y) |--> log(x + y)
+            sage: f.log(2)
+            log(x + y)/log(2)
+            sage: log(f, 2)
+            log(x + y)/log(2)
+
+        """
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.log(base)))
+
+    def __pow__(self, exponent):
+        r"""
+        Power of the function.
+
+        INPUT:
+
+        - ``exponent`` -- the exponent
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x+y)
+            sage: f.__pow__(3)
+            x^3 + 3*x^2*y + 3*x*y^2 + y^3
+            sage: f^3  # equivalent to f.__pow__(3)
+            x^3 + 3*x^2*y + 3*x*y^2 + y^3
+            sage: f.__pow__(3).display()
+            (x, y) |--> x^3 + 3*x^2*y + 3*x*y^2 + y^3
+            sage: pow(f,3).display()
+            (x, y) |--> x^3 + 3*x^2*y + 3*x*y^2 + y^3
+            sage: (f^3).display()
+            (x, y) |--> x^3 + 3*x^2*y + 3*x*y^2 + y^3
+            sage: pow(X.zero_function(), 3).display()
+            (x, y) |--> 0
+
+        """
+        return FunctionChart(self._chart,
+                             simplify_chain(pow(self._express, exponent)))
+
+    def sqrt(self):
+        r"""
+        Square root of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x+y)
+            sage: f.sqrt()
+            sqrt(x + y)
+            sage: sqrt(f)  # equivalent to f.sqrt()
+            sqrt(x + y)
+            sage: sqrt(f).display()
+            (x, y) |--> sqrt(x + y)
+            sage: sqrt(X.zero_function()).display()
+            (x, y) |--> 0
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.sqrt()))
+
+    def cos(self):
+        r"""
+        Cosine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.cos()
+            cos(x*y)
+            sage: cos(f)  # equivalent to f.cos()
+            cos(x*y)
+            sage: cos(f).display()
+            (x, y) |--> cos(x*y)
+            sage: cos(X.zero_function()).display()
+            (x, y) |--> 1
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.cos()))
+
+    def sin(self):
+        r"""
+        Sine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.sin()
+            sin(x*y)
+            sage: sin(f)  # equivalent to f.sin()
+            sin(x*y)
+            sage: sin(f).display()
+            (x, y) |--> sin(x*y)
+            sage: sin(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.sin()))
+
+    def tan(self):
+        r"""
+        Tangent of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.tan()
+            sin(x*y)/cos(x*y)
+            sage: tan(f)  # equivalent to f.tan()
+            sin(x*y)/cos(x*y)
+            sage: tan(f).display()
+            (x, y) |--> sin(x*y)/cos(x*y)
+            sage: tan(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.tan()))
+
+    def arccos(self):
+        r"""
+        Arc cosine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.arccos()
+            arccos(x*y)
+            sage: arccos(f)  # equivalent to f.arccos()
+            arccos(x*y)
+            sage: acos(f)  # equivalent to f.arccos()
+            arccos(x*y)
+            sage: arccos(f).display()
+            (x, y) |--> arccos(x*y)
+            sage: arccos(X.zero_function()).display()
+            (x, y) |--> 1/2*pi
+
+        """
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.arccos()))
+
+    def arcsin(self):
+        r"""
+        Arc sine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.arcsin()
+            arcsin(x*y)
+            sage: arcsin(f)  # equivalent to f.arcsin()
+            arcsin(x*y)
+            sage: asin(f)  # equivalent to f.arcsin()
+            arcsin(x*y)
+            sage: arcsin(f).display()
+            (x, y) |--> arcsin(x*y)
+            sage: arcsin(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.arcsin()))
+
+    def arctan(self):
+        r"""
+        Arc tangent of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.arctan()
+            arctan(x*y)
+            sage: arctan(f)  # equivalent to f.arctan()
+            arctan(x*y)
+            sage: atan(f)  # equivalent to f.arctan()
+            arctan(x*y)
+            sage: arctan(f).display()
+            (x, y) |--> arctan(x*y)
+            sage: arctan(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.arctan()))
+
+    def cosh(self):
+        r"""
+        Hyperbolic cosine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.cosh()
+            cosh(x*y)
+            sage: cosh(f)  # equivalent to f.cosh()
+            cosh(x*y)
+            sage: cosh(f).display()
+            (x, y) |--> cosh(x*y)
+            sage: cosh(X.zero_function()).display()
+            (x, y) |--> 1
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.cosh()))
+
+    def sinh(self):
+        r"""
+        Hyperbolic sine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.sinh()
+            sinh(x*y)
+            sage: sinh(f)  # equivalent to f.sinh()
+            sinh(x*y)
+            sage: sinh(f).display()
+            (x, y) |--> sinh(x*y)
+            sage: sinh(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.sinh()))
+
+    def tanh(self):
+        r"""
+        Hyperbolic tangent of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.tanh()
+            sinh(x*y)/cosh(x*y)
+            sage: tanh(f)  # equivalent to f.tanh()
+            sinh(x*y)/cosh(x*y)
+            sage: tanh(f).display()
+            (x, y) |--> sinh(x*y)/cosh(x*y)
+            sage: tanh(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart, simplify_chain(self._express.tanh()))
+
+    def arccosh(self):
+        r"""
+        Inverse hyperbolic cosine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.arccosh()
+            arccosh(x*y)
+            sage: arccosh(f)  # equivalent to f.arccosh()
+            arccosh(x*y)
+            sage: acosh(f)  # equivalent to f.arccosh()
+            arccosh(x*y)
+            sage: arccosh(f).display()
+            (x, y) |--> arccosh(x*y)
+            sage: arccosh(X.function(1)) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.arccosh()))
+
+    def arcsinh(self):
+        r"""
+        Inverse hyperbolic sine of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.arcsinh()
+            arcsinh(x*y)
+            sage: arcsinh(f)  # equivalent to f.arcsinh()
+            arcsinh(x*y)
+            sage: asinh(f)  # equivalent to f.arcsinh()
+            arcsinh(x*y)
+            sage: arcsinh(f).display()
+            (x, y) |--> arcsinh(x*y)
+            sage: arcsinh(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.arcsinh()))
+
+    def arctanh(self):
+        r"""
+        Inverse hyperbolic tangent of the function.
+
+        EXAMPLES::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x*y)
+            sage: f.arctanh()
+            arctanh(x*y)
+            sage: arctanh(f)  # equivalent to f.arctanh()
+            arctanh(x*y)
+            sage: atanh(f)  # equivalent to f.arctanh()
+            arctanh(x*y)
+            sage: arctanh(f).display()
+            (x, y) |--> arctanh(x*y)
+            sage: arctanh(X.zero_function()) == X.zero_function()
+            True
+
+        """
+        return FunctionChart(self._chart,
+                             simplify_chain(self._express.arctanh()))
 
 
 #*****************************************************************************
@@ -2475,26 +2980,26 @@ class ZeroFunctionChart(FunctionChart):
 
     Each chart is equipped with its zero function::
 
-        sage: c_xy._zero_function
+        sage: c_xy.zero_function()
         0
-        sage: print type(c_xy._zero_function)
+        sage: type(c_xy.zero_function())
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
-        sage: f == c_xy._zero_function
+        sage: f == c_xy.zero_function()
         True
 
     Arithmetics between instances of :class:`ZeroFunctionChart`::
 
         sage: g = ZeroFunctionChart(c_xy)
-        sage: s = f+g ; print type(s) ; s
+        sage: s = f+g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = f-g ; print type(s) ; s
+        sage: s = f-g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = f*g ; print type(s) ; s
+        sage: s = f*g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = f/g ; print type(s) ; s
+        sage: s = f/g ; type(s) ; s
         Traceback (most recent call last):
         ...
         ZeroDivisionError: Division of a ZeroFunctionChart by zero.
@@ -2502,53 +3007,53 @@ class ZeroFunctionChart(FunctionChart):
     Arithmetics with a nonzero instance of :class:`FunctionChart`::
 
         sage: g = c_xy.function(x+y)
-        sage: s = f+g ; print type(s) ; s
+        sage: s = f+g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         x + y
-        sage: s = g+f ; print type(s) ; s
+        sage: s = g+f ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         x + y
-        sage: s = f-g ; print type(s) ; s
+        sage: s = f-g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         -x - y
-        sage: s = g-f ; print type(s) ; s
+        sage: s = g-f ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         x + y
-        sage: s = f*g ; print type(s) ; s
+        sage: s = f*g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = g*f ; print type(s) ; s
+        sage: s = g*f ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = f/g ; print type(s) ; s
+        sage: s = f/g ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = g/f ; print type(s) ; s
+        sage: s = g/f ; type(s) ; s
         Traceback (most recent call last):
         ...
         ZeroDivisionError: Division of a FunctionChart by zero.
 
     Arithmetics with a symbolic expression::
 
-        sage: s = f+x ; print type(s) ; s
+        sage: s = f+x ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         x
-        sage: s = x+f ; print type(s) ; s
+        sage: s = x+f ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         x
-        sage: s = f-x ; print type(s) ; s
+        sage: s = f-x ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         -x
-        sage: s = x-f ; print type(s) ; s
+        sage: s = x-f ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.FunctionChart'>
         x
-        sage: s = f*x ; print type(s) ; s
+        sage: s = f*x ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = x*f ; print type(s) ; s
+        sage: s = x*f ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
-        sage: s = f/x ; print type(s) ; s
+        sage: s = f/x ; type(s) ; s
         <class 'sage.geometry.manifolds.chart.ZeroFunctionChart'>
         0
 
@@ -2754,13 +3259,13 @@ class ZeroFunctionChart(FunctionChart):
 
         INPUT:
 
-        - ``name`` -- (default: None) unused
-        - ``latex_name`` -- (default: None) unused
+        - ``name`` -- (default: ``None``) unused
+        - ``latex_name`` -- (default: ``None``) unused
 
         OUTPUT:
 
-        - instance of class
-          :class:`~sage.geometry.manifolds.scalarfield.ZeroScalarField`
+        - zero instance of class
+          :class:`~sage.geometry.manifolds.scalarfield.ScalarField`
 
         EXAMPLES:
 
@@ -2768,11 +3273,13 @@ class ZeroFunctionChart(FunctionChart):
 
             sage: M = Manifold(2, 'M')
             sage: c_xy.<x,y> = M.chart()
-            sage: fc = c_xy._zero_function
+            sage: fc = c_xy.zero_function()
             sage: f = fc.scalar_field() ; f
-            zero scalar field on the 2-dimensional manifold 'M'
-            sage: f.expr()
-            0
+            scalar field 'zero' on the 2-dimensional manifold 'M'
+            sage: f.display()
+            zero: M --> R
+               (x, y) |--> 0
+
         """
         return self._chart._domain._zero_scalar_field
 
@@ -3176,6 +3683,10 @@ class CoordChange(SageObject):
         sage: latex(ch)
         \left(\mathbb{R}^3,(r, {\theta}, {\phi})\right) \rightarrow
          \left(\mathbb{R}^3,(x, y, z)\right)
+        sage: ch.display()
+        x = r*cos(ph)*sin(th)
+        y = r*sin(ph)*sin(th)
+        z = r*cos(th)
         sage: type(ch)
         <class 'sage.geometry.manifolds.chart.CoordChange'>
 
@@ -3215,8 +3726,8 @@ class CoordChange(SageObject):
         sage: ch._jacobian_det  # Jacobian determinant
         r^2*sin(th)
 
-    Two successive change of coordinates can be composed by means of the operator \*,
-    which in the present context stands for `\circ`::
+    Two successive change of coordinates can be composed by means of the
+    operator \*, which in the present context stands for `\circ`::
 
         sage: c_cart2.<u,v,w> = M.chart()
         sage: ch2 = c_cart.coord_change(c_cart2, x+y, x-y, z-x-y)
@@ -3261,12 +3772,16 @@ class CoordChange(SageObject):
             ch_basis.add_comp(frame1)[:, chart1] = self._jacobian
             ch_basis.add_comp(frame2)[:, chart1] = self._jacobian
             vf_module._basis_changes[(frame2, frame1)] = ch_basis
-            vf_module._basis_changes[(frame1, frame2)] = ch_basis.inverse()
             for sdom in domain._supersets:
                 sdom._frame_changes[(frame2, frame1)] = ch_basis
-            if (frame1, frame2) not in domain._frame_changes:
+            # The inverse is computed only if it does not exist already
+            # (because if it exists it may a simpler expression than that
+            #  obtained from the matrix inverse)
+            if (frame1, frame2) not in vf_module._basis_changes:
+                ch_basis_inv = ch_basis.inverse()
+                vf_module._basis_changes[(frame1, frame2)] = ch_basis_inv
                 for sdom in domain._supersets:
-                    sdom._frame_changes[(frame1, frame2)] = ch_basis.inverse()
+                    sdom._frame_changes[(frame1, frame2)] = ch_basis_inv
 
     def _repr_(self):
         r"""
@@ -3341,7 +3856,11 @@ class CoordChange(SageObject):
                                                            for i in range(n2) ]
         equations = [ xp2[i] == self._transf._functions[i]._express
                                                            for i in range(n2) ]
-        solutions = solve(equations, *x1, solution_dict=True)
+        try:
+            solutions = solve(equations, *x1, solution_dict=True)
+        except RuntimeError:
+            raise RuntimeError("The system could not be solved; use " +
+                               "set_inverse() to set the inverse manually.")
         #!# This should be the Python 2.7 form:
         #           substitutions = {xp2[i]: x2[i] for i in range(n2)}
         # Here we use a form compatible with Python 2.6:
@@ -3359,8 +3878,8 @@ class CoordChange(SageObject):
             for sol in solutions:
                 if x2[0] in sol:
                     raise ValueError("The system could not be solved; use " +
-                                     "CoordChange.set_inverse to set the " +
-                                     "inverse manually.")
+                                     "set_inverse() to set the inverse " +
+                                     "manually.")
                 x2_to_x1 = [sol[x1[i]].subs(substitutions) for i in range(n1)]
                 for transf in x2_to_x1:
                     try:
@@ -3370,26 +3889,25 @@ class CoordChange(SageObject):
                 if self._chart1.valid_coordinates(*x2_to_x1):
                     list_x2_to_x1.append(x2_to_x1)
             if len(list_x2_to_x1) == 0:
-                raise ValueError("No solution found; use " +
-                                 "CoordChange.set_inverse to set the " +
-                                 "inverse manually.")
+                raise ValueError("No solution found; use set_inverse() to " +
+                                 "set the inverse manually.")
             if len(list_x2_to_x1) > 1:
                 print "Multiple solutions found: "
                 print list_x2_to_x1
                 raise ValueError(
                    "Non-unique solution to the inverse coordinate " +
-                   "transformation;  use CoordChange.set_inverse to set the " +
-                   "inverse manually.")
+                   "transformation; use set_inverse() to set the inverse " +
+                   "manually.")
             x2_to_x1 = list_x2_to_x1[0]
         self._inverse = CoordChange(self._chart2, self._chart1, *x2_to_x1)
         #
-        # Update of chart expressions of the frame changes:
+        # Update of chart expressions of the changes of frames:
         if self._chart1._domain == self._chart2._domain:
-            domain = self._chart1._domain
+            vf_module = self._chart1._domain.vector_field_module()
             frame1 = self._chart1._frame
             frame2 = self._chart2._frame
-            fr_change12 = domain._frame_changes[(frame1,frame2)]
-            fr_change21 = domain._frame_changes[(frame2,frame1)]
+            fr_change12 = vf_module._basis_changes[(frame1,frame2)]
+            fr_change21 = vf_module._basis_changes[(frame2,frame1)]
             for comp in fr_change12._components[frame1]._comp.itervalues():
                 comp.function_chart(self._chart1, from_chart=self._chart2)
             for comp in fr_change12._components[frame2]._comp.itervalues():
@@ -3420,7 +3938,7 @@ class CoordChange(SageObject):
 
         EXAMPLES:
 
-        From Cartesian to spherical coordinates in the plane::
+        From spherical coordinates to Cartesian ones in the plane::
 
             sage: M = Manifold(2, 'R^2')
             sage: U = M.open_subset('U') # the complement of the half line {y=0, x>= 0}
@@ -3466,13 +3984,13 @@ class CoordChange(SageObject):
                 print "  ", x1[i], '==' , self._inverse(*(self(*x1)))[i]
             for i in range(n1):
                 print "  ", x2[i], '==', self(*(self._inverse(*x2)))[i]
-        # Update of chart expressions of the frame changes:
+        # Update of chart expressions of the changes of frames:
         if self._chart1._domain == self._chart2._domain:
-            domain = self._chart1._domain
+            vf_module = self._chart1._domain.vector_field_module()
             frame1 = self._chart1._frame
             frame2 = self._chart2._frame
-            fr_change12 = domain._frame_changes[(frame1,frame2)]
-            fr_change21 = domain._frame_changes[(frame2,frame1)]
+            fr_change12 = vf_module._basis_changes[(frame1,frame2)]
+            fr_change21 = vf_module._basis_changes[(frame2,frame1)]
             for comp in fr_change12._components[frame1]._comp.itervalues():
                 comp.function_chart(self._chart1, from_chart=self._chart2)
             for comp in fr_change12._components[frame2]._comp.itervalues():
@@ -3496,7 +4014,7 @@ class CoordChange(SageObject):
         - the change of coordinates X_1 --> X_3, where X_1 is the initial
           chart of ``other`` and X_3 is the final chart of ``self``
 
-        EXAMPLE:
+        EXAMPLE::
 
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
@@ -3529,3 +4047,51 @@ class CoordChange(SageObject):
         return CoordChange(self._chart1.restrict(dom1),
                            self._chart2.restrict(dom2),
                            *(self._transf.expr()))
+
+    def display(self):
+        r"""
+        Display of the coordinate transformation.
+
+        The output is either text-formatted (console mode) or LaTeX-formatted
+        (notebook mode).
+
+        EXAMPLE:
+
+        From spherical coordinates to Cartesian ones in the plane::
+
+            sage: M = Manifold(2, 'R^2')
+            sage: U = M.open_subset('U') # the complement of the half line {y=0, x>= 0}
+            sage: c_cart.<x,y> = U.chart()
+            sage: c_spher.<r,ph> = U.chart(r'r:(0,+oo) ph:(0,2*pi):\phi')
+            sage: spher_to_cart = c_spher.coord_change(c_cart, r*cos(ph), r*sin(ph))
+            sage: spher_to_cart.display()
+            x = r*cos(ph)
+            y = r*sin(ph)
+            sage: latex(spher_to_cart.display())
+            \left\{\begin{array}{lcl} x & = & r \cos\left({\phi}\right) \\
+             y & = & r \sin\left({\phi}\right) \end{array}\right.
+
+        """
+        from sage.misc.latex import latex
+        from sage.tensor.modules.format_utilities import FormattedExpansion
+        coords2 = self._chart2[:]
+        n2 = len(coords2)
+        expr = self._transf.expr()
+        rtxt = ""
+        if n2 == 1:
+            rlatex = r"\begin{array}{lcl}"
+        else:
+            rlatex = r"\left\{\begin{array}{lcl}"
+        for i in range(n2):
+            x2 = coords2[i]
+            x2f = expr[i]
+            rtxt += repr(x2) + " = " + repr(x2f) + "\n"
+            rlatex += latex(x2) + r" & = & " + latex(x2f) + r"\\"
+        rtxt = rtxt[:-1]  # remove the last new line
+        rlatex = rlatex[:-2] + r"\end{array}"
+        if n2 > 1:
+            rlatex += r"\right."
+        return FormattedExpansion(rtxt, rlatex)
+
+
+

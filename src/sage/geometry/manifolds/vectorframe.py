@@ -189,9 +189,9 @@ class VectorFrame(FreeModuleBasis):
     - ``symbol`` -- a letter (of a few letters) to denote a
       generic vector of the frame; can be set to None if the parameter
       ``from_frame`` is filled.
-    - ``latex_symbol`` -- (default: None) symbol to denote a generic vector of
-      the frame; if None, the value of ``symbol`` is used.
-    - ``from_frame`` -- (default: None) vector frame `\tilde e` on the codomain
+    - ``latex_symbol`` -- (default: ``None``) symbol to denote a generic vector of
+      the frame; if ``None``, the value of ``symbol`` is used.
+    - ``from_frame`` -- (default: ``None``) vector frame `\tilde e` on the codomain
       `V` of the destination map `\Phi`; the frame `e` = ``self`` is then
       constructed so that `\forall p \in U, e(p) = \tilde e(\Phi(p))`
 
@@ -358,8 +358,8 @@ class VectorFrame(FreeModuleBasis):
 
         - ``symbol`` -- (string) a letter (of a few letters) to denote a
           generic element of the vector frame
-        - ``latex_symbol`` -- (string; default: None) symbol to denote a
-          generic element of the vector frame; if None, the value of
+        - ``latex_symbol`` -- (string; default: ``None``) symbol to denote a
+          generic element of the vector frame; if ``None``, the value of
           ``symbol`` is used.
 
         OUTPUT:
@@ -399,8 +399,8 @@ class VectorFrame(FreeModuleBasis):
           to `n_i = P(e_i)`
         - ``symbol`` -- a letter (of a few letters) to denote a generic vector
           of the frame
-        - ``latex_symbol`` -- (default: None) symbol to denote a generic vector
-          of the frame; if None, the value of ``symbol`` is used.
+        - ``latex_symbol`` -- (default: ``None``) symbol to denote a generic vector
+          of the frame; if ``None``, the value of ``symbol`` is used.
 
         OUTPUT:
 
@@ -695,12 +695,6 @@ class VectorFrame(FreeModuleBasis):
             True
 
         """
-        # If the basis has already been constructed, it is simply returned:
-        if self in point._frame_bases:
-            return point._frame_bases[self]
-        for frame in point._frame_bases:
-            if self in frame._subframes or self in frame._superframes:
-                return point._frame_bases[frame]
         # Case of a non-trivial destination map
         if self._from_frame is not None:
             if self._dest_map.is_identity():  #!# probably not necessary
@@ -708,16 +702,24 @@ class VectorFrame(FreeModuleBasis):
                                  "identity")
             ambient_point = self._dest_map(point)
             return self._from_frame.at(ambient_point)
-        # If this point is reached, the basis has to be constructed from
-        # scratch:
+        # Determination of the tangent space:
         if point not in self._domain:
-            raise ValueError("The " + str(point) + " is not a point in the "
-                            "domain of " + str(self) + ".")
+            raise ValueError("the {} is not a point in the ".format(point) +
+                             "domain of {}".format(self))
         if self._dest_map.is_identity():
             ambient_point = point
         else:
             ambient_point = self._dest_map(point)
         ts = ambient_point.tangent_space()
+        # If the basis has already been constructed, it is simply returned:
+        ts_frame_bases = ts._frame_bases
+        if self in ts_frame_bases:
+            return ts_frame_bases[self]
+        for frame in ts_frame_bases:
+            if self in frame._subframes or self in frame._superframes:
+                return ts_frame_bases[frame]
+        # If this point is reached, the basis has to be constructed from
+        # scratch:
         basis = ts.basis(symbol=self._symbol, latex_symbol=self._latex_symbol)
         # Names of basis vectors set to those of the frame vector fields:
         n = ts.dim()
@@ -743,19 +745,19 @@ class VectorFrame(FreeModuleBasis):
         cobasis._latex_name = r"\left(" + \
           ",".join([cobasis._form[i]._latex_name for i in range(n)])+ \
           r"\right)"
-        point._frame_bases[self] = basis
+        ts_frame_bases[self] = basis
         # Update of the change of bases in the tangent space:
         for frame_pair, automorph in self._domain._frame_changes.iteritems():
             frame1 = frame_pair[0] ; frame2 = frame_pair[1]
             if frame1 is self:
                 fr2 = None
-                for frame in point._frame_bases:
+                for frame in ts_frame_bases:
                     if frame2 in frame._subframes:
                         fr2 = frame
                         break
                 if fr2 is not None:
                     basis1 = basis
-                    basis2 = point._frame_bases[fr2]
+                    basis2 = ts_frame_bases[fr2]
                     auto = ts.automorphism()
                     for frame, comp in automorph._components.iteritems():
                         bas = None
@@ -770,12 +772,12 @@ class VectorFrame(FreeModuleBasis):
                     ts._basis_changes[(basis1, basis2)] = auto
             if frame2 is self:
                 fr1 = None
-                for frame in point._frame_bases:
+                for frame in ts_frame_bases:
                     if frame1 in frame._subframes:
                         fr1 = frame
                         break
                 if fr1 is not None:
-                    basis1 = point._frame_bases[fr1]
+                    basis1 = ts_frame_bases[fr1]
                     basis2 = basis
                     auto = ts.automorphism()
                     for frame, comp in automorph._components.iteritems():
@@ -942,12 +944,18 @@ class CoordFrame(VectorFrame):
 
     ###### End of methods redefined by derived classes ######
 
+    def chart(self):
+        r"""
+        Return the chart defining this coordinate frame.
+        """
+        return self._chart
+
     def structure_coef(self):
         r"""
-        Returns the structure coefficients associated to the vector frame.
+        Returns the structure coefficients associated to the coordinate frame.
 
         `n` being the manifold's dimension, the structure coefficients of the
-        vector frame `(e_i)` are the `n^3` scalar fields `C^k_{\ \, ij}`
+        frame `(e_i)` are the `n^3` scalar fields `C^k_{\ \, ij}`
         defined by
 
         .. MATH::
@@ -1011,8 +1019,8 @@ class CoFrame(FreeModuleCoBasis):
     - ``frame`` -- the vector frame dual to the coframe
     - ``symbol`` -- a letter (of a few letters) to denote a generic 1-form in
       the coframe
-    - ``latex_symbol`` -- (default: None) symbol to denote a generic 1-form in
-      the coframe; if None, the value of ``symbol`` is used.
+    - ``latex_symbol`` -- (default: ``None``) symbol to denote a generic 1-form in
+      the coframe; if ``None``, the value of ``symbol`` is used.
 
     EXAMPLES:
 

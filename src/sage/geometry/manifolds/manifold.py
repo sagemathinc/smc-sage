@@ -300,7 +300,7 @@ class Manifold(ManifoldOpenSubset):
 
     - ``n`` -- positive integer; dimension of the manifold
     - ``name`` -- string; name (symbol) given to the manifold
-    - ``latex_name`` -- (default: None) string; LaTeX symbol to denote the
+    - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to denote the
       manifold; if none is provided, it is set to ``name``
     - ``start_index`` -- (default: 0) integer; lower bound of the range of
       indices used for "indexed objects" on the manifold, e.g. coordinates
@@ -354,12 +354,13 @@ class Manifold(ManifoldOpenSubset):
         sage: isinstance(p, sage.geometry.manifolds.point.ManifoldPoint)
         True
 
-    A manifold has a predefined zero scalar field, mapping all the points to 0;
-    it is an instance of
-    :class:`~sage.geometry.manifolds.scalarfield.ZeroScalarField`::
+    A manifold has a predefined zero scalar field, mapping all the points
+    to 0::
 
-        sage: M._zero_scalar_field
-        zero scalar field on the 4-dimensional manifold 'M'
+        sage: M.zero_scalar_field()
+        scalar field 'zero' on the 4-dimensional manifold 'M'
+        sage: M.zero_scalar_field()(p)
+        0
 
     The manifold passes all the tests of the test suite relative to the
     category of Sets::
@@ -440,7 +441,7 @@ class Manifold(ManifoldOpenSubset):
 
         INPUT:
 
-        - ``start`` -- (default: None) initial value of the index; if none is
+        - ``start`` -- (default: ``None``) initial value of the index; if none is
           provided, ``self._sindex`` is assumed
 
         OUTPUT:
@@ -549,16 +550,16 @@ class Manifold(ManifoldOpenSubset):
 
     def submanifold(self, dim, name, latex_name=None, start_index=0):
         r"""
-        Construct a submanifold of ``self``
+        Construct an embedded submanifold of ``self``
 
-        See class :class:`~sage.geometry.manifolds.submanifolds.Submanifold`
+        See class :class:`~sage.geometry.manifolds.submanifold.Submanifold`
         for a complete documentation.
 
         INPUT:
 
         - ``dim`` -- dimension of the submanifold
         - ``name`` -- name given to the submanifold
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           submanifold
         - ``start_index`` -- (default: 0) lower bound of the range of indices
           on the submanifold
@@ -566,10 +567,10 @@ class Manifold(ManifoldOpenSubset):
         OUTPUT:
 
         - instance of class
-          :class:`~sage.geometry.manifolds.submanifolds.Submanifold`
+          :class:`~sage.geometry.manifolds.submanifold.Submanifold`
 
         """
-        from submanifold import Submanifold
+        from sage.geometry.manifolds.submanifold import Submanifold
         return Submanifold(self, dim, name, latex_name=latex_name,
                            start_index=start_index)
 
@@ -984,11 +985,11 @@ class RealLine(Manifold):
           in terms of the coordinates of the considered point; if the
           dimension of the target manifold is 1, a single expression is
           expected (not a list with a single element)
-        - ``chart`` -- (default: None) chart of ``codomain`` in which the
+        - ``chart`` -- (default: ``None``) chart of ``codomain`` in which the
           coordinates are given on the codomain; if none is provided, the
           coordinates are assumed to refer to default chart of ``codomain``
-        - ``name`` -- (default: None) name given to the differentiable mapping
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``name`` -- (default: ``None``) name given to the differentiable mapping
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           differentiable mapping; if none is provided, the LaTeX symbol is set to
           ``name``
 

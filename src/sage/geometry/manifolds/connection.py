@@ -10,6 +10,7 @@ Levi-Civita connections associated to pseudo-Riemannian metrics.
 AUTHORS:
 
 - Eric Gourgoulhon, Michal Bejger (2013, 2014) : initial version
+- Marco Mancini (2015) : parallelization of some computations
 
 REFERENCES:
 
@@ -32,6 +33,9 @@ REFERENCES:
 
 from sage.structure.sage_object import SageObject
 from domain import ManifoldSubset
+from sage.parallel.all import parallel
+from sage.tensor.modules.parallel_utilities import TensorParallelCompute
+import time
 
 class AffConnection(SageObject):
     r"""
@@ -104,8 +108,8 @@ class AffConnection(SageObject):
       (must be an instance of class
       :class:`~sage.geometry.manifolds.domain.ManifoldSubset`)
     - ``name`` -- name given to the affine connection
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the affine
-      connection; if None, it is set to ``name``.
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the affine
+      connection; if ``None``, it is set to ``name``.
 
     EXAMPLES:
 
@@ -368,7 +372,7 @@ class AffConnection(SageObject):
 
         INPUT:
 
-        - ``frame`` -- (default: None) vector frame relative to which the
+        - ``frame`` -- (default: ``None``) vector frame relative to which the
           connection coefficients are required; if none is provided, the
           domain's default frame is assumed
 
@@ -389,7 +393,7 @@ class AffConnection(SageObject):
             sage: nab[1,1,2], nab[3,2,3] = x^2, y*z  # Gamma^1_{12} = x^2, Gamma^3_{23} = yz
             sage: nab.coef()
             3-indices components w.r.t. coordinate frame (M, (d/dx,d/dy,d/dz))
-            sage: print type(nab.coef())
+            sage: type(nab.coef())
             <class 'sage.tensor.modules.comp.Components'>
             sage: M.default_frame()
             coordinate frame (M, (d/dx,d/dy,d/dz))
@@ -443,7 +447,7 @@ class AffConnection(SageObject):
 
         INPUT:
 
-        - ``frame`` -- (default: None) vector frame in which the connection
+        - ``frame`` -- (default: ``None``) vector frame in which the connection
           coefficients are defined; if none is provided, the domain's default
           frame is assumed.
 
@@ -481,7 +485,7 @@ class AffConnection(SageObject):
 
         INPUT:
 
-        - ``frame`` -- (default: None) vector frame in which the connection
+        - ``frame`` -- (default: ``None``) vector frame in which the connection
           coefficients are defined; if none is provided, the domain's default
           frame is assumed.
 
@@ -551,6 +555,147 @@ class AffConnection(SageObject):
 
         """
         self.set_coef()[indices] = value
+
+    def display(self, frame=None, chart=None, symbol=None, latex_symbol=None,
+                index_labels=None, index_latex_labels=None,
+                coordinate_labels=True, only_nonzero=True,
+                only_nonredundant=False):
+        r"""
+        Display all the connection coefficients w.r.t. to a given frame, one
+        per line.
+
+        The output is either text-formatted (console mode) or LaTeX-formatted
+        (notebook mode).
+
+        INPUT:
+
+        - ``frame`` -- (default: ``None``) vector frame relative to which the
+          connection coefficients are defined; if ``None``, the
+          default frame of the connection's domain is used
+        - ``chart`` -- (default: ``None``) chart specifying the coordinate
+          expression of the connection coefficients; if ``None``,
+          the default chart of the connection's domain is used
+        - ``symbol`` -- (default: ``None``) string specifying the
+          symbol of the connection coefficients; if ``None``, 'Gam' is used
+        - ``latex_symbol`` -- (default: ``None``) string specifying the LaTeX
+          symbol for the components; if ``None``, '\\Gamma' is used
+        - ``index_labels`` -- (default: ``None``) list of strings representing
+          the labels of each index; if ``None``, integer labels are used,
+          except if ``frame`` is a coordinate frame and ``coordinate_symbols``
+          is set to ``True``, in which case the coordinate symbols are used
+        - ``index_latex_labels`` -- (default: ``None``) list of strings
+          representing the LaTeX labels of each index; if ``None``, integer
+          labels are used, except if ``frame`` is a coordinate frame and
+          ``coordinate_symbols`` is set to ``True``, in which case the
+          coordinate LaTeX symbols are used
+        - ``coordinate_labels`` -- (default: ``True``) boolean; if ``True``,
+          coordinate symbols are used by default (instead of integers) as
+          index labels whenever ``frame`` is a coordinate frame
+        - ``only_nonzero`` -- (default: ``True``) boolean; if ``True``, only
+          nonzero connection coefficients are displayed
+        - ``only_nonredundant`` -- (default: ``False``) boolean; if ``True``,
+          only nonredundant connection coefficients are displayed in case of
+          symmetries
+
+        EXAMPLES:
+
+        Coefficients of a connection on a 3-dimensional manifold::
+
+            sage: M = Manifold(3, 'M', start_index=1)
+            sage: c_xyz.<x,y,z> = M.chart()
+            sage: nab = M.aff_connection('nabla', r'\nabla')
+            sage: nab[1,1,2], nab[3,2,3] = x^2, y*z
+
+        By default, only the nonzero connection coefficients are displayed::
+
+            sage: nab.display()
+            Gam^x_xy = x^2
+            Gam^z_yz = y*z
+            sage: latex(nab.display())
+            \begin{array}{lcl} \Gamma_{ \phantom{\, x } \, x \, y }^{ \, x \phantom{\, x } \phantom{\, y } } & = & x^{2} \\ \Gamma_{ \phantom{\, z } \, y \, z }^{ \, z \phantom{\, y } \phantom{\, z } } & = & y z \end{array}
+
+        By default, the displayed connection coefficients are those w.r.t.
+        to the default frame of the connection's domain, so the above is
+        equivalent to::
+
+            sage: nab.display(frame=M.default_frame())
+            Gam^x_xy = x^2
+            Gam^z_yz = y*z
+
+        Since the default frame is a coordinate frame, coordinate symbols are
+        used to label the indices, but one may ask for integers instead::
+
+            sage: M.default_frame() is c_xyz.frame()
+            True
+            sage: nab.display(coordinate_labels=False)
+            Gam^1_12 = x^2
+            Gam^3_23 = y*z
+
+        The index labels can also be customized::
+
+            sage: nab.display(index_labels=['(1)', '(2)', '(3)'])
+            Gam^(1)_(1),(2) = x^2
+            Gam^(3)_(2),(3) = y*z
+
+        The symbol 'Gam' can be changed::
+
+            sage: nab.display(symbol='C', latex_symbol='C')
+            C^x_xy = x^2
+            C^z_yz = y*z
+            sage: latex(nab.display(symbol='C', latex_symbol='C'))
+            \begin{array}{lcl} C_{ \phantom{\, x } \, x \, y }^{ \, x \phantom{\, x } \phantom{\, y } } & = & x^{2} \\ C_{ \phantom{\, z } \, y \, z }^{ \, z \phantom{\, y } \phantom{\, z } } & = & y z \end{array}
+
+        Display of Christoffel symbols, skeeping the redundancy associated
+        with the symmetry of the last two indices::
+
+            sage: M = Manifold(3, 'R^3', start_index=1)
+            sage: c_spher.<r,th,ph> = M.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: g = M.metric('g')
+            sage: g[1,1], g[2,2], g[3,3] = 1, r^2 , (r*sin(th))^2
+            sage: g.display()
+            g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
+            sage: g.connection().display(only_nonredundant=True)
+            Gam^r_th,th = -r
+            Gam^r_ph,ph = -r*sin(th)^2
+            Gam^th_r,th = 1/r
+            Gam^th_ph,ph = -cos(th)*sin(th)
+            Gam^ph_r,ph = 1/r
+            Gam^ph_th,ph = cos(th)/sin(th)
+
+        By default, the parameter ``only_nonredundant`` is set to ``False``::
+
+            sage: g.connection().display()
+            Gam^r_th,th = -r
+            Gam^r_ph,ph = -r*sin(th)^2
+            Gam^th_r,th = 1/r
+            Gam^th_th,r = 1/r
+            Gam^th_ph,ph = -cos(th)*sin(th)
+            Gam^ph_r,ph = 1/r
+            Gam^ph_th,ph = cos(th)/sin(th)
+            Gam^ph_ph,r = 1/r
+            Gam^ph_ph,th = cos(th)/sin(th)
+
+        """
+        from sage.misc.latex import latex
+        from sage.geometry.manifolds.vectorframe import CoordFrame
+        if frame is None:
+            frame = self._domain.default_frame()
+        if chart is None:
+            chart = self._domain.default_chart()
+        if symbol is None:
+            symbol = 'Gam'
+        if latex_symbol is None:
+            latex_symbol = r'\Gamma'
+        if index_labels is None and isinstance(frame, CoordFrame) and \
+          coordinate_labels:
+            ch = frame.chart()
+            index_labels = map(str, ch[:])
+            index_latex_labels = map(latex, ch[:])
+        return self.coef(frame=frame).display(symbol,
+              latex_symbol=latex_symbol, index_positions='udd',
+              index_labels=index_labels, index_latex_labels=index_latex_labels,
+              format_spec=chart, only_nonzero=only_nonzero,
+              only_nonredundant=only_nonredundant)
 
     def restrict(self, subdomain):
         r"""
@@ -773,23 +918,75 @@ class AffConnection(SageObject):
                               sym=tensor._sym, antisym=tensor._antisym)
         n_con = tensor._tensor_type[0]
         n_cov = tensor._tensor_type[1]
-        for ind in resc.non_redundant_index_generator():
-            p = ind[-1]  # derivation index
-            ind0 = ind[:-1]
-            rsum = frame[p](tc[[ind0]])
-            # loop on contravariant indices:
-            for k in range(n_con):
-                for i in manif.irange():
-                    indk = list(ind0)
-                    indk[k] = i
-                    rsum += gam[[ind0[k], i, p]] * tc[[indk]]
-            # loop on covariant indices:
-            for k in range(n_con, tensor._tensor_rank):
-                for i in manif.irange():
-                    indk = list(ind0)
-                    indk[k] = i
-                    rsum -= gam[[i, ind0[k], p]] * tc[[indk]]
-            resc[[ind]] = rsum
+
+        marco_t0 = time.time()
+        if TensorParallelCompute()._use_paral :
+            # parllel computation
+            # !!!!! Seems to work only when a frame is chosen !!!!!!
+
+            nproc = TensorParallelCompute()._nproc
+            lol = lambda lst, sz: [lst[i:i+sz] for i in range(0, len(lst), sz)]
+
+            ind_list = list(resc.non_redundant_index_generator())
+            ind_step = max(1,int(len(ind_list)/nproc/2))
+            local_list = lol(ind_list,ind_step)
+
+            # definition of the list of input parameters
+            listParalInput = []
+            for ind_part in local_list:
+                listParalInput.append((ind_part,tc,gam,frame,n_con,tensor._tensor_rank,manif))
+
+            # definition of the parallel function
+            @parallel(p_iter='multiprocessing',ncpus=nproc)
+            def make_CovDerivative(ind_part,tc,gam,frame,n_con,rank,manif):
+                partial = []
+                for ind in ind_part:
+                    p = ind[-1]  # derivation index
+                    ind0 = ind[:-1]
+                    rsum = frame[p](tc[[ind0]])
+                    # loop on contravariant indices:
+                    for k in range(n_con):
+                        for i in manif.irange():
+                            indk = list(ind0)
+                            indk[k] = i
+                            rsum += gam[[ind0[k], i, p]] * tc[[indk]]
+                    # loop on covariant indices:
+                    for k in range(n_con, rank):
+                        for i in manif.irange():
+                            indk = list(ind0)
+                            indk[k] = i
+                            rsum -= gam[[i, ind0[k], p]] * tc[[indk]]
+                    partial.append([ind,rsum])
+                return partial
+
+            # Computation and Assignation of values
+            for ii,val in make_CovDerivative(listParalInput):
+                for jj in val:
+                    resc[[jj[0]]] = jj[1]
+
+        else:
+            # sequential
+            for ind in resc.non_redundant_index_generator():
+                p = ind[-1]  # derivation index
+                ind0 = ind[:-1]
+                rsum = frame[p](tc[[ind0]])
+                # loop on contravariant indices:
+                for k in range(n_con):
+                    for i in manif.irange():
+                        indk = list(ind0)
+                        indk[k] = i
+                        rsum += gam[[ind0[k], i, p]] * tc[[indk]]
+                # loop on covariant indices:
+                for k in range(n_con, tensor._tensor_rank):
+                    for i in manif.irange():
+                        indk = list(ind0)
+                        indk[k] = i
+                        rsum -= gam[[i, ind0[k], p]] * tc[[indk]]
+                resc[[ind]] = rsum
+
+        #print "time cov derivative:",time.time()-marco_t0
+
+
         # Resulting tensor field
         return tdom.vector_field_module().tensor_from_comp((n_con, n_cov+1),
                         resc,
@@ -998,6 +1195,27 @@ class AffConnection(SageObject):
             sage: r.display(eV)
             (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/du*du*du*dv + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/du*du*dv*du + (1/32*u^3 - 1/32*u*v^2 + 3/32*v^3 - 1/32*(3*u^2 - 4)*v - 1/8*u + 1/4) d/du*dv*du*dv + (-1/32*u^3 + 1/32*u*v^2 - 3/32*v^3 + 1/32*(3*u^2 - 4)*v + 1/8*u - 1/4) d/du*dv*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 5/32*v^3 - 1/32*(5*u^2 + 4)*v + 1/8*u - 1/4) d/dv*du*du*dv + (1/32*u^3 - 1/32*u*v^2 - 5/32*v^3 + 1/32*(5*u^2 + 4)*v - 1/8*u + 1/4) d/dv*du*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/dv*dv*du*dv + (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/dv*dv*dv*du
 
+        The same computation parallelized on 2 cores::
+
+            sage: set_nproc(2); print get_nproc()
+            2
+            sage: nab = M.aff_connection('nabla', r'\nabla')
+            sage: nab[0,0,0], nab[0,1,0], nab[1,0,1] = x, x-y, x*y
+            sage: for i in M.irange():
+            ....:     for j in M.irange():
+            ....:         for k in M.irange():
+            ....:             nab.add_coef(eV)[i,j,k] = nab.coef(eVW)[i,j,k,c_uvW].expr()
+            ....:
+            sage: r = nab.riemann() ; r
+            tensor field of type (1,3) on the 2-dimensional manifold 'M'
+            sage: r.parent()
+            module T^(1,3)(M) of type-(1,3) tensors fields on the 2-dimensional manifold 'M'
+            sage: r.display(eU)
+            (x^2*y - x*y^2) d/dx*dx*dx*dy + (-x^2*y + x*y^2) d/dx*dx*dy*dx + d/dx*dy*dx*dy - d/dx*dy*dy*dx - (x^2 - 1)*y d/dy*dx*dx*dy + (x^2 - 1)*y d/dy*dx*dy*dx + (-x^2*y + x*y^2) d/dy*dy*dx*dy + (x^2*y - x*y^2) d/dy*dy*dy*dx
+            sage: r.display(eV)
+            (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/du*du*du*dv + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/du*du*dv*du + (1/32*u^3 - 1/32*u*v^2 + 3/32*v^3 - 1/32*(3*u^2 - 4)*v - 1/8*u + 1/4) d/du*dv*du*dv + (-1/32*u^3 + 1/32*u*v^2 - 3/32*v^3 + 1/32*(3*u^2 - 4)*v + 1/8*u - 1/4) d/du*dv*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 5/32*v^3 - 1/32*(5*u^2 + 4)*v + 1/8*u - 1/4) d/dv*du*du*dv + (1/32*u^3 - 1/32*u*v^2 - 5/32*v^3 + 1/32*(5*u^2 + 4)*v - 1/8*u + 1/4) d/dv*du*dv*du + (-1/32*u^3 + 1/32*u*v^2 + 1/32*v^3 - 1/32*(u^2 + 4)*v + 1/8*u + 1/4) d/dv*dv*du*dv + (1/32*u^3 - 1/32*u*v^2 - 1/32*v^3 + 1/32*(u^2 + 4)*v - 1/8*u - 1/4) d/dv*dv*dv*du
+            sage: set_nproc(1)
+
         """
         if self._riemann is None:
             manif = self._manifold
@@ -1009,24 +1227,70 @@ class AffConnection(SageObject):
                         break
                 else:
                     # frame in not a subframe and the computation is performed:
+                    marco_t0 = time.time()
                     sc = frame.structure_coef()
                     gam_gam = gam.contract(1, gam, 0)
                     gam_sc = gam.contract(2, sc, 0)
                     res = resu.add_comp(frame)
-                    for i in manif.irange():
-                        for j in manif.irange():
-                            for k in manif.irange():
-                                # antisymmetry of the Riemann tensor taken into
-                                # account by l>k:
-                                for l in manif.irange(start=k+1):
-                                    res[i,j,k,l] = frame[k](gam[[i,j,l]]) - \
-                                                   frame[l](gam[[i,j,k]]) + \
-                                                   gam_gam[[i,k,j,l]] -  \
-                                                   gam_gam[[i,l,j,k]] -  \
-                                                   gam_sc[[i,j,k,l]]
-            self._riemann = resu
-        return self._riemann
+                    #print "time riemann init:",time.time()-marco_t0
 
+                    marco_t0 = time.time()
+                    if TensorParallelCompute()._use_paral :
+                        # parllel computation
+                        nproc = TensorParallelCompute()._nproc
+                        lol = lambda lst, sz: [lst[i:i+sz] for i in range(0, len(lst), sz)]
+
+                        ind_list = []
+                        for i in manif.irange():
+                            for j in manif.irange():
+                                ind_list.append((i,j))
+                        ind_step = max(1,int(len(ind_list)/nproc/2))
+                        local_list = lol(ind_list,ind_step)
+
+                        # definition of the list of input parameters
+                        listParalInput = []
+                        for ind_part in local_list:
+                            listParalInput.append((frame,gam,gam_gam,gam_sc,manif.irange,ind_part))
+
+                        # definition of the parallel function
+                        @parallel(p_iter='multiprocessing',ncpus=nproc)
+                        def make_Reim(frame,gam,gam_gam,gam_sc,indices,local_list_ij):
+                            partial = []
+                            for i,j in local_list_ij:
+                                for k in indices():
+                                    for l in indices(start=k+1):
+                                        partial.append([i,j,k,l,
+                                                frame[k](gam[[i,j,l]]) - \
+                                                frame[l](gam[[i,j,k]]) + \
+                                                gam_gam[[i,k,j,l]] -  \
+                                                gam_gam[[i,l,j,k]] -  \
+                                                gam_sc[[i,j,k,l]]]
+                                            )
+                            return partial
+
+                        # Computation and Assignation of values
+                        for ii,val in make_Reim(listParalInput):
+                            for jj in val:
+                                res[jj[0],jj[1],jj[2],jj[3]] = jj[4]
+
+                    else:
+                        # sequential
+                        for i in manif.irange():
+                            for j in manif.irange():
+                                for k in manif.irange():
+                                    # antisymmetry of the Riemann tensor taken into
+                                    # account by l>k:
+                                    for l in manif.irange(start=k+1):
+                                        res[i,j,k,l] = frame[k](gam[[i,j,l]]) - \
+                                                       frame[l](gam[[i,j,k]]) + \
+                                                       gam_gam[[i,k,j,l]] -  \
+                                                       gam_gam[[i,l,j,k]] -  \
+                                                       gam_sc[[i,j,k,l]]
+                    #print "time riemann :",time.time()-marco_t0
+            self._riemann = resu
+
+
+        return self._riemann
 
     def ricci(self):
         r"""
@@ -1095,7 +1359,7 @@ class AffConnection(SageObject):
         INPUT:
 
         - ``i``, ``j`` -- indices identifying the 1-form `\omega^i_{\ \, j}`
-        - ``frame`` -- (default: None) vector frame relative to which the
+        - ``frame`` -- (default: ``None``) vector frame relative to which the
           connection 1-forms are defined; if none is provided, the default
           frame of the connection's domain is assumed.
 
@@ -1213,7 +1477,7 @@ class AffConnection(SageObject):
         INPUT:
 
         - ``i`` -- index identifying the 2-form `\theta^i`
-        - ``frame`` -- (default: None) vector frame relative to which the
+        - ``frame`` -- (default: ``None``) vector frame relative to which the
           torsion 2-forms are defined; if none is provided, the default frame
           of the connection's domain is assumed.
 
@@ -1267,7 +1531,7 @@ class AffConnection(SageObject):
         where the `\omega^i_{\ \, j}`'s are the connection 1-forms (cf.
         :meth:`connection_form`). Let us check it on the frame e::
 
-            sage: for i in M.irange():
+            sage: for i in M.irange():  # long time
             ...       nab.torsion_form(i, e) == ef[i].exterior_der() + sum(nab.connection_form(i,k,e).wedge(ef[k]) for k in M.irange())
             ...
             True
@@ -1312,7 +1576,7 @@ class AffConnection(SageObject):
         INPUT:
 
         - ``i``, ``j`` -- indices identifying the 2-form `\Omega^i_{\ \, j}`
-        - ``frame`` -- (default: None) vector frame relative to which the
+        - ``frame`` -- (default: ``None``) vector frame relative to which the
           curvature 2-forms are defined; if none is provided, the default frame
           of the connection's domain is assumed.
 
@@ -1333,9 +1597,9 @@ class AffConnection(SageObject):
             sage: nab[2,1,1], nab[2,1,2], nab[2,2,1] = z^2, x*y*z^2, -x^2
             sage: nab[2,3,1], nab[2,3,3], nab[3,1,2] = x^2+y^2+z^2, y^2-z^2, x*y+z^2
             sage: nab[3,2,1], nab[3,2,2], nab[3,3,3] = x*y+z, z^3 -y^2, x*z^2 - z*y^2
-            sage: nab.curvature_form(1,1)
+            sage: nab.curvature_form(1,1)  # long time
             2-form 'nabla curvature 2-form (1,1)' on the 3-dimensional manifold 'M'
-            sage: nab.curvature_form(1,1).display()
+            sage: nab.curvature_form(1,1).display()  # long time (if above is skipped)
             nabla curvature 2-form (1,1) = (y^2*z^3 + (x*y^3 - x)*z + 2*x) dx/\dy + (x^3*z^2 - x*y) dx/\dz + (x^4*y*z^2 - z) dy/\dz
 
         Curvature 2-forms w.r.t. a non-holonomic frame::
@@ -1348,9 +1612,9 @@ class AffConnection(SageObject):
             sage: ef = e.coframe()
             sage: ef[1].display(), ef[2].display(), ef[3].display()
             (e^1 = 1/y dx, e^2 = 1/z dy, e^3 = 1/x dz)
-            sage: nab.curvature_form(1,1,e)
+            sage: nab.curvature_form(1,1,e)  # long time
             2-form 'nabla curvature 2-form (1,1)' on the 3-dimensional manifold 'M'
-            sage: nab.curvature_form(1,1,e).display(e)
+            sage: nab.curvature_form(1,1,e).display(e)  # long time (if above is skipped)
             nabla curvature 2-form (1,1) = (y^3*z^4 + 2*x*y*z + (x*y^4 - x*y)*z^2) e^1/\e^2 + (x^4*y*z^2 - x^2*y^2) e^1/\e^3 + (x^5*y*z^3 - x*z^2) e^2/\e^3
 
         Cartan's second structure equation is
@@ -1364,12 +1628,12 @@ class AffConnection(SageObject):
 
             sage: omega = nab.connection_form
             sage: check = []
-            sage: for i in M.irange():
+            sage: for i in M.irange():  # long time
             ...       for j in M.irange():
             ...           check.append( nab.curvature_form(i,j,e) == omega(i,j,e).exterior_der() + \
             ...           sum( omega(i,k,e).wedge(omega(k,j,e)) for k in M.irange()) )
             ...
-            sage: check
+            sage: check  # long time
             [True, True, True, True, True, True, True, True, True]
 
         """
@@ -1473,7 +1737,7 @@ class LeviCivitaConnection(AffConnection):
     - ``metric`` -- the metric `g` defining the Levi-Civita connection, as an
       instance of class :class:`~sage.geometry.manifolds.metric.Metric`
     - ``name`` -- name given to the connection
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
       connection
     - ``init_coef`` -- (default: True) determines whether the Chrsitoffel
       symbols are initialized (in the top charts on the domain, i.e.
@@ -1484,6 +1748,8 @@ class LeviCivitaConnection(AffConnection):
     Levi-Civita connection associated with the Euclidean metric on `\RR^3`
     expressed in spherical coordinates::
 
+        sage: Manifold._clear_cache_() # for doctests only
+        sage: forget() # for doctests only
         sage: M = Manifold(3, 'R^3', start_index=1)
         sage: c_spher.<r,th,ph> = M.chart(r'r:[0,+oo) th:[0,pi]:\theta ph:[0,2*pi):\phi')
         sage: g = M.metric('g')
@@ -1643,11 +1909,11 @@ class LeviCivitaConnection(AffConnection):
         If the connection coefficients are not known already, they are computed
 
          * as Christoffel symbols if the frame `(e_i)` is a coordinate frame
-         * frome the above formula otherwise
+         * from the above formula otherwise
 
         INPUT:
 
-        - ``frame`` -- (default: None) vector frame relative to which the
+        - ``frame`` -- (default: ``None``) vector frame relative to which the
           connection coefficients are required; if none is provided, the
           domain's default frame is assumed
 
@@ -1733,17 +1999,64 @@ class LeviCivitaConnection(AffConnection):
                     gam = self._new_coef(frame)
                     gg = self._metric.comp(frame)
                     ginv = self._metric.inverse().comp(frame)
-                    for ind in gam.non_redundant_index_generator():
-                        i, j, k = ind
-                        # The computation is performed at the FunctionChart level:
-                        rsum = 0
-                        for s in manif.irange():
-                            rsum += ginv[i,s, chart] * (
-                                                gg[s,k, chart].diff(j)
-                                              + gg[j,s, chart].diff(k)
-                                              - gg[j,k, chart].diff(s) )
-                        gam[i,j,k, chart] = rsum / 2
-                        self._coefficients[frame] = gam
+
+                    marco_t0 = time.time()
+
+                    if TensorParallelCompute()._use_paral :
+                        # parallel computation
+
+                        nproc = TensorParallelCompute()._nproc
+                        lol = lambda lst, sz: [lst[i:i+sz] for i in range(0, len(lst), sz)]
+
+                        ind_list = []
+                        for ind in gam.non_redundant_index_generator():
+                            i, j, k = ind
+                            ind_list.append((i,j,k))
+                        ind_step = max(1,int(len(ind_list)/nproc/2))
+                        local_list = lol(ind_list,ind_step)
+
+                        # definition of the list of input parameters
+                        listParalInput = []
+                        for ind_part in local_list:
+                            listParalInput.append((ind_part,chart,ginv,gg,manif))
+
+                        # definition of the parallel function
+                        @parallel(p_iter='multiprocessing',ncpus=nproc)
+                        def make_Connect(local_list_ijk,chart,ginv,gg,manif):
+                            partial = []
+                            for i,j,k in local_list_ijk:
+                                rsum = 0
+                                for s in manif.irange():
+                                    if ginv[i,s, chart]!=0:
+                                        rsum += ginv[i,s, chart] * (
+                                                        gg[s,k, chart].diff(j)
+                                                      + gg[j,s, chart].diff(k)
+                                                      - gg[j,k, chart].diff(s) )
+                                partial.append([i,j,k,rsum / 2])
+                            return partial
+
+                        # Computation and Assignation of values
+                        for ii, val in make_Connect(listParalInput):
+                            for jj in val:
+                                gam[jj[0],jj[1],jj[2],ii[0][1]] = jj[3]
+
+                    else:
+                        # sequential
+                        for ind in gam.non_redundant_index_generator():
+                            i, j, k = ind
+                            # The computation is performed at the FunctionChart level:
+                            rsum = 0
+                            for s in manif.irange():
+                                rsum += ginv[i,s, chart] * (
+                                                    gg[s,k, chart].diff(j)
+                                                  + gg[j,s, chart].diff(k)
+                                                  - gg[j,k, chart].diff(s) )
+                            gam[i,j,k, chart] = rsum / 2
+
+                    # Assignation of results
+                    self._coefficients[frame] = gam
+                    #print "time connection :",time.time()-marco_t0
+
                 else:
                     # Computation from the formula defining the connection coef.
                     return AffConnection.coef(self, frame)
@@ -1791,9 +2104,9 @@ class LeviCivitaConnection(AffConnection):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Riemann tensor;
+        - ``name`` -- (default: ``None``) name given to the Riemann tensor;
           if none, it is set to "Riem(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Riemann tensor; if none, it is set to "\\mathrm{Riem}(g)", where "g"
           is the metric's name
 
@@ -1839,9 +2152,9 @@ class LeviCivitaConnection(AffConnection):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Ricci tensor;
+        - ``name`` -- (default: ``None``) name given to the Ricci tensor;
           if none, it is set to "Ric(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Ricci tensor; if none, it is set to "\\mathrm{Ric}(g)", where "g"
           is the metric's name
 

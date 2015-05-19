@@ -41,7 +41,7 @@ from sage.categories.commutative_algebras import CommutativeAlgebras
 from sage.rings.integer_ring import ZZ
 from sage.rings.rational_field import QQ
 from sage.symbolic.ring import SR
-from sage.geometry.manifolds.scalarfield import ScalarField, ZeroScalarField
+from sage.geometry.manifolds.scalarfield import ScalarField
 
 class ScalarFieldAlgebra(UniqueRepresentation, Parent):
     r"""
@@ -115,20 +115,21 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
     The zero element::
 
         sage: CM.zero()
-        zero scalar field on the 2-dimensional manifold 'M'
+        scalar field 'zero' on the 2-dimensional manifold 'M'
         sage: CM.zero().display()
-        M --> R
+        zero: M --> R
         on U: (x, y) |--> 0
         on V: (u, v) |--> 0
 
     ::
 
         sage: CW.zero()
-        zero scalar field on the open subset 'W' of the 2-dimensional manifold 'M'
+        scalar field 'zero' on the open subset 'W' of the 2-dimensional
+         manifold 'M'
         sage: CW.zero().display()
-        W --> R
-        (x, y) |--> 0
-        (u, v) |--> 0
+        zero: W --> R
+           (x, y) |--> 0
+           (u, v) |--> 0
 
     The unit element::
 
@@ -183,7 +184,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         algebra of scalar fields on the 2-dimensional manifold 'M'
         sage: f1 == f
         True
-        sage: M.scalar_field(0) is CM.zero()
+        sage: M.scalar_field(0, chart='all') is CM.zero()
         True
 
     The algebra `C^\infty(M)` coerces to `C^\infty(W)` since `W` is an open
@@ -364,6 +365,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         Parent.__init__(self, base=SR, category=CommutativeAlgebras(SR))
         self._domain = domain
         self._populate_coercion_lists_()
+        self._zero = None # zero element (not constructed yet)
 
     #### Methods required for any Parent
     def _element_constructor_(self, coord_expression=None, name=None,
@@ -372,7 +374,12 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
         Construct a scalarfield
         """
         if coord_expression == 0:
-            return self._domain._zero_scalar_field
+            # construct the zero element
+            if self._zero is None:
+                self._zero = self.element_class(self._domain,
+                                                coord_expression=0,
+                                                name='zero', latex_name='0')
+            return self._zero
         if isinstance(coord_expression, ScalarField):
             if self._domain.is_subset(coord_expression._domain):
                 # restriction of the scalar field to self._domain:
@@ -388,6 +395,7 @@ class ScalarFieldAlgebra(UniqueRepresentation, Parent):
                 raise TypeError("Cannot coerce the " + str(coord_expression) +
                                 "to a scalar field on the " + str(self._domain))
         else:
+            # generic constructor:
             resu = self.element_class(self._domain,
                                       coord_expression=coord_expression,
                                       name=name, latex_name=latex_name)

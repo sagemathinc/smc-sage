@@ -18,9 +18,9 @@ import lattice_polytope
 
 from toric_lattice import ToricLattice
 
+import sage.geometry.pseudolines
+
 import toric_plotter
-
-
 from hyperbolic_space.all import *
 
 from manifolds.all import *

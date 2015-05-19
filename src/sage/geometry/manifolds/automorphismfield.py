@@ -47,8 +47,8 @@ class AutomorphismField(TensorField):
 
     - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
       fields along `U` with values on `V`
-    - ``name`` -- (default: None) name given to the field
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
+    - ``name`` -- (default: ``None``) name given to the field
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the field;
       if none is provided, the LaTeX symbol is set to ``name``
     - ``is_identity`` -- (default: ``False``) determines whether the
       constructed object is a field of identity automorphisms
@@ -327,7 +327,7 @@ class AutomorphismField(TensorField):
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
           instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
-        - ``dest_map`` -- (default: None) destination map
+        - ``dest_map`` -- (default: ``None``) destination map
           `\Phi:\ U \rightarrow V`, where `V` is a subdomain of
           ``self._codomain``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
@@ -444,8 +444,8 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
 
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector
       fields along `U` with values on `V`
-    - ``name`` -- (default: None) name given to the field
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the field;
+    - ``name`` -- (default: ``None``) name given to the field
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the field;
       if none is provided, the LaTeX symbol is set to ``name``
     - ``is_identity`` -- (default: ``False``) determines whether the
       constructed object is a field of identity automorphisms
@@ -624,7 +624,7 @@ class AutomorphismFieldParal(FreeModuleAutomorphism, TensorFieldParal):
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
           instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
-        - ``dest_map`` -- (default: None) destination map
+        - ``dest_map`` -- (default: ``None``) destination map
           `\Phi:\ U \rightarrow V`, where `V` is a subset of
           ``self._codomain``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
