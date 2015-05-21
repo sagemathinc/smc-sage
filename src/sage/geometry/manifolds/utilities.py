@@ -79,6 +79,8 @@ def simplify_sqrt_real(expr):
     Simplifications of basic expressions::
 
         sage: from sage.geometry.manifolds.utilities import simplify_sqrt_real
+        sage: simplify_sqrt_real( sqrt(x^2) )
+        abs(x)
         sage: assume(x<0)
         sage: simplify_sqrt_real( sqrt(x^2) )
         -x
@@ -91,12 +93,33 @@ def simplify_sqrt_real(expr):
     :meth:`~sage.symbolic.expression.Expression.canonicalize_radical` which yields
     incorrect results when x<0::
 
+        sage: forget()  # removes the assumption x<0
+        sage: sqrt(x^2).canonicalize_radical()
+        x
+        sage: assume(x<0)
         sage: sqrt(x^2).canonicalize_radical() # wrong output
         x
         sage: sqrt(x^2-2*x+1).canonicalize_radical() # wrong output
         x - 1
         sage: ( sqrt(x^2) + sqrt(x^2-2*x+1) ).canonicalize_radical() # wrong output
         2*x - 1
+
+    Simplification of nested sqrt's::
+
+        sage: forget()  # removes the assumption x<0
+        sage: simplify_sqrt_real( sqrt(1 + sqrt(x^2)) )
+        sqrt(abs(x) + 1)
+        sage: assume(x<0)
+        sage: simplify_sqrt_real( sqrt(1 + sqrt(x^2)) )
+        sqrt(-x + 1)
+        sage: simplify_sqrt_real( sqrt(x^2 + sqrt(4*x^2) + 1) )
+        -x + 1
+
+    Again, :meth:`~sage.symbolic.expression.Expression.canonicalize_radical`
+    fails on the last one::
+
+        sage: (sqrt(x^2 + sqrt(4*x^2) + 1)).canonicalize_radical()  # wrong output
+        x + 1
 
     """
     from sage.symbolic.ring import SR
@@ -110,9 +133,13 @@ def simplify_sqrt_real(expr):
         return expr    #!# the code below is not capable of simplifying
                        # expressions with symbolic derivatives denoted by Pynac
                        # symbols of the type D[0]
-    pos_sqrts = []   # positions of the sqrt's in sexpr
-    the_sqrts = []   # the sqrt sub-expressions in sexpr
-    for pos in range(len(sexpr)):
+    # Lists to store the positions of all the top-level sqrt's in sexpr:
+    pos_sqrts = []  # position of first character, i.e. 's' of 'sqrt(...)'
+    pos_after = []  # position of character immediatelty after 'sqrt(...)'
+    the_sqrts = []  # the sqrt sub-expressions in sexpr, i.e. 'sqrt(...)'
+    pos_max = len(sexpr) - 6
+    pos = 0
+    while pos < pos_max:
         if sexpr[pos:pos+5] == 'sqrt(':
             pos_sqrts.append(pos)
             parenth = 1
@@ -122,7 +149,17 @@ def simplify_sqrt_real(expr):
                 if sexpr[scan] == ')': parenth -= 1
                 scan += 1
             the_sqrts.append( sexpr[pos:scan] )
-    # 2/ Simplifications of the sqrt's
+            pos_after.append(scan)
+            pos = scan
+        else:
+            pos += 1
+    # 2/ Search for sub-sqrt's:
+    for i in range(len(the_sqrts)):
+        argum = the_sqrts[i][5:-1]  # the sqrt argument
+        if 'sqrt(' in argum:
+            simpl = simplify_sqrt_real(SR(argum))
+            the_sqrts[i] = 'sqrt(' + str(simpl) + ')'
+    # 3/ Simplifications of the sqrt's
     new_expr = ""    # will contain the result
     pos0 = 0
     for i, pos in enumerate(pos_sqrts):
@@ -146,7 +183,7 @@ def simplify_sqrt_real(expr):
         if pstart != -1:
             ssimpl = ssimpl[:pstart] + ssimpl[pstart+3:] # getting rid of 'abs'
         new_expr += sexpr[pos0:pos] + '(' + ssimpl + ')'
-        pos0 = pos + len(the_sqrts[i])
+        pos0 = pos_after[i]
     new_expr += sexpr[pos0:]
     return SR(new_expr)
 
