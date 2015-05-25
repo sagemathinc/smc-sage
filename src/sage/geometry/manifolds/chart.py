@@ -1901,6 +1901,11 @@ class FunctionChart(SageObject):
     nice_output = True # static flag for textbook-like output instead of the
                        # Pynac output for derivatives
 
+    omit_fargs  = False # static flag to govern whether or not 
+                        # the arguments of symbolic functions are printed 
+
+
+
     def __init__(self, chart, expression):
         from sage.symbolic.ring import SR
         self._chart = chart
