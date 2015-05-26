@@ -733,8 +733,8 @@ def list_derivarives(ex, list_d, exponent=0):
     - ``list_d`` -- tuple containing the details of FDerivativeOperator found, in a following order:
 
     1. operator
-    2. function
-    3. LaTeX function name string
+    2. function name 
+    3. LaTeX function name 
     4. parameter set
     5. operands
     6. exponent (if found, else 0)
@@ -781,7 +781,22 @@ def list_derivarives(ex, list_d, exponent=0):
 
 
 def list_functions(ex, list_f):
-    """
+    r"""
+    Function to find the occurences of symbolic functions in the expression;
+
+    INPUT:
+
+    - ``ex`` -- symbolic expression to be analyzed
+
+    OUTPUT:
+
+    - ``list_f`` -- tuple containing the details of a symbolic function found, in a following order:
+
+    1. operator
+    2. function name 
+    3. arguments 
+    4. LaTeX version of function name 
+    5. LaTeX version of arguments  
 
     TESTS::
 
@@ -794,10 +809,9 @@ def list_functions(ex, list_f):
         sage: list_f = [] 
         sage: list_functions(d, list_f)
         sage: list_f
-        [(f, 'f', '(x, y)', {\cal F}, \left(x, y\right)),
-         (g_x, 'g_x', '(x, y)', 'g_{x}', \left(x, y\right))]
+        [(f, 'f', '(x, y)', {\cal F}, \left(x, y\right)), (g_x, 'g_x', '(x, y)', 'g_{x}', \left(x, y\right))]
    
-    """
+   """
  
     op = ex.operator()
     operands = ex.operands()
@@ -883,28 +897,27 @@ def omit_function_args(status):
 
     - ``status`` -- boolean specifying the type of display:
 
-      - ``True``: arguments are not printed 
-      - ``False``: standard Pynac notation 
+        - ``True``: arguments are not printed 
+        - ``False``: standard Pynac notation 
 
     TESTS:: 
 
-    sage: from sage.geometry.manifolds.utilities import ExpressionNice
-    sage: f = function('f_x', x)
-    sage: f = f*(1 + f^2)
-    sage: ExpressionNice(f)
-    (f_x(x)^2 + 1)*f_x(x)
-    sage: omit_function_args(True)
-    sage: ExpressionNice(f)
-    (f_x^2 + 1)*f_x
-    sage: omit_function_args(False)
-    sage: latex(ExpressionNice(f))
-    {\left(f_{x}\left(x\right)^{2} + 1\right)} f_{x}\left(x\right)
-    sage: omit_function_args(True)
-    sage: latex(ExpressionNice(f))
-    {\left(f_{x}^{2} + 1\right)} f_{x}
+        sage: from sage.geometry.manifolds.utilities import ExpressionNice
+        sage: f = function('f_x', x)
+        sage: f = f*(1 + f^2)
+        sage: ExpressionNice(f)
+        (f_x(x)^2 + 1)*f_x(x)
+        sage: omit_function_args(True)
+        sage: ExpressionNice(f)
+        (f_x^2 + 1)*f_x
+        sage: omit_function_args(False)
+        sage: latex(ExpressionNice(f))
+        {\left(f_{x}\left(x\right)^{2} + 1\right)} f_{x}\left(x\right)
+        sage: omit_function_args(True)
+        sage: latex(ExpressionNice(f))
+        {\left(f_{x}^{2} + 1\right)} f_{x}
 
     """
-
     from sage.geometry.manifolds.chart import FunctionChart
     if not isinstance(status, bool):
         raise TypeError("the argument must be a boolean")
