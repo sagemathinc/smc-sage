@@ -782,7 +782,7 @@ def list_derivarives(ex, list_d, exponent=0):
 
 def list_functions(ex, list_f):
     r"""
-    Function to find the occurences of symbolic functions in the expression;
+    Function to find the occurences of symbolic functions in the expression. 
 
     INPUT:
 
