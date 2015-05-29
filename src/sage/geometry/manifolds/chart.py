@@ -2440,7 +2440,6 @@ class FunctionChart(SageObject):
         """
         return self.__div__(other)
 
-
     def factor(self):
         r"""
         Factorize the coordinate expression.
@@ -2530,6 +2529,97 @@ class FunctionChart(SageObject):
         self._express = simplify_chain(self._express)
         self._del_derived()
         return self
+
+    def expand(self): 
+        r"""
+        Expands the coordinate expression.
+
+        OUTPUT:
+
+        - ``self``, with ``self._express`` expanded
+
+        EXAMPLES:
+
+        Method `expand()` on a 2-dimensional chart function::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function((x - y)^2)
+            sage: f
+            (x - y)^2
+            sage: f.expand()
+            x^2 - 2*x*y + y^2
+
+        Function f is changed after `expand()`::
+
+            sage: f
+            x^2 - 2*x*y + y^2
+        """
+        self._express = self._express.expand()
+        self._del_derived()
+        return self
+
+    def collect(self, s): 
+        r"""
+        Collect the coefficients of `s` into a group.
+
+        OUTPUT:
+
+        - ``self``, with ``self._express`` rearanged 
+        and coefficients of `s` collected. 
+
+        EXAMPLES:
+
+        Method `collect()` on a 2-dimensional chart function::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x^2*y + x*y + (x*y)^2)
+            sage: f
+            x^2*y^2 + x^2*y + x*y
+            sage: f.collect(y)
+            x^2*y^2 + (x^2 + x)*y
+
+        Function f is changed after `collect()`::
+
+            sage: f
+            x^2*y^2 + (x^2 + x)*y
+        """
+        self._express = self._express.collect(s)
+        self._del_derived()
+        return self
+
+    def collect_common_factors(self):
+        r"""
+        Collect common factors (does not perform a full factorization, 
+        but only looks for factors which are already explicitly present).
+
+        OUTPUT:
+
+        - ``self``, with ``self._express`` rearanged 
+        and common factors collected. 
+
+        EXAMPLES:
+
+        Method `collect_common_factors()` on a 2-dimensional chart function::
+
+            sage: M = Manifold(2, 'M')
+            sage: X.<x,y> = M.chart()
+            sage: f = X.function(x/(x^2*y + x*y))
+            sage: f
+            x/(x^2*y + x*y)
+            sage: f.collect_common_factors()
+            1/((x + 1)*y)
+
+        Function f is changed after `collect_common_factors()`::
+
+            sage: f
+            1/((x + 1)*y)
+        """
+        self._express = self._express.collect_common_factors()
+        self._del_derived()
+        return self
+
 
     def scalar_field(self, name=None, latex_name=None):
         r"""
