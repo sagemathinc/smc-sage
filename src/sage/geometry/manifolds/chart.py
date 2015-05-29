@@ -1901,8 +1901,8 @@ class FunctionChart(SageObject):
     nice_output = True # static flag for textbook-like output instead of the
                        # Pynac output for derivatives
 
-    omit_fargs  = False # static flag to govern whether or not 
-                        # the arguments of symbolic functions are printed 
+    omit_fargs  = False # static flag to govern whether or not
+                        # the arguments of symbolic functions are printed
 
 
 
@@ -3837,8 +3837,6 @@ class CoordChange(SageObject):
 
     """
     def __init__(self, chart1, chart2, *transformations):
-        from sage.matrix.constructor import matrix
-        from sage.calculus.functional import diff
         n1 = len(chart1._xx)
         n2 = len(chart2._xx)
         if len(transformations) != n2:
