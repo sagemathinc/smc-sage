@@ -2530,7 +2530,7 @@ class FunctionChart(SageObject):
         self._del_derived()
         return self
 
-    def expand(self): 
+    def expand(self):
         r"""
         Expands the coordinate expression.
 
@@ -2559,14 +2559,14 @@ class FunctionChart(SageObject):
         self._del_derived()
         return self
 
-    def collect(self, s): 
+    def collect(self, s):
         r"""
         Collect the coefficients of `s` into a group.
 
         OUTPUT:
 
-        - ``self``, with ``self._express`` rearanged 
-        and coefficients of `s` collected. 
+        - ``self``, with ``self._express`` rearanged and coefficients of `s`
+          collected.
 
         EXAMPLES:
 
@@ -2584,6 +2584,7 @@ class FunctionChart(SageObject):
 
             sage: f
             x^2*y^2 + (x^2 + x)*y
+
         """
         self._express = self._express.collect(s)
         self._del_derived()
@@ -2591,13 +2592,13 @@ class FunctionChart(SageObject):
 
     def collect_common_factors(self):
         r"""
-        Collect common factors (does not perform a full factorization, 
+        Collect common factors (does not perform a full factorization,
         but only looks for factors which are already explicitly present).
 
         OUTPUT:
 
-        - ``self``, with ``self._express`` rearanged 
-        and common factors collected. 
+        - ``self``, with ``self._express`` rearanged and common factors
+          collected.
 
         EXAMPLES:
 
@@ -2615,6 +2616,7 @@ class FunctionChart(SageObject):
 
             sage: f
             1/((x + 1)*y)
+
         """
         self._express = self._express.collect_common_factors()
         self._del_derived()
