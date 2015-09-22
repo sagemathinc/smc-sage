@@ -50,6 +50,7 @@ Linear Algebra
 --------------
 
 * :doc:`Matrices and Spaces of Matrices <matrices/index>`
+<<<<<<< HEAD
 * :doc:`Vectors and Modules <modules/index>`
 * :doc:`Tensors on free modules of finite rank <tensor_free_modules/index>`
 
@@ -78,6 +79,10 @@ Calculus
 * :doc:`Symbolic Calculus <calculus/index>`
 * :doc:`Mathematical Constants <constants/index>`
 * :doc:`Elementary and Special Functions <functions/index>`
+=======
+* :doc:`Modules <modules/index>`
+* :doc:`Tensors on free modules of finite rank <tensor_free_modules/index>`
+>>>>>>> 6818fb80e2bf6a61c38b1980e8a91f61a101768e
 
 Geometry and Topology
 ---------------------
@@ -85,6 +90,7 @@ Geometry and Topology
 * :doc:`Combinatorial Geometry <geometry/index>`
 * :doc:`Cell Complexes and their Homology <homology/index>`
 * :doc:`Differential Forms <tensor/index>`
+* :doc:`Differentiable Manifolds <manifolds/index>`
 * :doc:`Parametrized Surfaces <riemannian_geometry/index>`
 
 Number Theory, Algebraic Geometry
