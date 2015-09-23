@@ -50,7 +50,6 @@ Linear Algebra
 --------------
 
 * :doc:`Matrices and Spaces of Matrices <matrices/index>`
-<<<<<<< HEAD
 * :doc:`Vectors and Modules <modules/index>`
 * :doc:`Tensors on free modules of finite rank <tensor_free_modules/index>`
 
@@ -79,10 +78,13 @@ Calculus
 * :doc:`Symbolic Calculus <calculus/index>`
 * :doc:`Mathematical Constants <constants/index>`
 * :doc:`Elementary and Special Functions <functions/index>`
+<<<<<<< HEAD
 =======
 * :doc:`Modules <modules/index>`
 * :doc:`Tensors on free modules of finite rank <tensor_free_modules/index>`
 >>>>>>> 6818fb80e2bf6a61c38b1980e8a91f61a101768e
+=======
+>>>>>>> b41de335c69855c44290caface081ffa899c869e
 
 Geometry and Topology
 ---------------------

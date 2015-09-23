@@ -78,14 +78,14 @@ class ManifoldPoint(Element):
 
     - ``subset`` -- the manifold subset to which the point belongs (can be
       the entire manifold)
-    - ``coords`` -- (default: None) the point coordinates (as a tuple or a list)
-    - ``chart`` -- (default: None) chart in which the coordinates are given;
+    - ``coords`` -- (default: ``None``) the point coordinates (as a tuple or a list)
+    - ``chart`` -- (default: ``None``) chart in which the coordinates are given;
       if none is provided, the coordinates are assumed
       to refer to the subset's default chart
-    - ``name`` -- (default: None) name given to the point
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the point; if
+    - ``name`` -- (default: ``None``) name given to the point
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the point; if
       none is provided, the LaTeX symbol is set to ``name``
-    - ``check_coords`` -- (default: True) determines whether ``coords`` are
+    - ``check_coords`` -- (default: ``True``) determines whether ``coords`` are
       valid coordinates for the chart ``chart``; for symbolic coordinates, it
       is recommended to set ``check_coords`` to ``False``.
 
@@ -193,9 +193,6 @@ class ManifoldPoint(Element):
             self._latex_name = latex_name
         self._tangent_space = None # tangent vector space at the point (not
                                    # constructed yet)
-        self._frame_bases = {} # dictionary of bases of the tangent vector
-                               # derived from vector frames (keys: vector
-                               # frames)
 
     def _repr_(self):
         r"""
@@ -267,11 +264,11 @@ class ManifoldPoint(Element):
 
         INPUT:
 
-        - ``chart`` -- (default: None) chart in which the coordinates are
+        - ``chart`` -- (default: ``None``) chart in which the coordinates are
           given; if none is provided, the coordinates are assumed to refer to
           the subset's default chart
-        - ``old_chart`` -- (default: None) chart from which the coordinates in
-          ``chart`` are to be computed. If None, a chart in which the point's
+        - ``old_chart`` -- (default: ``None``) chart from which the coordinates in
+          ``chart`` are to be computed. If ``None``, a chart in which the point's
           coordinates are already known will be picked, priveleging the
           subset's default chart.
 
@@ -408,7 +405,7 @@ class ManifoldPoint(Element):
         INPUT:
 
         - ``coords`` -- the point coordinates (as a tuple or a list)
-        - ``chart`` -- (default: None) chart in which the coordinates are
+        - ``chart`` -- (default: ``None``) chart in which the coordinates are
           given; if none is provided, the coordinates are assumed to refer to
           the subset's default chart
 
@@ -454,7 +451,7 @@ class ManifoldPoint(Element):
         INPUT:
 
         - ``coords`` -- the point coordinates (as a tuple or a list)
-        - ``chart`` -- (default: None) chart in which the coordinates are
+        - ``chart`` -- (default: ``None``) chart in which the coordinates are
           given; if none is provided, the coordinates are assumed to refer to
           the subset's default chart
 
@@ -560,6 +557,8 @@ class ManifoldPoint(Element):
         """
         if not isinstance(other, ManifoldPoint):
             return False
+        if other._manifold != self._manifold:
+            return False
         # Search for a common chart to compare the coordinates
         common_chart = None
         # the subset's default chart is privileged:
@@ -591,10 +590,40 @@ class ManifoldPoint(Element):
                     except ValueError:
                         pass
         if common_chart is None:
-            raise ValueError("No common chart has been found to compare " +
-                             str(self) + " and " + str(other))
+            return False
+            #!# Another option would be:
+            # raise ValueError("No common chart has been found to compare " +
+            #                 str(self) + " and " + str(other))
         return self._coordinates[common_chart] == \
                                               other._coordinates[common_chart]
+
+    def __ne__(self, other):
+        r"""
+        Non-equality operator.
+        """
+        return not self.__eq__(other)
+
+    def __cmp__(self, other):
+        r"""
+        Old-style (Python 2) comparison operator.
+
+        This is provisory, until migration to Python 3 is achieved.
+
+        """
+        if self.__eq__(other):
+            return 0
+        else:
+            return -1
+
+    def __hash__(self):
+        r"""
+        This hash function is set to constant on a given manifold, to fulfill
+        Python's credo:
+        p == q  ==>  hash(p) == hash(q)
+        This is necessary since p and q may be created in different coordinate
+        systems and nevertheless be equal
+        """
+        return self._manifold.__hash__()
 
     def tangent_space(self):
         r"""
@@ -624,40 +653,52 @@ class ManifoldPoint(Element):
         for more examples.
 
         """
-        from tangentspace import TangentSpace
-        if self._tangent_space is not None:
-            return self._tangent_space
-        else:
-            res = TangentSpace(self)
-            (self._manifold)._tangent_spaces[self] = res
-            return res
+        from sage.geometry.manifolds.tangentspace import TangentSpace
+        return TangentSpace(self)
+#        if self._tangent_space is None:
+#            self._tangent_space = TangentSpace(self)
+#            (self._manifold)._tangent_spaces[self] = self._tangent_space
+#        return self._tangent_space
 
-    def plot(self, ambient_chart, ambient_coords=None, size=10, color='black',
-             label=None, label_color=None, fontsize=10, label_offset=0.1,
-             parameters=None):
+    def plot(self, chart=None, ambient_coords=None, mapping=None, size=10,
+             color='black', label=None, label_color=None, fontsize=10,
+             label_offset=0.1, parameters=None):
         r"""
-        Plot the point in a Cartesian graph based on the coordinates of
-        some chart, called hereafter the *ambient chart*.
+        Plot the current point (``self``) in a Cartesian graph based on the
+        coordinates of some ambient chart.
+
+        The point is drawn in terms of two (2D graphics) or three (3D graphics)
+        coordinates of a given chart, called hereafter the *ambient chart*.
+        The domain of the ambient chart must contain the point, or its image
+        by a differentiable mapping `\Phi`.
 
         INPUT:
 
-        - ``ambient_chart`` -- the ambient chart (see above)
-        - ``ambient_coords`` -- (default: None) tuple containing the 2 or 3
+        - ``chart`` -- (default: ``None``) the ambient chart (see above); if
+          ``None``, the ambient chart is set the default chart of
+          ``self.containing_set()``
+        - ``ambient_coords`` -- (default: ``None``) tuple containing the 2 or 3
           coordinates of the ambient chart in terms of which the plot is
-          performed; if None, all the coordinates of the ambient chart are
+          performed; if ``None``, all the coordinates of the ambient chart are
           considered
+        - ``mapping`` -- (default: ``None``) differentiable mapping `\Phi`
+          (instance of
+          :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
+          providing the link between the point `p` represented by ``self``
+          and the ambient chart ``chart``: the domain of ``chart`` must
+          contain `\Phi(p)`; if ``None``, the identity mapping is assumed
         - ``size`` -- (default: 10) size of the point once drawn as a small
           disk or sphere
         - ``color`` -- (default: 'black') color of the point
-        - ``label`` -- (default: None) label printed next to the point; if None,
-          the point's name is used.
-        - ``label_color`` -- (default: None) color to print the label; if None,
-          the value of ``color`` is used
+        - ``label`` -- (default: ``None``) label printed next to the point;
+          if ``None``, the point's name is used.
+        - ``label_color`` -- (default: ``None``) color to print the label;
+          if ``None``, the value of ``color`` is used
         - ``fontsize`` -- (default: 10) size of the font used to print the
           label
         - ``label_offset`` -- (default: 0.1) determines the separation between
           the point and its label
-        - ``parameters`` -- (default: None) dictionary giving the numerical
+        - ``parameters`` -- (default: ``None``) dictionary giving the numerical
           values of the parameters that may appear in the point coordinates
 
         OUTPUT:
@@ -678,12 +719,20 @@ class ManifoldPoint(Element):
             sage: g = p.plot(X)
             sage: print g
             Graphics object consisting of 2 graphics primitives
-            sage: gX = X.plot(X) # plot of the coordinate grid
+            sage: gX = X.plot() # plot of the coordinate grid
             sage: show(g+gX) # display of the point atop the coordinate grid
+
+        Actually, since ``X`` is the default chart of the open set in which
+        ``p`` has been defined, it can be skipped in the arguments of
+        ``plot``::
+
+            sage: g = p.plot()
+            sage: show(g+gX)
 
         Call with some options::
 
-            sage: g = p.plot(X, size = 40, color='green', label='$P$', label_color='blue', fontsize=20, label_offset=0.3)
+            sage: g = p.plot(chart=X, size=40, color='green', label='$P$',
+            ....:            label_color='blue', fontsize=20, label_offset=0.3)
             sage: show(g+gX)
 
         Use of the ``parameters`` option to set a numerical value of some
@@ -691,7 +740,7 @@ class ManifoldPoint(Element):
 
             sage: a = var('a')
             sage: q = M.point((a,2*a), name='q')
-            sage: gq = q.plot(X, parameters={a:-2})
+            sage: gq = q.plot(parameters={a:-2})
             sage: show(g+gX+gq)
 
         The numerical value is used only for the plot::
@@ -704,16 +753,33 @@ class ManifoldPoint(Element):
             sage: M = Manifold(3, 'M')
             sage: X.<x,y,z> = M.chart()
             sage: p = M.point((2,1,3), name='p')
-            sage: g = p.plot(X)
+            sage: g = p.plot()
             sage: print g
             Graphics3d Object
-            sage: gX = X.plot(X, nb_values=5) # coordinate mesh cube
+            sage: gX = X.plot(nb_values=5) # coordinate mesh cube
             sage: show(g+gX) # display of the point atop the coordinate mesh
 
         Call with some options::
 
-            sage: g = p.plot(X, size = 40, color='green', label='P_1', label_color='blue', fontsize=20, label_offset=0.3)
+            sage: g = p.plot(chart=X, size=40, color='green', label='P_1',
+            ....:            label_color='blue', fontsize=20, label_offset=0.3)
             sage: show(g+gX)
+
+        An example of plot via a differential mapping: plot of a point on a
+        2-sphere viewed in the 3-dimensional space ``M``::
+
+            sage: S2 = Manifold(2, 'S^2')
+            sage: U = S2.open_subset('U') # the open set covered by spherical coord.
+            sage: XS.<th,ph> = U.chart(r'th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: p = U.point((pi/4, pi/8), name='p')
+            sage: F = S2.diff_mapping(M, {(XS, X): [sin(th)*cos(ph),
+            ....:                         sin(th)*sin(ph), cos(th)]}, name='F')
+            sage: F.display()
+            F: S^2 --> M
+            on U: (th, ph) |--> (x, y, z) = (cos(ph)*sin(th), sin(ph)*sin(th), cos(th))
+            sage: g = p.plot(chart=X, mapping=F)
+            sage: gS2 = XS.plot(chart=X, mapping=F, nb_values=9)
+            sage: show(g+gS2)
 
         Use of the option ``ambient_coords`` for plots on a 4-dimensional
         manifold::
@@ -736,15 +802,28 @@ class ManifoldPoint(Element):
         from sage.plot.text import text
         from sage.plot.graphics import Graphics
         from sage.plot.plot3d.shapes2 import point3d, text3d
+        from sage.geometry.manifolds.chart import Chart
+        # The ambient chart:
+        if chart is None:
+            chart = self.containing_set().default_chart()
+        elif not isinstance(chart, Chart):
+            raise TypeError("the argument 'chart' must be a coordinate chart")
+        # The effective point to be plotted:
+        if mapping is None:
+            eff_point = self
+        else:
+            eff_point = mapping(self)
+        # The coordinates of the ambient chart used for the plot:
         if ambient_coords is None:
-            ambient_coords = ambient_chart._xx
+            ambient_coords = chart._xx
         elif not isinstance(ambient_coords, tuple):
             ambient_coords = tuple(ambient_coords)
         nca = len(ambient_coords)
         if nca != 2 and nca !=3:
             raise TypeError("Bad number of ambient coordinates: " + str(nca))
-        coords = self.coord(ambient_chart)
-        xx = ambient_chart[:]
+        # The point coordinates:
+        coords = eff_point.coord(chart)
+        xx = chart[:]
         xp = [coords[xx.index(c)] for c in ambient_coords]
         if parameters is not None:
             xps = [coord.substitute(parameters) for coord in xp]

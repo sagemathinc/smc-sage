@@ -862,11 +862,11 @@ class DiffMapping(Morphism):
 
         INPUT:
 
-        - ``chart1`` -- (default: None) chart on the mapping's domain; if None,
+        - ``chart1`` -- (default: ``None``) chart on the mapping's domain; if ``None``,
           the display is performed on all the charts on the start manifold
           in which the mapping is known or computable via some change of
           coordinates
-        - ``chart2`` -- (default: None) chart on the mapping's codomain; if
+        - ``chart2`` -- (default: ``None``) chart on the mapping's codomain; if
           None, the display is performed on all the charts on the codomain
           in which the mapping is known or computable via some change of
           coordinates
@@ -1016,9 +1016,9 @@ class DiffMapping(Morphism):
 
         INPUT:
 
-        - ``chart1`` -- (default: None) chart on the mapping's domain; if None,
+        - ``chart1`` -- (default: ``None``) chart on the mapping's domain; if ``None``,
           the domain's default chart is assumed
-        - ``chart2`` -- (default: None) chart on the mapping's codomain; if
+        - ``chart2`` -- (default: ``None``) chart on the mapping's codomain; if
           None,  the codomain's default chart is assumed
 
         OUTPUT:
@@ -1196,9 +1196,9 @@ class DiffMapping(Morphism):
 
         INPUT:
 
-        - ``chart1`` -- (default: None) chart on the mapping's domain; if None,
+        - ``chart1`` -- (default: ``None``) chart on the mapping's domain; if ``None``,
           the domain's default chart is assumed
-        - ``chart2`` -- (default: None) chart on the mapping's codomain; if
+        - ``chart2`` -- (default: ``None``) chart on the mapping's codomain; if
           None, the codomain's default chart is assumed
 
         OUTPUT:
@@ -1495,8 +1495,8 @@ class DiffMapping(Morphism):
 
         - ``subdomain`` -- the subdomain of ``self._domain`` (instance of
           :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
-        - ``subcodomain`` -- (default: None) subdomain of ``self._codomain``;
-          if None, ``self._codomain`` is assumed.
+        - ``subcodomain`` -- (default: ``None``) subdomain of ``self._codomain``;
+          if ``None``, ``self._codomain`` is assumed.
 
         OUTPUT:
 
@@ -1804,10 +1804,10 @@ class DiffMapping(Morphism):
 
         INPUT:
 
-        - ``chart1`` -- (default: None) chart in which the computation of the
+        - ``chart1`` -- (default: ``None``) chart in which the computation of the
           inverse is performed if necessary; if none is provided, the default
           chart of the domain of ``self`` will be used
-        - ``chart2`` -- (default: None) chart in which the computation of the
+        - ``chart2`` -- (default: ``None``) chart in which the computation of the
           inverse is performed if necessary; if none is provided, the default
           chart of the codomain of ``self`` will be used
 

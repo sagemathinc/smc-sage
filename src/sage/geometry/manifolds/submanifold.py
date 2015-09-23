@@ -59,7 +59,7 @@ class Submanifold(Manifold):
       :class:`~sage.geometry.manifolds.manifold.Manifold`
     - ``n`` -- positive integer; dimension of the submanifold
     - ``name`` -- string; name (symbol) given to the submanifold
-    - ``latex_name`` -- (default: None) string; LaTeX symbol to denote the
+    - ``latex_name`` -- (default: ``None``) string; LaTeX symbol to denote the
       submanifold
     - ``start_index`` -- (default: 0) integer; lower bound of the range of
       indices used for "indexed objects" on the submanifold, e.g. coordinates
@@ -182,13 +182,13 @@ class Submanifold(Manifold):
 
          - ``coord_ranges`` -- list of pairs (u_min, u_max) for each coordinate
            u on the submanifold
-         - ``local_chart`` -- (default: None) chart on the submanifold in which
+         - ``local_chart`` -- (default: ``None``) chart on the submanifold in which
            the above coordinates are defined; if none is provided, the
            submanifold default chart is assumed.
-         - ``ambient_chart`` -- (default: None) chart on the ambient manifold
+         - ``ambient_chart`` -- (default: ``None``) chart on the ambient manifold
            in terms of which the embedding is defined; if none is provided, the
            ambient manifold default chart is assumed.
-         - ``**kwds`` -- (default: None) keywords passed to Sage graphic
+         - ``**kwds`` -- (default: ``None``) keywords passed to Sage graphic
            routines
 
         OUTPUT:

@@ -80,12 +80,12 @@ class Metric(TensorField):
     - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
       fields along `U` with values on `\Phi(U)\subset V \subset M`
     - ``name`` -- name given to the metric
-    - ``signature`` -- (default: None) signature `S` of the metric as a single
+    - ``signature`` -- (default: ``None``) signature `S` of the metric as a single
       integer: `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of
       positive terms (resp. number of negative terms) in any diagonal writing
       of the metric components; if ``signature`` is not provided, `S` is set to
       the dimension of manifold `M` (Riemannian signature)
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``
 
     EXAMPLES:
@@ -428,7 +428,7 @@ class Metric(TensorField):
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
           instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
-        - ``dest_map`` -- (default: None) destination map
+        - ``dest_map`` -- (default: ``None``) destination map
           `\Phi:\ U \rightarrow V`, where `V` is a subdomain of
           ``self._codomain``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
@@ -561,10 +561,10 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Levi-Civita connection;
-          if None, it is formed from the metric name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
-          Levi-Civita connection; if None, it is set to ``name``, or if the
+        - ``name`` -- (default: ``None``) name given to the Levi-Civita connection;
+          if ``None``, it is formed from the metric name
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
+          Levi-Civita connection; if ``None``, it is set to ``name``, or if the
           latter is None as well, it formed from the symbol `\nabla` and the
           metric symbol
 
@@ -622,9 +622,9 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``chart`` -- (default: None) chart with respect to which the
+        - ``chart`` -- (default: ``None``) chart with respect to which the
           Christoffel symbolds are required; if none is provided, the
-          manifold's default chart is assumed.
+          default chart of the metric's domain is assumed.
 
         OUTPUT:
 
@@ -645,7 +645,7 @@ class Metric(TensorField):
             g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
             sage: Gam = g.christoffel_symbols() ; Gam
             3-indices components w.r.t. coordinate frame (U, (d/dr,d/dth,d/dph)), with symmetry on the index positions (1, 2)
-            sage: print type(Gam)
+            sage: type(Gam)
             <class 'sage.tensor.modules.comp.CompWithSym'>
             sage: Gam[:]
             [[[0, 0, 0], [0, -r, 0], [0, 0, -r*sin(th)^2]],
@@ -662,12 +662,137 @@ class Metric(TensorField):
             sage: Gam[2,3,3]
             -cos(th)*sin(th)
 
+        Note that a better display of the Christoffel symbols is provided by
+        the method :meth:`christoffel_symbols_display`::
+
+            sage: g.christoffel_symbols_display()
+            Gam^r_th,th = -r
+            Gam^r_ph,ph = -r*sin(th)^2
+            Gam^th_r,th = 1/r
+            Gam^th_ph,ph = -cos(th)*sin(th)
+            Gam^ph_r,ph = 1/r
+            Gam^ph_th,ph = cos(th)/sin(th)
+
+
         """
         if chart is None:
             frame = self._domain._def_chart._frame
         else:
             frame = chart._frame
         return self.connection().coef(frame)
+
+
+    def christoffel_symbols_display(self, chart=None, symbol=None,
+                latex_symbol=None, index_labels=None, index_latex_labels=None,
+                coordinate_labels=True, only_nonzero=True,
+                only_nonredundant=True):
+        r"""
+        Display the Christoffel symbols w.r.t. to a given chart, one
+        per line.
+
+        The output is either text-formatted (console mode) or LaTeX-formatted
+        (notebook mode).
+
+        INPUT:
+
+        - ``chart`` -- (default: ``None``) chart with respect to which the
+          Christoffel symbolds are defined; if none is provided, the
+          default chart of the metric's domain is assumed.
+        - ``symbol`` -- (default: ``None``) string specifying the
+          symbol of the connection coefficients; if ``None``, 'Gam' is used
+        - ``latex_symbol`` -- (default: ``None``) string specifying the LaTeX
+          symbol for the components; if ``None``, '\\Gamma' is used
+        - ``index_labels`` -- (default: ``None``) list of strings representing
+          the labels of each index; if ``None``, coordinate symbols are used
+          except if ``coordinate_symbols`` is set to ``False``, in which case
+          integer labels are used
+        - ``index_latex_labels`` -- (default: ``None``) list of strings
+          representing the LaTeX labels of each index; if ``None``, coordinate
+          LaTeX symbols are used, except if ``coordinate_symbols`` is set to
+          ``False``, in which case integer labels are used
+        - ``coordinate_labels`` -- (default: ``True``) boolean; if ``True``,
+          coordinate symbols are used by default (instead of integers)
+        - ``only_nonzero`` -- (default: ``True``) boolean; if ``True``, only
+          nonzero connection coefficients are displayed
+        - ``only_nonredundant`` -- (default: ``True``) boolean; if ``True``,
+          only nonredundant (w.r.t. the symmetry of the last two indices)
+          connection coefficients are displayed
+
+        EXAMPLES:
+
+        Christoffel symbols of the flat metric on `\RR^3` with respect to
+        spherical coordinates::
+
+            sage: M = Manifold(3, 'R3', r'\RR^3', start_index=1)
+            sage: U = M.open_subset('U') # the complement of the half-plane (y=0, x>=0)
+            sage: X.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
+            sage: g = U.metric('g')
+            sage: g[1,1], g[2,2], g[3,3] = 1, r^2, r^2*sin(th)^2
+            sage: g.display()  # the standard flat metric expressed in spherical coordinates
+            g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
+            sage: g.christoffel_symbols_display()
+            Gam^r_th,th = -r
+            Gam^r_ph,ph = -r*sin(th)^2
+            Gam^th_r,th = 1/r
+            Gam^th_ph,ph = -cos(th)*sin(th)
+            Gam^ph_r,ph = 1/r
+            Gam^ph_th,ph = cos(th)/sin(th)
+
+        To list all nonzero Christoffel symbols, including those that can be
+        deduced by symmetry, use ``only_nonredundant=False``::
+
+            sage: g.christoffel_symbols_display(only_nonredundant=False)
+            Gam^r_th,th = -r
+            Gam^r_ph,ph = -r*sin(th)^2
+            Gam^th_r,th = 1/r
+            Gam^th_th,r = 1/r
+            Gam^th_ph,ph = -cos(th)*sin(th)
+            Gam^ph_r,ph = 1/r
+            Gam^ph_th,ph = cos(th)/sin(th)
+            Gam^ph_ph,r = 1/r
+            Gam^ph_ph,th = cos(th)/sin(th)
+
+        Listing all Christoffel symbols (except those that can be deduced by
+        symmetry), including the vanishing one::
+
+            sage: g.christoffel_symbols_display(only_nonzero=False)
+            Gam^r_r,r = 0
+            Gam^r_r,th = 0
+            Gam^r_r,ph = 0
+            Gam^r_th,th = -r
+            Gam^r_th,ph = 0
+            Gam^r_ph,ph = -r*sin(th)^2
+            Gam^th_r,r = 0
+            Gam^th_r,th = 1/r
+            Gam^th_r,ph = 0
+            Gam^th_th,th = 0
+            Gam^th_th,ph = 0
+            Gam^th_ph,ph = -cos(th)*sin(th)
+            Gam^ph_r,r = 0
+            Gam^ph_r,th = 0
+            Gam^ph_r,ph = 1/r
+            Gam^ph_th,th = 0
+            Gam^ph_th,ph = cos(th)/sin(th)
+            Gam^ph_ph,ph = 0
+
+        Using integer labels::
+
+            sage: g.christoffel_symbols_display(coordinate_labels=False)
+            Gam^1_22 = -r
+            Gam^1_33 = -r*sin(th)^2
+            Gam^2_12 = 1/r
+            Gam^2_33 = -cos(th)*sin(th)
+            Gam^3_13 = 1/r
+            Gam^3_23 = cos(th)/sin(th)
+
+        """
+        if chart is None:
+            chart = self._domain.default_chart()
+        return self.connection().display(frame=chart.frame(), chart=chart,
+              symbol=symbol, latex_symbol=latex_symbol,
+              index_labels=index_labels, index_latex_labels=index_latex_labels,
+              coordinate_labels=coordinate_labels, only_nonzero=only_nonzero,
+              only_nonredundant=only_nonredundant)
 
     def riemann(self, name=None, latex_name=None):
         r"""
@@ -687,9 +812,9 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Riemann tensor;
+        - ``name`` -- (default: ``None``) name given to the Riemann tensor;
           if none, it is set to "Riem(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Riemann tensor; if none, it is set to "\\mathrm{Riem}(g)", where "g"
           is the metric's name
 
@@ -753,9 +878,9 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Ricci tensor;
+        - ``name`` -- (default: ``None``) name given to the Ricci tensor;
           if none, it is set to "Ric(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Ricci tensor; if none, it is set to "\\mathrm{Ric}(g)", where "g"
           is the metric's name
 
@@ -802,9 +927,9 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Ricci scalar;
+        - ``name`` -- (default: ``None``) name given to the Ricci scalar;
           if none, it is set to "r(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Ricci scalar; if none, it is set to "\\mathrm{r}(g)", where "g"
           is the metric's name
 
@@ -854,9 +979,9 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Weyl conformal tensor;
+        - ``name`` -- (default: ``None``) name given to the Weyl conformal tensor;
           if none, it is set to "C(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Weyl conformal tensor; if none, it is set to "\\mathrm{C}(g)", where
           "g" is the metric's name
 
@@ -911,9 +1036,9 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``frame`` -- (default: None) vector frame with
+        - ``frame`` -- (default: ``None``) vector frame with
           respect to which the components `g_{ij}` of ``self`` are defined;
-          if None, the default frame of the metric's domain is used. If a
+          if ``None``, the default frame of the metric's domain is used. If a
           chart is provided instead of a frame, the associated coordinate
           frame is used
 
@@ -994,9 +1119,9 @@ class Metric(TensorField):
 
         INPUT:
 
-        - ``frame`` -- (default: None) vector frame with
+        - ``frame`` -- (default: ``None``) vector frame with
           respect to which the components `g_{ij}` of ``self`` are defined;
-          if None, the domain's default frame is used. If a chart is
+          if ``None``, the domain's default frame is used. If a chart is
           provided, the associated coordinate frame is used
 
         OUTPUT:
@@ -1212,7 +1337,7 @@ class RiemannMetric(Metric):
     - ``vector_field_module`` -- module `\mathcal{X}(U,\Phi)` of vector
       fields along `U` with values on `\Phi(U)\subset V \subset M`
     - ``name`` -- name given to the metric
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``
 
     """
@@ -1257,7 +1382,7 @@ class LorentzMetric(Metric):
         * if set to 'positive', the signature is n-2, where n is the manifold's
           dimension, i.e. `(-,+,\cdots,+)`
         * if set to 'negative', the signature is -n+2, i.e. `(+,-,\cdots,-)`
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``
 
     """
@@ -1327,12 +1452,12 @@ class MetricParal(Metric, TensorFieldParal):
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector
       fields along `U` with values on `\Phi(U)\subset V \subset M`
     - ``name`` -- name given to the metric
-    - ``signature`` -- (default: None) signature `S` of the metric as a single
+    - ``signature`` -- (default: ``None``) signature `S` of the metric as a single
       integer: `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number of
       positive terms (resp. number of negative terms) in any diagonal writing
       of the metric components; if ``signature`` is not provided, `S` is set to
       the dimension of manifold `M` (Riemannian signature)
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``
 
     EXAMPLES:
@@ -1463,7 +1588,7 @@ class MetricParal(Metric, TensorFieldParal):
 
         - ``subdomain`` -- open subset `U` of ``self._domain`` (must be an
           instance of :class:`~sage.geometry.manifolds.domain.ManifoldOpenSubset`)
-        - ``dest_map`` -- (default: None) destination map
+        - ``dest_map`` -- (default: ``None``) destination map
           `\Phi:\ U \rightarrow V`, where `V` is a subdomain of
           ``self._codomain``
           (type: :class:`~sage.geometry.manifolds.diffmapping.DiffMapping`)
@@ -1610,9 +1735,9 @@ class MetricParal(Metric, TensorFieldParal):
 
         INPUT:
 
-        - ``name`` -- (default: None) name given to the Ricci scalar;
+        - ``name`` -- (default: ``None``) name given to the Ricci scalar;
           if none, it is set to "r(g)", where "g" is the metric's name
-        - ``latex_name`` -- (default: None) LaTeX symbol to denote the
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the
           Ricci scalar; if none, it is set to "\\mathrm{r}(g)", where "g"
           is the metric's name
 
@@ -1684,7 +1809,7 @@ class RiemannMetricParal(MetricParal):
     - ``vector_field_module`` -- free module `\mathcal{X}(U,\Phi)` of vector
       fields along `U` with values on `\Phi(U)\subset V \subset M`
     - ``name`` -- name given to the metric
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``
 
     EXAMPLE:
@@ -1752,7 +1877,7 @@ class LorentzMetricParal(MetricParal):
         * if set to 'positive', the signature is n-2, where n is the manifold's
           dimension, i.e. `(-,+,\cdots,+)`
         * if set to 'negative', the signature is -n+2, i.e. `(+,-,\cdots,-)`
-    - ``latex_name`` -- (default: None) LaTeX symbol to denote the metric; if
+    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric; if
       none, it is formed from ``name``
 
     EXAMPLE:
