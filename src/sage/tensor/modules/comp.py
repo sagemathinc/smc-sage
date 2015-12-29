@@ -1732,7 +1732,6 @@ class Components(SageObject):
         if other._sindex != self._sindex:
             raise ValueError("the two sets of components do not have the " +
                              "same starting index")
-        marco_t0 = time.time()
         if isinstance(other, CompWithSym):
             sym = []
             if other._sym != []:
@@ -3597,7 +3596,6 @@ class CompWithSym(Components):
         if other._sindex != self._sindex:
             raise ValueError("the two sets of components do not have the " +
                              "same starting index")
-        marco_t0 = time.time()
         sym = list(self._sym)
         antisym = list(self._antisym)
         if isinstance(other, CompWithSym):
