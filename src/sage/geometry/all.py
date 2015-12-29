@@ -20,8 +20,9 @@ from toric_lattice import ToricLattice
 
 import toric_plotter
 
-
 from hyperbolic_space.all import *
+
+from manifolds.all import *
 
 lazy_import('sage.geometry.hyperplane_arrangement.arrangement', 'HyperplaneArrangements')
 lazy_import('sage.geometry.hyperplane_arrangement.library', 'hyperplane_arrangements')
