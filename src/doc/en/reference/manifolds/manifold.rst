@@ -1,13 +1,22 @@
+<<<<<<< HEAD
 Differentiable manifolds
 ========================
+=======
+Topological manifolds
+=====================
+>>>>>>> 98810dff8d2f493d701b0fb20e1fb6e7e1794365
 
 .. toctree::
    :maxdepth: 2
 
-   sage/geometry/manifolds/manifold
+   sage/manifolds/manifold
 
-   sage/geometry/manifolds/domain
+   sage/manifolds/point
 
-   sage/geometry/manifolds/point
+   sage/manifolds/subset
 
-   sage/geometry/manifolds/chart
+   chart
+
+   scalarfield
+
+   continuous_map

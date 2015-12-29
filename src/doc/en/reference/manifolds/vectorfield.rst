@@ -4,12 +4,12 @@ Vector fields
 .. toctree::
    :maxdepth: 2
 
-   sage/geometry/manifolds/vectorfield_module
+   sage/manifolds/differentiable/vectorfield_module
 
-   sage/geometry/manifolds/vectorfield
+   sage/manifolds/differentiable/vectorfield
 
-   sage/geometry/manifolds/vectorframe
+   sage/manifolds/differentiable/vectorframe
 
-   sage/geometry/manifolds/automorphismfield_group
+   sage/manifolds/differentiable/automorphismfield_group
 
-   sage/geometry/manifolds/automorphismfield
+   sage/manifolds/differentiable/automorphismfield

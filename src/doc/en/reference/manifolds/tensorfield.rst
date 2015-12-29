@@ -4,6 +4,8 @@ Tensor fields
 .. toctree::
    :maxdepth: 2
 
-   sage/geometry/manifolds/tensorfield_module
+   sage/manifolds/differentiable/tensorfield_module
 
-   sage/geometry/manifolds/tensorfield
+   sage/manifolds/differentiable/tensorfield
+
+   sage/manifolds/differentiable/tensorfield_paral
